@@ -171,6 +171,7 @@ function generatePrintStyles(config) {
     position: absolute;
     width: 100%;
     z-index: -1;
+    padding-bottom: ${config.virtualPagesMargin * 2 + config.screenUnits};
   }
 
   ${SELECTORS.runningSafety} {
@@ -491,12 +492,16 @@ function createVirtualPage() {
 
 function createPaper(virtualPage, current, total) {
   const _paper = create('.paper');
+  const _separator = create(SELECTORS.virtualPagesMargin);
   _paper.append(
     virtualPage.cloneNode(true),
-    create(SELECTORS.virtualPagesMargin),
+    _separator,
   );
   setPageNumber(_paper, current, total);
-  return _paper;
+  return {
+    paper: _paper,
+    separator: _separator
+  };
 }
 
 function createLayout({
@@ -729,11 +734,24 @@ function processLayout({
 
   pages.map((item, index) => {
 
+    // ADD VIRTUAL PAGE
+
+    const {
+      paper,
+      separator
+    } = createPaper(virtualPage, index + 1, total);
+
+    paperFlow.append(paper);
+
+    // add the separator as referencePoint to the next page
+    (index < total - 1) && (pages[index + 1].referencePoint = separator);
+
     // ADD CONTENT BREAKs
 
     const {
       previousPageEnd,
       nextPageStart,
+      referencePoint,
     } = item;
 
     if (previousPageEnd) {
@@ -759,9 +777,7 @@ function processLayout({
 
       // Determine what inaccuracy there is visually in the break simulation position,
       // and compensate for it.
-      const currVirtPageBottom = virtualPageHeight * (index) + config.virtualPagesMargin * (index - 1);
-      const floater = _virtualPagesMargin.offsetTop;
-      const balancer = currVirtPageBottom - floater;
+      const balancer = referencePoint.offsetTop - _virtualPagesMargin.offsetTop;
       _balancedFooter.style.marginBottom = balancer + 'px';
 
       // TODO check if negative on large documents
@@ -774,9 +790,6 @@ function processLayout({
         createBalancingHeader(headerContentHeight),
       )
     }
-
-    // ADD VIRTUAL PAGE
-    paperFlow.append(createPaper(virtualPage, index + 1, total));
   })
 }
 
