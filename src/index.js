@@ -499,8 +499,8 @@ function createPaper(virtualPage, current, total) {
   const _paper = create('.paper');
   const _separator = createVirtualPageMargin();
   _paper.append(
-    virtualPage.cloneNode(true),
     _separator,
+    virtualPage.cloneNode(true),
   );
   setPageNumber(_paper, current, total);
   return {
@@ -724,7 +724,6 @@ function calculatePages({
 // * PREVIEW GENERATION
 
 function processLayout({
-  config,
   pages,
   contentFlow,
   paperFlow,
@@ -736,6 +735,11 @@ function processLayout({
 
   // Total number of pages.
   const total = pages.length;
+
+  // Before inserting page breaks into the content and calculating balancers,
+  // add an element to compensate for the separator before the first virtual page.
+  // This will affect the top position of all the following content elements in the preview.
+  contentFlow.prepend(createVirtualPageMargin());
 
   pages.map((item, index) => {
 
@@ -749,7 +753,8 @@ function processLayout({
     paperFlow.append(paper);
 
     // add the separator as referencePoint to the next page
-    (index < total - 1) && (pages[index + 1].referencePoint = separator);
+    // (index < total - 1) && (pages[index + 1].referencePoint = separator);
+    pages[index].referencePoint = separator;
 
     // ADD CONTENT BREAKs
 
@@ -762,10 +767,11 @@ function processLayout({
     if (previousPageEnd) {
       // If it is a page break and not the first header.
 
-      // Based on _virtualPagesMargin,
-      // calculate the height of the necessary compensator to visually fit
-      // page breaks in the content flow and virtual page images on the screen.
-      const _virtualPagesMargin = createVirtualPageMargin();
+      // Based on _separator (virtual, not printed element, inserted into contentFlow)
+      // and referencePoint (virtual, not printed element, inserted into paperFlow),
+      // calculate the height of the necessary compensator to visually fit page breaks
+      // in the content in contentFlow and virtual page images on the screen in paperFlow.
+      const _separator = createVirtualPageMargin();
       // In this element we will add a compensator.
       // We create it with a basic compensator,
       // which takes into account now only the footerContentHeight.
@@ -775,14 +781,14 @@ function processLayout({
       nextPageStart.before(
         _balancedFooter,
         createRunningFooter(),
-        _virtualPagesMargin,
+        _separator,
         createRunningHeader(),
         createBalancingHeader(headerContentHeight),
       );
 
       // Determine what inaccuracy there is visually in the break simulation position,
       // and compensate for it.
-      const balancer = referencePoint.offsetTop - _virtualPagesMargin.offsetTop;
+      const balancer = referencePoint.offsetTop - _separator.offsetTop;
       _balancedFooter.style.marginBottom = balancer + 'px';
 
       // TODO check if negative on large documents
