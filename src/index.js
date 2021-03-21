@@ -128,6 +128,10 @@ function generatePrintStyles(config) {
     /* for proper printable flow positioning */
     position: relative;
 
+    /* to compensate for possible BG in the parent node */
+    background: transparent;
+    z-index: 1;
+
     /* set print styles: affects previews */
     margin: 0 auto;
     width: ${config.width - config.left - config.right}${config.printUnits};

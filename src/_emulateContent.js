@@ -1,5 +1,6 @@
 export default function _emulateContent() {
   const temp = document.createElement('div');
+  temp.style.background = '#fafafa';
   temp.innerHTML = `
   <h3>Test for printing</h3>
   <div id="printTHIS">
