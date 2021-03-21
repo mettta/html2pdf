@@ -288,10 +288,10 @@ function isNoBreak(element) {
   return element.dataset?.hasOwnProperty('printNoBreak')
 }
 
-function isAccountedChild(child) {
+function isSignificantChild(child) {
   const tag = child.tagName;
 
-  // TODO isAccountedChild
+  // TODO isSignificantChild
   return (tag !== 'A' && tag !== 'TT' && child.offsetHeight > 0);
 }
 
@@ -327,7 +327,7 @@ function getChildren(element) {
   } else {
     // If my nodeName is #text, my height is always undefined
     childrenArr = [...element.childNodes]
-      .filter(child => isForcedPageBreak(child) || isPrintEnd(child) || isAccountedChild(child));
+      .filter(child => isForcedPageBreak(child) || isPrintEnd(child) || isSignificantChild(child));
   }
 
   return childrenArr;
