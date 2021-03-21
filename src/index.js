@@ -473,6 +473,11 @@ function createBalancingFooter(footerContentHeight) {
   return balancingFooter;
 }
 
+function createVirtualPageMargin() {
+  const _separator = create(SELECTORS.virtualPagesMargin);
+  return _separator;
+}
+
 function createVirtualPage() {
 
   // if custom footer and/or header,
@@ -492,7 +497,7 @@ function createVirtualPage() {
 
 function createPaper(virtualPage, current, total) {
   const _paper = create('.paper');
-  const _separator = create(SELECTORS.virtualPagesMargin);
+  const _separator = createVirtualPageMargin();
   _paper.append(
     virtualPage.cloneNode(true),
     _separator,
@@ -760,7 +765,7 @@ function processLayout({
       // Based on _virtualPagesMargin,
       // calculate the height of the necessary compensator to visually fit
       // page breaks in the content flow and virtual page images on the screen.
-      const _virtualPagesMargin = create(SELECTORS.virtualPagesMargin);
+      const _virtualPagesMargin = createVirtualPageMargin();
       // In this element we will add a compensator.
       // We create it with a basic compensator,
       // which takes into account now only the footerContentHeight.
