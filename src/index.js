@@ -48,7 +48,7 @@ const SELECTORS = {
   virtualPage: '.virtualPage',
   virtualTopMargin: '.virtualTopMargin',
   virtualBottomMargin: '.virtualBottomMargin',
-  virtualPagesMargin: '.virtualPagesMargin',
+  virtualPagesGap: '.virtualPagesGap',
 
   // page number
   pageNumberRoot: '[data-page-number-root]',
@@ -86,7 +86,7 @@ function createConfig(params) {
     headerMargin: '16',
     footerMargin: '16',
     // virtual
-    virtualPagesMargin: '16',
+    virtualPagesGap: '16',
   }
 
   let config = DEFAULT_CONFIG;
@@ -175,7 +175,7 @@ function generatePrintStyles(config) {
     position: absolute;
     width: 100%;
     z-index: -1;
-    padding-bottom: ${config.virtualPagesMargin * 2 + config.screenUnits};
+    padding-bottom: ${config.virtualPagesGap * 2 + config.screenUnits};
   }
 
   ${SELECTORS.runningSafety} {
@@ -190,8 +190,8 @@ function generatePrintStyles(config) {
     height: ${config.bottom}${config.printUnits};
   }
 
-  ${SELECTORS.virtualPagesMargin} {
-    padding-top: ${config.virtualPagesMargin}${config.screenUnits};
+  ${SELECTORS.virtualPagesGap} {
+    padding-top: ${config.virtualPagesGap}${config.screenUnits};
     background: #ff000020;
   }
 
@@ -218,7 +218,7 @@ function generatePrintStyles(config) {
     ${SELECTORS.printHide},
     ${SELECTORS.virtualTopMargin},
     ${SELECTORS.virtualBottomMargin},
-    ${SELECTORS.virtualPagesMargin} {
+    ${SELECTORS.virtualPagesGap} {
       display: none;
     }
 
@@ -477,8 +477,8 @@ function createBalancingFooter(footerContentHeight) {
   return balancingFooter;
 }
 
-function createVirtualPageMargin() {
-  const _separator = create(SELECTORS.virtualPagesMargin);
+function createVirtualPageGap() {
+  const _separator = create(SELECTORS.virtualPagesGap);
   return _separator;
 }
 
@@ -501,7 +501,7 @@ function createVirtualPage() {
 
 function createPaper(virtualPage, current, total) {
   const _paper = create('.paper');
-  const _separator = createVirtualPageMargin();
+  const _separator = createVirtualPageGap();
   _paper.append(
     _separator,
     virtualPage.cloneNode(true),
@@ -743,7 +743,7 @@ function processLayout({
   // Before inserting page breaks into the content and calculating balancers,
   // add an element to compensate for the separator before the first virtual page.
   // This will affect the top position of all the following content elements in the preview.
-  contentFlow.prepend(createVirtualPageMargin());
+  contentFlow.prepend(createVirtualPageGap());
 
   pages.map((item, index) => {
 
@@ -775,7 +775,7 @@ function processLayout({
       // and referencePoint (virtual, not printed element, inserted into paperFlow),
       // calculate the height of the necessary compensator to visually fit page breaks
       // in the content in contentFlow and virtual page images on the screen in paperFlow.
-      const _separator = createVirtualPageMargin();
+      const _separator = createVirtualPageGap();
       // In this element we will add a compensator.
       // We create it with a basic compensator,
       // which takes into account now only the footerContentHeight.
