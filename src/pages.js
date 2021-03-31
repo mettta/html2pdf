@@ -31,7 +31,6 @@ export default class Pages {
     // ELSE:
 
     const content = this._getChildren(this.contentFlow);
-    console.log(content);
 
     // TODO put this into main calculations?
     // FIRST ELEMENT: register the beginning of the first page.
@@ -40,9 +39,6 @@ export default class Pages {
     this._parseNodes({
       array: content
     });
-
-    // return this.pages;
-
   }
 
   _registerPage({

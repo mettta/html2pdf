@@ -21,7 +21,7 @@ export default class Preview {
 
   create() {
 
-    if (this.paper.template.frontpage) {
+    if (this.paper.frontpageTemplate) {
       // IF FRONTPAGE,
       // insert spacing element into content,
       // get a reference to the inserted element,

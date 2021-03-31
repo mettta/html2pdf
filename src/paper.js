@@ -1,13 +1,12 @@
 export default class Paper {
 
-  constructor({
-    DOM,
-    template
-  }) {
+  constructor(DOM) {
 
     this.DOM = DOM;
 
-    this.template = template;
+    this.frontpageTemplate = this.DOM.getFrontpageTemplate();
+    this.headerTemplate = this.DOM.getHeaderTemplate();
+    this.footerTemplate = this.DOM.getFooterTemplate();
 
     this.paperHeight;
     this.headerHeight;
@@ -24,8 +23,8 @@ export default class Paper {
 
   create(current, total) {
     const body = this.DOM.createPaperBody(this.bodyHeight);
-    const header = this.DOM.createPaperHeader(this.template.header);
-    const footer = this.DOM.createPaperFooter(this.template.footer);
+    const header = this.DOM.createPaperHeader(this.headerTemplate);
+    const footer = this.DOM.createPaperFooter(this.footerTemplate);
 
     return this.DOM.createPaper({
       header,
@@ -38,10 +37,10 @@ export default class Paper {
 
   createFrontpage(current, total) {
 
-    const frontpage = this.DOM.createFrontpageContent(this.template.frontpage, this.frontpageFactor);
+    const frontpage = this.DOM.createFrontpageContent(this.frontpageTemplate, this.frontpageFactor);
     const body = this.DOM.createPaperBody(this.bodyHeight, frontpage);
-    const header = this.DOM.createPaperHeader(this.template.header);
-    const footer = this.DOM.createPaperFooter(this.template.footer);
+    const header = this.DOM.createPaperHeader(this.headerTemplate);
+    const footer = this.DOM.createPaperFooter(this.footerTemplate);
 
     return this.DOM.createPaper({
       header,
@@ -61,9 +60,9 @@ export default class Paper {
       bodyHeight,
       frontpageFactor,
     } = this.DOM.calculatePaperParams({
-      frontpageTemplate: this.template.frontpage,
-      headerTemplate: this.template.header,
-      footerTemplate: this.template.footer,
+      frontpageTemplate: this.frontpageTemplate,
+      headerTemplate: this.headerTemplate,
+      footerTemplate: this.footerTemplate,
     })
 
     if (headerHeight > paperHeight * 0.2) {

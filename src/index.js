@@ -7,9 +7,6 @@ import Layout from './layout';
 import Pages from './pages';
 import Paper from './paper';
 import Preview from './preview';
-import Template from './template';
-
-
 
 window.addEventListener("load", function (event) {
   console.time("printTHIS");
@@ -20,28 +17,22 @@ window.addEventListener("load", function (event) {
 
   DOM.insertStyle(new Style(config()).create());
 
-  const template = new Template(DOM);
+  const paper = new Paper(DOM);
 
-  console.log(template.frontpage);
-  console.log(template.header);
-  console.log(template.footer);
-
-  const paper = new Paper({ DOM, template });
-
-  console.log(paper.paperHeight);
-  console.log(paper.headerHeight);
-  console.log(paper.footerHeight);
-  console.log(paper.bodyHeight);
-  console.log(paper.frontpageFactor);
+  // console.log(paper.paperHeight);
+  // console.log(paper.headerHeight);
+  // console.log(paper.footerHeight);
+  // console.log(paper.bodyHeight);
+  // console.log(paper.frontpageFactor);
 
   // window.document.body.prepend(paper.createFrontpage());
   // window.document.body.prepend(paper.create(3, 5));
 
   const layout = new Layout(DOM);
 
-  console.log(layout.root);
-  console.log(layout.paperFlow);
-  console.log(layout.contentFlow);
+  // console.log(layout.root);
+  // console.log(layout.paperFlow);
+  // console.log(layout.contentFlow);
 
   layout.create();
 
@@ -50,8 +41,6 @@ window.addEventListener("load", function (event) {
     contentFlow: layout.contentFlow,
     referenceHeight: paper.bodyHeight,
   }).calculate();
-
-  // pages.calculate();
 
   console.log(pages);
 
@@ -62,14 +51,6 @@ window.addEventListener("load", function (event) {
     paper: paper,
     pages: pages,
   }).create();
-
-
-
-
-  // new Layout(store).create();
-  // new Pages(store).calculate();
-  // new Preview(store).create();
-
 
   console.timeEnd("printTHIS");
 });
