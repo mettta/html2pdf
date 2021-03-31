@@ -1,48 +1,53 @@
-export default function _emulateContent() {
-  const temp = document.createElement('div');
-  temp.innerHTML = `
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <!-- <script type="text/javascript" src="test.js"></script> -->
+  <script type="text/javascript" src="../dist/bundle.js"></script>
+  <title>&star; Simple</title>
+</head>
+<body>
   <h3>Test for printing</h3>
   <div id="printTHIS">
 
-  <template id="printTHISfrontpage">
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-  </template>
-
-  <template id="printTHISheader">
-    <div data-page-number-root>
-      <span data-page-number-current></span>
-      of
-      <span data-page-number-total></span>
-    </div>
-    <p>header</p>
-  </template>
-
-  <template id="printTHISfooter">
-    <p>footer</p>
-  </template>
+    <template id="printTHISfrontpage">
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+      <h1>frontpage</h1>
+    </template>
+  
+    <template id="printTHISheader">
+      <div data-page-number-root>
+        <span data-page-number-current></span>
+        of
+        <span data-page-number-total></span>
+      </div>
+      <p>header</p>
+    </template>
+  
+    <template id="printTHISfooter">
+      <p>footer</p>
+    </template>
 
 <h3>Table of content</h3>
 
@@ -159,6 +164,6 @@ Aute amet culpa laboris Lorem nostrud nostrud sint cupidatat in nulla laborum. A
 Ex eiusmod commodo magna Lorem fugiat minim et minim excepteur id aliqua nisi laboris commodo. Aliquip duis ad enim duis esse consequat nulla qui excepteur ea tempor commodo exercitation. Aute eu reprehenderit reprehenderit dolor culpa magna sint laboris fugiat consectetur. Irure magna proident est excepteur enim. Sunt quis irure cillum anim excepteur duis sit voluptate deserunt. Non ex officia ullamco aliquip amet. Est do fugiat proident quis in est ea nostrud mollit excepteur anim.
 </P>
 
-  </div>`;
-  document.body.append(temp);
-}
+  </div>
+</body>
+</html>
