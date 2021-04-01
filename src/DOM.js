@@ -209,6 +209,9 @@ export default class DocumentObjectModel {
     return _node;
   }
 
+  // TODO calculate Paper body content  on insertion,
+  // allow to insert any content, not only pre-prepared content
+
   createPaperBody(height, content) {
     const _node = this.create(SELECTOR.paperBody);
     // Lock the height of the paperBody for the content area.
