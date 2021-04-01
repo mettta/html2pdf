@@ -43,27 +43,22 @@ export default class Layout {
 
     this.DOM.setPrintIgnore(parentNode);
 
-    this._makeArrayOfNotTextChildNodes(parentNode)
+    this.DOM.getChildNodes(parentNode)
       .forEach((child) => {
         if (child === root) {
           return
+        } else if (this.DOM.isTextNode(child)) {
+          // process text nodes
+          this.DOM.setPrintHide(this.DOM.wrapWithNeutral(child));
         } else {
           this.DOM.setPrintHide(child);
         }
-      })
+      });
 
     if (this.DOM.isDocumentBody(parentNode)) {
       return;
     } else {
       this._ignorePrintingEnvironment(parentNode);
-    }
+    };
   }
-
-  _makeArrayOfNotTextChildNodes(element) {
-    // Check that the element is a tag and not '#text'.
-    // https://developer.mozilla.org/ru/docs/Web/API/Node/nodeName
-    let children = this.DOM.getChildNodes(element);
-    return [...children].filter(item => this.DOM.isNotTextNode(item));
-  }
-
 }

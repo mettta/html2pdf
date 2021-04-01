@@ -172,6 +172,10 @@ export default class Style {
     background: #00fcff20;
   }
 
+  ${SELECTOR.neutral} {
+    background: #00ffee10;
+  }
+
 `
   }
 }

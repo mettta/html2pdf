@@ -1,5 +1,10 @@
 const text = `
 <h3>Test for printing</h3>
+
+Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat. Laborum eiusmod excepteur velit ex veniam et consequat anim minim ea ex ipsum aliquip. Fugiat non irure et tempor reprehenderit ullamco excepteur sit. Nisi quis commodo aliqua dolor ex consequat consectetur Lorem ipsum deserunt quis esse minim.
+Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat. Laborum eiusmod excepteur velit ex veniam et consequat anim minim ea ex ipsum aliquip. Fugiat non irure et tempor reprehenderit ullamco excepteur sit. Nisi quis commodo aliqua dolor ex consequat consectetur Lorem ipsum deserunt quis esse minim.
+
+
   <div id="printTHIS">
 
   <template id="printTHISheader">

@@ -33,8 +33,13 @@ export default class DocumentObjectModel {
   }
 
   wrapWithNeutral(element) {
+    if (this.isTextNode(element) && element.isElementContentWhitespace) {
+      console.log('%c only whitespace', 'color:red');
+      return
+    }
     const wrapper = this.DOM.createElement('span');
     this._setAttribute(wrapper, SELECTOR.neutral);
+    element.before(wrapper);
     wrapper.append(element);
     return wrapper;
   }
@@ -67,6 +72,9 @@ export default class DocumentObjectModel {
 
   isNotTextNode(element) {
     return !!element.tagName;
+  }
+  isTextNode(element) {
+    return element.nodeType === Node.TEXT_NODE;
   }
 
   // GET TEMPLATES
