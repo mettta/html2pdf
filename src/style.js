@@ -110,6 +110,16 @@ export default class Style {
     padding: .1px;
   }
 
+  ${SELECTOR.neutral} {
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    line-height: inherit;
+    background: none;
+    background-color: transparent;
+  }
+
   @media print {
     ${SELECTOR.paperFlow} {
       padding-bottom: 0;

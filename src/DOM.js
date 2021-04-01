@@ -16,16 +16,29 @@ export default class DocumentObjectModel {
     head.append(style);
   }
 
-  // SET ATTRIBUTES
+  // ATTRIBUTES / dataset
+  // todo {class, id, dataset, value} ?
+
+  _setAttribute(element, selector) {
+    element.setAttribute(selector.substring(1, selector.length - 1), '');
+  }
 
   setPrintIgnore(element) {
-    // TODO SELECTORS
-    element.dataset.printIgnore = '';
+    // element.dataset.printIgnore = '';
+    this._setAttribute(element, SELECTOR.printIgnore)
   }
 
   setPrintHide(element) {
-    // TODO SELECTORS
-    element.dataset.printHide = '';
+    // element.dataset.printHide = '';
+    this._setAttribute(element, SELECTOR.printHide)
+  }
+
+  // todo
+  wrapWithNeutral(element) {
+    const wrapper = this.DOM.createElement('span');
+    this._setAttribute(wrapper, SELECTOR.neutral);
+    wrapper.append(element);
+    return wrapper;
   }
 
   getParentNode(element) {

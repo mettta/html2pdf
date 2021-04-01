@@ -48,6 +48,7 @@ const SELECTOR = {
 
   // service attributes
   printEnd: '[data-print-end]',
+  neutral: '[data-neutral]',
 
 };
 
