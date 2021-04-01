@@ -1,4 +1,4 @@
-import _emulateContent from './_emulateContent';
+import _emulateContent from './content';
 
 import DocumentObjectModel from './DOM';
 import config from './config';

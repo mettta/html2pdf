@@ -1,8 +1,5 @@
-export default function _emulateContent() {
-  const temp = document.createElement('div');
-  temp.innerHTML = `
-
-  <h3>Test for printing</h3>
+const text = `
+<h3>Test for printing</h3>
   <div id="printTHIS">
 
   <template id="printTHISfrontpage">
@@ -159,6 +156,7 @@ Aute amet culpa laboris Lorem nostrud nostrud sint cupidatat in nulla laborum. A
 Ex eiusmod commodo magna Lorem fugiat minim et minim excepteur id aliqua nisi laboris commodo. Aliquip duis ad enim duis esse consequat nulla qui excepteur ea tempor commodo exercitation. Aute eu reprehenderit reprehenderit dolor culpa magna sint laboris fugiat consectetur. Irure magna proident est excepteur enim. Sunt quis irure cillum anim excepteur duis sit voluptate deserunt. Non ex officia ullamco aliquip amet. Est do fugiat proident quis in est ea nostrud mollit excepteur anim.
 </P>
 
-  </div>`;
-  document.body.append(temp);
-}
+  </div>
+`
+
+export default text;
