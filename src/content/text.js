@@ -2,10 +2,8 @@ const text = `
 <h3>Test for printing</h3>
 
 Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat. Laborum eiusmod excepteur velit ex veniam et consequat anim minim ea ex ipsum aliquip. Fugiat non irure et tempor reprehenderit ullamco excepteur sit. Nisi quis commodo aliqua dolor ex consequat consectetur Lorem ipsum deserunt quis esse minim.
-Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat. Laborum eiusmod excepteur velit ex veniam et consequat anim minim ea ex ipsum aliquip. Fugiat non irure et tempor reprehenderit ullamco excepteur sit. Nisi quis commodo aliqua dolor ex consequat consectetur Lorem ipsum deserunt quis esse minim.
 
-
-  <div id="printTHIS">
+  <div id="printTHIS" style="background:red">
 
   <template id="printTHISheader">
     <div data-page-number-root>
@@ -21,6 +19,12 @@ Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea ani
   </template>
 
 Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat. Laborum eiusmod excepteur velit ex veniam et consequat anim minim ea ex ipsum aliquip. Fugiat non irure et tempor reprehenderit ullamco excepteur sit. Nisi quis commodo aliqua dolor ex consequat consectetur Lorem ipsum deserunt quis esse minim.
+Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat.
+Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat.
+Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat.
+Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat.
+Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat.
+Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat.
 
 <H1>Et incididunt eiusmod pariatur consectetur duis.</H1>
 <P>Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt. Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea. Proident do duis minim sit officia duis occaecat.</P>
@@ -31,7 +35,7 @@ Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea ani
 <P>Id do labore dolor magna veniam. Fugiat velit tempor velit id officia non reprehenderit culpa. Sint dolore ea dolor labore velit ex reprehenderit nisi minim sit aliqua cupidatat voluptate nulla.</P>
 
 <H3>Incididunt consequat anim ea qui aute et fugiat eu aute in ullamco ad.</H3>
-<P>Aute cupidatat enim nulla occaecat fugiat ad magna id anim. Consequat irure ea reprehenderit incididunt anim consequat. Dolore voluptate culpa duis irure deserunt. Ex et ut commodo non incididunt. Laborum aute quis esse ad fugiat tempor minim est ut est.</P>
+<P>Aute cupidatat enim nulla occaecat fugiat ad magna id anim. Consequat irure ea reprehenderit incididunt anim consequat. Dolore voluptate culpa duis irure deserunt. Ex et ut commodo non incididunt. Laborum aute quis esse ad fugiat tempor minim est ut est. Incididunt consequat anim ea qui aute et fugiat eu aute in ullamco ad.</P>
 
 <H3>Velit laborum ea tempor id dolore Lorem dolor pariatur ex.</H3>
 <P>Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat. Laborum eiusmod excepteur velit ex veniam et consequat anim minim ea ex ipsum aliquip. Fugiat non irure et tempor reprehenderit ullamco excepteur sit. Nisi quis commodo aliqua dolor ex consequat consectetur Lorem ipsum deserunt quis esse minim.</P>

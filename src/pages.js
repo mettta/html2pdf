@@ -98,7 +98,18 @@ export default class Pages {
     // loop the children:
     if (this.DOM.getElementTop(nextElement) > newPageBottom) {
 
-      const children = this._isUnbreakable(currentElement) ? [] : this._getChildren(currentElement);
+      let children = [];
+
+      if (this._isTextNode(currentElement)) {
+
+        // todo PROCESS TEXT NODE
+        console.time('TIMER ' + this.pages.length);
+        children = this._processTextNode(currentElement, newPageBottom) || [];
+        console.timeEnd('TIMER ' + this.pages.length);
+
+      } else if (this._isBreakable(currentElement)) {
+        children = this._getChildren(currentElement);
+      }
 
       if (children.length) {
         // Process children if exist:
@@ -119,26 +130,89 @@ export default class Pages {
     // IF currentElement fits, continue.
   }
 
+  // TODO
+  // - если не разбиваемый и его высота больше чем страница - уменьшать
+
   // HELPERS
+
+  _processTextNode(node, pageBottom) {
+
+    const availableSpace = pageBottom - node.offsetTop;
+    // console.log(availableSpace);
+
+    const lineHeight = this.DOM.getLineHeight(node);
+    // console.log(lineHeight);
+
+    const totalLines = node.offsetHeight / lineHeight;
+    // console.log(totalLines);
+
+    // min 4 string for break:
+    if (totalLines < 4) {
+      return
+    }
+
+    // min 2 string on previous page:
+    if (lineHeight * 2 > availableSpace) {
+      return
+    }
+
+    // GO:
+
+    // max 2 lines on next page:
+    const mh = lineHeight * (totalLines - 2);
+    const firstPartMaxHeight = mh < availableSpace ? mh : availableSpace;
+
+    const nodeWords = this.DOM.getInnerHTML(node).split(' ');
+    // console.log(nodeWords);
+
+    const firstPart = this.DOM.createNeutral();
+    const secondPart = this.DOM.createNeutral();
+
+    // const testContainer = this.DOM.createNeutral();
+    // testContainer.style = "position:absolute; width: 100%; left: -3000px;";
+
+    node.before(firstPart, secondPart);
+    node.remove();
+
+    const secondStart = nodeWords.findIndex(item => {
+      firstPart.innerHTML += (item + ' ');
+      return firstPart.offsetHeight > firstPartMaxHeight
+    })
+
+    // const secondStart = nodeWords.length > 100 ? 281 : 51;
+
+    console.log('secondStart', secondStart, nodeWords[secondStart]);
+
+    firstPart.innerHTML = nodeWords.slice(0, secondStart).join(' ') + ' ';
+    secondPart.innerHTML = nodeWords.slice(secondStart).join(' ') + ' ';
+
+    return [firstPart, secondPart]
+
+    // todo
+    // последняя единственная строка - как проверять?
+    // смотреть, если эта НОДА - единственный или последний потомок своего родителя
+
+  }
 
   _getChildren(element) {
     // Check children:
     // TODO variants
     // TODO last child
     // TODO first Li
-    let childrenArr = [];
-    const tag = this.DOM.getElementTagName(element);
-    if (tag === 'LI') {
-      childrenArr = [...this.DOM.getChildNodes(element)]
-        .filter(child => this.DOM.getElementTagName(child) === 'UL' || this.DOM.getElementTagName(child) === 'OL');
-    } else if (tag === 'DL') {
-      childrenArr = [...this.DOM.getChildNodes(element)]
-        .filter(child => this.DOM.getElementTagName(child) === 'DD');
-    } else {
-      childrenArr = [...this.DOM.getChildNodes(element)]
-        .filter(child => this.DOM.isForcedPageBreak(child) || this.DOM.isPrintEnd(child) || this._isSignificantChild(child));
-    }
 
+    const childrenArr = [...this.DOM.getChildNodes(element)]
+      .map(
+        item =>
+          this.DOM.isSignificantTextNode(item)
+            ? this.DOM.wrapTextNode(item)
+            : item
+      )
+      .filter(
+        item =>
+          this.DOM.isElementNode(item)
+      );
+
+    console.log(childrenArr);
     return childrenArr;
   }
 
@@ -148,6 +222,20 @@ export default class Pages {
     // TODO isSignificantChild
     // If my nodeName is #text, my height is always undefined
     return (tag !== 'A' && tag !== 'TT' && this.DOM.getElementHeight(child) > 0);
+  }
+
+  _isTextNode(element) {
+    return this.DOM.isNeutral(element);
+  }
+
+  _isBreakable(element) {
+    const tag = this.DOM.getElementTagName(element);
+    return (
+      !this.DOM.isNoBreak(element)
+      && tag !== 'IMG'
+      && tag !== 'TABLE'
+      && tag !== 'OBJECT'
+    )
   }
 
   _isUnbreakable(element) {
@@ -160,6 +248,8 @@ export default class Pages {
     //   console.log('i am object');
     //   resizeObserver.observe(currentElement)
     // }
+
+    // this.DOM.isNeutral(element) || 
 
     const takeAsWhole = (tag === 'IMG' || tag === 'TABLE' || this.DOM.isNoBreak(element) || tag === 'OBJECT')
     return takeAsWhole;

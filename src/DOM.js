@@ -41,19 +41,37 @@ export default class DocumentObjectModel {
     this._setAttribute(element, SELECTOR.printHide)
   }
 
-  wrapWithNeutral(element) {
-    if (this.isTextNode(element) && element.isElementContentWhitespace) {
-      console.log('%c only whitespace', 'color:red');
+  wrapTextNode(element) {
+    if (!this.isSignificantTextNode(element)) {
       return
     }
-    const wrapper = this.DOM.createElement('span');
-    this._setAttribute(wrapper, SELECTOR.neutral);
+    const wrapper = this.createNeutral();
     element.before(wrapper);
     wrapper.append(element);
     return wrapper;
   }
 
+  createNeutral() {
+    const neutral = this.DOM.createElement('span');
+    this._setAttribute(neutral, SELECTOR.neutral);
+    return neutral;
+  }
+
+  getLineHeight(node) {
+    const test = this.createNeutral();
+    test.innerHTML = '!';
+    node.before(test);
+    const stringHeight = test.offsetHeight;
+    test.remove();
+    return stringHeight;
+  }
+
   // todo {class, id, dataset, value} ?
+  isNeutral(element) {
+    // SELECTOR.neutral
+    return element.dataset?.hasOwnProperty('neutral')
+  }
+
   isPrintEnd(element) {
     // SELECTOR.printEnd
     return element.dataset?.hasOwnProperty('printEnd')
@@ -79,11 +97,18 @@ export default class DocumentObjectModel {
     return element.tagName === 'BODY';
   }
 
-  isNotTextNode(element) {
-    return !!element.tagName;
-  }
   isTextNode(element) {
     return element.nodeType === Node.TEXT_NODE;
+  }
+  isElementNode(element) {
+    return element.nodeType === Node.ELEMENT_NODE;
+  }
+
+  isSignificantTextNode(element) {
+    if (this.isTextNode(element)) {
+      return (element.nodeValue.trim().length > 0) ? true : false;
+    }
+    return false;
   }
 
   // GET TEMPLATES

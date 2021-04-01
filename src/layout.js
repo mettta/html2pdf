@@ -10,11 +10,15 @@ export default class Layout {
 
   }
 
+  // todo
+  // сохранять изначальный элемент, на который был добавлен тег root,
+  // чтобы его верстка не пострадала.
+
   create() {
-    this._ignorePrintingEnvironment(this.root);
     // clean up the Root before append.
     this.DOM.clearInnerHTML(this.root);
     this.DOM.createLayout(this.root, this.paperFlow, this.contentFlow);
+    this._ignorePrintingEnvironment(this.root);
   }
 
   _initRoot() {
@@ -45,13 +49,16 @@ export default class Layout {
 
     this.DOM.getChildNodes(parentNode)
       .forEach((child) => {
-        if (child === root) {
-          return
-        } else if (this.DOM.isTextNode(child)) {
-          // process text nodes
-          this.DOM.setPrintHide(this.DOM.wrapWithNeutral(child));
-        } else {
+
+        if (child !== root && this.DOM.isElementNode(child)) {
           this.DOM.setPrintHide(child);
+
+        } else if (this.DOM.isSignificantTextNode(child)) {
+          // process text nodes
+          this.DOM.setPrintHide(this.DOM.wrapTextNode(child));
+
+        } else {
+          return
         }
       });
 
