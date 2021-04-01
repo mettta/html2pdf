@@ -17,7 +17,6 @@ export default class DocumentObjectModel {
   }
 
   // ATTRIBUTES / dataset
-  // todo {class, id, dataset, value} ?
 
   _setAttribute(element, selector) {
     element.setAttribute(selector.substring(1, selector.length - 1), '');
@@ -33,7 +32,6 @@ export default class DocumentObjectModel {
     this._setAttribute(element, SELECTOR.printHide)
   }
 
-  // todo
   wrapWithNeutral(element) {
     const wrapper = this.DOM.createElement('span');
     this._setAttribute(wrapper, SELECTOR.neutral);
@@ -41,12 +39,20 @@ export default class DocumentObjectModel {
     return wrapper;
   }
 
-  getParentNode(element) {
-    return element.parentNode;
+  // todo {class, id, dataset, value} ?
+  isPrintEnd(element) {
+    // SELECTOR.printEnd
+    return element.dataset?.hasOwnProperty('printEnd')
   }
 
-  getChildNodes(element) {
-    return element.childNodes;
+  isForcedPageBreak(element) {
+    // SELECTOR.printForcedPageBreak
+    return element.dataset?.hasOwnProperty('printForcedPageBreak')
+  }
+
+  isNoBreak(element) {
+    // SELECTOR.printNoBreak
+    return element.dataset?.hasOwnProperty('printNoBreak')
   }
 
   // CHECK
@@ -61,18 +67,6 @@ export default class DocumentObjectModel {
 
   isNotTextNode(element) {
     return !!element.tagName;
-  }
-
-  isPrintEnd(element) {
-    return element.dataset?.hasOwnProperty('printEnd')
-  }
-
-  isForcedPageBreak(element) {
-    return element.dataset?.hasOwnProperty('printForcedPageBreak')
-  }
-
-  isNoBreak(element) {
-    return element.dataset?.hasOwnProperty('printNoBreak')
   }
 
   // GET TEMPLATES
@@ -96,6 +90,14 @@ export default class DocumentObjectModel {
   }
 
   // helpers
+
+  getParentNode(element) {
+    return element.parentNode;
+  }
+
+  getChildNodes(element) {
+    return element.childNodes;
+  }
 
   getInnerHTML(selector) {
 
