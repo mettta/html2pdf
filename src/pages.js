@@ -152,15 +152,25 @@ export default class Pages {
     }
 
     // min 2 string on previous page:
-    if (lineHeight * 2 > availableSpace) {
+    if (availableSpace < lineHeight * 2) {
       return
     }
 
     // GO:
 
+    const linesInSpace = ~~(availableSpace / lineHeight);
+
     // max 2 lines on next page:
-    const mh = lineHeight * (totalLines - 2);
-    const firstPartMaxHeight = mh < availableSpace ? mh : availableSpace;
+    const hanging = 2;
+    const firstPartLines = (totalLines - linesInSpace < hanging) ? totalLines - hanging : linesInSpace;
+    const firstPartMaxHeight = firstPartLines * lineHeight;
+
+    const partitionFactor = firstPartLines / totalLines;
+
+    // console.log('totalLines', totalLines);
+    // console.log('linesInSpace', linesInSpace);
+    // console.log('firstPartLines', firstPartLines);
+    // console.log('partitionFactor', partitionFactor);
 
     const nodeWords = this.DOM.getInnerHTML(node).split(' ');
     // console.log(nodeWords);
