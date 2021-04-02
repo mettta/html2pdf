@@ -110,7 +110,8 @@ export default class Style {
     padding: .1px;
   }
 
-  ${SELECTOR.neutral} {
+  ${SELECTOR.neutral},
+  ${SELECTOR.neutral} span {
     padding: 0;
     margin: 0;
     font: inherit;

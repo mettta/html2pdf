@@ -5,6 +5,7 @@ dist/*
 node_modules/
 *.log
 .vscode/
+temp/
 
 # OS generated files
 .DS_Store

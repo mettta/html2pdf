@@ -80,6 +80,10 @@ export default class Pages {
       return
     }
 
+    // TODO
+    // offsetParent: div#printTHIS
+    // if relative? -> offsetParent + offsetThis
+
     const lastElem = this.pages[this.pages.length - 1].pageEnd;
     const flowCutPoint = lastElem ? this.DOM.getElementBottom(lastElem) : 0;
     const newPageBottom = flowCutPoint + this.referenceHeight;
@@ -112,6 +116,7 @@ export default class Pages {
       }
 
       if (children.length) {
+        console.log(children);
         // Process children if exist:
         this._parseNodes({
           array: children,
@@ -140,7 +145,17 @@ export default class Pages {
     const availableSpace = pageBottom - node.offsetTop;
     // console.log(availableSpace);
 
-    const lineHeight = this.DOM.getLineHeight(node);
+
+    // const lineHeight = this.DOM.getLineHeight(node);
+    const testNode = this.DOM.createNeutral();
+    testNode.innerHTML = '!';
+    testNode.style = "position:absolute; left:-100px; width:100%;";
+    node.before(testNode);
+
+    // FIXME Why does it take 4+ times longer on large nodes
+    const lineHeight = testNode.offsetHeight;
+
+
     // console.log(lineHeight);
 
     const totalLines = node.offsetHeight / lineHeight;
@@ -148,55 +163,44 @@ export default class Pages {
 
     // min 4 string for break:
     if (totalLines < 4) {
+      testNode.remove();
       return
     }
 
     // min 2 string on previous page:
     if (availableSpace < lineHeight * 2) {
+      testNode.remove();
       return
     }
 
     // GO:
 
-    const linesInSpace = ~~(availableSpace / lineHeight);
-
     // max 2 lines on next page:
-    const hanging = 2;
-    const firstPartLines = (totalLines - linesInSpace < hanging) ? totalLines - hanging : linesInSpace;
-    const firstPartMaxHeight = firstPartLines * lineHeight;
+    const minHanging = 2; // todo add to config
 
-    const partitionFactor = firstPartLines / totalLines;
-
-    // console.log('totalLines', totalLines);
-    // console.log('linesInSpace', linesInSpace);
-    // console.log('firstPartLines', firstPartLines);
-    // console.log('partitionFactor', partitionFactor);
+    const linesInSpace = ~~(availableSpace / lineHeight);
+    const hangingLines = totalLines - linesInSpace;
+    const firstPartLines = (hangingLines < minHanging) ? totalLines - minHanging : linesInSpace;
+    const firstPartMaxTop = (firstPartLines - 1) * lineHeight;
 
     const nodeWords = this.DOM.getInnerHTML(node).split(' ');
-    // console.log(nodeWords);
+    const wrappedNodeWords = nodeWords.map((item, ind) => `<span data-id='${ind}'>${item}</span>`);
+
+    testNode.innerHTML = wrappedNodeWords.join(' ') + ' ';
+
+    const breakIndex = [...testNode.children].findIndex(item => {
+      return item.offsetTop > firstPartMaxTop
+    });
+    console.log('BR ', breakIndex);
 
     const firstPart = this.DOM.createNeutral();
-    const secondPart = this.DOM.createNeutral();
+    node.before(firstPart);
 
-    // const testContainer = this.DOM.createNeutral();
-    // testContainer.style = "position:absolute; width: 100%; left: -3000px;";
+    firstPart.innerHTML = nodeWords.slice(0, breakIndex).join(' ') + ' ';
+    node.innerHTML = nodeWords.slice(breakIndex).join(' ') + ' ';
 
-    node.before(firstPart, secondPart);
-    node.remove();
-
-    const secondStart = nodeWords.findIndex(item => {
-      firstPart.innerHTML += (item + ' ');
-      return firstPart.offsetHeight > firstPartMaxHeight
-    })
-
-    // const secondStart = nodeWords.length > 100 ? 281 : 51;
-
-    console.log('secondStart', secondStart, nodeWords[secondStart]);
-
-    firstPart.innerHTML = nodeWords.slice(0, secondStart).join(' ') + ' ';
-    secondPart.innerHTML = nodeWords.slice(secondStart).join(' ') + ' ';
-
-    return [firstPart, secondPart]
+    testNode.remove();
+    return [firstPart, node]
 
     // todo
     // последняя единственная строка - как проверять?
