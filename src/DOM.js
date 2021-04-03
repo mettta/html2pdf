@@ -57,6 +57,13 @@ export default class DocumentObjectModel {
     return neutral;
   }
 
+  createTestNode() {
+    const testNode = this.createNeutral();
+    testNode.classList = 'test-node'
+    testNode.style = "position:absolute; left:-100px; width:100%; background:rgba(255,255,255,0.2)";
+    return testNode;
+  }
+
   // getLineHeight(node) {
   //   const test = this.createNeutral();
   //   test.innerHTML = '!';

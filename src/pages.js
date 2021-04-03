@@ -10,6 +10,8 @@ export default class Pages {
     this.contentFlow = contentFlow;
     this.referenceHeight = referenceHeight;
 
+    this.minHangingLines = 2;
+
     this.pages = [];
   }
 
@@ -97,24 +99,34 @@ export default class Pages {
       return
     }
 
+    // this.DOM.getElementBottom(element)
+
     // IF currentElement does not fit
     // in the remaining space on the page,
     // loop the children:
     if (this.DOM.getElementTop(nextElement) > newPageBottom) {
 
+      console.log('==>', currentElement);
+
       let children = [];
 
+      // if text node, process it
       if (this._isTextNode(currentElement)) {
+        console.log('==> _isTextNode', currentElement);
 
-        // todo PROCESS TEXT NODE
-        console.time('TIMER ' + this.pages.length);
+        // console.time('TIMER ' + this.pages.length);
         children = this._processTextNode(currentElement, newPageBottom) || [];
-        console.timeEnd('TIMER ' + this.pages.length);
+        // console.timeEnd('TIMER ' + this.pages.length);
 
+        console.log('==> CHILDREN', children);
+
+        // if _isBreakable, just _getChildren
       } else if (this._isBreakable(currentElement)) {
         children = this._getChildren(currentElement);
       }
+      // otherwise we keep an empty children array
 
+      // parse children
       if (children.length) {
         console.log(children);
         // Process children if exist:
@@ -142,6 +154,8 @@ export default class Pages {
 
   _processTextNode(node, pageBottom) {
 
+    console.log('==> _isTextNode 2', node);
+
     const availableSpace = pageBottom - node.offsetTop;
     // console.log(availableSpace);
 
@@ -151,9 +165,9 @@ export default class Pages {
     testNode.innerHTML = '!';
     testNode.style = "position:absolute; left:-100px; width:100%;";
     node.before(testNode);
-
     // FIXME Why does it take 4+ times longer on large nodes
     const lineHeight = testNode.offsetHeight;
+    testNode.remove();
 
 
     // console.log(lineHeight);
@@ -163,49 +177,145 @@ export default class Pages {
 
     // min 4 string for break:
     if (totalLines < 4) {
-      testNode.remove();
+
       return
     }
 
     // min 2 string on previous page:
     if (availableSpace < lineHeight * 2) {
-      testNode.remove();
+
       return
     }
 
     // GO:
 
-    // max 2 lines on next page:
-    const minHanging = 2; // todo add to config
-
-    const linesInSpace = ~~(availableSpace / lineHeight);
-    const hangingLines = totalLines - linesInSpace;
-    const firstPartLines = (hangingLines < minHanging) ? totalLines - minHanging : linesInSpace;
-    const firstPartMaxTop = (firstPartLines - 1) * lineHeight;
-
     const nodeWords = this.DOM.getInnerHTML(node).split(' ');
     const wrappedNodeWords = nodeWords.map((item, ind) => `<span data-id='${ind}'>${item}</span>`);
 
-    testNode.innerHTML = wrappedNodeWords.join(' ') + ' ';
-
-    const breakIndex = [...testNode.children].findIndex(item => {
-      return item.offsetTop > firstPartMaxTop
-    });
-    console.log('BR ', breakIndex);
-
-    const firstPart = this.DOM.createNeutral();
-    node.before(firstPart);
-
-    firstPart.innerHTML = nodeWords.slice(0, breakIndex).join(' ') + ' ';
-    node.innerHTML = nodeWords.slice(breakIndex).join(' ') + ' ';
-
-    testNode.remove();
-    return [firstPart, node]
+    return this._splitTextNode(
+      node,
+      nodeWords,
+      wrappedNodeWords,
+      lineHeight,
+      availableSpace);
 
     // todo
     // последняя единственная строка - как проверять?
     // смотреть, если эта НОДА - единственный или последний потомок своего родителя
 
+  }
+
+  _splitTextNode(
+    node,
+    nodeWords,
+    wrappedNodeWords,
+    lineHeight,
+    availableSpace,
+    splittedArr = [node]) {
+
+    console.log('----> _splitTextNode', node);
+
+    const currNode = node;
+
+    const restNode = this.DOM.createNeutral();
+    currNode.after(restNode);
+
+    const testNode = this.DOM.createTestNode();
+    currNode.before(testNode);
+
+    console.log('----> ## testNode', testNode);
+
+    const totalLines = currNode.offsetHeight / lineHeight;
+    console.log('currNode.offsetHeight', currNode.offsetHeight);
+    console.log('totalLines', totalLines);
+
+    const linesInSpace = ~~(availableSpace / lineHeight);
+    console.log('availableSpace', availableSpace);
+    console.log('lineHeight', lineHeight);
+    console.log('linesInSpace', linesInSpace);
+    const hangingLines = totalLines - linesInSpace;
+    // max 2 lines on next page:
+    const firstPartLines = (hangingLines < this.minHangingLines) ? totalLines - this.minHangingLines : linesInSpace;
+    console.log('firstPartLines', firstPartLines);
+
+    const maxTop = (firstPartLines - 1) * lineHeight;
+    console.log('maxTop', maxTop);
+
+    testNode.innerHTML = wrappedNodeWords.join(' ') + ' ';
+
+    console.log([...testNode.children][0]);
+
+    const partitionFactor = firstPartLines / totalLines;
+    const trySecondStart = ~~(nodeWords.length * partitionFactor);
+    console.log('trySecondStart', trySecondStart);
+    const breakIndex = this._findBreak([...testNode.children][trySecondStart], maxTop);
+    console.log('BR ', breakIndex);
+
+    const currentPartNodeWords = nodeWords.slice(0, breakIndex);
+    const restPartNodeWords = nodeWords.slice(breakIndex);
+    const restPartWrappedNodeWords = wrappedNodeWords.slice(breakIndex);
+
+    console.log('===', currentPartNodeWords, 'and', restPartNodeWords);
+    console.log('===', currentPartNodeWords.length, 'and', restPartNodeWords.length);
+
+    currNode.innerHTML = currentPartNodeWords.join(' ') + ' ';
+    restNode.innerHTML = restPartNodeWords.join(' ') + ' ';
+    restNode.classList = `breakIndex_${breakIndex}`;
+    splittedArr = [...splittedArr, currNode];
+
+    // test REST
+    testNode.innerHTML = restPartWrappedNodeWords.join(' ') + ' ';
+    const restHeight = testNode.offsetHeight;
+    testNode.remove();
+
+    if (restHeight > this.referenceHeight) {
+      console.log('%c INSIDE LOOP ', 'color:black;background:yellow');
+      splittedArr = this._splitTextNode(
+        restNode,
+        restPartNodeWords,
+        restPartWrappedNodeWords,
+        lineHeight,
+        this.referenceHeight,
+        splittedArr)
+    } else {
+      splittedArr = [...splittedArr, restNode];
+    }
+
+    return splittedArr;
+
+  }
+
+  _findBreak(item, floater) {
+    console.log('----> findBreak', item);
+    const curr = item;
+    const currTop = item.offsetTop;
+
+    const prev = item.previousElementSibling;
+    const prevTop = prev.offsetTop;
+
+    const next = item.nextElementSibling;
+    const nextTop = next.offsetTop;
+
+
+
+    if (currTop > floater) {
+
+      if (prevTop < currTop) {
+        return curr.dataset.id;
+      }
+
+      return this._findBreak(prev, floater);
+
+    } else {
+
+      if (currTop < nextTop) {
+        const a = next.dataset.id;
+        // console.log('next.dataset.id ', a);
+        return a;
+      }
+
+      return this._findBreak(next, floater);
+    }
   }
 
   _getChildren(element) {
