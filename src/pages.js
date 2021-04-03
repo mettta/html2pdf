@@ -10,7 +10,7 @@ export default class Pages {
     this.contentFlow = contentFlow;
     this.referenceHeight = referenceHeight;
 
-    this.minHangingLines = 2;
+    this.danglingLines = 1;
 
     this.pages = [];
   }
@@ -179,12 +179,13 @@ export default class Pages {
     const nodeWords = this.DOM.getInnerHTML(node).split(' ');
     const wrappedNodeWords = nodeWords.map((item, ind) => `<span data-id='${ind}'>${item}</span>`);
 
-    return this._splitTextNode(
+    return this._splitTextNode({
       node,
       nodeWords,
       wrappedNodeWords,
       lineHeight,
-      availableSpace);
+      availableSpace,
+    });
 
     // todo
     // последняя единственная строка - как проверять?
@@ -192,90 +193,117 @@ export default class Pages {
 
   }
 
-  _checkPossibleBreaks(
+  _checkPossibleBreaks({
+    nodeLines,
+    pageLines,
+    firstPartLines,
     wordNumbers,
-    nodeHeight,
-    lineHeight,
-    availableSpace,
     // local:
     breaks = [],
-    rest = 0
-  ) {
+    partNumber = 0
+  }) {
 
-    const floater = this.referenceHeight * rest + availableSpace - lineHeight;
+    const currentEndLine = pageLines * partNumber + firstPartLines;
 
-    if (nodeHeight < floater) {
-      // last part, has no break.
+    if (nodeLines > currentEndLine) {
+
       breaks = [
         ...breaks,
         {
-          floater,
-          possibleBreak: null
+          endLine: currentEndLine,
+          possibleBreak: ~~(wordNumbers * currentEndLine / nodeLines)
         }
       ];
 
-      // TODO 1 lines!
-      return breaks;
+      return this._checkPossibleBreaks({
+        nodeLines,
+        pageLines,
+        firstPartLines,
+        wordNumbers,
+        // local:
+        breaks,
+        partNumber: partNumber + 1
+      });
+
+    } // ELSE - LAST PART
+
+    const lastPartLines = nodeLines - (currentEndLine - pageLines);
+    console.log('LAST PART: lastPartLines', lastPartLines);
+
+    // TODO 1 lines!
+    // If there is a dangling line:
+    // this.danglingLines
+    // TODO -----------------------------
+    if (lastPartLines && lastPartLines < 2) {
+      // console.log('SHORT');
+      const correctedEndLine = breaks[breaks.length - 1].endLine - 1;
+
+      breaks[breaks.length - 1] = {
+        endLine: breaks[breaks.length - 1].endLine - 1,
+        possibleBreak: ~~(wordNumbers * correctedEndLine / nodeLines)
+      }
     }
 
+    // last part, has no break.
     breaks = [
       ...breaks,
       {
-        floater,
-        possibleBreak: ~~(wordNumbers * floater / nodeHeight)
+        endLine: currentEndLine,
+        possibleBreak: null
       }
     ];
 
-    return this._checkPossibleBreaks(
-      wordNumbers,
-      nodeHeight,
-      lineHeight,
-      availableSpace,
-      breaks,
-      rest + 1
-    );
+    return breaks;
   }
 
-  _splitTextNode(
+  _splitTextNode({
     node,
     nodeWords,
     wrappedNodeWords,
     lineHeight,
-    availableSpace) {
+    availableSpace,
+  }) {
 
-    const nodeHeight = node.offsetHeight;
-    const wordNumbers = wrappedNodeWords.length;
+    // CALCULATE possible breaks
+    const possibleBreaks = this._checkPossibleBreaks({
+      wordNumbers: wrappedNodeWords.length,
+      nodeLines: ~~(node.offsetHeight / lineHeight),
+      pageLines: ~~(this.referenceHeight / lineHeight),
+      firstPartLines: ~~(availableSpace / lineHeight),
+    });
 
-    // calculate possible breaks
-    const possibleBreaks = this._checkPossibleBreaks(
-      wordNumbers,
-      nodeHeight,
-      lineHeight,
-      availableSpace
-    );
     console.log('possibleBreaks', possibleBreaks);
 
-    // calculate real breaks
+    // CALCULATE real breaks
     const testNode = this.DOM.createTestNode();
     node.before(testNode);
     testNode.innerHTML = wrappedNodeWords.join(' ') + ' ';
     const allNodeWords = [...testNode.children];
-    // console.log(allNodeWords);
+    console.log('allNodeWords.length', allNodeWords.length);
     const breakIds = possibleBreaks.map(
-      ({ floater, possibleBreak }) =>
-        possibleBreak
-          ? this._reviseBreak(allNodeWords[possibleBreak], floater)
+      ({ possibleBreak, endLine }) =>
+        (possibleBreak && allNodeWords[possibleBreak])
+          ? this._reviseBreak(allNodeWords[possibleBreak], (endLine * lineHeight))
           : null
     );
-    console.log(breakIds);
+    console.log('breakIds', breakIds);
+
     testNode.remove();
+    // possibleBreaks.map(({ possibleBreak }) => {
+    //   console.log(possibleBreak);
+    //   console.log(allNodeWords[possibleBreak]);
+    //   allNodeWords[possibleBreak] && (allNodeWords[possibleBreak].style = 'background:blue');
+    // })
+    // breakIds.map((id) => {
+    //   allNodeWords[id] && (allNodeWords[id].style = 'color:red');
+    //   allNodeWords[id] && console.log(allNodeWords[id].offsetTop);
+    // })
 
     const splittedArr = breakIds.map((id, index, breakIds) => {
       const part = this.DOM.createNeutral();
 
       const start = breakIds[index - 1] || 0;
       const end = id || breakIds[breakIds.length];
-      console.log(start, end);
       part.innerHTML = nodeWords.slice(start, end).join(' ') + ' ';
 
       return part;
@@ -283,41 +311,46 @@ export default class Pages {
     node.before(...splittedArr);
     node.remove();
 
-    console.log(splittedArr);
     return splittedArr;
 
   }
 
-  _reviseBreak(item, floater) {
+  _reviseBreak(item, topRef) {
 
     const curr = item;
     const currTop = item.offsetTop;
 
-    const prev = item.previousElementSibling;
-    const prevTop = prev.offsetTop;
+    // IF we are to the left of the breaking point (i.e. above)
+    if (currTop < topRef) {
 
-    const next = item.nextElementSibling;
-    const nextTop = next.offsetTop;
+      const next = item.nextElementSibling;
+      const nextTop = next.offsetTop;
 
+      // if the current word and the next one are on different lines,
+      // and the next one is on the correct line,
+      // then it starts the correct line
+      if (currTop < nextTop && nextTop === topRef) {
+        return next.dataset.id;
+      }
 
+      // otherwise we move to the right
+      return this._reviseBreak(next, topRef);
 
-    if (currTop > floater) {
+      // IF we are to the right of the break point (i.e. below)
+    } else {
 
-      if (prevTop < currTop) {
+      const prev = item.previousElementSibling;
+      const prevTop = prev.offsetTop;
+
+      // if the current word and the previous one are on different lines,
+      // and the current one is on the correct line,
+      // then it starts the correct line
+      if (prevTop < currTop && currTop === topRef) {
         return curr.dataset.id;
       }
 
-      return this._reviseBreak(prev, floater);
-
-    } else {
-
-      if (currTop < nextTop) {
-        const a = next.dataset.id;
-        // console.log('next.dataset.id ', a);
-        return a;
-      }
-
-      return this._reviseBreak(next, floater);
+      // otherwise we move to the left
+      return this._reviseBreak(prev, topRef);
     }
   }
 
