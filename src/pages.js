@@ -106,19 +106,15 @@ export default class Pages {
     // loop the children:
     if (this.DOM.getElementTop(nextElement) > newPageBottom) {
 
-      console.log('==>', currentElement);
 
       let children = [];
 
       // if text node, process it
       if (this._isTextNode(currentElement)) {
-        console.log('==> _isTextNode', currentElement);
 
         // console.time('TIMER ' + this.pages.length);
         children = this._processTextNode(currentElement, newPageBottom) || [];
         // console.timeEnd('TIMER ' + this.pages.length);
-
-        console.log('==> CHILDREN', children);
 
         // if _isBreakable, just _getChildren
       } else if (this._isBreakable(currentElement)) {
@@ -128,7 +124,6 @@ export default class Pages {
 
       // parse children
       if (children.length) {
-        console.log(children);
         // Process children if exist:
         this._parseNodes({
           array: children,
@@ -154,11 +149,7 @@ export default class Pages {
 
   _processTextNode(node, pageBottom) {
 
-    console.log('==> _isTextNode 2', node);
-
     const availableSpace = pageBottom - node.offsetTop;
-    // console.log(availableSpace);
-
 
     // const lineHeight = this.DOM.getLineHeight(node);
     const testNode = this.DOM.createNeutral();
@@ -169,11 +160,7 @@ export default class Pages {
     const lineHeight = testNode.offsetHeight;
     testNode.remove();
 
-
-    // console.log(lineHeight);
-
     const totalLines = node.offsetHeight / lineHeight;
-    // console.log(totalLines);
 
     // min 4 string for break:
     if (totalLines < 4) {
@@ -205,88 +192,104 @@ export default class Pages {
 
   }
 
+  _checkPossibleBreaks(
+    wordNumbers,
+    nodeHeight,
+    lineHeight,
+    availableSpace,
+    // local:
+    breaks = [],
+    rest = 0
+  ) {
+
+    const floater = this.referenceHeight * rest + availableSpace - lineHeight;
+
+    if (nodeHeight < floater) {
+      // last part, has no break.
+      breaks = [
+        ...breaks,
+        {
+          floater,
+          possibleBreak: null
+        }
+      ];
+
+      // TODO 1 lines!
+      return breaks;
+    }
+
+    breaks = [
+      ...breaks,
+      {
+        floater,
+        possibleBreak: ~~(wordNumbers * floater / nodeHeight)
+      }
+    ];
+
+    return this._checkPossibleBreaks(
+      wordNumbers,
+      nodeHeight,
+      lineHeight,
+      availableSpace,
+      breaks,
+      rest + 1
+    );
+  }
+
   _splitTextNode(
     node,
     nodeWords,
     wrappedNodeWords,
     lineHeight,
-    availableSpace,
-    splittedArr = [node]) {
+    availableSpace) {
 
-    console.log('----> _splitTextNode', node);
+    const nodeHeight = node.offsetHeight;
+    const wordNumbers = wrappedNodeWords.length;
 
-    const currNode = node;
+    // calculate possible breaks
+    const possibleBreaks = this._checkPossibleBreaks(
+      wordNumbers,
+      nodeHeight,
+      lineHeight,
+      availableSpace
+    );
+    console.log('possibleBreaks', possibleBreaks);
 
-    const restNode = this.DOM.createNeutral();
-    currNode.after(restNode);
-
+    // calculate real breaks
     const testNode = this.DOM.createTestNode();
-    currNode.before(testNode);
-
-    console.log('----> ## testNode', testNode);
-
-    const totalLines = currNode.offsetHeight / lineHeight;
-    console.log('currNode.offsetHeight', currNode.offsetHeight);
-    console.log('totalLines', totalLines);
-
-    const linesInSpace = ~~(availableSpace / lineHeight);
-    console.log('availableSpace', availableSpace);
-    console.log('lineHeight', lineHeight);
-    console.log('linesInSpace', linesInSpace);
-    const hangingLines = totalLines - linesInSpace;
-    // max 2 lines on next page:
-    const firstPartLines = (hangingLines < this.minHangingLines) ? totalLines - this.minHangingLines : linesInSpace;
-    console.log('firstPartLines', firstPartLines);
-
-    const maxTop = (firstPartLines - 1) * lineHeight;
-    console.log('maxTop', maxTop);
-
+    node.before(testNode);
     testNode.innerHTML = wrappedNodeWords.join(' ') + ' ';
-
-    console.log([...testNode.children][0]);
-
-    const partitionFactor = firstPartLines / totalLines;
-    const trySecondStart = ~~(nodeWords.length * partitionFactor);
-    console.log('trySecondStart', trySecondStart);
-    const breakIndex = this._findBreak([...testNode.children][trySecondStart], maxTop);
-    console.log('BR ', breakIndex);
-
-    const currentPartNodeWords = nodeWords.slice(0, breakIndex);
-    const restPartNodeWords = nodeWords.slice(breakIndex);
-    const restPartWrappedNodeWords = wrappedNodeWords.slice(breakIndex);
-
-    console.log('===', currentPartNodeWords, 'and', restPartNodeWords);
-    console.log('===', currentPartNodeWords.length, 'and', restPartNodeWords.length);
-
-    currNode.innerHTML = currentPartNodeWords.join(' ') + ' ';
-    restNode.innerHTML = restPartNodeWords.join(' ') + ' ';
-    restNode.classList = `breakIndex_${breakIndex}`;
-    splittedArr = [...splittedArr, currNode];
-
-    // test REST
-    testNode.innerHTML = restPartWrappedNodeWords.join(' ') + ' ';
-    const restHeight = testNode.offsetHeight;
+    const allNodeWords = [...testNode.children];
+    // console.log(allNodeWords);
+    const breakIds = possibleBreaks.map(
+      ({ floater, possibleBreak }) =>
+        possibleBreak
+          ? this._reviseBreak(allNodeWords[possibleBreak], floater)
+          : null
+    );
+    console.log(breakIds);
     testNode.remove();
 
-    if (restHeight > this.referenceHeight) {
-      console.log('%c INSIDE LOOP ', 'color:black;background:yellow');
-      splittedArr = this._splitTextNode(
-        restNode,
-        restPartNodeWords,
-        restPartWrappedNodeWords,
-        lineHeight,
-        this.referenceHeight,
-        splittedArr)
-    } else {
-      splittedArr = [...splittedArr, restNode];
-    }
+    const splittedArr = breakIds.map((id, index, breakIds) => {
+      const part = this.DOM.createNeutral();
 
+      const start = breakIds[index - 1] || 0;
+      const end = id || breakIds[breakIds.length];
+      console.log(start, end);
+      part.innerHTML = nodeWords.slice(start, end).join(' ') + ' ';
+
+      return part;
+    });
+    node.before(...splittedArr);
+    node.remove();
+
+    console.log(splittedArr);
     return splittedArr;
 
   }
 
-  _findBreak(item, floater) {
-    console.log('----> findBreak', item);
+  _reviseBreak(item, floater) {
+
     const curr = item;
     const currTop = item.offsetTop;
 
@@ -304,7 +307,7 @@ export default class Pages {
         return curr.dataset.id;
       }
 
-      return this._findBreak(prev, floater);
+      return this._reviseBreak(prev, floater);
 
     } else {
 
@@ -314,7 +317,7 @@ export default class Pages {
         return a;
       }
 
-      return this._findBreak(next, floater);
+      return this._reviseBreak(next, floater);
     }
   }
 
@@ -336,7 +339,6 @@ export default class Pages {
           this.DOM.isElementNode(item)
       );
 
-    console.log(childrenArr);
     return childrenArr;
   }
 
