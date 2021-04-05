@@ -10,7 +10,11 @@ export default class Pages {
     this.contentFlow = contentFlow;
     this.referenceHeight = referenceHeight;
 
-    this.danglingLines = 1;
+    // todo
+    // 1) move to config
+    this.minLeftLines = 2;
+    this.minDanglingLines = 2;
+    this.minBreakableLines = this.minLeftLines + this.minDanglingLines;
 
     this.pages = [];
   }
@@ -156,21 +160,18 @@ export default class Pages {
     testNode.innerHTML = '!';
     testNode.style = "position:absolute; left:-100px; width:100%;";
     node.before(testNode);
-    // FIXME Why does it take 4+ times longer on large nodes
     const lineHeight = testNode.offsetHeight;
     testNode.remove();
 
     const totalLines = node.offsetHeight / lineHeight;
 
     // min 4 string for break:
-    if (totalLines < 4) {
-
+    if (totalLines < this.minBreakableLines) {
       return
     }
 
     // min 2 string on previous page:
-    if (availableSpace < lineHeight * 2) {
-
+    if (availableSpace < lineHeight * this.minLeftLines) {
       return
     }
 
@@ -193,13 +194,12 @@ export default class Pages {
 
   }
 
-  _checkPossibleBreaks({
+  _calculateSplitters({
     nodeLines,
     pageLines,
     firstPartLines,
-    wordNumbers,
     // local:
-    breaks = [],
+    splitters = [],
     partNumber = 0
   }) {
 
@@ -207,21 +207,20 @@ export default class Pages {
 
     if (nodeLines > currentEndLine) {
 
-      breaks = [
-        ...breaks,
+      splitters = [
+        ...splitters,
         {
           endLine: currentEndLine,
-          possibleBreak: ~~(wordNumbers * currentEndLine / nodeLines)
+          splitter: currentEndLine / nodeLines,
         }
       ];
 
-      return this._checkPossibleBreaks({
+      return this._calculateSplitters({
         nodeLines,
         pageLines,
         firstPartLines,
-        wordNumbers,
         // local:
-        breaks,
+        splitters,
         partNumber: partNumber + 1
       });
 
@@ -230,30 +229,30 @@ export default class Pages {
     const lastPartLines = nodeLines - (currentEndLine - pageLines);
     console.log('LAST PART: lastPartLines', lastPartLines);
 
-    // TODO 1 lines!
     // If there is a dangling line:
-    // this.danglingLines
-    // TODO -----------------------------
-    if (lastPartLines && lastPartLines < 2) {
-      // console.log('SHORT');
-      const correctedEndLine = breaks[breaks.length - 1].endLine - 1;
+    if (lastPartLines && lastPartLines < this.minDanglingLines) {
+      console.log('SHORT');
+      const carryOver = this.minDanglingLines - lastPartLines;
+      const correctedEndLine = splitters[splitters.length - 1].endLine - carryOver;
+      console.log(splitters[splitters.length - 1].endLine);
+      console.log(correctedEndLine);
 
-      breaks[breaks.length - 1] = {
-        endLine: breaks[breaks.length - 1].endLine - 1,
-        possibleBreak: ~~(wordNumbers * correctedEndLine / nodeLines)
+      splitters[splitters.length - 1] = {
+        endLine: correctedEndLine,
+        splitter: correctedEndLine / nodeLines,
       }
     }
 
     // last part, has no break.
-    breaks = [
-      ...breaks,
+    splitters = [
+      ...splitters,
       {
-        endLine: currentEndLine,
-        possibleBreak: null
+        endLine: null,
+        splitter: null,
       }
     ];
 
-    return breaks;
+    return splitters;
   }
 
   _splitTextNode({
@@ -265,8 +264,7 @@ export default class Pages {
   }) {
 
     // CALCULATE possible breaks
-    const possibleBreaks = this._checkPossibleBreaks({
-      wordNumbers: wrappedNodeWords.length,
+    const possibleBreaks = this._calculateSplitters({
       nodeLines: ~~(node.offsetHeight / lineHeight),
       pageLines: ~~(this.referenceHeight / lineHeight),
       firstPartLines: ~~(availableSpace / lineHeight),
@@ -281,23 +279,17 @@ export default class Pages {
     const allNodeWords = [...testNode.children];
     console.log('allNodeWords.length', allNodeWords.length);
     const breakIds = possibleBreaks.map(
-      ({ possibleBreak, endLine }) =>
-        (possibleBreak && allNodeWords[possibleBreak])
-          ? this._reviseBreak(allNodeWords[possibleBreak], (endLine * lineHeight))
+      ({ endLine, splitter }) =>
+        splitter
+          ? this._reviseBreak(
+            allNodeWords[~~(wrappedNodeWords.length * splitter)],
+            (endLine * lineHeight)
+          )
           : null
     );
     console.log('breakIds', breakIds);
 
     testNode.remove();
-    // possibleBreaks.map(({ possibleBreak }) => {
-    //   console.log(possibleBreak);
-    //   console.log(allNodeWords[possibleBreak]);
-    //   allNodeWords[possibleBreak] && (allNodeWords[possibleBreak].style = 'background:blue');
-    // })
-    // breakIds.map((id) => {
-    //   allNodeWords[id] && (allNodeWords[id].style = 'color:red');
-    //   allNodeWords[id] && console.log(allNodeWords[id].offsetTop);
-    // })
 
     const splittedArr = breakIds.map((id, index, breakIds) => {
       const part = this.DOM.createNeutral();
