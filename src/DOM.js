@@ -64,16 +64,15 @@ export default class DocumentObjectModel {
     return testNode;
   }
 
-  // getLineHeight(node) {
-  //   const test = this.createNeutral();
-  //   test.innerHTML = '!';
-  //   test.style = "position:absolute; left:-1000px;";
-  //   node.prepend(test);
-  //   // FIXME Why does it take 4+ times longer on large nodes
-  //   const stringHeight = test.offsetHeight;
-  //   test.remove();
-  //   return stringHeight;
-  // }
+  getLineHeight(node) {
+    const testNode = this.createNeutral();
+    testNode.innerHTML = '!';
+    testNode.style = "position:absolute; left:-1000px; width:100%;";
+    node.before(testNode);
+    const lineHeight = testNode.offsetHeight;
+    testNode.remove();
+    return lineHeight;
+  }
 
   // todo {class, id, dataset, value} ?
   isNeutral(element) {

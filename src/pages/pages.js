@@ -1,3 +1,5 @@
+import calculateSplitters from './calculateSplitters';
+
 export default class Pages {
 
   constructor({
@@ -103,13 +105,10 @@ export default class Pages {
       return
     }
 
-    // this.DOM.getElementBottom(element)
-
     // IF currentElement does not fit
     // in the remaining space on the page,
     // loop the children:
     if (this.DOM.getElementTop(nextElement) > newPageBottom) {
-
 
       let children = [];
 
@@ -117,7 +116,7 @@ export default class Pages {
       if (this._isTextNode(currentElement)) {
 
         // console.time('TIMER ' + this.pages.length);
-        children = this._processTextNode(currentElement, newPageBottom) || [];
+        children = this._splitTextNode(currentElement, newPageBottom) || [];
         // console.timeEnd('TIMER ' + this.pages.length);
 
         // if _isBreakable, just _getChildren
@@ -151,134 +150,38 @@ export default class Pages {
 
   // HELPERS
 
-  _processTextNode(node, pageBottom) {
+  _splitTextNode(node, pageBottom) {
 
     const availableSpace = pageBottom - node.offsetTop;
 
-    // const lineHeight = this.DOM.getLineHeight(node);
-    const testNode = this.DOM.createNeutral();
-    testNode.innerHTML = '!';
-    testNode.style = "position:absolute; left:-100px; width:100%;";
-    node.before(testNode);
-    const lineHeight = testNode.offsetHeight;
-    testNode.remove();
+    const lineHeight = this.DOM.getLineHeight(node);
 
-    const totalLines = node.offsetHeight / lineHeight;
+    const splitters = calculateSplitters({
+      nodeLines: ~~(node.offsetHeight / lineHeight),
+      pageLines: ~~(this.referenceHeight / lineHeight),
+      firstPartLines: ~~(availableSpace / lineHeight),
+      // const
+      minBreakableLines: this.minBreakableLines,
+      minLeftLines: this.minLeftLines,
+      minDanglingLines: this.minDanglingLines,
+    });
 
-    // min 4 string for break:
-    if (totalLines < this.minBreakableLines) {
-      return
-    }
-
-    // min 2 string on previous page:
-    if (availableSpace < lineHeight * this.minLeftLines) {
-      return
-    }
+    if (splitters.length < 2) {
+      return []
+    } // todo test this
 
     // GO:
 
     const nodeWords = this.DOM.getInnerHTML(node).split(' ');
     const wrappedNodeWords = nodeWords.map((item, ind) => `<span data-id='${ind}'>${item}</span>`);
 
-    return this._splitTextNode({
-      node,
-      nodeWords,
-      wrappedNodeWords,
-      lineHeight,
-      availableSpace,
-    });
-
-    // todo
-    // последняя единственная строка - как проверять?
-    // смотреть, если эта НОДА - единственный или последний потомок своего родителя
-
-  }
-
-  _calculateSplitters({
-    nodeLines,
-    pageLines,
-    firstPartLines,
-    // local:
-    splitters = [],
-    partNumber = 0
-  }) {
-
-    const currentEndLine = pageLines * partNumber + firstPartLines;
-
-    if (nodeLines > currentEndLine) {
-
-      splitters = [
-        ...splitters,
-        {
-          endLine: currentEndLine,
-          splitter: currentEndLine / nodeLines,
-        }
-      ];
-
-      return this._calculateSplitters({
-        nodeLines,
-        pageLines,
-        firstPartLines,
-        // local:
-        splitters,
-        partNumber: partNumber + 1
-      });
-
-    } // ELSE - LAST PART
-
-    const lastPartLines = nodeLines - (currentEndLine - pageLines);
-    console.log('LAST PART: lastPartLines', lastPartLines);
-
-    // If there is a dangling line:
-    if (lastPartLines && lastPartLines < this.minDanglingLines) {
-      console.log('SHORT');
-      const carryOver = this.minDanglingLines - lastPartLines;
-      const correctedEndLine = splitters[splitters.length - 1].endLine - carryOver;
-      console.log(splitters[splitters.length - 1].endLine);
-      console.log(correctedEndLine);
-
-      splitters[splitters.length - 1] = {
-        endLine: correctedEndLine,
-        splitter: correctedEndLine / nodeLines,
-      }
-    }
-
-    // last part, has no break.
-    splitters = [
-      ...splitters,
-      {
-        endLine: null,
-        splitter: null,
-      }
-    ];
-
-    return splitters;
-  }
-
-  _splitTextNode({
-    node,
-    nodeWords,
-    wrappedNodeWords,
-    lineHeight,
-    availableSpace,
-  }) {
-
-    // CALCULATE possible breaks
-    const possibleBreaks = this._calculateSplitters({
-      nodeLines: ~~(node.offsetHeight / lineHeight),
-      pageLines: ~~(this.referenceHeight / lineHeight),
-      firstPartLines: ~~(availableSpace / lineHeight),
-    });
-
-    console.log('possibleBreaks', possibleBreaks);
-
     // CALCULATE real breaks
     const testNode = this.DOM.createTestNode();
     node.before(testNode);
     testNode.innerHTML = wrappedNodeWords.join(' ') + ' ';
     const allNodeWords = [...testNode.children];
-    console.log('allNodeWords.length', allNodeWords.length);
-    const breakIds = possibleBreaks.map(
+
+    const breakIds = splitters.map(
       ({ endLine, splitter }) =>
         splitter
           ? this._reviseBreak(
@@ -287,12 +190,12 @@ export default class Pages {
           )
           : null
     );
-    console.log('breakIds', breakIds);
 
     testNode.remove();
 
     const splittedArr = breakIds.map((id, index, breakIds) => {
-      const part = this.DOM.createNeutral();
+      // Avoid trying to break this node: createPrintNoBreak()
+      const part = this.DOM.createPrintNoBreak();
 
       const start = breakIds[index - 1] || 0;
       const end = id || breakIds[breakIds.length];
@@ -304,6 +207,10 @@ export default class Pages {
     node.remove();
 
     return splittedArr;
+
+    // todo
+    // последняя единственная строка - как проверять?
+    // смотреть, если эта НОДА - единственный или последний потомок своего родителя
 
   }
 
