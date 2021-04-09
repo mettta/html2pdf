@@ -26,6 +26,11 @@ export default class DocumentObjectModel {
     element.before(...payload)
   }
 
+  insertInsteadOf(element, ...payload) {
+    element.before(...payload);
+    element.remove();
+  }
+
   getRightNeighbor(item) {
     return item.nextElementSibling
   }

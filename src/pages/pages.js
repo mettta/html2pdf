@@ -217,9 +217,7 @@ export default class Pages {
       return part;
     });
 
-    this.DOM.insertBefore(node, ...splittedArr)
-
-    this.DOM.removeNode(node);
+    this.DOM.insertInsteadOf(node, ...splittedArr);
 
     return splittedArr;
 
