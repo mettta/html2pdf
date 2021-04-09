@@ -460,6 +460,27 @@ export default class DocumentObjectModel {
     return element.offsetTop + element.offsetHeight;
   }
 
+  prepareSplittedNode(node) {
+    const splittedNode = node;
+    const nodeWords = node.innerHTML.split(' ');
+
+    const nodeWordItems = nodeWords.map((item) => {
+      const span = this.DOM.createElement('span');
+      span.innerHTML = item + ' ';
+      return span;
+    })
+
+    const testNode = this.createTestNode();
+    testNode.append(...nodeWordItems)
+    node.append(testNode);
+
+    return {
+      splittedNode,
+      nodeWords,
+      nodeWordItems,
+    }
+  }
+
   // PREVIEW
 
   insertFooterSpacer(target, footerHeight, paperSeparator) {

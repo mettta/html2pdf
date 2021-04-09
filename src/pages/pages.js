@@ -181,32 +181,25 @@ export default class Pages {
 
     // GO:
 
-    const nodeWords = this.DOM.getInnerHTML(node).split(' ');
-    const wrappedNodeWords = nodeWords.map((item) => `<span>${item}</span>`);
+    const {
+      splittedNode,
+      nodeWords,
+      nodeWordItems,
+    } = this.DOM.prepareSplittedNode(node);
 
     // CALCULATE real breaks
-    const testNode = this.DOM.createTestNode();
-
-    this.DOM.insertBefore(node, testNode);
-    this.DOM.setInnerHTML(testNode, wrappedNodeWords.join(' ') + ' ');
-
-    const nodeWordItems = [...this.DOM.getChildren(testNode)];
-
     const splitIds = splitters.map(
       ({ endLine, splitter }) =>
         splitter
-          ? this._findSplitId(
-            nodeWordItems,
-            splitter,
-            (endLine * nodeLineHeight)
-          )
+          ? this._findSplitId({
+            arr: nodeWordItems,
+            floater: splitter,
+            topRef: endLine * nodeLineHeight
+          })
           : null
     );
 
-    // testNode.remove();
-    this.DOM.removeNode(testNode);
-
-    const splittedArr = splitIds.map((id, index, splitIds) => {
+    const splitsArr = splitIds.map((id, index, splitIds) => {
       // Avoid trying to break this node: createPrintNoBreak()
       const part = this.DOM.createPrintNoBreak();
 
@@ -218,9 +211,9 @@ export default class Pages {
       return part;
     });
 
-    this.DOM.insertInsteadOf(node, ...splittedArr);
+    this.DOM.insertInsteadOf(splittedNode, ...splitsArr);
 
-    return splittedArr;
+    return splitsArr;
 
     // todo
     // последняя единственная строка - как проверять?
@@ -228,11 +221,11 @@ export default class Pages {
 
   }
 
-  _findSplitId(nodeWordItems, splitter, topRef) {
+  _findSplitId({ arr, floater, topRef }) {
 
     const lookRight = (currId, currTop) => {
       const rightId = currId + 1;
-      const right = nodeWordItems[rightId];
+      const right = arr[rightId];
       const rightTop = this.DOM.getElementTop(right);
 
       // if the current word and the next one are on different lines,
@@ -248,7 +241,7 @@ export default class Pages {
 
     const lookLeft = (currId, currTop) => {
       const leftId = currId - 1;
-      const left = nodeWordItems[leftId];
+      const left = arr[leftId];
       const leftTop = this.DOM.getElementTop(left);
 
       // if the current word and the previous one are on different lines,
@@ -262,8 +255,8 @@ export default class Pages {
       return lookLeft(leftId, leftTop);
     }
 
-    const tryId = ~~(nodeWordItems.length * splitter);
-    const tryTop = this.DOM.getElementTop(nodeWordItems[tryId]);
+    const tryId = ~~(arr.length * floater);
+    const tryTop = this.DOM.getElementTop(arr[tryId]);
 
     if (tryTop < topRef) {
       // IF we are to the left of the breaking point (i.e. above)
