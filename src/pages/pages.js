@@ -182,7 +182,7 @@ export default class Pages {
     // GO:
 
     const nodeWords = this.DOM.getInnerHTML(node).split(' ');
-    const wrappedNodeWords = nodeWords.map((item, ind) => `<span data-id='${ind}'>${item}</span>`);
+    const wrappedNodeWords = nodeWords.map((item) => `<span>${item}</span>`);
 
     // CALCULATE real breaks
     const testNode = this.DOM.createTestNode();
@@ -190,13 +190,14 @@ export default class Pages {
     this.DOM.insertBefore(node, testNode);
     this.DOM.setInnerHTML(testNode, wrappedNodeWords.join(' ') + ' ');
 
-    const allNodeWords = [...this.DOM.getChildren(testNode)];
+    const nodeWordItems = [...this.DOM.getChildren(testNode)];
 
     const splitIds = splitters.map(
       ({ endLine, splitter }) =>
         splitter
-          ? this._reviseBreak(
-            allNodeWords[~~(wrappedNodeWords.length * splitter)],
+          ? this._findSplitId(
+            nodeWordItems,
+            splitter,
             (endLine * nodeLineHeight)
           )
           : null
@@ -227,44 +228,49 @@ export default class Pages {
 
   }
 
-  _reviseBreak(item, topRef) {
+  _findSplitId(nodeWordItems, splitter, topRef) {
 
-    const curr = item;
-    const currTop = this.DOM.getElementTop(item);
-
-    // IF we are to the left of the breaking point (i.e. above)
-    if (currTop < topRef) {
-
-      const next = this.DOM.getRightNeighbor(item);
-      const nextTop = this.DOM.getElementTop(next);
+    const lookRight = (currId, currTop) => {
+      const rightId = currId + 1;
+      const right = nodeWordItems[rightId];
+      const rightTop = this.DOM.getElementTop(right);
 
       // if the current word and the next one are on different lines,
       // and the next one is on the correct line,
       // then it starts the correct line
-      if (currTop < nextTop && nextTop === topRef) {
-        //  next.dataset.id;
-        return this.DOM.getDataId(next)
+      if (currTop < rightTop && rightTop === topRef) {
+        return rightId;
       }
 
       // otherwise we move to the right
-      return this._reviseBreak(next, topRef);
+      return lookRight(rightId, rightTop);
+    }
 
-      // IF we are to the right of the break point (i.e. below)
-    } else {
-
-      const prev = this.DOM.getLeftNeighbor(item);
-      const prevTop = this.DOM.getElementTop(prev);
+    const lookLeft = (currId, currTop) => {
+      const leftId = currId - 1;
+      const left = nodeWordItems[leftId];
+      const leftTop = this.DOM.getElementTop(left);
 
       // if the current word and the previous one are on different lines,
       // and the current one is on the correct line,
       // then it starts the correct line
-      if (prevTop < currTop && currTop === topRef) {
-        //  curr.dataset.id;
-        return this.DOM.getDataId(curr)
+      if (leftTop < currTop && currTop === topRef) {
+        return currId
       }
 
       // otherwise we move to the left
-      return this._reviseBreak(prev, topRef);
+      return lookLeft(leftId, leftTop);
+    }
+
+    const tryId = ~~(nodeWordItems.length * splitter);
+    const tryTop = this.DOM.getElementTop(nodeWordItems[tryId]);
+
+    if (tryTop < topRef) {
+      // IF we are to the left of the breaking point (i.e. above)
+      return lookRight(tryId, tryTop)
+    } else {
+      // IF we are to the right of the break point (i.e. below)
+      return lookLeft(tryId, tryTop)
     }
   }
 
