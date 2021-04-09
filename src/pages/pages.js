@@ -152,14 +152,23 @@ export default class Pages {
 
   _splitTextNode(node, pageBottom) {
 
-    const availableSpace = pageBottom - node.offsetTop;
+    // Prepare node parameters
+    const nodeTop = this.DOM.getElementTop(node);
+    const nodeHeight = this.DOM.getElementHeight(node);
+    const nodeLineHeight = this.DOM.getLineHeight(node);
 
-    const lineHeight = this.DOM.getLineHeight(node);
+    // Prepare parameters for splitters calculation
+    const availableSpace = pageBottom - nodeTop;
 
+    const nodeLines = ~~(nodeHeight / nodeLineHeight);
+    const pageLines = ~~(this.referenceHeight / nodeLineHeight);
+    const firstPartLines = ~~(availableSpace / nodeLineHeight);
+
+    // calculate splitters
     const splitters = calculateSplitters({
-      nodeLines: ~~(node.offsetHeight / lineHeight),
-      pageLines: ~~(this.referenceHeight / lineHeight),
-      firstPartLines: ~~(availableSpace / lineHeight),
+      nodeLines: nodeLines,
+      pageLines: pageLines,
+      firstPartLines: firstPartLines,
       // const
       minBreakableLines: this.minBreakableLines,
       minLeftLines: this.minLeftLines,
@@ -168,7 +177,7 @@ export default class Pages {
 
     if (splitters.length < 2) {
       return []
-    } // todo test this
+    }
 
     // GO:
 
@@ -177,34 +186,40 @@ export default class Pages {
 
     // CALCULATE real breaks
     const testNode = this.DOM.createTestNode();
-    node.before(testNode);
-    testNode.innerHTML = wrappedNodeWords.join(' ') + ' ';
-    const allNodeWords = [...testNode.children];
 
-    const breakIds = splitters.map(
+    this.DOM.insertBefore(node, testNode);
+    this.DOM.setInnerHTML(testNode, wrappedNodeWords.join(' ') + ' ');
+
+    const allNodeWords = [...this.DOM.getChildren(testNode)];
+
+    const splitIds = splitters.map(
       ({ endLine, splitter }) =>
         splitter
           ? this._reviseBreak(
             allNodeWords[~~(wrappedNodeWords.length * splitter)],
-            (endLine * lineHeight)
+            (endLine * nodeLineHeight)
           )
           : null
     );
 
-    testNode.remove();
+    // testNode.remove();
+    this.DOM.removeNode(testNode);
 
-    const splittedArr = breakIds.map((id, index, breakIds) => {
+    const splittedArr = splitIds.map((id, index, splitIds) => {
       // Avoid trying to break this node: createPrintNoBreak()
       const part = this.DOM.createPrintNoBreak();
 
-      const start = breakIds[index - 1] || 0;
-      const end = id || breakIds[breakIds.length];
-      part.innerHTML = nodeWords.slice(start, end).join(' ') + ' ';
+      const start = splitIds[index - 1] || 0;
+      const end = id || splitIds[splitIds.length];
+
+      this.DOM.setInnerHTML(part, nodeWords.slice(start, end).join(' ') + ' ');
 
       return part;
     });
-    node.before(...splittedArr);
-    node.remove();
+
+    this.DOM.insertBefore(node, ...splittedArr)
+
+    this.DOM.removeNode(node);
 
     return splittedArr;
 
@@ -217,19 +232,20 @@ export default class Pages {
   _reviseBreak(item, topRef) {
 
     const curr = item;
-    const currTop = item.offsetTop;
+    const currTop = this.DOM.getElementTop(item);
 
     // IF we are to the left of the breaking point (i.e. above)
     if (currTop < topRef) {
 
-      const next = item.nextElementSibling;
-      const nextTop = next.offsetTop;
+      const next = this.DOM.getRightNeighbor(item);
+      const nextTop = this.DOM.getElementTop(next);
 
       // if the current word and the next one are on different lines,
       // and the next one is on the correct line,
       // then it starts the correct line
       if (currTop < nextTop && nextTop === topRef) {
-        return next.dataset.id;
+        //  next.dataset.id;
+        return this.DOM.getDataId(next)
       }
 
       // otherwise we move to the right
@@ -238,14 +254,15 @@ export default class Pages {
       // IF we are to the right of the break point (i.e. below)
     } else {
 
-      const prev = item.previousElementSibling;
-      const prevTop = prev.offsetTop;
+      const prev = this.DOM.getLeftNeighbor(item);
+      const prevTop = this.DOM.getElementTop(prev);
 
       // if the current word and the previous one are on different lines,
       // and the current one is on the correct line,
       // then it starts the correct line
       if (prevTop < currTop && currTop === topRef) {
-        return curr.dataset.id;
+        //  curr.dataset.id;
+        return this.DOM.getDataId(curr)
       }
 
       // otherwise we move to the left

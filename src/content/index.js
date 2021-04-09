@@ -4,6 +4,6 @@ import long from './long';
 
 export default function _emulateContent() {
   const temp = document.createElement('div');
-  temp.innerHTML = long;
+  temp.innerHTML = text;
   document.body.append(temp);
 }

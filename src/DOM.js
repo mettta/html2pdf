@@ -16,6 +16,27 @@ export default class DocumentObjectModel {
     head.append(style);
   }
 
+  // -
+
+  removeNode(element) {
+    element.remove();
+  }
+
+  insertBefore(element, ...payload) {
+    element.before(...payload)
+  }
+
+  getRightNeighbor(item) {
+    return item.nextElementSibling
+  }
+  getLeftNeighbor(item) {
+    return item.previousElementSibling
+  }
+
+  getDataId(item) { // (pages)
+    return item.dataset.id;
+  }
+
   // ATTRIBUTES / dataset
 
   _setAttribute(element, selector) {
@@ -60,14 +81,14 @@ export default class DocumentObjectModel {
   createTestNode() {
     const testNode = this.createNeutral();
     testNode.classList = 'test-node'
-    testNode.style = "position:absolute; left:-100px; width:100%; background:rgba(255,255,255,0.2)";
+    testNode.style = "position:absolute; left:-10000px; width:100%; background:rgba(255,255,255,0.2)";
     return testNode;
   }
 
   getLineHeight(node) {
     const testNode = this.createNeutral();
     testNode.innerHTML = '!';
-    testNode.style = "position:absolute; left:-1000px; width:100%;";
+    testNode.style = "position:absolute; left:-10000px; width:100%;";
     node.before(testNode);
     const lineHeight = testNode.offsetHeight;
     testNode.remove();
@@ -147,6 +168,10 @@ export default class DocumentObjectModel {
 
   getChildNodes(element) {
     return element.childNodes;
+  }
+
+  getChildren(element) {
+    return element.children;
   }
 
   getInnerHTML(selector) {
