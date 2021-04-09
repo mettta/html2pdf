@@ -165,8 +165,8 @@ export default class Pages {
     const pageLines = ~~(this.referenceHeight / nodeLineHeight);
     const firstPartLines = ~~(availableSpace / nodeLineHeight);
 
-    // calculate splitters
-    const splitters = calculateSplitters({
+    // calculate approximate splitters
+    const approximateSplitters = calculateSplitters({
       nodeLines: nodeLines,
       pageLines: pageLines,
       firstPartLines: firstPartLines,
@@ -176,11 +176,11 @@ export default class Pages {
       minDanglingLines: this.minDanglingLines,
     });
 
-    if (splitters.length < 2) {
+    if (approximateSplitters.length < 2) {
       return []
     }
 
-    // GO:
+    // Split this node:
 
     const {
       splittedNode,
@@ -188,8 +188,8 @@ export default class Pages {
       nodeWordItems,
     } = this.DOM.prepareSplittedNode(node);
 
-    // CALCULATE real breaks
-    const splitIds = splitters.map(
+    // CALCULATE exact split IDs
+    const exactSplitters = approximateSplitters.map(
       ({ endLine, splitter }) =>
         splitter
           ? findSplitId({
@@ -201,12 +201,12 @@ export default class Pages {
           : null
     );
 
-    const splitsArr = splitIds.map((id, index, splitIds) => {
+    const splitsArr = exactSplitters.map((id, index, exactSplitters) => {
       // Avoid trying to break this node: createPrintNoBreak()
       const part = this.DOM.createPrintNoBreak();
 
-      const start = splitIds[index - 1] || 0;
-      const end = id || splitIds[splitIds.length];
+      const start = exactSplitters[index - 1] || 0;
+      const end = id || exactSplitters[exactSplitters.length];
 
       this.DOM.setInnerHTML(part, nodeWords.slice(start, end).join(' ') + ' ');
 
