@@ -115,12 +115,9 @@ export default class Pages {
 
       // if text node, process it
       if (this._isTextNode(currentElement)) {
-
-        // console.time('TIMER ' + this.pages.length);
         children = this._splitTextNode(currentElement, newPageBottom) || [];
-        // console.timeEnd('TIMER ' + this.pages.length);
-
-        // if _isBreakable, just _getChildren
+      } else if (this._isTableNode(currentElement)) {
+        children = this._splitTableNode(currentElement, newPageBottom) || [];
       } else if (this._isBreakable(currentElement)) {
         children = this._getChildren(currentElement);
       }
@@ -150,6 +147,112 @@ export default class Pages {
   // - если не разбиваемый и его высота больше чем страница - уменьшать
 
   // HELPERS
+
+  _splitTableNode(node, pageBottom) {
+    console.log('%c WE HAVE A TABLE', 'color:yellow');
+
+    console.time('_splitTableNode')
+
+    const tableWrapper = node.cloneNode(false);
+    console.log(tableWrapper);
+
+    function prepareItem(item) {
+      return {
+        item: item,
+        top: item.offsetTop,
+        height: item.offsetHeight
+      }
+    }
+
+    const nodeEntries = [...node.children].reduce(function (acc, curr) {
+
+      const tag = curr.tagName;
+
+      if (tag === 'TBODY') {
+        curr = [...curr.children].map(item => prepareItem(item));
+        return {
+          ...acc,
+          rows: [
+            ...acc.rows,
+            ...curr,
+          ]
+        }
+      }
+
+      if (tag === 'CAPTION') {
+        return {
+          ...acc,
+          caption: prepareItem(curr)
+        }
+      }
+
+      if (tag === 'THEAD') {
+        return {
+          ...acc,
+          thead: prepareItem(curr)
+        }
+      }
+
+      if (tag === 'TFOOT') {
+        return {
+          ...acc,
+          tfoot: prepareItem(curr)
+        }
+      }
+
+      if (tag === 'TR') {
+        return {
+          ...acc,
+          rows: [
+            ...acc.rows,
+            ...prepareItem(curr),
+          ]
+        }
+      }
+
+      return {
+        ...acc,
+        unexpected: [
+          ...acc.unexpected,
+          ...curr,
+        ]
+      }
+    }, {
+      caption: null,
+      thead: null,
+      tfoot: null,
+      rows: [],
+      unexpected: [],
+    });
+
+    if (nodeEntries.unexpected.length > 0) {
+      console.warn('something unexpected is found in the table');
+    }
+
+    console.log(nodeEntries);
+
+    // Prepare node parameters
+    const nodeTop = this.DOM.getElementTop(node);
+    const nodeHeight = this.DOM.getElementHeight(node);
+
+    // Prepare parameters for splitters calculation
+    const availableSpace = pageBottom - nodeTop;
+
+    console.log(availableSpace);
+
+    const signpostHeight = 24;
+    const tablePrefix = this.DOM.createSignpost('continuation of the table', signpostHeight);
+    const tableSuffix = this.DOM.createSignpost('the table continue on the next page', signpostHeight);
+
+    node.before(tablePrefix)
+    node.before(tableSuffix)
+
+    console.timeEnd('_splitTableNode')
+    return []
+  }
+
+  // TODO split text with BR
+  // TODO split text with A (long, splitted) etc.
 
   _splitTextNode(node, pageBottom) {
 
@@ -254,6 +357,9 @@ export default class Pages {
 
   _isTextNode(element) {
     return this.DOM.isNeutral(element);
+  }
+  _isTableNode(element) {
+    return this.DOM.getElementTagName(element) === 'TABLE';
   }
 
   _isBreakable(element) {

@@ -460,6 +460,7 @@ export default class DocumentObjectModel {
     return element.offsetTop + element.offsetHeight;
   }
 
+  // TODO make Obj with offsetTop and use it later
   prepareSplittedNode(node) {
     const splittedNode = node;
     const nodeWords = node.innerHTML.split(' ');
@@ -479,6 +480,22 @@ export default class DocumentObjectModel {
       nodeWords,
       nodeWordItems,
     }
+  }
+
+  createSignpost(text, height = 24) {
+    const prefix = this.create();
+    prefix.style.display = 'flex';
+    prefix.style.flexWrap = 'nowrap';
+    prefix.style.alignItems = 'center';
+    prefix.style.justifyContent = 'center';
+    prefix.style.textAlign = 'center';
+    prefix.style.fontSize = '8px';
+    prefix.style.fontFamily = 'sans-serif';
+    prefix.style.letterSpacing = '1px';
+    prefix.style.textTransform = 'uppercase';
+    prefix.style.height = height + 'px';
+    text && (prefix.innerHTML = text);
+    return prefix
   }
 
   // PREVIEW
