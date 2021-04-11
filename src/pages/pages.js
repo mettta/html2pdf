@@ -115,11 +115,12 @@ export default class Pages {
       // IF currentElement does fit
       // in the remaining space on the page,
       if (this.DOM.getElementBottom(currentElement) < newPageBottom) {
-        console.log(' -- check BOTTOM of', currentElement);
+        console.log('%c -- check BOTTOM of', 'color:rose', currentElement);
         this._registerPage({
           pageEnd: currentElement,
           pageStart: nextElement,
         });
+        return
       }
 
       // otherwise try to break it and loop the children:
