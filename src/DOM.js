@@ -248,8 +248,10 @@ export default class DocumentObjectModel {
     return this.create(SELECTOR.printPageBreak);
   }
 
-  createPrintNoBreak() {
-    return this.create(SELECTOR.printNoBreak);
+  createPrintNoBreak(style) {
+    const element = this.create(SELECTOR.printNoBreak);
+    style && (element.style = style);
+    return element;
   }
 
   createRunningSafety() {
