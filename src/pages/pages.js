@@ -111,9 +111,11 @@ export default class Pages {
     // because it could be because of the margin
     if (this.DOM.getElementTop(nextElement) > newPageBottom) {
 
+      // TODO check BOTTOMS??? vs MARGINS
       // IF currentElement does fit
       // in the remaining space on the page,
       if (this.DOM.getElementBottom(currentElement) < newPageBottom) {
+        console.log(' -- check BOTTOM of', currentElement);
         this._registerPage({
           pageEnd: currentElement,
           pageStart: nextElement,
@@ -165,6 +167,7 @@ export default class Pages {
     const tableWrapper = node.cloneNode(false);
     console.log(tableWrapper);
 
+    // nodeEntries
     function prepareItem(item) {
       return {
         item: item,
@@ -233,31 +236,68 @@ export default class Pages {
       rows: [],
       unexpected: [],
     });
+    console.log(nodeEntries);
 
     if (nodeEntries.unexpected.length > 0) {
       console.warn('something unexpected is found in the table');
     }
 
-    console.log(nodeEntries);
+    if (nodeEntries.rows.length < 4) {
+      return []
+    }
+
+    // -
+    const signpostHeight = 24;
+    // const tablePrefix = this.DOM.createSignpost('continuation of the table', signpostHeight);
+    // const tableSuffix = this.DOM.createSignpost('the table continue on the next page', signpostHeight);
 
     // Prepare node parameters
     const nodeTop = this.DOM.getElementTop(node);
     const nodeHeight = this.DOM.getElementHeight(node);
 
+    console.log(nodeHeight);
+
     // Prepare parameters for splitters calculation
     const availableSpace = pageBottom - nodeTop;
+    console.log('availableSpace', availableSpace);
+    const firstPartBodyHeight = availableSpace - signpostHeight;
+    console.log('firstPartBodyHeight', firstPartBodyHeight);
 
-    console.log(availableSpace);
+    const firstPartEntriesEnd = nodeEntries.rows.findIndex((element, index) => element.top > firstPartBodyHeight) - 2;
+    console.log('id', firstPartEntriesEnd);
+    console.log('firstPartEntriesEnd', nodeEntries.rows[firstPartEntriesEnd]);
 
-    const signpostHeight = 24;
-    const tablePrefix = this.DOM.createSignpost('continuation of the table', signpostHeight);
-    const tableSuffix = this.DOM.createSignpost('the table continue on the next page', signpostHeight);
+    const firstPartEntries = nodeEntries.rows.slice(0, firstPartEntriesEnd).map(
+      el => el.item
+    )
 
-    node.before(tablePrefix)
-    node.before(tableSuffix)
+    // create FIRST PART
+    const firstPart = this.DOM.createPrintNoBreak();
+    node.before(firstPart);
+    firstPart.append(
+      this.DOM.createTable({
+        wrapper: tableWrapper,
+        caption: nodeEntries.caption.item.cloneNode(true),
+        thead: nodeEntries.thead.item.cloneNode(true),
+        // tfoot,
+        tbody: firstPartEntries,
+      }),
+      this.DOM.createSignpost('(table continues on the next page)', signpostHeight)
+    );
+
+    // the rest of the table node
+    console.log(node.offsetHeight);
+
+    // create LAST PART
+    const lastPart = this.DOM.createPrintNoBreak();
+    node.before(lastPart);
+    lastPart.append(
+      this.DOM.createSignpost('(table continued)', signpostHeight),
+      node
+    )
 
     console.timeEnd('_splitTableNode')
-    return []
+    return [firstPart, lastPart]
   }
 
   // TODO split text with BR
@@ -288,7 +328,10 @@ export default class Pages {
       minDanglingLines: this.minDanglingLines,
     });
 
+    console.log('approximateSplitters', approximateSplitters);
+
     if (approximateSplitters.length < 2) {
+      console.log('ЕК РАЗБИВАЕМ', node);
       return []
     }
 
