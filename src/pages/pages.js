@@ -162,6 +162,8 @@ export default class Pages {
 
   _splitTableNode(node, pageBottom) {
     console.log('%c WE HAVE A TABLE', 'color:yellow');
+    console.log('pageBottom', pageBottom);
+    console.log('nodeBottom', this.DOM.getElementBottom(node));
 
     console.time('_splitTableNode')
 
@@ -256,7 +258,8 @@ export default class Pages {
     const nodeTop = this.DOM.getElementTop(node);
     const nodeHeight = this.DOM.getElementHeight(node);
 
-    console.log(nodeHeight);
+    console.log('nodeTop', nodeTop);
+    console.log('nodeHeight', nodeHeight);
 
     // Prepare parameters for splitters calculation
     const availableSpace = pageBottom - nodeTop;
@@ -264,13 +267,26 @@ export default class Pages {
     const firstPartBodyHeight = availableSpace - signpostHeight;
     console.log('firstPartBodyHeight', firstPartBodyHeight);
 
-    const firstPartEntriesEnd = nodeEntries.rows.findIndex((element, index) => element.top > firstPartBodyHeight) - 2;
-    console.log('id', firstPartEntriesEnd);
-    console.log('firstPartEntriesEnd', nodeEntries.rows[firstPartEntriesEnd]);
+    const tryPartStart = nodeEntries.rows.findIndex((element, index) => element.top > firstPartBodyHeight);
+    const nextPartStart = tryPartStart === -1
+      // if only footer is on the next page,
+      // take also 2 rows
+      ? nodeEntries.rows.length - 2
+      // if find a row that starts on the next page,
+      // also pick up the previous one
+      : tryPartStart - 1;
 
-    const firstPartEntries = nodeEntries.rows.slice(0, firstPartEntriesEnd).map(
+    console.log('id', nextPartStart);
+    console.log('nextPartStart', nodeEntries.rows[nextPartStart]);
+
+    const firstPartEntries = nodeEntries.rows.slice(0, nextPartStart).map(
       el => el.item
     )
+
+    if (firstPartEntries.length < 2) {
+      // TODO multipage
+      return []
+    }
 
     // create FIRST PART
     const firstPart = this.DOM.createPrintNoBreak();
@@ -278,8 +294,8 @@ export default class Pages {
     firstPart.append(
       this.DOM.createTable({
         wrapper: tableWrapper,
-        caption: nodeEntries.caption.item.cloneNode(true),
-        thead: nodeEntries.thead.item.cloneNode(true),
+        caption: nodeEntries.caption?.item.cloneNode(true),
+        thead: nodeEntries.thead?.item.cloneNode(true),
         // tfoot,
         tbody: firstPartEntries,
       }),
@@ -332,7 +348,7 @@ export default class Pages {
     console.log('approximateSplitters', approximateSplitters);
 
     if (approximateSplitters.length < 2) {
-      console.log('ЕК РАЗБИВАЕМ', node);
+      console.log('НЕ РАЗБИВАЕМ', node);
       return []
     }
 

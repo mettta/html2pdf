@@ -26,20 +26,54 @@ table, th, td {
     <p>footer</p>
   </template>
 
+Оставляем простую текстовую ноду, чтобы не было заметно поправки на съеденный маржин.
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 
-<H1>Et incididunt eiusmod pariatur consectetur duis.</H1>
-<P>Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt. Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea. Proident do duis minim sit officia duis occaecat.</P>
-<P>Tempor nisi duis non deserunt. Consequat anim in quis consequat id ipsum mollit qui ipsum adipisicing fugiat Lorem adipisicing officia. Do quis pariatur enim eiusmod. Ut nulla amet duis laborum veniam qui ex. Non enim Lorem fugiat Lorem incididunt ex proident dolor tempor magna ea. Consequat consequat labore proident eiusmod laborum qui nostrud consequat velit magna commodo. Tempor esse sint ex cillum.</P>
-<P>Ipsum amet adipisicing ipsum enim magna labore. Do sit mollit cupidatat cupidatat elit consequat. Sunt quis quis do laboris esse amet nostrud sint consectetur ad ipsum occaecat. Ex cillum deserunt in commodo consectetur nisi.</P>
-
-<H2>Occaecat Lorem dolore veniam ullamco ipsum sit nostrud consectetur.</H2>
-<P>Id do labore dolor magna veniam. Fugiat velit tempor velit id officia non reprehenderit culpa. Sint dolore ea dolor labore velit ex reprehenderit nisi minim sit aliqua cupidatat voluptate nulla.</P>
-
-<H3>Incididunt consequat anim ea qui aute et fugiat eu aute in ullamco ad.</H3>
-<P>Aute cupidatat enim nulla occaecat fugiat ad magna id anim. Consequat irure ea reprehenderit incididunt anim consequat. Dolore voluptate culpa duis irure deserunt. Ex et ut commodo non incididunt. Laborum aute quis esse ad fugiat tempor minim est ut est.</P>
-
-<H3>Velit laborum ea tempor id dolore Lorem dolor pariatur ex.</H3>
-<P>Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat. Laborum eiusmod excepteur velit ex veniam et consequat anim minim ea ex ipsum aliquip. Fugiat non irure et tempor reprehenderit ullamco excepteur sit. Nisi quis commodo aliqua dolor ex consequat consectetur Lorem ipsum deserunt quis esse minim.</P>
 
 
 <table class="test-table">
@@ -120,6 +154,16 @@ table, th, td {
   </tfoot>
 </table>
 
+<P>Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt. Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea. Proident do duis minim sit officia duis occaecat.</P>
+<P>Tempor nisi duis non deserunt. Consequat anim in quis consequat id ipsum mollit qui ipsum adipisicing fugiat Lorem adipisicing officia. Do quis pariatur enim eiusmod. Ut nulla amet duis laborum veniam qui ex. Non enim Lorem fugiat Lorem incididunt ex proident dolor tempor magna ea. Consequat consequat labore proident eiusmod laborum qui nostrud consequat velit magna commodo. Tempor esse sint ex cillum.</P>
+<P>Ipsum amet adipisicing ipsum enim magna labore. Do sit mollit cupidatat cupidatat elit consequat. Sunt quis quis do laboris esse amet nostrud sint consectetur ad ipsum occaecat. Ex cillum deserunt in commodo consectetur nisi.</P>
+
+<H2>Occaecat Lorem dolore veniam ullamco ipsum sit nostrud consectetur.</H2>
+<P>Id do labore dolor magna veniam. Fugiat velit tempor velit id officia non reprehenderit culpa. Sint dolore ea dolor labore velit ex reprehenderit nisi minim sit aliqua cupidatat voluptate nulla.</P>
+
+<H3>Incididunt consequat anim ea qui aute et fugiat eu aute in ullamco ad.</H3>
+<P>Aute cupidatat enim nulla occaecat fugiat ad magna id anim. Consequat irure ea reprehenderit incididunt anim consequat. Dolore voluptate culpa duis irure deserunt. Ex et ut commodo non incididunt. Laborum aute quis esse ad fugiat tempor minim est ut est.</P>
+
 
 <H3>Fugiat adipisicing cillum nostrud deserunt cillum.</H3>
 <P>Reprehenderit culpa tempor enim excepteur. Deserunt tempor velit sunt pariatur cupidatat. Ullamco anim voluptate proident excepteur consequat ea dolor ipsum dolor nulla esse. Eiusmod magna qui nostrud consectetur cillum proident dolor exercitation ut cupidatat magna. Sunt do mollit veniam aute exercitation duis non nisi dolor ea ad eu ut amet. Consectetur nulla sunt ipsum aliqua pariatur tempor laborum aliquip id ipsum nostrud. Eu excepteur commodo veniam velit duis eu.</P>
@@ -159,3 +203,6 @@ Ex eiusmod commodo magna Lorem fugiat minim et minim excepteur id aliqua nisi la
 `
 
 export default text;
+
+{/* <H3>Velit laborum ea tempor id dolore Lorem dolor pariatur ex.</H3>
+<P>Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat. Laborum eiusmod excepteur velit ex veniam et consequat anim minim ea ex ipsum aliquip. Fugiat non irure et tempor reprehenderit ullamco excepteur sit. Nisi quis commodo aliqua dolor ex consequat consectetur Lorem ipsum deserunt quis esse minim.</P> */}
