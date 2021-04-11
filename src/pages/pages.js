@@ -106,14 +106,23 @@ export default class Pages {
       return
     }
 
-    // IF currentElement does not fit
-    // in the remaining space on the page,
-    // loop the children:
+    // IF nextElement does not start on the current page,
+    // we should check if the current one fits in the page,
+    // because it could be because of the margin
     if (this.DOM.getElementTop(nextElement) > newPageBottom) {
 
+      // IF currentElement does fit
+      // in the remaining space on the page,
+      if (this.DOM.getElementBottom(currentElement) < newPageBottom) {
+        this._registerPage({
+          pageEnd: currentElement,
+          pageStart: nextElement,
+        });
+      }
+
+      // otherwise try to break it and loop the children:
       let children = [];
 
-      // if text node, process it
       if (this._isTextNode(currentElement)) {
         children = this._splitTextNode(currentElement, newPageBottom) || [];
       } else if (this._isTableNode(currentElement)) {
