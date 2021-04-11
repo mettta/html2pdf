@@ -498,6 +498,23 @@ export default class DocumentObjectModel {
     return prefix
   }
 
+  createTable({
+    wrapper,
+    caption,
+    thead,
+    tfoot,
+    tbody,
+  }) {
+    const table = wrapper ? wrapper : this.create('table');
+    const tableBody = this.create('TBODY');
+    caption && table.append(caption);
+    thead && table.append(thead);
+    tbody && tableBody.append(...tbody);
+    table.append(tableBody);
+    tfoot && table.append(tfoot);
+    return table;
+  }
+
   // PREVIEW
 
   insertFooterSpacer(target, footerHeight, paperSeparator) {
