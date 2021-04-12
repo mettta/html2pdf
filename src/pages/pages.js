@@ -1,5 +1,6 @@
 import calculateSplitters from './calculateSplitters';
 import findSplitId from './findSplitId';
+import calculateTableSplits from './calculateTableSplits';
 
 export default class Pages {
 
@@ -18,6 +19,12 @@ export default class Pages {
     this.minLeftLines = 2;
     this.minDanglingLines = 2;
     this.minBreakableLines = this.minLeftLines + this.minDanglingLines;
+    this.minLeftRows = 2;
+    this.minDanglingRows = 2;
+    this.minBreakableRows = this.minLeftRows + this.minDanglingRows;
+
+    // TODO move to config
+    this.signpostHeight = 24;
 
     this.pages = [];
   }
@@ -167,8 +174,12 @@ export default class Pages {
 
     console.time('_splitTableNode')
 
-    const tableWrapper = node.cloneNode(false);
-    console.log(tableWrapper);
+    // calculate table wrapper (empty table element) height
+    // to calculate the available space for table content
+    const testTableWrapper = node.cloneNode(false);
+    node.before(testTableWrapper);
+    const tableWrapperHeight = testTableWrapper.offsetHeight;
+    testTableWrapper.remove();
 
     // nodeEntries
     function prepareItem(item) {
@@ -245,12 +256,12 @@ export default class Pages {
       console.warn('something unexpected is found in the table');
     }
 
-    if (nodeEntries.rows.length < 4) {
+    if (nodeEntries.rows.length < this.minBreakableRows) {
       return []
     }
 
     // -
-    const signpostHeight = 24;
+    // const signpostHeight = 24;
     // const tablePrefix = this.DOM.createSignpost('continuation of the table', signpostHeight);
     // const tableSuffix = this.DOM.createSignpost('the table continue on the next page', signpostHeight);
 
@@ -258,63 +269,123 @@ export default class Pages {
     const nodeTop = this.DOM.getElementTop(node);
     const nodeHeight = this.DOM.getElementHeight(node);
 
-    console.log('nodeTop', nodeTop);
-    console.log('nodeHeight', nodeHeight);
+    // console.log('nodeTop', nodeTop);
+    // console.log('nodeHeight', nodeHeight);
 
     // Prepare parameters for splitters calculation
-    const availableSpace = pageBottom - nodeTop;
-    console.log('availableSpace', availableSpace);
-    const firstPartBodyHeight = availableSpace - signpostHeight;
-    console.log('firstPartBodyHeight', firstPartBodyHeight);
+    // const availableSpace = pageBottom - nodeTop;
+    // console.log('availableSpace', availableSpace);
+    // const firstPartBodyHeight = availableSpace - this.signpostHeight;
+    // console.log('firstPartBodyHeight', firstPartBodyHeight);
 
-    const tryPartStart = nodeEntries.rows.findIndex((element, index) => element.top > firstPartBodyHeight);
-    const nextPartStart = tryPartStart === -1
-      // if only footer is on the next page,
-      // take also 2 rows
-      ? nodeEntries.rows.length - 2
-      // if find a row that starts on the next page,
-      // also pick up the previous one
-      : tryPartStart - 1;
+    const firstPartHeight = pageBottom - nodeTop
+      - this.signpostHeight - tableWrapperHeight;
+    const fullPagePartHeight = this.referenceHeight
+      - nodeEntries.thead.height - nodeEntries.tfoot.height - nodeEntries.caption.height
+      - 2 * this.signpostHeight - tableWrapperHeight;
+    // console.log(fullPagePartHeight);
+    const topsArr = [
+      ...nodeEntries.rows.map((row) => row.top),
+      nodeEntries.tfoot.top || nodeHeight
+    ]
 
-    console.log('id', nextPartStart);
-    console.log('nextPartStart', nodeEntries.rows[nextPartStart]);
+    const splitsIds = calculateTableSplits({
+      topsArr: topsArr,
+      firstPartHeight: firstPartHeight,
+      fullPagePartHeight: fullPagePartHeight,
+      minLeftRows: this.minLeftRows,
+      minDanglingRows: this.minDanglingRows,
+    })
+    console.log('@@@@@@@@@@@@@@', splitsIds);
 
-    const firstPartEntries = nodeEntries.rows.slice(0, nextPartStart).map(
-      el => el.item
-    )
+    const insertTableSplit = (startId, endId) => {
 
-    if (firstPartEntries.length < 2) {
-      // TODO multipage
-      return []
-    }
+      // we filtered this array, so there's no need for that.
+      // if (!endId) {
+      //   // empty element
+      //   return this.DOM.createPrintNoBreak();
+      // }
 
-    // create FIRST PART
-    const firstPart = this.DOM.createPrintNoBreak();
-    node.before(firstPart);
-    firstPart.append(
-      this.DOM.createTable({
-        wrapper: tableWrapper,
-        caption: nodeEntries.caption?.item.cloneNode(true),
-        thead: nodeEntries.thead?.item.cloneNode(true),
-        // tfoot,
-        tbody: firstPartEntries,
-      }),
-      this.DOM.createSignpost('(table continues on the next page)', signpostHeight)
-    );
+      const tableWrapper = node.cloneNode(false);
+      console.log(tableWrapper, 'CLONED --------- ');
 
-    // the rest of the table node
-    console.log(node.offsetHeight);
+      const partEntries = nodeEntries.rows.slice(startId, endId).map(
+        el => el.item
+      )
+
+      const part = this.DOM.createPrintNoBreak();
+      node.before(part);
+
+      if (startId) {
+        // if is not first part
+        part.append(this.DOM.createSignpost('(table continued)', this.signpostHeight));
+      }
+
+      part.append(
+        this.DOM.createTable({
+          wrapper: tableWrapper,
+          caption: nodeEntries.caption?.item.cloneNode(true),
+          thead: nodeEntries.thead?.item.cloneNode(true),
+          // tfoot,
+          tbody: partEntries,
+        }),
+        this.DOM.createSignpost('(table continues on the next page)', this.signpostHeight)
+      );
+
+      return part
+    };
+
+    const splits = splitsIds.map((value, index, array) => insertTableSplit(array[index - 1] || 0, value))
+
+    console.log(splits);
+
+    // const tryPartStart = nodeEntries.rows.findIndex((element, index) => element.top > firstPartBodyHeight);
+    // const nextPartStart = tryPartStart === -1
+    //   // if only footer is on the next page,
+    //   // take also 2 rows
+    //   ? nodeEntries.rows.length - 2
+    //   // if find a row that starts on the next page,
+    //   // also pick up the previous one
+    //   : tryPartStart - 1;
+
+    // console.log('id', nextPartStart);
+    // console.log('nextPartStart', nodeEntries.rows[nextPartStart]);
+
+    // const firstPartEntries = nodeEntries.rows.slice(0, nextPartStart).map(
+    //   el => el.item
+    // )
+
+    // if (firstPartEntries.length < 2) {
+    //   // TODO multipage
+    //   return []
+    // }
+
+    // // create FIRST PART
+    // const firstPart = this.DOM.createPrintNoBreak();
+    // node.before(firstPart);
+    // firstPart.append(
+    //   this.DOM.createTable({
+    //     wrapper: tableWrapper,
+    //     caption: nodeEntries.caption?.item.cloneNode(true),
+    //     thead: nodeEntries.thead?.item.cloneNode(true),
+    //     // tfoot,
+    //     tbody: firstPartEntries,
+    //   }),
+    //   this.DOM.createSignpost('(table continues on the next page)', this.signpostHeight)
+    // );
+
+
 
     // create LAST PART
     const lastPart = this.DOM.createPrintNoBreak();
     node.before(lastPart);
     lastPart.append(
-      this.DOM.createSignpost('(table continued)', signpostHeight),
+      this.DOM.createSignpost('(table continued)', this.signpostHeight),
       node
     )
 
     console.timeEnd('_splitTableNode')
-    return [firstPart, lastPart]
+    return [...splits, lastPart]
   }
 
   // TODO split text with BR

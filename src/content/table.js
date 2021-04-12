@@ -8,6 +8,10 @@ tfoot {color: red;}
 table, th, td {
   border: 1px solid black;
 }
+
+table {
+  border-spacing: 2px;
+}
 </style>
 
 <h3>Test for printing</h3>
@@ -27,54 +31,8 @@ table, th, td {
   </template>
 
 Оставляем простую текстовую ноду, чтобы не было заметно поправки на съеденный маржин.
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
 
-
+<div style="padding-top: 768px; background: #ff000020"></div>
 
 <table class="test-table">
   <caption>Monthly savings</caption>
@@ -141,7 +99,124 @@ table, th, td {
       <td>December</td>
       <td>$80</td>
     </tr>
+    <tr>
+      <td>YYYYYYYYYYYYYYYY</td>
+      <td>YYYYYYYYYYYYYYYY</td>
+    </tr>
+
+    <tr>
+    <td>January</td>
+    <td>$100</td>
+  </tr>
+  <tr>
+    <td>February</td>
+    <td>$80</td>
+  </tr>
+  <tr>
+    <td>March</td>
+    <td>$80</td>
+  </tr>
+  <tr>
+    <td>April</td>
+    <td>$80</td>
+  </tr>
+  <tr>
+    <td>May</td>
+    <td>$80</td>
+  </tr>
+  <tr>
+    <td>June</td>
+    <td>$80</td>
+  </tr>
+  <tr>
+    <td>July</td>
+    <td>$80</td>
+  </tr>
+  <tr>
+    <td>August</td>
+    <td>$80</td>
+  </tr>
+  <tr>
+    <td>September</td>
+    <td>$80</td>
+  </tr>
+  <tr>
+    <td>October</td>
+    <td>$80</td>
+  </tr>
+  <tr>
+    <td>November</td>
+    <td>$80</td>
+  </tr>
+  <tr>
+    <td>December</td>
+    <td>$80</td>
+  </tr>
+  <tr>
+    <td>YYYYYYYYYYYYYYYY</td>
+    <td>YYYYYYYYYYYYYYYY</td>
+  </tr>
+
+
+  <tr>
+  <td>January</td>
+  <td>$100</td>
+</tr>
+<tr>
+  <td>February</td>
+  <td>$80</td>
+</tr>
+<tr>
+  <td>March</td>
+  <td>$80</td>
+</tr>
+<tr>
+  <td>April</td>
+  <td>$80</td>
+</tr>
+<tr>
+  <td>May</td>
+  <td>$80</td>
+</tr>
+<tr>
+  <td>June</td>
+  <td>$80</td>
+</tr>
+<tr>
+  <td>July</td>
+  <td>$80</td>
+</tr>
+<tr>
+  <td>August</td>
+  <td>$80</td>
+</tr>
+<tr>
+  <td>September</td>
+  <td>$80</td>
+</tr>
+<tr>
+  <td>October</td>
+  <td>$80</td>
+</tr>
+<tr>
+  <td>November</td>
+  <td>$80</td>
+</tr>
+<tr>
+  <td>December</td>
+  <td>$80</td>
+</tr>
+<tr>
+  <td>YYYYYYYYYYYYYYYY</td>
+  <td>YYYYYYYYYYYYYYYY</td>
+</tr>
+
+
   </tbody>
+  <tr>
+    <td>XXXXXXXX</td>
+    <td>XXXXXX</td>
+  </tr>
   <tr>
     <td>XXXXXXXX</td>
     <td>XXXXXX</td>
