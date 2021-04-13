@@ -100,6 +100,9 @@ export default class Pages {
     // offsetParent: div#printTHIS
     // if relative? -> offsetParent + offsetThis
 
+    // TODO
+    // this.DOM.getElementTop(pageStart)???????
+    // this.pages[this.pages.length - 1].pageStart
     const lastElem = this.pages[this.pages.length - 1].pageEnd;
     const flowCutPoint = lastElem ? this.DOM.getElementBottom(lastElem) : 0;
     const newPageBottom = flowCutPoint + this.referenceHeight;
