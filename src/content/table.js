@@ -32,181 +32,235 @@ table {
 
 Оставляем простую текстовую ноду, чтобы не было заметно поправки на съеденный маржин.
 
-<div style="padding-top: 768px; background: #ff000020"></div>
+<div style="padding-top: 630px; background: #ff000020"></div>
 
 <table class="test-table">
   <caption>Monthly savings</caption>
   <tr>
+  <td>0</td>
     <td>XXXXXXXX</td>
     <td>XXXXXX</td>
   </tr>
   <thead>
     <tr>
+    <td></td>
       <th>Month</th>
       <th>Savings</th>
     </tr>
   </thead>
   <tr>
+  <td>1</td>
     <td>XXXXXXXX</td>
     <td>XXXXXX</td>
   </tr>
   <tbody>
     <tr>
+    <td>2</td>
       <td>January</td>
       <td>$100</td>
     </tr>
     <tr>
+    <td>3</td>
       <td>February</td>
       <td>$80</td>
     </tr>
     <tr>
+    <td>4</td>
       <td>March</td>
       <td>$80</td>
     </tr>
     <tr>
+    <td>5</td>
       <td>April</td>
       <td>$80</td>
     </tr>
     <tr>
+    <td>6</td>
       <td>May</td>
       <td>$80</td>
     </tr>
     <tr>
+    <td>7</td>
       <td>June</td>
       <td>$80</td>
     </tr>
     <tr>
+    <td>8</td>
       <td>July</td>
-      <td>$80</td>
+      <td>
+
+      Consectetur dolor occaecat cillum labore consectetur do. Eu est et incididunt voluptate ut incididunt ad do consequat. Consectetur do Lorem ullamco et minim ut enim proident fugiat esse exercitation reprehenderit in in. Commodo veniam adipisicing consectetur mollit labore anim nulla velit pariatur voluptate aliquip tempor consectetur ad. Laboris anim pariatur exercitation velit nulla quis sit duis sunt ex nostrud anim duis reprehenderit. Dolore aliqua adipisicing exercitation anim.
+      Pariatur sit ad laborum esse commodo veniam do fugiat aliqua in duis. Labore elit in laborum nostrud magna commodo veniam minim commodo eu et est veniam. Cillum ad nulla Lorem excepteur anim eu magna esse aute. Velit id ipsum cillum nisi incididunt aute dolore pariatur veniam laborum dolor pariatur eiusmod anim.
+      Aliqua occaecat sunt esse duis consequat elit ullamco ipsum elit esse enim. Do Lorem elit velit sunt veniam qui dolore tempor. Occaecat nulla esse occaecat magna veniam excepteur sint commodo Lorem pariatur sint. Elit aliqua officia tempor ea non Lorem ullamco occaecat occaecat do do voluptate. Duis deserunt officia eiusmod do sint nisi sunt veniam eu est sunt ipsum ut esse. Magna reprehenderit pariatur proident cupidatat sint veniam. Incididunt cupidatat laboris fugiat aute veniam est sint officia exercitation velit.
+      Aute amet culpa laboris Lorem nostrud nostrud sint cupidatat in nulla laborum. Ad do dolore ut dolor enim. Magna eu nisi veniam irure anim ex minim excepteur minim ad sint. Aliqua officia sunt labore consequat culpa labore exercitation quis qui occaecat qui. Ea sunt elit laborum commodo. Et ut fugiat do labore fugiat.
+      Ex eiusmod commodo magna Lorem fugiat minim et minim excepteur id aliqua nisi laboris commodo. Aliquip duis ad enim duis esse consequat nulla qui excepteur ea tempor commodo exercitation. Aute eu reprehenderit reprehenderit dolor culpa magna sint laboris fugiat consectetur. Irure magna proident est excepteur enim. Sunt quis irure cillum anim excepteur duis sit voluptate deserunt. Non ex officia ullamco aliquip amet. Est do fugiat proident quis in est ea nostrud mollit excepteur anim.
+      Aliqua occaecat sunt esse duis consequat elit ullamco ipsum elit esse enim. Do Lorem elit velit sunt veniam qui dolore tempor. Occaecat nulla esse occaecat magna veniam excepteur sint commodo Lorem pariatur sint. Elit aliqua officia tempor ea non Lorem ullamco occaecat occaecat do do voluptate. Duis deserunt officia eiusmod do sint nisi sunt veniam eu est sunt ipsum ut esse. Magna reprehenderit pariatur proident cupidatat sint veniam. Incididunt cupidatat laboris fugiat aute veniam est sint officia exercitation velit.
+      Aute amet culpa laboris Lorem nostrud nostrud sint cupidatat in nulla laborum. Ad do dolore ut dolor enim. Magna eu nisi veniam irure anim ex minim excepteur minim ad sint. Aliqua officia sunt labore consequat culpa labore exercitation quis qui occaecat qui. Ea sunt elit laborum commodo. Et ut fugiat do labore fugiat.
+      Ex eiusmod commodo magna Lorem fugiat minim et minim excepteur id aliqua nisi laboris commodo. Aliquip duis ad enim duis esse consequat nulla qui excepteur ea tempor commodo exercitation. Aute eu reprehenderit reprehenderit dolor culpa magna sint laboris fugiat consectetur. Irure magna proident est excepteur enim. Sunt quis irure cillum anim excepteur duis sit voluptate deserunt. Non ex officia ullamco aliquip amet. Est do fugiat proident quis in est ea nostrud mollit excepteur anim.
+      Ex eiusmod commodo magna Lorem fugiat minim et minim excepteur id aliqua nisi laboris commodo. Aliquip duis ad enim duis esse consequat nulla qui excepteur ea tempor commodo exercitation. Aute eu reprehenderit reprehenderit dolor culpa magna sint laboris fugiat consectetur. Irure magna proident est excepteur enim. Sunt quis irure cillum anim excepteur duis sit voluptate deserunt. Non ex officia ullamco aliquip amet. Est do fugiat proident quis in est ea nostrud mollit excepteur anim.
+
+      </td>
     </tr>
     <tr>
+    <td>9</td>
       <td>August</td>
       <td>$80</td>
     </tr>
     <tr>
+    <td>10</td>
       <td>September</td>
       <td>$80</td>
     </tr>
     <tr>
+    <td>11</td>
       <td>October</td>
       <td>$80</td>
     </tr>
     <tr>
+    <td>12</td>
       <td>November</td>
       <td>$80</td>
     </tr>
     <tr>
+    <td>13</td>
       <td>December</td>
       <td>$80</td>
     </tr>
     <tr>
+    <td>14</td>
       <td>YYYYYYYYYYYYYYYY</td>
       <td>YYYYYYYYYYYYYYYY</td>
     </tr>
 
     <tr>
+    <td>15</td>
     <td>January</td>
     <td>$100</td>
   </tr>
   <tr>
+  <td>16</td>
     <td>February</td>
     <td>$80</td>
   </tr>
   <tr>
+  <td>17</td>
     <td>March</td>
     <td>$80</td>
   </tr>
   <tr>
+  <td>18</td>
     <td>April</td>
     <td>$80</td>
   </tr>
   <tr>
+  <td>19</td>
     <td>May</td>
     <td>$80</td>
   </tr>
   <tr>
+  <td>20</td>
     <td>June</td>
     <td>$80</td>
   </tr>
   <tr>
+  <td>21</td>
     <td>July</td>
     <td>$80</td>
   </tr>
   <tr>
+  <td>22</td>
     <td>August</td>
     <td>$80</td>
   </tr>
   <tr>
+  <td>23</td>
     <td>September</td>
     <td>$80</td>
   </tr>
   <tr>
+  <td>24</td>
     <td>October</td>
     <td>$80</td>
   </tr>
   <tr>
+  <td>25</td>
     <td>November</td>
     <td>$80</td>
   </tr>
   <tr>
+  <td>26</td>
     <td>December</td>
     <td>$80</td>
   </tr>
   <tr>
+  <td>27</td>
     <td>YYYYYYYYYYYYYYYY</td>
     <td>YYYYYYYYYYYYYYYY</td>
   </tr>
 
 
   <tr>
+  <td>28</td>
   <td>January</td>
   <td>$100</td>
 </tr>
 <tr>
+<td>29</td>
   <td>February</td>
   <td>$80</td>
 </tr>
 <tr>
+<td>30</td>
   <td>March</td>
   <td>$80</td>
 </tr>
 <tr>
+<td>31</td>
   <td>April</td>
   <td>$80</td>
 </tr>
 <tr>
+<td>32</td>
   <td>May</td>
   <td>$80</td>
 </tr>
 <tr>
+<td>33</td>
   <td>June</td>
   <td>$80</td>
 </tr>
 <tr>
+<td>34</td>
   <td>July</td>
   <td>$80</td>
 </tr>
 <tr>
+<td>35</td>
   <td>August</td>
   <td>$80</td>
 </tr>
 <tr>
+<td>36</td>
   <td>September</td>
   <td>$80</td>
 </tr>
 <tr>
+<td>37</td>
   <td>October</td>
   <td>$80</td>
 </tr>
 <tr>
+<td>38</td>
   <td>November</td>
   <td>$80</td>
 </tr>
 <tr>
+<td>39</td>
   <td>December</td>
   <td>$80</td>
 </tr>
 <tr>
+<td>40</td>
   <td>YYYYYYYYYYYYYYYY</td>
   <td>YYYYYYYYYYYYYYYY</td>
 </tr>
@@ -214,15 +268,18 @@ table {
 
   </tbody>
   <tr>
+  <td>41</td>
     <td>XXXXXXXX</td>
     <td>XXXXXX</td>
   </tr>
   <tr>
+  <td>42</td>
     <td>XXXXXXXX</td>
     <td>XXXXXX</td>
   </tr>
   <tfoot>
     <tr>
+    <td></td>
       <td>Sum</td>
       <td>$180</td>
     </tr>

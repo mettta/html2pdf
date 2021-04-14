@@ -186,11 +186,12 @@ export default class Pages {
 
     // nodeEntries
     function prepareItem(item) {
-      return {
-        item: item,
-        top: item.offsetTop,
-        height: item.offsetHeight
-      }
+      return item;
+      // return {
+      //   item: item,
+      //   top: item.offsetTop,
+      //   height: item.offsetHeight
+      // }
     }
 
     const nodeEntries = [...node.children].reduce(function (acc, curr) {
@@ -263,58 +264,78 @@ export default class Pages {
       return []
     }
 
-    // -
-    // const signpostHeight = 24;
-    // const tablePrefix = this.DOM.createSignpost('continuation of the table', signpostHeight);
-    // const tableSuffix = this.DOM.createSignpost('the table continue on the next page', signpostHeight);
-
     // Prepare node parameters
     const nodeTop = this.DOM.getElementTop(node);
     const nodeHeight = this.DOM.getElementHeight(node);
 
-    // console.log('nodeTop', nodeTop);
-    // console.log('nodeHeight', nodeHeight);
-
-    // Prepare parameters for splitters calculation
-    // const availableSpace = pageBottom - nodeTop;
-    // console.log('availableSpace', availableSpace);
-    // const firstPartBodyHeight = availableSpace - this.signpostHeight;
-    // console.log('firstPartBodyHeight', firstPartBodyHeight);
-
-    const firstPartHeight = pageBottom - nodeTop
+    const firstPartHeight = pageBottom
+      - nodeTop
       - this.signpostHeight - tableWrapperHeight;
     const fullPagePartHeight = this.referenceHeight
-      - nodeEntries.thead.height - nodeEntries.tfoot.height - nodeEntries.caption.height
+      - this.DOM.getElementHeight(nodeEntries.thead)
+      - this.DOM.getElementHeight(nodeEntries.tfoot)
+      - this.DOM.getElementHeight(nodeEntries.caption)
       - 2 * this.signpostHeight - tableWrapperHeight;
-    // console.log(fullPagePartHeight);
     const topsArr = [
-      ...nodeEntries.rows.map((row) => row.top),
-      nodeEntries.tfoot.top || nodeHeight
+      ...nodeEntries.rows.map((row) => this.DOM.getElementTop(row)),
+      this.DOM.getElementTop(nodeEntries.tfoot) || nodeHeight
     ]
 
-    const splitsIds = calculateTableSplits({
-      topsArr: topsArr,
-      firstPartHeight: firstPartHeight,
-      fullPagePartHeight: fullPagePartHeight,
-      minLeftRows: this.minLeftRows,
-      minDanglingRows: this.minDanglingRows,
-    })
+    // todo delete unused imported function
+    // const splitsIds = calculateTableSplits({
+    //   topsArr: topsArr,
+    //   firstPartHeight: firstPartHeight,
+    //   fullPagePartHeight: fullPagePartHeight,
+    //   minLeftRows: this.minLeftRows,
+    //   minDanglingRows: this.minDanglingRows,
+    // })
+
+    // calculate Table Splits Ids
+
+    let splitsIds = [];
+    let currentPageBottom = firstPartHeight;
+
+    for (let index = 0; index < topsArr.length; index++) {
+
+      if (topsArr[index] > currentPageBottom) {
+
+        // TODO split long TR
+        // console.log('%c calculateRowSplits', 'color: #47D447');
+
+        if (index > this.minLeftRows) {
+          // avoid < minLeftRows rows on first page
+          splitsIds.push(index - 1);
+        }
+
+        currentPageBottom = topsArr[index - 1] + fullPagePartHeight;
+
+        // check if next fits
+
+      }
+    }
+
+    // avoid < minDanglingRows rows on last page
+    const maxSplittingId = (topsArr.length - 1) - this.minDanglingRows;
+    if (splitsIds[splitsIds.length - 1] > maxSplittingId) {
+      splitsIds[splitsIds.length - 1] = maxSplittingId;
+    }
     console.log('@@@@@@@@@@@@@@', splitsIds);
 
-    const insertTableSplit = (startId, endId) => {
 
-      // we filtered this array, so there's no need for that.
-      // if (!endId) {
-      //   // empty element
-      //   return this.DOM.createPrintNoBreak();
-      // }
+
+
+
+
+
+
+
+
+    const insertTableSplit = (startId, endId) => {
 
       const tableWrapper = node.cloneNode(false);
       console.log(tableWrapper, 'CLONED --------- ');
 
-      const partEntries = nodeEntries.rows.slice(startId, endId).map(
-        el => el.item
-      )
+      const partEntries = nodeEntries.rows.slice(startId, endId);
 
       const part = this.DOM.createPrintNoBreak();
       node.before(part);
@@ -327,8 +348,8 @@ export default class Pages {
       part.append(
         this.DOM.createTable({
           wrapper: tableWrapper,
-          caption: nodeEntries.caption?.item.cloneNode(true),
-          thead: nodeEntries.thead?.item.cloneNode(true),
+          caption: nodeEntries.caption?.cloneNode(true),
+          thead: nodeEntries.thead?.cloneNode(true),
           // tfoot,
           tbody: partEntries,
         }),
@@ -341,43 +362,6 @@ export default class Pages {
     const splits = splitsIds.map((value, index, array) => insertTableSplit(array[index - 1] || 0, value))
 
     console.log(splits);
-
-    // const tryPartStart = nodeEntries.rows.findIndex((element, index) => element.top > firstPartBodyHeight);
-    // const nextPartStart = tryPartStart === -1
-    //   // if only footer is on the next page,
-    //   // take also 2 rows
-    //   ? nodeEntries.rows.length - 2
-    //   // if find a row that starts on the next page,
-    //   // also pick up the previous one
-    //   : tryPartStart - 1;
-
-    // console.log('id', nextPartStart);
-    // console.log('nextPartStart', nodeEntries.rows[nextPartStart]);
-
-    // const firstPartEntries = nodeEntries.rows.slice(0, nextPartStart).map(
-    //   el => el.item
-    // )
-
-    // if (firstPartEntries.length < 2) {
-    //   // TODO multipage
-    //   return []
-    // }
-
-    // // create FIRST PART
-    // const firstPart = this.DOM.createPrintNoBreak();
-    // node.before(firstPart);
-    // firstPart.append(
-    //   this.DOM.createTable({
-    //     wrapper: tableWrapper,
-    //     caption: nodeEntries.caption?.item.cloneNode(true),
-    //     thead: nodeEntries.thead?.item.cloneNode(true),
-    //     // tfoot,
-    //     tbody: firstPartEntries,
-    //   }),
-    //   this.DOM.createSignpost('(table continues on the next page)', this.signpostHeight)
-    // );
-
-
 
     // create LAST PART
     const lastPart = this.DOM.createPrintNoBreak();
