@@ -35,12 +35,17 @@ export default function calculateTableSplits({
 
     if (topsArr[index] > currentPageBottom) {
 
+      calculateRowSplits();
+
       if (index > minLeftRows) {
         // avoid < minLeftRows rows on first page
         splits.push(index - 1);
       }
 
-      currentPageBottom += fullPagePartHeight;
+      currentPageBottom = topsArr[index - 1] + fullPagePartHeight;
+
+      // check if next fits
+
     }
   }
 
@@ -51,4 +56,8 @@ export default function calculateTableSplits({
   }
 
   return splits;
+}
+
+function calculateRowSplits() {
+  console.log('%c calculateRowSplits', 'color: #47D447');
 }
