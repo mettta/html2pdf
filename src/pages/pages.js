@@ -1,6 +1,5 @@
 import calculateSplitters from './calculateSplitters';
 import findSplitId from './findSplitId';
-import calculateTableSplits from './calculateTableSplits';
 
 export default class Pages {
 
@@ -280,15 +279,6 @@ export default class Pages {
       ...nodeEntries.rows.map((row) => this.DOM.getElementTop(row)),
       this.DOM.getElementTop(nodeEntries.tfoot) || nodeHeight
     ]
-
-    // todo delete unused imported function
-    // const splitsIds = calculateTableSplits({
-    //   topsArr: topsArr,
-    //   firstPartHeight: firstPartHeight,
-    //   fullPagePartHeight: fullPagePartHeight,
-    //   minLeftRows: this.minLeftRows,
-    //   minDanglingRows: this.minDanglingRows,
-    // })
 
     // calculate Table Splits Ids
 
