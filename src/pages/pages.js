@@ -184,26 +184,17 @@ export default class Pages {
     testTableWrapper.remove();
 
     // nodeEntries
-    function prepareItem(item) {
-      return item;
-      // return {
-      //   item: item,
-      //   top: item.offsetTop,
-      //   height: item.offsetHeight
-      // }
-    }
 
     const nodeEntries = [...node.children].reduce(function (acc, curr) {
 
       const tag = curr.tagName;
 
       if (tag === 'TBODY') {
-        curr = [...curr.children].map(item => prepareItem(item));
         return {
           ...acc,
           rows: [
             ...acc.rows,
-            ...curr,
+            ...curr.children,
           ]
         }
       }
@@ -211,21 +202,21 @@ export default class Pages {
       if (tag === 'CAPTION') {
         return {
           ...acc,
-          caption: prepareItem(curr)
+          caption: curr
         }
       }
 
       if (tag === 'THEAD') {
         return {
           ...acc,
-          thead: prepareItem(curr)
+          thead: curr
         }
       }
 
       if (tag === 'TFOOT') {
         return {
           ...acc,
-          tfoot: prepareItem(curr)
+          tfoot: curr
         }
       }
 
@@ -234,7 +225,7 @@ export default class Pages {
           ...acc,
           rows: [
             ...acc.rows,
-            ...prepareItem(curr),
+            ...curr,
           ]
         }
       }
