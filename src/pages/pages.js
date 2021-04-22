@@ -120,6 +120,27 @@ export default class Pages {
     // because it could be because of the margin
     if (this.DOM.getElementTop(nextElement) > newPageBottom) {
 
+      // console.log(
+      //   '\n previousElement:', previousElement,
+      //   '\n currentElement:', currentElement,
+      //   '\n nextElement:', nextElement,
+      // );
+
+      // Here nextElement is a candidate to start a new page,
+      // and currentElement is a candidate
+      // (1) EITHER to end the current page (being taken as a whole or being splitted)
+      // (2) OR to start a new page.
+      // Check the possibility of (1).
+      if (this._canNotBeLast(currentElement)) {
+        // if currentElement can't be the last element on the page,
+        // immediately move it to the next page:
+        this._registerPage({
+          pageEnd: previousElement,
+          pageStart: currentElement,
+        });
+        return
+      }
+
       // TODO check BOTTOMS??? vs MARGINS
       // IF currentElement does fit
       // in the remaining space on the page,
@@ -153,15 +174,53 @@ export default class Pages {
           next: nextElement
         })
       } else {
-        // If no children, move element to the next page:
-        this._registerPage({
-          pageEnd: previousElement,
-          pageStart: currentElement,
-        });
+        // If no children, move element to the next page.
+        // But,
+        if (this._canNotBeLast(previousElement)) {
+          // if previousElement can't be the last element on the page,
+          // move it to the next page.
+          this._registerPage({
+            // The pageEnd property is only used to check that it has been defined
+            // and that it is not the first page,
+            // so we can assign it not only an element but also any string.
+            pageEnd: 'this is not the first page',
+            pageStart: previousElement,
+          })
+        } else {
+          this._registerPage({
+            pageEnd: previousElement,
+            pageStart: currentElement,
+          })
+        }
       }
 
     }
     // IF currentElement fits, continue.
+  }
+
+  _canNotBeLast(element) {
+
+    // TODO
+    // if Header is only child of element
+
+    const tag = this.DOM.getElementTagName(element);
+    return (
+      tag === 'H1'
+      || tag === 'H2'
+      || tag === 'H3'
+      || tag === 'H4'
+      || tag === 'H5'
+      || tag === 'H6'
+    )
+    //nodeName
+  }
+
+  _isResizable(element) {
+    const tag = this.DOM.getElementTagName(element);
+    return (
+      tag === 'IMG'
+      // || tag === 'OBJECT'
+    )
   }
 
   // TODO
