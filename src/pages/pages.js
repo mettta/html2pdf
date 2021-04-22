@@ -244,7 +244,7 @@ export default class Pages {
       rows: [],
       unexpected: [],
     });
-    console.log(nodeEntries);
+    console.log('nodeEntries', nodeEntries);
 
     if (nodeEntries.unexpected.length > 0) {
       console.warn('something unexpected is found in the table');
@@ -300,21 +300,13 @@ export default class Pages {
     if (splitsIds[splitsIds.length - 1] > maxSplittingId) {
       splitsIds[splitsIds.length - 1] = maxSplittingId;
     }
-    console.log('@@@@@@@@@@@@@@', splitsIds);
-
-
-
-
-
-
-
+    console.log('splitsIds', splitsIds);
 
 
 
     const insertTableSplit = (startId, endId) => {
 
       const tableWrapper = node.cloneNode(false);
-      console.log(tableWrapper, 'CLONED --------- ');
 
       const partEntries = nodeEntries.rows.slice(startId, endId);
 
@@ -342,7 +334,7 @@ export default class Pages {
 
     const splits = splitsIds.map((value, index, array) => insertTableSplit(array[index - 1] || 0, value))
 
-    console.log(splits);
+    console.log('splits', splits);
 
     // create LAST PART
     const lastPart = this.DOM.createPrintNoBreak();
@@ -387,7 +379,7 @@ export default class Pages {
     console.log('approximateSplitters', approximateSplitters);
 
     if (approximateSplitters.length < 2) {
-      console.log('НЕ РАЗБИВАЕМ', node);
+      console.log(' ... do not break', node);
       return []
     }
 
