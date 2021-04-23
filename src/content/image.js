@@ -1,16 +1,11 @@
 const text = `
 
 <style>
-thead {color: green;}
-tbody {color: blue;}
-tfoot {color: red;}
-
-table, th, td {
-  border: 1px solid black;
-}
-
-table {
-  border-spacing: 2px;
+img,
+svg {
+  display: block;
+  width: 100%;
+  height: auto
 }
 </style>
 
@@ -30,268 +25,52 @@ table {
     <p>footer</p>
   </template>
 
-Оставляем простую текстовую ноду, чтобы не было заметно поправки на съеденный маржин.
-
-<div style="padding-top: 630px; background: #ff000020"></div>
-
-<table class="test-table">
-  <caption>Monthly savings</caption>
-  <tr>
-  <td>0</td>
-    <td>XXXXXXXX</td>
-    <td>XXXXXX</td>
-  </tr>
-  <thead>
-    <tr>
-    <td></td>
-      <th>Month</th>
-      <th>Savings</th>
-    </tr>
-  </thead>
-  <tr>
-  <td>1</td>
-    <td>XXXXXXXX</td>
-    <td>XXXXXX</td>
-  </tr>
-  <tbody>
-    <tr>
-    <td>2</td>
-      <td>January</td>
-      <td>$100</td>
-    </tr>
-    <tr>
-    <td>3</td>
-      <td>February</td>
-      <td>$80</td>
-    </tr>
-    <tr>
-    <td>4</td>
-      <td>March</td>
-      <td>$80</td>
-    </tr>
-    <tr>
-    <td>5</td>
-      <td>April</td>
-      <td>$80</td>
-    </tr>
-    <tr>
-    <td>6</td>
-      <td>May</td>
-      <td>$80</td>
-    </tr>
-    <tr>
-    <td>7</td>
-      <td>June</td>
-      <td>$80</td>
-    </tr>
-    <tr>
-    <td>8</td>
-      <td>July</td>
-      <td>
-
-      Consectetur dolor occaecat cillum labore consectetur do. Eu est et incididunt voluptate ut incididunt ad do consequat. Consectetur do Lorem ullamco et minim ut enim proident fugiat esse exercitation reprehenderit in in. Commodo veniam adipisicing consectetur mollit labore anim nulla velit pariatur voluptate aliquip tempor consectetur ad. Laboris anim pariatur exercitation velit nulla quis sit duis sunt ex nostrud anim duis reprehenderit. Dolore aliqua adipisicing exercitation anim.
-
-      </td>
-    </tr>
-    <tr>
-    <td>9</td>
-      <td>August</td>
-      <td>$80</td>
-    </tr>
-    <tr>
-    <td>10</td>
-      <td>September</td>
-      <td>$80</td>
-    </tr>
-    <tr>
-    <td>11</td>
-      <td>October</td>
-      <td>$80</td>
-    </tr>
-    <tr>
-    <td>12</td>
-      <td>November</td>
-      <td>$80</td>
-    </tr>
-    <tr>
-    <td>13</td>
-      <td>December</td>
-      <td>$80</td>
-    </tr>
-    <tr>
-    <td>14</td>
-      <td>YYYYYYYYYYYYYYYY</td>
-      <td>YYYYYYYYYYYYYYYY</td>
-    </tr>
-
-    <tr>
-    <td>15</td>
-    <td>January</td>
-    <td>$100</td>
-  </tr>
-  <tr>
-  <td>16</td>
-    <td>February</td>
-    <td>$80</td>
-  </tr>
-  <tr>
-  <td>17</td>
-    <td>March</td>
-    <td>$80</td>
-  </tr>
-  <tr>
-  <td>18</td>
-    <td>April</td>
-    <td>$80</td>
-  </tr>
-  <tr>
-  <td>19</td>
-    <td>May</td>
-    <td>$80</td>
-  </tr>
-  <tr>
-  <td>20</td>
-    <td>June</td>
-    <td>$80</td>
-  </tr>
-  <tr>
-  <td>21</td>
-    <td>July</td>
-    <td>$80</td>
-  </tr>
-  <tr>
-  <td>22</td>
-    <td>August</td>
-    <td>$80</td>
-  </tr>
-  <tr>
-  <td>23</td>
-    <td>September</td>
-    <td>$80</td>
-  </tr>
-  <tr>
-  <td>24</td>
-    <td>October</td>
-    <td>$80</td>
-  </tr>
-  <tr>
-  <td>25</td>
-    <td>November</td>
-    <td>$80</td>
-  </tr>
-  <tr>
-  <td>26</td>
-    <td>December</td>
-    <td>$80</td>
-  </tr>
-  <tr>
-  <td>27</td>
-    <td>YYYYYYYYYYYYYYYY</td>
-    <td>YYYYYYYYYYYYYYYY</td>
-  </tr>
-
-
-  <tr>
-  <td>28</td>
-  <td>January</td>
-  <td>$100</td>
-</tr>
-<tr>
-<td>29</td>
-  <td>February</td>
-  <td>$80</td>
-</tr>
-<tr>
-<td>30</td>
-  <td>March</td>
-  <td>$80</td>
-</tr>
-<tr>
-<td>31</td>
-  <td>April</td>
-  <td>$80</td>
-</tr>
-<tr>
-<td>32</td>
-  <td>May</td>
-  <td>$80</td>
-</tr>
-<tr>
-<td>33</td>
-  <td>June</td>
-  <td>$80</td>
-</tr>
-<tr>
-<td>34</td>
-  <td>July</td>
-  <td>$80</td>
-</tr>
-<tr>
-<td>35</td>
-  <td>August</td>
-  <td>$80</td>
-</tr>
-<tr>
-<td>36</td>
-  <td>September</td>
-  <td>$80</td>
-</tr>
-<tr>
-<td>37</td>
-  <td>October</td>
-  <td>$80</td>
-</tr>
-<tr>
-<td>38</td>
-  <td>November</td>
-  <td>$80</td>
-</tr>
-<tr>
-<td>39</td>
-  <td>December</td>
-  <td>$80</td>
-</tr>
-<tr>
-<td>40</td>
-  <td>YYYYYYYYYYYYYYYY</td>
-  <td>YYYYYYYYYYYYYYYY</td>
-</tr>
-
-
-  </tbody>
-  <tr>
-  <td>41</td>
-    <td>XXXXXXXX</td>
-    <td>XXXXXX</td>
-  </tr>
-  <tr>
-  <td>42</td>
-    <td>XXXXXXXX</td>
-    <td>XXXXXX</td>
-  </tr>
-  <tfoot>
-    <tr>
-    <td></td>
-      <td>Sum</td>
-      <td>$180</td>
-    </tr>
-  </tfoot>
-</table>
-
+<H1>Et incididunt eiusmod pariatur consectetur duis.</H1>
 <P>Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt. Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea. Proident do duis minim sit officia duis occaecat.</P>
 <P>Tempor nisi duis non deserunt. Consequat anim in quis consequat id ipsum mollit qui ipsum adipisicing fugiat Lorem adipisicing officia. Do quis pariatur enim eiusmod. Ut nulla amet duis laborum veniam qui ex. Non enim Lorem fugiat Lorem incididunt ex proident dolor tempor magna ea. Consequat consequat labore proident eiusmod laborum qui nostrud consequat velit magna commodo. Tempor esse sint ex cillum.</P>
 <P>Ipsum amet adipisicing ipsum enim magna labore. Do sit mollit cupidatat cupidatat elit consequat. Sunt quis quis do laboris esse amet nostrud sint consectetur ad ipsum occaecat. Ex cillum deserunt in commodo consectetur nisi.</P>
 
 <H2>Occaecat Lorem dolore veniam ullamco ipsum sit nostrud consectetur.</H2>
 <P>Id do labore dolor magna veniam. Fugiat velit tempor velit id officia non reprehenderit culpa. Sint dolore ea dolor labore velit ex reprehenderit nisi minim sit aliqua cupidatat voluptate nulla.</P>
+<P>Id do labore dolor magna veniam. Fugiat velit tempor velit id officia non reprehenderit culpa. Sint dolore ea dolor labore velit ex reprehenderit nisi minim sit aliqua cupidatat voluptate nulla.</P>
 
 <H3>Incididunt consequat anim ea qui aute et fugiat eu aute in ullamco ad.</H3>
 <P>Aute cupidatat enim nulla occaecat fugiat ad magna id anim. Consequat irure ea reprehenderit incididunt anim consequat. Dolore voluptate culpa duis irure deserunt. Ex et ut commodo non incididunt. Laborum aute quis esse ad fugiat tempor minim est ut est.</P>
 
+<H3>Velit laborum ea tempor id dolore Lorem dolor pariatur ex.</H3>
+<P>Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat. Laborum eiusmod excepteur velit ex veniam et consequat anim minim ea ex ipsum aliquip. Fugiat non irure et tempor reprehenderit ullamco excepteur sit. Nisi quis commodo aliqua dolor ex consequat consectetur Lorem ipsum deserunt quis esse minim.</P>
+
+
+<svg width="1024px" height="350px" viewBox="0 0 1024 350" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 57.1 (83088) - https://sketch.com -->
+    <title>sandbox1</title>
+    <desc>Created with Sketch.</desc>
+    <g id="sandbox1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <text id="1024-x-350-Test-SVG" font-family="SFProText-Regular, SF Pro Text" font-size="14" font-weight="normal" fill="#000000">
+            <tspan x="37" y="42">1024 x 350</tspan>
+            <tspan x="37" y="58">Test SVG</tspan>
+        </text>
+        <rect id="Rectangle" stroke-opacity="0.249890734" stroke="#000000" fill="#FF3B30" x="37" y="88" width="250" height="150" rx="4"></rect>
+        <rect id="Rectangle-Copy" stroke-opacity="0.249890734" stroke="#000000" fill="#FFCC00" x="387" y="88" width="250" height="150" rx="4"></rect>
+        <rect id="Rectangle-Copy-2" stroke-opacity="0.249890734" stroke="#000000" fill="#4CD964" x="737" y="88" width="250" height="150" rx="4"></rect>
+        <path id="Line" d="M375.868686,155.388163 L390.289729,163.5 L375.868686,171.611837 L374.888163,169.868686 L384.43,164.5 L286.5,164.5 L286.5,162.5 L384.433,162.5 L374.888163,157.131314 L375.868686,155.388163 Z" fill="#000000" fill-rule="nonzero"></path>
+        <path id="Line-Copy" d="M725.868686,155.388163 L740.289729,163.5 L725.868686,171.611837 L724.888163,169.868686 L734.432,164.5 L636.5,164.5 L636.5,162.5 L734.434,162.5 L724.888163,157.131314 L725.868686,155.388163 Z" fill="#000000" fill-rule="nonzero"></path>
+        <path id="Path" d="M162,235.210271 L169.621576,248.759739 L167.878424,249.740261 L163,241.068 L163,297 L861,297 L861,238 L863,238 L863,299 L161,299 L161,241.068 L156.121576,249.740261 L154.378424,248.759739 L162,235.210271 Z" fill="#000000" fill-rule="nonzero"></path>
+        <text id="Type-something" font-family="SFProText-Regular, SF Pro Text" font-size="24" font-weight="normal" fill="#FFFFFF">
+            <tspan x="71.6660156" y="167">Type something</tspan>
+        </text>
+        <text id="Type-something-Copy" font-family="SFProText-Regular, SF Pro Text" font-size="24" font-weight="normal" fill="#000000">
+            <tspan x="422.666016" y="167">Type something</tspan>
+        </text>
+        <text id="Type-something-Copy-2" font-family="SFProText-Regular, SF Pro Text" font-size="24" font-weight="normal" fill="#FF0000">
+            <tspan x="773.666016" y="167">Type something</tspan>
+        </text>
+    </g>
+</svg>
+
 
 <H3>Fugiat adipisicing cillum nostrud deserunt cillum.</H3>
 <P>Reprehenderit culpa tempor enim excepteur. Deserunt tempor velit sunt pariatur cupidatat. Ullamco anim voluptate proident excepteur consequat ea dolor ipsum dolor nulla esse. Eiusmod magna qui nostrud consectetur cillum proident dolor exercitation ut cupidatat magna. Sunt do mollit veniam aute exercitation duis non nisi dolor ea ad eu ut amet. Consectetur nulla sunt ipsum aliqua pariatur tempor laborum aliquip id ipsum nostrud. Eu excepteur commodo veniam velit duis eu.</P>
-
 
 <H3>Labore enim tempor ad laboris esse dolor labore irure.</H3>
 <P>Commodo anim cillum proident esse duis. Consequat commodo commodo eu cillum mollit ea anim. Ullamco irure elit eiusmod sunt est aliqua laboris ea reprehenderit dolore. Elit culpa laborum reprehenderit voluptate officia in sunt ut mollit duis. Nostrud laboris magna fugiat aute labore est dolore ullamco irure voluptate nostrud ipsum. Velit consequat minim exercitation veniam sit ipsum.</P>
@@ -327,6 +106,3 @@ Ex eiusmod commodo magna Lorem fugiat minim et minim excepteur id aliqua nisi la
 `
 
 export default text;
-
-{/* <H3>Velit laborum ea tempor id dolore Lorem dolor pariatur ex.</H3>
-<P>Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat. Laborum eiusmod excepteur velit ex veniam et consequat anim minim ea ex ipsum aliquip. Fugiat non irure et tempor reprehenderit ullamco excepteur sit. Nisi quis commodo aliqua dolor ex consequat consectetur Lorem ipsum deserunt quis esse minim.</P> */}

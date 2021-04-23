@@ -22,6 +22,8 @@ export default class Pages {
     this.minDanglingRows = 2;
     this.minBreakableRows = this.minLeftRows + this.minDanglingRows;
 
+    this.imageReductionRatio = 0.8;
+
     // TODO move to config
     this.signpostHeight = 24;
 
@@ -120,11 +122,11 @@ export default class Pages {
     // because it could be because of the margin
     if (this.DOM.getElementTop(nextElement) > newPageBottom) {
 
-      // console.log(
-      //   '\n previousElement:', previousElement,
-      //   '\n currentElement:', currentElement,
-      //   '\n nextElement:', nextElement,
-      // );
+      console.log(
+        '\n previousElement:', previousElement,
+        '\n currentElement:', currentElement,
+        '\n nextElement:', nextElement,
+      );
 
       // Here nextElement is a candidate to start a new page,
       // and currentElement is a candidate
@@ -141,11 +143,54 @@ export default class Pages {
         return
       }
 
+      // IMAGE with optional resizing
+      if (this._isIMG(currentElement)) {
+        // TODO
+      }
+
+      if (this._isSVG(currentElement)) {
+
+        // svg has not offset props
+        const svgWrapper = this.DOM.wrapWithPrintPageBreak(currentElement);
+
+        console.log('%c -- SVG', 'color:yellow');
+
+        // if it fits
+        if (this.DOM.getElementBottom(svgWrapper) < newPageBottom) {
+          this._registerPage({
+            pageEnd: currentElement,
+            pageStart: nextElement,
+          });
+          return
+        }
+
+        // try to fit it
+        const availableSpace = newPageBottom - this.DOM.getElementTop(svgWrapper);
+        const ratio = availableSpace / this.DOM.getElementHeight(svgWrapper);
+
+        if (ratio > this.imageReductionRatio) {
+          this.DOM.setElementHeight(currentElement, availableSpace);
+          this._registerPage({
+            pageEnd: currentElement,
+            pageStart: nextElement,
+          })
+        } else {
+          // otherwise move it to next page
+          this._registerPage({
+            pageEnd: previousElement,
+            pageStart: currentElement,
+          })
+        }
+
+        // BUG: calculation the following pages are broken
+        return
+      }
+
       // TODO check BOTTOMS??? vs MARGINS
       // IF currentElement does fit
       // in the remaining space on the page,
       if (this.DOM.getElementBottom(currentElement) < newPageBottom) {
-        console.log('%c -- check BOTTOM of', 'color:rose', currentElement);
+        console.log('%c -- check BOTTOM of', 'color:yellow', currentElement);
         this._registerPage({
           pageEnd: currentElement,
           pageStart: nextElement,
@@ -215,12 +260,11 @@ export default class Pages {
     //nodeName
   }
 
-  _isResizable(element) {
-    const tag = this.DOM.getElementTagName(element);
-    return (
-      tag === 'IMG'
-      // || tag === 'OBJECT'
-    )
+  _isIMG(element) {
+    return this.DOM.getElementTagName(element) === 'IMG'
+  }
+  _isSVG(element) {
+    return this.DOM.getElementTagName(element) === 'svg'
   }
 
   // TODO
@@ -526,25 +570,26 @@ export default class Pages {
     return (
       !this.DOM.isNoBreak(element)
       && tag !== 'IMG'
+      && tag !== 'svg'
       && tag !== 'TABLE'
       && tag !== 'OBJECT'
     )
   }
 
-  _isUnbreakable(element) {
-    // IF currentElement is specific,
-    // process as a whole:
-    const tag = this.DOM.getElementTagName(element);
+  // _isUnbreakable(element) {
+  //   // IF currentElement is specific,
+  //   // process as a whole:
+  //   const tag = this.DOM.getElementTagName(element);
 
-    // BUG WITH OBJECT: in FF is ignored, in Chrome get wrong height
-    // if (tag === 'OBJECT') {
-    //   console.log('i am object');
-    //   resizeObserver.observe(currentElement)
-    // }
+  //   // BUG WITH OBJECT: in FF is ignored, in Chrome get wrong height
+  //   // if (tag === 'OBJECT') {
+  //   //   console.log('i am object');
+  //   //   resizeObserver.observe(currentElement)
+  //   // }
 
-    // this.DOM.isNeutral(element) || 
+  //   // this.DOM.isNeutral(element) || 
 
-    const takeAsWhole = (tag === 'IMG' || tag === 'TABLE' || this.DOM.isNoBreak(element) || tag === 'OBJECT')
-    return takeAsWhole;
-  }
+  //   const takeAsWhole = (tag === 'IMG' || tag === 'svg' || tag === 'TABLE' || this.DOM.isNoBreak(element) || tag === 'OBJECT')
+  //   return takeAsWhole;
+  // }
 }

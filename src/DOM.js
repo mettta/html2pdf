@@ -254,6 +254,13 @@ export default class DocumentObjectModel {
     return element;
   }
 
+  wrapWithPrintPageBreak(element) {
+    const wrapper = this.createPrintNoBreak();
+    element.before(wrapper);
+    wrapper.append(element);
+    return wrapper;
+  }
+
   createRunningSafety() {
     return this.create(SELECTOR.runningSafety);
   }
@@ -449,6 +456,9 @@ export default class DocumentObjectModel {
 
   // PAGES
 
+  setElementHeight(element, height) {
+    element.style.height = height;
+  }
 
   getElementHeight(element) {
     return element.offsetHeight;
