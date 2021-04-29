@@ -58,14 +58,16 @@ export default class Pages {
     });
   }
 
+  // TODO REMOVE '// pageEnd:' & '// pageBreak' commented rows
+
   _registerPage({
-    pageBreak,
-    pageEnd,
+    // pageBreak,
+    // pageEnd,
     pageStart,
   }) {
     this.pages.push({
-      pageBreak: pageBreak,
-      pageEnd: pageEnd,
+      // pageBreak: pageBreak,
+      // pageEnd: pageEnd,
       pageStart: pageStart,
     })
   }
@@ -104,14 +106,19 @@ export default class Pages {
     // TODO
     // this.DOM.getElementTop(pageStart)???????
     // this.pages[this.pages.length - 1].pageStart
-    const lastElem = this.pages[this.pages.length - 1].pageEnd;
-    const flowCutPoint = lastElem ? this.DOM.getElementBottom(lastElem) : 0;
+
+    // const lastElem = this.pages[this.pages.length - 1].pageEnd;
+    // const flowCutPoint = lastElem ? this.DOM.getElementBottom(lastElem) : 0;
+    // const newPageBottom = flowCutPoint + this.referenceHeight;
+
+    const lastPageStart = this.pages[this.pages.length - 1].pageStart;
+    const flowCutPoint = lastPageStart ? this.DOM.getElementTop(lastPageStart) : 0;
     const newPageBottom = flowCutPoint + this.referenceHeight;
 
     if (this.DOM.isForcedPageBreak(currentElement)) {
       this._registerPage({
-        pageBreak: currentElement,
-        pageEnd: previousElement,
+        // pageBreak: currentElement,
+        // pageEnd: previousElement,
         pageStart: nextElement,
       })
       return
@@ -137,52 +144,55 @@ export default class Pages {
         // if currentElement can't be the last element on the page,
         // immediately move it to the next page:
         this._registerPage({
-          pageEnd: previousElement,
+          // pageEnd: previousElement,
           pageStart: currentElement,
         });
         return
       }
 
       // IMAGE with optional resizing
-      if (this._isIMG(currentElement)) {
-        // TODO
-      }
 
-      if (this._isSVG(currentElement)) {
+      if (this._isSVG(currentElement) || this._isIMG(currentElement)) {
 
         // svg has not offset props
-        const svgWrapper = this.DOM.wrapWithPrintPageBreak(currentElement);
+        const currentImage = this._isSVG(currentElement)
+          ? this.DOM.wrapWithPrintNoBreak(currentElement)
+          : currentElement;
 
-        console.log('%c -- SVG', 'color:yellow');
+        console.log('%c -- IMAGE', 'color:yellow');
 
         // if it fits
-        if (this.DOM.getElementBottom(svgWrapper) < newPageBottom) {
+        if (this.DOM.getElementBottom(currentImage) < newPageBottom) {
+          console.log('%c -- fit', 'color:yellow');
           this._registerPage({
-            pageEnd: currentElement,
+            // pageEnd: currentImage,
             pageStart: nextElement,
           });
           return
         }
 
+        console.log('%c -- do not fit', 'color:yellow');
+
         // try to fit it
-        const availableSpace = newPageBottom - this.DOM.getElementTop(svgWrapper);
-        const ratio = availableSpace / this.DOM.getElementHeight(svgWrapper);
+        const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
+        const ratio = availableSpace / this.DOM.getElementHeight(currentImage);
 
         if (ratio > this.imageReductionRatio) {
-          this.DOM.setElementHeight(currentElement, availableSpace);
+          console.log('%c -- make it smaller', 'color:yellow', availableSpace);
+          this.DOM.setElementHeight(currentImage, availableSpace);
           this._registerPage({
-            pageEnd: currentElement,
+            // pageEnd: currentImage,
             pageStart: nextElement,
           })
         } else {
+          console.log('%c -- move to the next page', 'color:yellow');
           // otherwise move it to next page
           this._registerPage({
-            pageEnd: previousElement,
-            pageStart: currentElement,
+            // pageEnd: previousElement,
+            pageStart: currentImage,
           })
         }
 
-        // BUG: calculation the following pages are broken
         return
       }
 
@@ -192,7 +202,7 @@ export default class Pages {
       if (this.DOM.getElementBottom(currentElement) < newPageBottom) {
         console.log('%c -- check BOTTOM of', 'color:yellow', currentElement);
         this._registerPage({
-          pageEnd: currentElement,
+          // pageEnd: currentElement,
           pageStart: nextElement,
         });
         return
@@ -228,12 +238,12 @@ export default class Pages {
             // The pageEnd property is only used to check that it has been defined
             // and that it is not the first page,
             // so we can assign it not only an element but also any string.
-            pageEnd: 'this is not the first page',
+            // pageEnd: 'this is not the first page',
             pageStart: previousElement,
           })
         } else {
           this._registerPage({
-            pageEnd: previousElement,
+            // pageEnd: previousElement,
             pageStart: currentElement,
           })
         }

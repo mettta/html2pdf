@@ -28,7 +28,7 @@ export default class Preview {
       const frontpageRef = this.DOM.insertFrontpageSpacer(this.contentFlow, this.paper.bodyHeight);
 
       // register spacing element and an additional page.
-      this.pages[0].pageEnd = frontpageRef;
+      // this.pages[0].pageEnd = frontpageRef;
       this.pages.unshift({
         pageStart: frontpageRef,
         isFrontpage: true
@@ -39,12 +39,13 @@ export default class Preview {
     // including frontpage, if it was added above.
     const total = this.pages.length;
 
+    // TODO for instead of map, make first page separately
     this.pages.map((item, index) => {
 
       const currentPageNumber = index + 1;
 
       const {
-        pageEnd,
+        // pageEnd,
         pageStart,
         isFrontpage,
       } = item;
@@ -53,7 +54,7 @@ export default class Preview {
         ? this.paper.createFrontpage(currentPageNumber, total)
         : this.paper.create(currentPageNumber, total);
 
-      if (pageEnd) {
+      if (index > 0) {
         // If it is a page break and not the first header,
         // ADD VIRTUAL PAGE with pre-separator.
         const currentPaperSeparator = this.DOM.createVirtualPaperGap();
@@ -77,7 +78,7 @@ export default class Preview {
           // without separator
         );
 
-        // ADD HEADER into Content Flow
+        // ADD ONLY HEADER into Content Flow
         this.DOM.insertHeaderSpacer(pageStart, this.paper.headerHeight);
       }
     })

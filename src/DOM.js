@@ -254,7 +254,7 @@ export default class DocumentObjectModel {
     return element;
   }
 
-  wrapWithPrintPageBreak(element) {
+  wrapWithPrintNoBreak(element) {
     const wrapper = this.createPrintNoBreak();
     element.before(wrapper);
     wrapper.append(element);
@@ -455,6 +455,10 @@ export default class DocumentObjectModel {
   }
 
   // PAGES
+
+  resizeImage() {
+    // todo
+  }
 
   setElementHeight(element, height) {
     element.style.height = height;
