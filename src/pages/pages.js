@@ -41,7 +41,7 @@ export default class Pages {
 
     if (this.DOM.getElementHeight(this.contentFlow) < this.referenceHeight) {
       // register a single page
-      this._registerPage({ pageStart: this.contentFlow });
+      this._registerPageStart(this.contentFlow);
       return;
     }
 
@@ -51,23 +51,15 @@ export default class Pages {
 
     // TODO put this into main calculations?
     // FIRST ELEMENT: register the beginning of the first page.
-    this._registerPage({ pageStart: content[0] });
+    this._registerPageStart(content[0]);
 
     this._parseNodes({
       array: content
     });
   }
 
-  // TODO REMOVE '// pageEnd:' & '// pageBreak' commented rows
-
-  _registerPage({
-    // pageBreak,
-    // pageEnd,
-    pageStart,
-  }) {
+  _registerPageStart(pageStart) {
     this.pages.push({
-      // pageBreak: pageBreak,
-      // pageEnd: pageEnd,
       pageStart: pageStart,
     })
   }
@@ -116,11 +108,7 @@ export default class Pages {
     const newPageBottom = flowCutPoint + this.referenceHeight;
 
     if (this.DOM.isForcedPageBreak(currentElement)) {
-      this._registerPage({
-        // pageBreak: currentElement,
-        // pageEnd: previousElement,
-        pageStart: nextElement,
-      })
+      this._registerPageStart(nextElement)
       return
     }
 
@@ -143,10 +131,7 @@ export default class Pages {
       if (this._canNotBeLast(currentElement)) {
         // if currentElement can't be the last element on the page,
         // immediately move it to the next page:
-        this._registerPage({
-          // pageEnd: previousElement,
-          pageStart: currentElement,
-        });
+        this._registerPageStart(currentElement);
         return
       }
 
@@ -164,10 +149,7 @@ export default class Pages {
         // if it fits
         if (this.DOM.getElementBottom(currentImage) < newPageBottom) {
           console.log('%c -- fit', 'color:yellow');
-          this._registerPage({
-            // pageEnd: currentImage,
-            pageStart: nextElement,
-          });
+          this._registerPageStart(nextElement);
           return
         }
 
@@ -180,17 +162,11 @@ export default class Pages {
         if (ratio > this.imageReductionRatio) {
           console.log('%c -- make it smaller', 'color:yellow', availableSpace);
           this.DOM.setElementHeight(currentImage, availableSpace);
-          this._registerPage({
-            // pageEnd: currentImage,
-            pageStart: nextElement,
-          })
+          this._registerPageStart(nextElement)
         } else {
           console.log('%c -- move to the next page', 'color:yellow');
           // otherwise move it to next page
-          this._registerPage({
-            // pageEnd: previousElement,
-            pageStart: currentImage,
-          })
+          this._registerPageStart(currentImage)
         }
 
         return
@@ -201,10 +177,7 @@ export default class Pages {
       // in the remaining space on the page,
       if (this.DOM.getElementBottom(currentElement) < newPageBottom) {
         console.log('%c -- check BOTTOM of', 'color:yellow', currentElement);
-        this._registerPage({
-          // pageEnd: currentElement,
-          pageStart: nextElement,
-        });
+        this._registerPageStart(nextElement);
         return
       }
 
@@ -234,18 +207,9 @@ export default class Pages {
         if (this._canNotBeLast(previousElement)) {
           // if previousElement can't be the last element on the page,
           // move it to the next page.
-          this._registerPage({
-            // The pageEnd property is only used to check that it has been defined
-            // and that it is not the first page,
-            // so we can assign it not only an element but also any string.
-            // pageEnd: 'this is not the first page',
-            pageStart: previousElement,
-          })
+          this._registerPageStart(previousElement)
         } else {
-          this._registerPage({
-            // pageEnd: previousElement,
-            pageStart: currentElement,
-          })
+          this._registerPageStart(currentElement)
         }
       }
 
