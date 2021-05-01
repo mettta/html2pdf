@@ -275,8 +275,8 @@ export default class DocumentObjectModel {
     header,
     body,
     footer,
-    current,
-    total,
+    currentPage,
+    totalPages,
   }) {
     const paper = this._createVirtualPaper();
 
@@ -288,9 +288,9 @@ export default class DocumentObjectModel {
       this._createVirtualPaperBottomMargin(),
     );
 
-    if (current && total) {
-      this._setPageNumber(header, current, total);
-      this._setPageNumber(footer, current, total);
+    if (currentPage && totalPages) {
+      this._setPageNumber(header, currentPage, totalPages);
+      this._setPageNumber(footer, currentPage, totalPages);
     }
 
     return paper;

@@ -21,7 +21,7 @@ export default class Paper {
   // TODO make createPaper() dependent on templates and parameters:
   // Don't create parts of the page here?
 
-  create(current, total) {
+  create({ currentPage, totalPages }) {
     const body = this.DOM.createPaperBody(this.bodyHeight);
     const header = this.DOM.createPaperHeader(this.headerTemplate);
     const footer = this.DOM.createPaperFooter(this.footerTemplate);
@@ -30,12 +30,12 @@ export default class Paper {
       header,
       body,
       footer,
-      current,
-      total,
+      currentPage,
+      totalPages,
     });
   }
 
-  createFrontpage(current, total) {
+  createFrontpage({ currentPage, totalPages }) {
 
     const frontpage = this.DOM.createFrontpageContent(this.frontpageTemplate, this.frontpageFactor);
     const body = this.DOM.createPaperBody(this.bodyHeight, frontpage);
@@ -46,8 +46,8 @@ export default class Paper {
       header,
       body,
       footer,
-      current,
-      total,
+      currentPage,
+      totalPages,
     });
   }
 
