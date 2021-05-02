@@ -391,6 +391,7 @@ export default class DocumentObjectModel {
     const headerHeight = header?.offsetHeight || 0;
     const footerHeight = footer?.offsetHeight || 0;
     const bodyHeight = body.offsetHeight;
+    const bodyWidth = body.offsetWidth;
 
     // add frontpage text
     body.append(frontpage);
@@ -409,6 +410,7 @@ export default class DocumentObjectModel {
       headerHeight,
       footerHeight,
       bodyHeight,
+      bodyWidth,
       frontpageFactor
     }
   }

@@ -12,6 +12,7 @@ export default class Paper {
     this.headerHeight;
     this.footerHeight;
     this.bodyHeight;
+    this.bodyWidth;
     this.frontpageFactor;
 
     this._calculatePaperParams();
@@ -58,6 +59,7 @@ export default class Paper {
       headerHeight,
       footerHeight,
       bodyHeight,
+      bodyWidth,
       frontpageFactor,
     } = this.DOM.calculatePaperParams({
       frontpageTemplate: this.frontpageTemplate,
@@ -79,6 +81,7 @@ export default class Paper {
     this.headerHeight = headerHeight;
     this.footerHeight = footerHeight;
     this.bodyHeight = bodyHeight;
+    this.bodyWidth = bodyWidth;
     this.frontpageFactor = frontpageFactor;
 
   }

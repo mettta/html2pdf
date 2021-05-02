@@ -40,6 +40,7 @@ window.addEventListener("load", function (event) {
     DOM,
     contentFlow: layout.contentFlow,
     referenceHeight: paper.bodyHeight,
+    referenceWidth: paper.bodyWidth,
   }).calculate();
 
   console.log(pages);

@@ -6,11 +6,13 @@ export default class Pages {
   constructor({
     DOM,
     contentFlow,
+    referenceWidth,
     referenceHeight
   }) {
 
     this.DOM = DOM;
     this.contentFlow = contentFlow;
+    this.referenceWidth = referenceWidth;
     this.referenceHeight = referenceHeight;
 
     // todo
