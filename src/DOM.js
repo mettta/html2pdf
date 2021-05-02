@@ -91,7 +91,8 @@ export default class DocumentObjectModel {
   }
 
   getLineHeight(node) {
-    const testNode = this.createNeutral();
+    // const testNode = this.createNeutral();
+    const testNode = node.cloneNode(false);
     testNode.innerHTML = '!';
     testNode.style = "position:absolute; left:-10000px; width:100%;";
     node.before(testNode);
