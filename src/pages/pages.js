@@ -138,6 +138,7 @@ export default class Pages {
       }
 
       // IMAGE with optional resizing
+      // TODO float images
 
       if (this._isSVG(currentElement) || this._isIMG(currentElement)) {
 
