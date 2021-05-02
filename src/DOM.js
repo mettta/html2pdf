@@ -458,16 +458,27 @@ export default class DocumentObjectModel {
 
   // PAGES
 
-  resizeImage() {
-    // todo
-  }
+  fitElementWithinBoundaries(element, vspace, hspace) {
+    const w = element.offsetWidth;
+    const h = element.offsetHeight;
 
-  setElementHeight(element, height) {
-    element.style.height = height;
+    const hRatio = vspace / h;
+    const wRatio = hspace / w;
+
+    const ratio = hRatio < wRatio ? hRatio : wRatio;
+
+    element.style.height = h * ratio + 'px';
+    element.style.width = w * ratio + 'px';
+    // todo
+    // element.style.margin = '0 auto';
   }
 
   getElementHeight(element) {
     return element.offsetHeight;
+  }
+
+  getElementWidth(element) {
+    return element.offsetWidth;
   }
 
   getElementTop(element) {
