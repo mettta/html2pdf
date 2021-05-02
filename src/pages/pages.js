@@ -190,6 +190,49 @@ export default class Pages {
         return
       }
 
+      if (this._isPRE(currentElement)) {
+        console.log('PRE', currentElement);
+
+        const lineHeight = this.DOM.getLineHeight(currentElement);
+        console.log(lineHeight);
+
+        const lines = this.DOM.getElementHeight(currentElement) / lineHeight;
+        console.log(lines);
+
+        if (lines < 6) {
+          // TODO move number to config
+          this._registerPageStart(currentElement);
+          return
+        }
+
+        const availableSpace = newPageBottom - this.DOM.getElementTop(currentElement);
+        const linesOnPrevPage = Math.trunc(availableSpace / lineHeight);
+
+        if (linesOnPrevPage < 3) {
+          // TODO move number to config
+          this._registerPageStart(currentElement);
+          return
+        }
+
+        const text = this.DOM.getInnerHTML(currentElement);
+        const arr = text.split('\n')
+        console.log(arr);
+
+        const arr2 = arr.map((str) => `<span>${str}</span>\n`);
+
+        // slice(start, end)
+        this.DOM.setInnerHTML(currentElement, arr2.join(''));
+
+        // TODO -------------
+        // делаем слайс общей функуцией, параметр " " или '\n'
+        // потом считаем количество строк
+        // потом обратно собираем - и innerHTML
+        // ничего в спаны не оборачиваем!
+
+        this._registerPageStart(currentElement);
+        return
+      }
+
       // TODO check BOTTOMS??? vs MARGINS
       // IF currentElement does fit
       // in the remaining space on the page,
@@ -252,6 +295,9 @@ export default class Pages {
     //nodeName
   }
 
+  _isPRE(element) {
+    return this.DOM.getElementTagName(element) === 'PRE'
+  }
   _isIMG(element) {
     return this.DOM.getElementTagName(element) === 'IMG'
   }
@@ -273,6 +319,7 @@ export default class Pages {
 
     // calculate table wrapper (empty table element) height
     // to calculate the available space for table content
+    // TODO move to DOM
     const testTableWrapper = node.cloneNode(false);
     node.before(testTableWrapper);
     const tableWrapperHeight = testTableWrapper.offsetHeight;
