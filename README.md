@@ -1,4 +1,4 @@
-# paginated
+# html2pdf
 
 Splits the selected piece of html into pages, prepared for printing, and provides a preview in the browser. Optional to add frontpage and footers.
 
