@@ -117,6 +117,7 @@ export default class Pages {
     // IF nextElement does not start on the current page,
     // we should check if the current one fits in the page,
     // because it could be because of the margin
+    // TODO if next elem is SVG it has no offset Top!
     if (this.DOM.getElementTop(nextElement) > newPageBottom) {
 
       console.log(
