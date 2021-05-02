@@ -458,17 +458,22 @@ export default class DocumentObjectModel {
 
   // PAGES
 
-  fitElementWithinBoundaries(element, vspace, hspace) {
-    const w = element.offsetWidth;
-    const h = element.offsetHeight;
+  fitElementWithinBoundaries({ element, height, width, vspace, hspace }) {
+    console.log(element);
 
-    const hRatio = vspace / h;
-    const wRatio = hspace / w;
+    const hRatio = vspace / height;
+    const wRatio = hspace / width;
 
     const ratio = hRatio < wRatio ? hRatio : wRatio;
 
-    element.style.height = h * ratio + 'px';
-    element.style.width = w * ratio + 'px';
+    const newHeight = Math.trunc(height * ratio);
+    const newWidth = Math.trunc(width * ratio);
+
+    element.style.height = newHeight + 'px';
+    element.style.width = newWidth + 'px';
+    // In SVG width and height of <rect> elements are attributes and not CSS properties
+    element.setAttribute("height", `${newHeight}px`);
+    element.setAttribute("width", `${newWidth}px`);
     // todo
     // element.style.margin = '0 auto';
   }

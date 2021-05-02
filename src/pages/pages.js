@@ -147,38 +147,44 @@ export default class Pages {
           ? this.DOM.wrapWithPrintNoBreak(currentElement)
           : currentElement;
 
-        console.log('%c -- IMAGE', 'color:yellow');
-        console.log(' -- IMAGE', currentImage);
+        const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
+        const currentImageHeight = this.DOM.getElementHeight(currentImage);
 
         // if it fits
-        if (this.DOM.getElementBottom(currentImage) < newPageBottom) {
-          console.log('%c -- fit', 'color:yellow');
+        if (currentImageHeight < availableSpace) {
           // just leave it on the current page
           this._registerPageStart(nextElement);
           return
         }
 
-        console.log('%c -- do not fit', 'color:yellow');
-
         // if not, try to fit it
-        const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
-        const ratio = availableSpace / this.DOM.getElementHeight(currentImage);
+        const ratio = availableSpace / currentImageHeight;
 
         if (ratio > this.imageReductionRatio) {
-          console.log('%c -- make it smaller', 'color:yellow', availableSpace);
           // leave it on the current page
           this._registerPageStart(nextElement);
           // and reduce it a bit
-          this.DOM.fitElementWithinBoundaries(currentElement, availableSpace, this.referenceWidth);
+          this.DOM.fitElementWithinBoundaries({
+            element: currentElement,
+            height: currentImageHeight,
+            width: this.DOM.getElementWidth(currentImage),
+            vspace: availableSpace,
+            hspace: this.referenceWidth
+          });
           return
         }
 
         // otherwise move it to next page,
-        console.log('%c -- move to the next page', 'color:yellow');
         this._registerPageStart(currentImage);
         // and avoid page overflow if the picture is too big to fit on the page as a whole
-        if (this.DOM.getElementHeight(currentImage) > this.referenceHeight) {
-          this.DOM.fitElementWithinBoundaries(currentElement, this.referenceHeight, this.referenceWidth);
+        if (currentImageHeight > this.referenceHeight) {
+          this.DOM.fitElementWithinBoundaries({
+            element: currentElement,
+            height: currentImageHeight,
+            width: this.DOM.getElementWidth(currentImage),
+            vspace: this.referenceHeight,
+            hspace: this.referenceWidth
+          });
         }
         return
       }
