@@ -50,6 +50,96 @@ if (ratio > this.imageReductionRatio) {
   });
   return
 }
+
+// if not, try to fit it
+const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
+const ratio = availableSpace / this.DOM.getElementHeight(currentImage);
+
+if (ratio > this.imageReductionRatio) {
+  // leave it on the current page
+  this._registerPageStart(nextElement);
+  // and reduce it a bit
+  this.DOM.fitElementWithinBoundaries({
+    element: currentElement,
+    height: this.DOM.getElementHeight(currentImage),
+    width: this.DOM.getElementWidth(currentImage),
+    vspace: availableSpace,
+    hspace: this.referenceWidth
+  });
+  return
+}
+
+// if not, try to fit it
+const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
+const ratio = availableSpace / this.DOM.getElementHeight(currentImage);
+
+if (ratio > this.imageReductionRatio) {
+  // leave it on the current page
+  this._registerPageStart(nextElement);
+  // and reduce it a bit
+  this.DOM.fitElementWithinBoundaries({
+    element: currentElement,
+    height: this.DOM.getElementHeight(currentImage),
+    width: this.DOM.getElementWidth(currentImage),
+    vspace: availableSpace,
+    hspace: this.referenceWidth
+  });
+  return
+}
+
+// if not, try to fit it
+const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
+const ratio = availableSpace / this.DOM.getElementHeight(currentImage);
+
+if (ratio > this.imageReductionRatio) {
+  // leave it on the current page
+  this._registerPageStart(nextElement);
+  // and reduce it a bit
+  this.DOM.fitElementWithinBoundaries({
+    element: currentElement,
+    height: this.DOM.getElementHeight(currentImage),
+    width: this.DOM.getElementWidth(currentImage),
+    vspace: availableSpace,
+    hspace: this.referenceWidth
+  });
+  return
+}
+
+// if not, try to fit it
+const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
+const ratio = availableSpace / this.DOM.getElementHeight(currentImage);
+
+if (ratio > this.imageReductionRatio) {
+  // leave it on the current page
+  this._registerPageStart(nextElement);
+  // and reduce it a bit
+  this.DOM.fitElementWithinBoundaries({
+    element: currentElement,
+    height: this.DOM.getElementHeight(currentImage),
+    width: this.DOM.getElementWidth(currentImage),
+    vspace: availableSpace,
+    hspace: this.referenceWidth
+  });
+  return
+}
+
+// if not, try to fit it
+const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
+const ratio = availableSpace / this.DOM.getElementHeight(currentImage);
+
+if (ratio > this.imageReductionRatio) {
+  // leave it on the current page
+  this._registerPageStart(nextElement);
+  // and reduce it a bit
+  this.DOM.fitElementWithinBoundaries({
+    element: currentElement,
+    height: this.DOM.getElementHeight(currentImage),
+    width: this.DOM.getElementWidth(currentImage),
+    vspace: availableSpace,
+    hspace: this.referenceWidth
+  });
+  return
+}
 </pre>
 
 <H2>Occaecat Lorem dolore veniam ullamco ipsum sit nostrud consectetur.</H2>

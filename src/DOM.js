@@ -62,6 +62,11 @@ export default class DocumentObjectModel {
     this._setAttribute(element, SELECTOR.printIgnore)
   }
 
+  setPrintNoBreak(element) {
+    // element.dataset.printIgnore = '';
+    this._setAttribute(element, SELECTOR.printNoBreak)
+  }
+
   setPrintHide(element) {
     // element.dataset.printHide = '';
     this._setAttribute(element, SELECTOR.printHide)

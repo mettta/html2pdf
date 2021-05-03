@@ -199,52 +199,6 @@ export default class Pages {
         return
       }
 
-      if (this._isPRE(currentElement)) {
-        console.log('PRE', currentElement);
-
-        const lineHeight = this.DOM.getLineHeight(currentElement);
-        console.log(lineHeight);
-
-        const lines = this.DOM.getElementHeight(currentElement) / lineHeight;
-        console.log(lines);
-
-        if (lines < 6) {
-          // TODO move number to config
-          this._registerPageStart(currentElement);
-          return
-        }
-
-        const availableSpace = newPageBottom - this.DOM.getElementTop(currentElement);
-        const linesOnPrevPage = Math.trunc(availableSpace / lineHeight);
-
-        if (linesOnPrevPage < 3) {
-          // TODO move number to config
-          this._registerPageStart(currentElement);
-          return
-        }
-
-        const text = this.DOM.getInnerHTML(currentElement);
-        const arr = text.split('\n')
-        console.log(arr);
-
-        const arr2 = arr.map((str) => `<span>${str}</span>\n`);
-
-        // slice(start, end)
-        this.DOM.setInnerHTML(currentElement, arr2.join(''));
-
-        // TODO -------------
-        // делаем слайс общей функуцией, параметр " " или '\n'
-        // потом считаем количество строк
-        // потом обратно собираем - и innerHTML
-        // ничего в спаны не оборачиваем!
-
-        // TODO переполнение ширины страницы
-        // overflow-x hidden + warning
-
-        this._registerPageStart(currentElement);
-        return
-      }
-
       // TODO check BOTTOMS??? vs MARGINS
       // IF currentElement does fit
       // in the remaining space on the page,
@@ -257,8 +211,15 @@ export default class Pages {
       // otherwise try to break it and loop the children:
       let children = [];
 
+      if (this._isPRE(currentElement)) {
+        // 000000000000000
+
+      }
+
       if (this._isTextNode(currentElement)) {
         children = this._splitTextNode(currentElement, newPageBottom) || [];
+      } else if (this._isPRE(currentElement)) {
+        children = this._splitPreNode(currentElement, newPageBottom) || [];
       } else if (this._isTableNode(currentElement)) {
         children = this._splitTableNode(currentElement, newPageBottom) || [];
       } else if (this._isBreakable(currentElement)) {
@@ -321,6 +282,91 @@ export default class Pages {
   // - если не разбиваемый и его высота больше чем страница - уменьшать
 
   // HELPERS
+
+  _splitPreNode(node, pageBottom) {
+
+    console.log('PRE', node);
+
+    // Prepare node parameters
+    const nodeTop = this.DOM.getElementTop(node);
+    const nodeHeight = this.DOM.getElementHeight(node);
+    const nodeLineHeight = this.DOM.getLineHeight(node);
+
+    const totalLines = nodeHeight / nodeLineHeight;
+    console.log(totalLines);
+
+    if (totalLines < 8) {
+      // TODO move number to config
+      this._registerPageStart(node);
+      return
+    }
+
+    // Prepare parameters for splitters calculation
+    const availableSpace = pageBottom - nodeTop;
+    let firstPartLines = Math.trunc(availableSpace / nodeLineHeight);
+
+    console.log(firstPartLines);
+
+    if (firstPartLines < 4) {
+      // TODO move number to config
+      this._registerPageStart(node);
+      return
+    }
+
+    // TODO the same in splitTextNode - make one code piece
+
+    const restLines = totalLines - firstPartLines;
+    const linesPerPage = Math.trunc(this.referenceHeight / nodeLineHeight);
+
+    const fullPages = Math.floor(restLines / linesPerPage);
+    const lastPartLines = restLines % linesPerPage;
+
+    if (lastPartLines < 4) {
+      firstPartLines = firstPartLines - 1;
+    }
+
+    console.log('fullPages', fullPages, 'lastPartLines', lastPartLines);
+
+    const splitters = [];
+
+    for (let index = 0; index < fullPages + 1; index++) {
+      splitters.push(firstPartLines + index * linesPerPage);
+    }
+
+    console.log(splitters);
+
+    // split
+
+    const preArr = this.DOM.getInnerHTML(node).split('\n');
+    console.log(preArr);
+
+    const splitsArr = splitters.map((id, index, splitters) => {
+      // Avoid trying to break this node: createPrintNoBreak()
+      // We can't wrap in createPrintNoBreak()
+      // because PRE may have margins and that will affect the height of the wrapper.
+      // So we will give the PRE itself this property.
+      // const part = this.DOM.createPrintNoBreak();
+      const part = node.cloneNode(false);
+      this.DOM.setPrintNoBreak(part);
+
+      const start = splitters[index - 1] || 0;
+      const end = id || splitters[splitters.length];
+
+      this.DOM.setInnerHTML(part, preArr.slice(start, end).join('\n'));
+
+      return part;
+    });
+
+    console.log(splitsArr);
+
+    this.DOM.insertInsteadOf(node, ...splitsArr);
+
+    return splitsArr;
+
+    // TODO переполнение ширины страницы
+    // overflow-x hidden + warning
+
+  }
 
   _splitTableNode(node, pageBottom) {
     console.log('%c WE HAVE A TABLE', 'color:yellow');
