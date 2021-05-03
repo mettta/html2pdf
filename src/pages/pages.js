@@ -143,6 +143,8 @@ export default class Pages {
 
       if (this._isSVG(currentElement) || this._isIMG(currentElement)) {
 
+        // TODO needs testing
+
         // svg has not offset props
         const currentImage = this._isSVG(currentElement)
           ? this.DOM.wrapWithPrintNoBreak(currentElement)
@@ -150,6 +152,13 @@ export default class Pages {
 
         const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
         const currentImageHeight = this.DOM.getElementHeight(currentImage);
+        const currentImageWidth = this.DOM.getElementWidth(currentImage);
+
+        // TODO !!! page width overflow for SVG
+        if (currentImageHeight < this.referenceWidth) {
+          // just leave it on the current page
+          console.warn('%c IMAGE is too wide', 'color: red');
+        }
 
         // if it fits
         if (currentImageHeight < availableSpace) {
@@ -168,7 +177,7 @@ export default class Pages {
           this.DOM.fitElementWithinBoundaries({
             element: currentElement,
             height: currentImageHeight,
-            width: this.DOM.getElementWidth(currentImage),
+            width: currentImageWidth,
             vspace: availableSpace,
             hspace: this.referenceWidth
           });
@@ -182,7 +191,7 @@ export default class Pages {
           this.DOM.fitElementWithinBoundaries({
             element: currentElement,
             height: currentImageHeight,
-            width: this.DOM.getElementWidth(currentImage),
+            width: currentImageWidth,
             vspace: this.referenceHeight,
             hspace: this.referenceWidth
           });
@@ -228,6 +237,9 @@ export default class Pages {
         // потом считаем количество строк
         // потом обратно собираем - и innerHTML
         // ничего в спаны не оборачиваем!
+
+        // TODO переполнение ширины страницы
+        // overflow-x hidden + warning
 
         this._registerPageStart(currentElement);
         return
