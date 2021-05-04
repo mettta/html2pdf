@@ -124,6 +124,8 @@ export default class Pages {
         '\n previousElement:', previousElement,
         '\n currentElement:', currentElement,
         '\n nextElement:', nextElement,
+        // '\n newPageBottom', newPageBottom,
+        // '\n elBot', this.DOM.getElementBottom(currentElement),
       );
 
       // Here nextElement is a candidate to start a new page,
@@ -202,7 +204,8 @@ export default class Pages {
       // TODO check BOTTOMS??? vs MARGINS
       // IF currentElement does fit
       // in the remaining space on the page,
-      if (this.DOM.getElementBottom(currentElement) < newPageBottom) {
+      if (this.DOM.getElementBottom(currentElement) <= newPageBottom) {
+        // we need <= because splitted elements often get equal height // todo comment 
         console.log('%c -- check BOTTOM of', 'color:yellow', currentElement);
         this._registerPageStart(nextElement);
         return
@@ -211,21 +214,19 @@ export default class Pages {
       // otherwise try to break it and loop the children:
       let children = [];
 
-      if (this._isPRE(currentElement)) {
-        // 000000000000000
-
-      }
-
-      if (this._isTextNode(currentElement)) {
+      if (this.DOM.isNoBreak(currentElement) || this._notSolved(currentElement)) {
+        // don't break apart, thus keep an empty children array
+        children = [];
+      } else if (this._isTextNode(currentElement)) {
         children = this._splitTextNode(currentElement, newPageBottom) || [];
       } else if (this._isPRE(currentElement)) {
         children = this._splitPreNode(currentElement, newPageBottom) || [];
       } else if (this._isTableNode(currentElement)) {
         children = this._splitTableNode(currentElement, newPageBottom) || [];
-      } else if (this._isBreakable(currentElement)) {
+      } else {
         children = this._getChildren(currentElement);
       }
-      // otherwise we keep an empty children array
+
 
       // parse children
       if (children.length) {
@@ -291,9 +292,7 @@ export default class Pages {
     const nodeTop = this.DOM.getElementTop(node);
     const nodeHeight = this.DOM.getElementHeight(node);
     const nodeLineHeight = this.DOM.getLineHeight(node);
-
     const totalLines = nodeHeight / nodeLineHeight;
-    console.log(totalLines);
 
     if (totalLines < 8) {
       // TODO move number to config
@@ -305,7 +304,8 @@ export default class Pages {
     const availableSpace = pageBottom - nodeTop;
     let firstPartLines = Math.trunc(availableSpace / nodeLineHeight);
 
-    console.log(firstPartLines);
+    console.log(totalLines, 'totalLines');
+    console.log(firstPartLines, 'firstPartLines');
 
     if (firstPartLines < 4) {
       // TODO move number to config
@@ -333,12 +333,12 @@ export default class Pages {
       splitters.push(firstPartLines + index * linesPerPage);
     }
 
-    console.log(splitters);
+    // console.log(splitters);
 
     // split
 
     const preArr = this.DOM.getInnerHTML(node).split('\n');
-    console.log(preArr);
+    // console.log(preArr);
 
     const splitsArr = splitters.map((id, index, splitters) => {
       // Avoid trying to break this node: createPrintNoBreak()
@@ -348,6 +348,9 @@ export default class Pages {
       // const part = this.DOM.createPrintNoBreak();
       const part = node.cloneNode(false);
       this.DOM.setPrintNoBreak(part);
+
+      // // Avoid trying to break this node: createPrintNoBreak()
+      // const part = this.DOM.createPrintNoBreak();
 
       const start = splitters[index - 1] || 0;
       const end = id || splitters[splitters.length];
@@ -662,15 +665,12 @@ export default class Pages {
     return this.DOM.getElementTagName(element) === 'TABLE';
   }
 
-  _isBreakable(element) {
+  _notSolved(element) {
+    // TODO !!!
+    // помещать такой объект просто на отдельную страницу
+    // проверить, если объект больше - как печатаются номера и разрывы
     const tag = this.DOM.getElementTagName(element);
-    return (
-      !this.DOM.isNoBreak(element)
-      && tag !== 'IMG'
-      && tag !== 'svg'
-      && tag !== 'TABLE'
-      && tag !== 'OBJECT'
-    )
+    return (tag === 'OBJECT')
   }
 
   // _isUnbreakable(element) {

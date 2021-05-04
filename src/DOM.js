@@ -96,11 +96,12 @@ export default class DocumentObjectModel {
   }
 
   getLineHeight(node) {
-    // const testNode = this.createNeutral();
-    const testNode = node.cloneNode(false);
+    const testNode = this.createNeutral();
+    // if node has padding, this affects so cant be taken bode clone as wrapper // todo comment
+    // const testNode = node.cloneNode(false);
     testNode.innerHTML = '!';
     testNode.style = "position:absolute; left:-10000px; width:100%;";
-    node.before(testNode);
+    node.append(testNode);
     const lineHeight = testNode.offsetHeight;
     testNode.remove();
     return lineHeight;
