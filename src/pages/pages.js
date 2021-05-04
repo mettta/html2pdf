@@ -292,8 +292,8 @@ export default class Pages {
     const nodeTop = this.DOM.getElementTop(node);
     const nodeHeight = this.DOM.getElementHeight(node);
     const nodeLineHeight = this.DOM.getLineHeight(node);
-    const totalLines = nodeHeight / nodeLineHeight;
     const preWrapperHeight = this.DOM.getEmptyNodeHeight(node);
+    const totalLines = (nodeHeight - preWrapperHeight) / nodeLineHeight;
 
     if (totalLines < 8) {
       // TODO move number to config
@@ -323,8 +323,8 @@ export default class Pages {
     const lastPartLines = restLines % linesPerPage;
 
     if (lastPartLines < 4) {
-      // TODO 
-      firstPartLines = firstPartLines - 1;
+      // TODO move number to config
+      firstPartLines = firstPartLines - (4 - lastPartLines);
     }
 
     console.log('fullPages', fullPages, 'lastPartLines', lastPartLines);
