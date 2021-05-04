@@ -107,6 +107,14 @@ export default class DocumentObjectModel {
     return lineHeight;
   }
 
+  getEmptyNodeHeight(node) {
+    const wrapper = node.cloneNode(false);
+    node.before(wrapper);
+    const wrapperHeight = wrapper.offsetHeight;
+    wrapper.remove();
+    return wrapperHeight;
+  }
+
   // todo {class, id, dataset, value} ?
   isNeutral(element) {
     // SELECTOR.neutral
