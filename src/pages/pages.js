@@ -296,6 +296,9 @@ export default class Pages {
 
     // TODO the same in splitTextNode - make one code piece
 
+    // TODO try first split the PRE by \n\n
+    // and then split solid PRE by lines
+
     // Prepare node parameters
     const nodeTop = this.DOM.getElementTop(node);
     const nodeHeight = this.DOM.getElementHeight(node);
