@@ -30,7 +30,7 @@ Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea ani
 <P>Tempor nisi duis non deserunt. Consequat anim in quis consequat id ipsum mollit qui ipsum adipisicing fugiat Lorem adipisicing officia. Do quis pariatur enim eiusmod. Ut nulla amet duis laborum veniam qui ex. Non enim Lorem fugiat Lorem incididunt ex proident dolor tempor magna ea. Consequat consequat labore proident eiusmod laborum qui nostrud consequat velit magna commodo. Tempor esse sint ex cillum.</P>
 <P>Ipsum amet adipisicing ipsum enim magna labore. Do sit mollit cupidatat cupidatat elit consequat. Sunt quis quis do laboris esse amet nostrud sint consectetur ad ipsum occaecat. Ex cillum deserunt in commodo consectetur nisi.</P>
 
-<pre>
+<pre style="padding: 10px; background: #ddd">
 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
 
 // if not, try to fit it

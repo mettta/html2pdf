@@ -293,6 +293,7 @@ export default class Pages {
     const nodeHeight = this.DOM.getElementHeight(node);
     const nodeLineHeight = this.DOM.getLineHeight(node);
     const totalLines = nodeHeight / nodeLineHeight;
+    const preWrapperHeight = this.DOM.getEmptyNodeHeight(node);
 
     if (totalLines < 8) {
       // TODO move number to config
@@ -301,7 +302,7 @@ export default class Pages {
     }
 
     // Prepare parameters for splitters calculation
-    const availableSpace = pageBottom - nodeTop;
+    const availableSpace = pageBottom - nodeTop - preWrapperHeight;
     let firstPartLines = Math.trunc(availableSpace / nodeLineHeight);
 
     console.log(totalLines, 'totalLines');
@@ -316,7 +317,7 @@ export default class Pages {
     // TODO the same in splitTextNode - make one code piece
 
     const restLines = totalLines - firstPartLines;
-    const linesPerPage = Math.trunc(this.referenceHeight / nodeLineHeight);
+    const linesPerPage = Math.trunc((this.referenceHeight - preWrapperHeight) / nodeLineHeight);
 
     const fullPages = Math.floor(restLines / linesPerPage);
     const lastPartLines = restLines % linesPerPage;
