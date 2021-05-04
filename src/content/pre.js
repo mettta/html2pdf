@@ -33,7 +33,7 @@ Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea ani
 <pre style="padding: 10px; background: #ddd">
 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
 
-// if not, try to fit it
+1 // if not, try to fit it
 const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
 const ratio = availableSpace / this.DOM.getElementHeight(currentImage);
 
@@ -51,7 +51,7 @@ if (ratio > this.imageReductionRatio) {
   return
 }
 
-// if not, try to fit it
+2 // if not, try to fit it
 const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
 const ratio = availableSpace / this.DOM.getElementHeight(currentImage);
 
@@ -69,7 +69,7 @@ if (ratio > this.imageReductionRatio) {
   return
 }
 
-// if not, try to fit it
+3 // if not, try to fit it
 const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
 const ratio = availableSpace / this.DOM.getElementHeight(currentImage);
 
@@ -87,7 +87,7 @@ if (ratio > this.imageReductionRatio) {
   return
 }
 
-// if not, try to fit it
+4 // if not, try to fit it
 const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
 const ratio = availableSpace / this.DOM.getElementHeight(currentImage);
 
@@ -105,7 +105,7 @@ if (ratio > this.imageReductionRatio) {
   return
 }
 
-// if not, try to fit it
+5 // if not, try to fit it
 const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
 const ratio = availableSpace / this.DOM.getElementHeight(currentImage);
 
@@ -123,7 +123,7 @@ if (ratio > this.imageReductionRatio) {
   return
 }
 
-// if not, try to fit it
+6 // if not, try to fit it
 const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
 const ratio = availableSpace / this.DOM.getElementHeight(currentImage);
 
@@ -140,6 +140,10 @@ if (ratio > this.imageReductionRatio) {
   });
   return
 }
+
+7 // if not, try to fit it
+const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
+const ratio = availableSpace / this.DOM.getElementHeight(currentImage);
 </pre>
 
 <H2>Occaecat Lorem dolore veniam ullamco ipsum sit nostrud consectetur.</H2>

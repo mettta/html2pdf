@@ -323,6 +323,7 @@ export default class Pages {
     const lastPartLines = restLines % linesPerPage;
 
     if (lastPartLines < 4) {
+      // TODO 
       firstPartLines = firstPartLines - 1;
     }
 
@@ -334,12 +335,16 @@ export default class Pages {
       splitters.push(firstPartLines + index * linesPerPage);
     }
 
-    // console.log(splitters);
+    // register the last part,
+    // it has no specific break,
+    // and further will be counted as "take the rest"
+    splitters.push(null);
+
+    console.log('splitters', splitters);
 
     // split
 
     const preArr = this.DOM.getInnerHTML(node).split('\n');
-    // console.log(preArr);
 
     const splitsArr = splitters.map((id, index, splitters) => {
       // Avoid trying to break this node: createPrintNoBreak()
@@ -355,6 +360,8 @@ export default class Pages {
 
       const start = splitters[index - 1] || 0;
       const end = id || splitters[splitters.length];
+
+      console.log('( ', start, end, ' )');
 
       this.DOM.setInnerHTML(part, preArr.slice(start, end).join('\n'));
 
