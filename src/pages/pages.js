@@ -347,7 +347,7 @@ export default class Pages {
       // because PRE may have margins and that will affect the height of the wrapper.
       // So we will give the PRE itself this property.
       // const part = this.DOM.createPrintNoBreak();
-      const part = node.cloneNode(false);
+      const part = this.DOM.cloneNodeWrapper(node);
       this.DOM.setPrintNoBreak(part);
 
       // // Avoid trying to break this node: createPrintNoBreak()
@@ -506,7 +506,7 @@ export default class Pages {
 
     const insertTableSplit = (startId, endId) => {
 
-      const tableWrapper = node.cloneNode(false);
+      const tableWrapper = this.DOM.cloneNodeWrapper(node);
 
       const partEntries = nodeEntries.rows.slice(startId, endId);
 
@@ -521,8 +521,8 @@ export default class Pages {
       part.append(
         this.DOM.createTable({
           wrapper: tableWrapper,
-          caption: nodeEntries.caption?.cloneNode(true),
-          thead: nodeEntries.thead?.cloneNode(true),
+          caption: this.DOM.cloneNode(nodeEntries.caption),
+          thead: this.DOM.cloneNode(nodeEntries.thead),
           // tfoot,
           tbody: partEntries,
         }),

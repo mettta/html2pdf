@@ -22,6 +22,14 @@ export default class DocumentObjectModel {
     element.remove();
   }
 
+  cloneNode(node) {
+    return node?.cloneNode(true);
+  }
+
+  cloneNodeWrapper(node) {
+    return node?.cloneNode(false);
+  }
+
   insertBefore(element, ...payload) {
     element.before(...payload)
   }
