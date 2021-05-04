@@ -17,12 +17,18 @@ export default class Pages {
 
     // todo
     // 1) move to config
+    // Paragraph:
     this.minLeftLines = 2;
     this.minDanglingLines = 2;
     this.minBreakableLines = this.minLeftLines + this.minDanglingLines;
+    // Table:
     this.minLeftRows = 2;
     this.minDanglingRows = 2;
     this.minBreakableRows = this.minLeftRows + this.minDanglingRows;
+    // Code:
+    this.minLeftPreLines = 3;
+    this.minDanglingPreLines = 3;
+    this.minBreakablePreLines = this.minLeftPreLines + this.minDanglingPreLines;
 
     this.imageReductionRatio = 0.8;
 
@@ -288,6 +294,8 @@ export default class Pages {
 
     console.log('PRE', node);
 
+    // TODO the same in splitTextNode - make one code piece
+
     // Prepare node parameters
     const nodeTop = this.DOM.getElementTop(node);
     const nodeHeight = this.DOM.getElementHeight(node);
@@ -295,8 +303,7 @@ export default class Pages {
     const preWrapperHeight = this.DOM.getEmptyNodeHeight(node);
     const totalLines = (nodeHeight - preWrapperHeight) / nodeLineHeight;
 
-    if (totalLines < 8) {
-      // TODO move number to config
+    if (totalLines < this.minBreakablePreLines) {
       this._registerPageStart(node);
       return
     }
@@ -308,13 +315,10 @@ export default class Pages {
     console.log(totalLines, 'totalLines');
     console.log(firstPartLines, 'firstPartLines');
 
-    if (firstPartLines < 4) {
-      // TODO move number to config
+    if (firstPartLines < this.minLeftPreLines) {
       this._registerPageStart(node);
       return
     }
-
-    // TODO the same in splitTextNode - make one code piece
 
     const restLines = totalLines - firstPartLines;
     const linesPerPage = Math.trunc((this.referenceHeight - preWrapperHeight) / nodeLineHeight);
@@ -322,9 +326,8 @@ export default class Pages {
     const fullPages = Math.floor(restLines / linesPerPage);
     const lastPartLines = restLines % linesPerPage;
 
-    if (lastPartLines < 4) {
-      // TODO move number to config
-      firstPartLines = firstPartLines - (4 - lastPartLines);
+    if (lastPartLines < this.minDanglingPreLines) {
+      firstPartLines = firstPartLines - (this.minDanglingPreLines - lastPartLines);
     }
 
     console.log('fullPages', fullPages, 'lastPartLines', lastPartLines);
