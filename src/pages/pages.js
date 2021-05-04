@@ -380,11 +380,7 @@ export default class Pages {
 
     // calculate table wrapper (empty table element) height
     // to calculate the available space for table content
-    // TODO move to DOM
-    const testTableWrapper = node.cloneNode(false);
-    node.before(testTableWrapper);
-    const tableWrapperHeight = testTableWrapper.offsetHeight;
-    testTableWrapper.remove();
+    const tableWrapperHeight = this.DOM.getEmptyNodeHeight(node);
 
     // nodeEntries
 
