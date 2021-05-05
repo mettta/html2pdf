@@ -126,13 +126,13 @@ export default class Pages {
     // TODO if next elem is SVG it has no offset Top!
     if (this.DOM.getElementTop(nextElement) > newPageBottom) {
 
-      console.log(
-        '\n previousElement:', previousElement,
-        '\n currentElement:', currentElement,
-        '\n nextElement:', nextElement,
-        // '\n newPageBottom', newPageBottom,
-        // '\n elBot', this.DOM.getElementBottom(currentElement),
-      );
+      // console.log(
+      //   '\n previousElement:', previousElement,
+      //   '\n currentElement:', currentElement,
+      //   '\n nextElement:', nextElement,
+      //   // '\n newPageBottom', newPageBottom,
+      //   // '\n elBot', this.DOM.getElementBottom(currentElement),
+      // );
 
       // Here nextElement is a candidate to start a new page,
       // and currentElement is a candidate
@@ -299,6 +299,8 @@ export default class Pages {
     // TODO try first split the PRE by \n\n
     // and then split solid PRE by lines
 
+    // TODO check if there are NODES except text nodes
+
     // Prepare node parameters
     const nodeTop = this.DOM.getElementTop(node);
     const nodeHeight = this.DOM.getElementHeight(node);
@@ -315,16 +317,13 @@ export default class Pages {
     const availableSpace = pageBottom - nodeTop - preWrapperHeight;
     let firstPartLines = Math.trunc(availableSpace / nodeLineHeight);
 
-    console.log(totalLines, 'totalLines');
-    console.log(firstPartLines, 'firstPartLines');
+    const linesPerPage = Math.trunc((this.referenceHeight - preWrapperHeight) / nodeLineHeight);
 
     if (firstPartLines < this.minLeftPreLines) {
-      this._registerPageStart(node);
-      return
+      firstPartLines = linesPerPage;
     }
 
     const restLines = totalLines - firstPartLines;
-    const linesPerPage = Math.trunc((this.referenceHeight - preWrapperHeight) / nodeLineHeight);
 
     const fullPages = Math.floor(restLines / linesPerPage);
     const lastPartLines = restLines % linesPerPage;
@@ -333,52 +332,71 @@ export default class Pages {
       firstPartLines = firstPartLines - (this.minDanglingPreLines - lastPartLines);
     }
 
-    console.log('fullPages', fullPages, 'lastPartLines', lastPartLines);
-
-    const splitters = [];
-
-    for (let index = 0; index < fullPages + 1; index++) {
-      splitters.push(firstPartLines + index * linesPerPage);
+    // correction for line break, not affecting the block view, but affecting the calculations
+    let code = this.DOM.getInnerHTML(node);
+    if (code.charAt(code.length - 1) === '\n') {
+      console.log('LAST CHAR IS BREAK');
+      code = code.slice(0, -1);
     }
 
-    // register the last part,
-    // it has no specific break,
-    // and further will be counted as "take the rest"
-    splitters.push(null);
+    const preArr = code.split('\n');
 
-    console.log('splitters', splitters);
+    console.log('IS white-space: pre ?', preArr.length, totalLines);
+    console.log(preArr[0])
+    console.log(preArr[preArr.length - 1])
 
-    // split
+    if (preArr.length === totalLines) {
+      console.log('CASE: white-space: pre');
 
-    const preArr = this.DOM.getInnerHTML(node).split('\n');
+      // CALCULATE SPLITTERS FOR CASE: 'white-space: pre'
+      const splitters = [];
 
-    const splitsArr = splitters.map((id, index, splitters) => {
-      // Avoid trying to break this node: createPrintNoBreak()
-      // We can't wrap in createPrintNoBreak()
-      // because PRE may have margins and that will affect the height of the wrapper.
-      // So we will give the PRE itself this property.
-      // const part = this.DOM.createPrintNoBreak();
-      const part = this.DOM.cloneNodeWrapper(node);
-      this.DOM.setPrintNoBreak(part);
+      for (let index = 0; index < fullPages + 1; index++) {
+        splitters.push(firstPartLines + index * linesPerPage);
+      }
 
-      // // Avoid trying to break this node: createPrintNoBreak()
-      // const part = this.DOM.createPrintNoBreak();
+      // register the last part,
+      // it has no specific break,
+      // and further will be counted as "take the rest"
+      splitters.push(null);
 
-      const start = splitters[index - 1] || 0;
-      const end = id || splitters[splitters.length];
+      console.log('splitters', splitters);
 
-      console.log('( ', start, end, ' )');
+      // split
 
-      this.DOM.setInnerHTML(part, preArr.slice(start, end).join('\n'));
+      const splitsArr = splitters.map((id, index, splitters) => {
+        // Avoid trying to break this node: createPrintNoBreak()
+        // We can't wrap in createPrintNoBreak()
+        // because PRE may have margins and that will affect the height of the wrapper.
+        // So we will give the PRE itself this property.
+        const part = this.DOM.cloneNodeWrapper(node);
+        this.DOM.setPrintNoBreak(part);
 
-      return part;
-    });
+        // // Avoid trying to break this node: createPrintNoBreak()
+        // const part = this.DOM.createPrintNoBreak();
 
-    console.log(splitsArr);
+        const start = splitters[index - 1] || 0;
+        const end = id || splitters[splitters.length];
 
-    this.DOM.insertInsteadOf(node, ...splitsArr);
+        // console.log('( ', start, end, ' )');
 
-    return splitsArr;
+        this.DOM.setInnerHTML(part, preArr.slice(start, end).join('\n'));
+
+        return part;
+      });
+
+      console.log('PRE splitsArr', splitsArr);
+
+      this.DOM.insertInsteadOf(node, ...splitsArr);
+
+      return splitsArr;
+
+    } else {
+      console.log('CASE: rows are broken up');
+    }
+
+
+
 
     // TODO переполнение ширины страницы
     // overflow-x hidden + warning
@@ -589,7 +607,7 @@ export default class Pages {
       minDanglingLines: this.minDanglingLines,
     });
 
-    console.log('approximateSplitters', approximateSplitters);
+    // console.log('approximateSplitters', approximateSplitters);
 
     if (approximateSplitters.length < 2) {
       console.log(' ... do not break', node);
