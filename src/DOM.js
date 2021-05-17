@@ -102,6 +102,18 @@ export default class DocumentObjectModel {
     testNode.style = "position:absolute; left:-10000px; width:100%; background:rgba(255,255,255,0.2)";
     return testNode;
   }
+  // TODO createTestNodeFrom vs createTestNode
+  createTestNodeFrom(node) {
+    const testNode = node.cloneNode(false);
+    testNode.classList = 'test-node'
+    // testNode.style = "position:absolute; left:-10000px; width:100%; background:rgba(255,255,255,0.2)";
+    testNode.style.position = 'absolute';
+    // testNode.style.left = '-10000px';
+    testNode.style.width = '100%';
+    // testNode.style.background = 'rgba(255,255,255,0.2)';
+    testNode.style.background = 'rgb(255 239 177)';
+    return testNode;
+  }
 
   getLineHeight(node) {
     const testNode = this.createNeutral();
@@ -539,6 +551,7 @@ export default class DocumentObjectModel {
     }
   }
 
+  // todo: move styles to params as optional
   createSignpost(text, height = 24) {
     const prefix = this.create();
     prefix.style.display = 'flex';

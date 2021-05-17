@@ -315,9 +315,10 @@ export default class Pages {
 
     // Prepare parameters for splitters calculation
     const availableSpace = pageBottom - nodeTop - preWrapperHeight;
-    let firstPartLines = Math.trunc(availableSpace / nodeLineHeight);
+    const pageSpace = this.referenceHeight - preWrapperHeight;
 
-    const linesPerPage = Math.trunc((this.referenceHeight - preWrapperHeight) / nodeLineHeight);
+    let firstPartLines = Math.trunc(availableSpace / nodeLineHeight);
+    const linesPerPage = Math.trunc(pageSpace / nodeLineHeight);
 
     if (firstPartLines < this.minLeftPreLines) {
       firstPartLines = linesPerPage;
@@ -335,68 +336,112 @@ export default class Pages {
     // correction for line break, not affecting the block view, but affecting the calculations
     let code = this.DOM.getInnerHTML(node);
     if (code.charAt(code.length - 1) === '\n') {
-      console.log('LAST CHAR IS BREAK');
+      // console.log('LAST CHAR IS BREAK');
       code = code.slice(0, -1);
     }
 
-    const preArr = code.split('\n');
+    // TODO <br>
+    const preLinesArray = code.split('\n');
 
-    console.log('IS white-space: pre ?', preArr.length, totalLines);
-    console.log(preArr[0])
-    console.log(preArr[preArr.length - 1])
+    // try split by blocks
 
-    if (preArr.length === totalLines) {
-      console.log('CASE: white-space: pre');
+    // console.log(preLinesArray);
 
-      // CALCULATE SPLITTERS FOR CASE: 'white-space: pre'
-      const splitters = [];
+    const blocksTextArray = preLinesArray.reduce((accumulator, current, index, array) => {
 
-      for (let index = 0; index < fullPages + 1; index++) {
-        splitters.push(firstPartLines + index * linesPerPage);
+      if (current === '') {
+        accumulator.push([]);
+      } else {
+        accumulator[accumulator.length - 1].push(current)
       }
 
-      // register the last part,
-      // it has no specific break,
-      // and further will be counted as "take the rest"
-      splitters.push(null);
+      return accumulator;
+    }, [[]]);
 
-      console.log('splitters', splitters);
+    // console.log('blocksTextArray', blocksTextArray);
 
-      // split
+    const processedBlocksTextArray = blocksTextArray.reduce((accumulator, current, index, array) => {
 
-      const splitsArr = splitters.map((id, index, splitters) => {
-        // Avoid trying to break this node: createPrintNoBreak()
-        // We can't wrap in createPrintNoBreak()
-        // because PRE may have margins and that will affect the height of the wrapper.
-        // So we will give the PRE itself this property.
-        const part = this.DOM.cloneNodeWrapper(node);
-        this.DOM.setPrintNoBreak(part);
+      // this.minBreakablePreLines = this.minLeftPreLines + this.minDanglingPreLines;
+      if (current.length < this.minBreakablePreLines) {
+        accumulator.push(current);
 
-        // // Avoid trying to break this node: createPrintNoBreak()
-        // const part = this.DOM.createPrintNoBreak();
+      } else {
+        const first = current.slice(0, this.minLeftPreLines).join('\n');
+        const rest = current.slice(this.minLeftPreLines, - this.minDanglingPreLines).map(line => [line]);
+        const last = current.slice(-this.minDanglingPreLines).join('\n');
 
-        const start = splitters[index - 1] || 0;
-        const end = id || splitters[splitters.length];
+        accumulator.push(first);
+        rest.length && accumulator.push(...rest);
+        accumulator.push(last);
+      }
 
-        // console.log('( ', start, end, ' )');
+      // add \n\n after block
+      accumulator.push(['']);
+      return accumulator;
 
-        this.DOM.setInnerHTML(part, preArr.slice(start, end).join('\n'));
+    }, []);
 
-        return part;
-      });
+    // console.log('processedBlocksTextArray', processedBlocksTextArray);
 
-      console.log('PRE splitsArr', splitsArr);
+    const blockAndLineElementsArray = processedBlocksTextArray.map(
+      block => {
+        const blockElement = this.DOM.createNeutral();
+        // after each line, including the blank line, add '\n'
+        this.DOM.setInnerHTML(blockElement, block + '\n');
+        return blockElement;
+      }
+    )
 
-      this.DOM.insertInsteadOf(node, ...splitsArr);
+    // console.log(blockAndLineElementsArray);
 
-      return splitsArr;
+    //TODO move to DOM, like prepareSplittedNode(node)
+    const testNode = this.DOM.createTestNodeFrom(node);
+    testNode.append(...blockAndLineElementsArray);
+    node.append(testNode);
 
-    } else {
-      console.log('CASE: rows are broken up');
+    // console.log('availableSpace', availableSpace);
+    // console.log('pageSpace', pageSpace);
+
+    // find starts of parts splitters
+
+    let page = 0;
+    let splitters = [];
+
+    for (let index = 0; index < blockAndLineElementsArray.length; index++) {
+      const floater = availableSpace + page * pageSpace;
+      const current = blockAndLineElementsArray[index];
+
+      // TODO move to DOM
+      if (this.DOM.getElementBottom(current) > floater) {
+        splitters.push(index);
+        page += 1
+      }
     }
 
+    // console.log(splitters);
 
 
+    const splitsArr = splitters.map((id, index, splitters) => {
+      // Avoid trying to break this node: createPrintNoBreak()
+      // We can't wrap in createPrintNoBreak()
+      // because PRE may have margins and that will affect the height of the wrapper.
+      // So we will give the PRE itself this property.
+      const part = this.DOM.cloneNodeWrapper(node);
+      this.DOM.setPrintNoBreak(part);
+
+      const start = splitters[index - 1] || 0;
+      const end = id || splitters[splitters.length];
+
+      part.append(...blockAndLineElementsArray.slice(start, end));
+
+      return part;
+    });
+
+    console.log('PRE splitsArr', splitsArr);
+
+    this.DOM.insertInsteadOf(node, ...splitsArr);
+    return splitsArr;
 
     // TODO переполнение ширины страницы
     // overflow-x hidden + warning
