@@ -26,9 +26,9 @@ export default class Pages {
     this.minDanglingRows = 2;
     this.minBreakableRows = this.minLeftRows + this.minDanglingRows;
     // Code:
-    this.minLeftPreLines = 3;
-    this.minDanglingPreLines = 3;
-    this.minBreakablePreLines = this.minLeftPreLines + this.minDanglingPreLines;
+    this.minPreFirstBlockLines = 3;
+    this.minPreLastBlockLines = 3;
+    this.minPreBreakableLines = this.minPreFirstBlockLines + this.minPreLastBlockLines;
 
     this.imageReductionRatio = 0.8;
 
@@ -308,7 +308,7 @@ export default class Pages {
     const preWrapperHeight = this.DOM.getEmptyNodeHeight(node);
     const totalLines = (nodeHeight - preWrapperHeight) / nodeLineHeight;
 
-    if (totalLines < this.minBreakablePreLines) {
+    if (totalLines < this.minPreBreakableLines) {
       this._registerPageStart(node);
       return
     }
@@ -320,7 +320,7 @@ export default class Pages {
     let firstPartLines = Math.trunc(availableSpace / nodeLineHeight);
     const linesPerPage = Math.trunc(pageSpace / nodeLineHeight);
 
-    if (firstPartLines < this.minLeftPreLines) {
+    if (firstPartLines < this.minPreFirstBlockLines) {
       console.log('availableSpace is too small');
       availableSpace = this.referenceHeight;
       firstPartLines = linesPerPage;
@@ -331,8 +331,8 @@ export default class Pages {
     const fullPages = Math.floor(restLines / linesPerPage);
     const lastPartLines = restLines % linesPerPage;
 
-    if (lastPartLines < this.minDanglingPreLines) {
-      firstPartLines = firstPartLines - (this.minDanglingPreLines - lastPartLines);
+    if (lastPartLines < this.minPreLastBlockLines) {
+      firstPartLines = firstPartLines - (this.minPreLastBlockLines - lastPartLines);
     }
 
     // correction for line break, not affecting the block view, but affecting the calculations
@@ -358,20 +358,20 @@ export default class Pages {
       }
 
       return accumulator;
-    }, [[]]);
+    }, [[]]).filter(array => array.length);
 
-    // console.log('blocksTextArray', blocksTextArray);
+    console.log('blocksTextArray', blocksTextArray);
 
     const processedBlocksTextArray = blocksTextArray.reduce((accumulator, current, index, array) => {
 
-      // this.minBreakablePreLines = this.minLeftPreLines + this.minDanglingPreLines;
-      if (current.length < this.minBreakablePreLines) {
+      // this.minPreBreakableLines = this.minPreFirstBlockLines + this.minPreLastBlockLines;
+      if (current.length < this.minPreBreakableLines) {
         accumulator.push(current);
 
       } else {
-        const first = current.slice(0, this.minLeftPreLines).join('\n');
-        const rest = current.slice(this.minLeftPreLines, - this.minDanglingPreLines).map(line => [line]);
-        const last = current.slice(-this.minDanglingPreLines).join('\n');
+        const first = current.slice(0, this.minPreFirstBlockLines).join('\n');
+        const rest = current.slice(this.minPreFirstBlockLines, - this.minPreLastBlockLines).map(line => [line]);
+        const last = current.slice(-this.minPreLastBlockLines).join('\n');
 
         accumulator.push(first);
         rest.length && accumulator.push(...rest);
@@ -384,7 +384,7 @@ export default class Pages {
 
     }, []);
 
-    // console.log('processedBlocksTextArray', processedBlocksTextArray);
+    console.log('processedBlocksTextArray', processedBlocksTextArray);
 
     const blockAndLineElementsArray = processedBlocksTextArray.map(
       block => {
@@ -398,9 +398,14 @@ export default class Pages {
     console.log(blockAndLineElementsArray);
 
     //TODO move to DOM, like prepareSplittedNode(node)
+
+
+
     const testNode = this.DOM.createTestNodeFrom(node);
     testNode.append(...blockAndLineElementsArray);
     node.append(testNode);
+
+
 
     // console.log('availableSpace', availableSpace);
     // console.log('pageSpace', pageSpace);
@@ -409,19 +414,22 @@ export default class Pages {
 
     let page = 0;
     let splitters = [];
+    let floater = availableSpace;
 
     for (let index = 0; index < blockAndLineElementsArray.length; index++) {
-      const floater = availableSpace + page * pageSpace;
+      // const floater = availableSpace + page * pageSpace;
       const current = blockAndLineElementsArray[index];
 
       // TODO move to DOM
       if (this.DOM.getElementBottom(current) > floater) {
+
         splitters.push(index);
-        page += 1
+        page += 1;
+        floater = this.DOM.getElementTop(current) + pageSpace;
       }
     }
 
-    // register last part end 
+    // register last part end
     splitters.push(null);
 
     console.log(splitters);
