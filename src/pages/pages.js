@@ -314,13 +314,15 @@ export default class Pages {
     }
 
     // Prepare parameters for splitters calculation
-    const availableSpace = pageBottom - nodeTop - preWrapperHeight;
+    let availableSpace = pageBottom - nodeTop - preWrapperHeight;
     const pageSpace = this.referenceHeight - preWrapperHeight;
 
     let firstPartLines = Math.trunc(availableSpace / nodeLineHeight);
     const linesPerPage = Math.trunc(pageSpace / nodeLineHeight);
 
     if (firstPartLines < this.minLeftPreLines) {
+      console.log('availableSpace is too small');
+      availableSpace = this.referenceHeight;
       firstPartLines = linesPerPage;
     }
 
@@ -393,7 +395,7 @@ export default class Pages {
       }
     )
 
-    // console.log(blockAndLineElementsArray);
+    console.log(blockAndLineElementsArray);
 
     //TODO move to DOM, like prepareSplittedNode(node)
     const testNode = this.DOM.createTestNodeFrom(node);
@@ -419,7 +421,10 @@ export default class Pages {
       }
     }
 
-    // console.log(splitters);
+    // register last part end 
+    splitters.push(null);
+
+    console.log(splitters);
 
 
     const splitsArr = splitters.map((id, index, splitters) => {
