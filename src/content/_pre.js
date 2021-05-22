@@ -115,6 +115,7 @@ const ratio = availableSpace / this.DOM.getElementHeight(currentImage);
 </pre>`;
 
 const lines = `<pre>
+
 000
 
 001
@@ -135,6 +136,7 @@ const lines = `<pre>
 015
 016
 017
+
 018
 019
 
@@ -182,6 +184,8 @@ const lines = `<pre>
 058
 059
 
+060
+061
 </pre>`;
 
 export {

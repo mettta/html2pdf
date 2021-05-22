@@ -336,14 +336,98 @@ export default class Pages {
     }
 
     // correction for line break, not affecting the block view, but affecting the calculations
-    let code = this.DOM.getInnerHTML(node);
-    if (code.charAt(code.length - 1) === '\n') {
+    let preText = this.DOM.getInnerHTML(node);
+    if (preText.charAt(preText.length - 1) === '\n') {
       // console.log('LAST CHAR IS BREAK');
-      code = code.slice(0, -1);
+      preText = preText.slice(0, -1);
     }
 
+    console.log('1 - preText');
+
+    const preLines = preText.split('\n');
+    // "000", "", "001", "002", "003", "004", "005", "006", "", "007" .....
+    console.log('2 - preLines', preLines);
+
+    // ["000"], ["001", "002", "003", "004", "005", "006"], ["007", .....
+    const preGroupedLines = preLines.reduce((accumulator, line, index, array) => {
+
+      if (line === '') {
+        accumulator.push([]);
+      } else {
+        accumulator[accumulator.length - 1].push(line)
+      }
+      return accumulator;
+    }, [[]])
+      .filter(array => array.length);
+
+
+    // TODO
+    // const linesJoiner = '\n';
+    // const blocksJoiner = '\n\n';
+
+    // if (preGroupedLines[0].length < this.minPreFirstBlockLines) {
+    //   const firstGroup = preGroupedLines.shift();
+    //   // the second becomes the first
+    //   const newFirstLine = preGroupedLines[0][0];
+    //   preGroupedLines[0][0] = firstGroup.join(linesJoiner) + blocksJoiner + newFirstLine;
+    // }
+    // if (preGroupedLines[preGroupedLines.length - 1].length < this.minPreFirstBlockLines) {
+    //   const lastGroup = preGroupedLines.pop();
+    //   // the penultimate becomes the last
+    //   const newLastLine = preGroupedLines[preGroupedLines.length - 1][preGroupedLines.length - 1]
+    //   preGroupedLines[preGroupedLines.length - 1][preGroupedLines.length - 1] = newLastLine + blocksJoiner + lastGroup.join(linesJoiner);
+    // }
+
+    console.log('3 - preGroupedLines', preGroupedLines);
+
+
+    const preBlocks2 = preGroupedLines.map(block => { // todo REDUCE **********************************************************
+
+      if (block.length < this.minPreBreakableLines) {
+        return block;
+      } else {
+        const first = block.slice(0, this.minPreFirstBlockLines);
+        const rest = block.slice(this.minPreFirstBlockLines, - this.minPreLastBlockLines);
+        const last = block.slice(-this.minPreLastBlockLines);
+        const res = [];
+        res.push(first);
+        rest.length && res.push(...rest);
+        res.push(last);
+        return res;
+      }
+    });
+
+    console.log('3 - preBlocks2', preBlocks2);
+
+    // TODO HERE
+    // if (preBlocks[0].length < this.minPreFirstBlockLines) {
+    //   const firstBlock = preBlocks.shift();
+    //   // the second becomes the first
+    //   preBlocks[0] = [
+    //     firstBlock,
+    //     [],
+    //     ...preBlocks[0]
+    //   ]
+    // }
+    // if (preBlocks[preBlocks.length - 1].length < this.minPreFirstBlockLines) {
+    //   const lastBlock = preBlocks.pop();
+    //   // the penultimate becomes the last
+    //   preBlocks[preBlocks.length - 1] = [
+    //     ...preBlocks[preBlocks.length - 1],
+    //     [],
+    //     lastBlock
+    //   ]
+    // }
+
+
+
+
+
+
+    // **************************************
+
     // TODO <br>
-    const preLinesArray = code.split('\n');
+    const preLinesArray = preText.split('\n');
 
     // try split by blocks
 
@@ -360,7 +444,7 @@ export default class Pages {
       return accumulator;
     }, [[]]).filter(array => array.length);
 
-    console.log('blocksTextArray', blocksTextArray);
+    // console.log('blocksTextArray', blocksTextArray);
 
     const processedBlocksTextArray = blocksTextArray.reduce((accumulator, current, index, array) => {
 
@@ -384,6 +468,7 @@ export default class Pages {
 
     }, []);
 
+    console.log('******************************* processedBlocksTextArray');
     console.log('processedBlocksTextArray', processedBlocksTextArray);
 
     const blockAndLineElementsArray = processedBlocksTextArray.map(
@@ -395,7 +480,7 @@ export default class Pages {
       }
     )
 
-    console.log(blockAndLineElementsArray);
+    // console.log(blockAndLineElementsArray);
 
     //TODO move to DOM, like prepareSplittedNode(node)
 
