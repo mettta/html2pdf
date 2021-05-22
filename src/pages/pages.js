@@ -367,48 +367,47 @@ export default class Pages {
     }, [[]])
       .filter(array => array.length);
 
-    let veryStartGroup = [];
-    let veryEndGroup = [];
+    let veryStartGroup = '';
+    let veryEndGroup = '';
 
     if (preGroupedLines[0].length < this.minPreFirstBlockLines) {
-      veryStartGroup = preGroupedLines.shift();
+      veryStartGroup = preGroupedLines.shift().join('\n') + '\n\n';
     }
     if (preGroupedLines[preGroupedLines.length - 1].length < this.minPreLastBlockLines) {
-      veryEndGroup = preGroupedLines.pop();
+      veryEndGroup = '\n' + preGroupedLines.pop().join('\n');
     }
 
     console.log('3 - preGroupedLines', preGroupedLines);
 
     // ["000"], [Array(3), Array(3)], [Array(3), "010", "011", Array(3)], .....
-    const preBlocks = preGroupedLines.map(block => {
+    const preBlocks = preGroupedLines.reduce((accumulator, block, index, array) => {
 
       if (block.length < this.minPreBreakableLines) {
-        return [block.join('\n'), '\n'];
+        accumulator.push(block.join('\n') + '\n')
       } else {
         const first = block.slice(0, this.minPreFirstBlockLines).join('\n') + '\n';
-        const rest = block.slice(this.minPreFirstBlockLines, - this.minPreLastBlockLines);
+        const rest = block.slice(this.minPreFirstBlockLines, - this.minPreLastBlockLines)
+          .map(line => line + '\n');
         const last = block.slice(-this.minPreLastBlockLines).join('\n') + '\n';
         const res = [];
-        res.push(first);
-        rest.length && res.push(...rest);
-        res.push(last);
-        res.push('\n');
-        return res;
-      }
-    });
+        accumulator.push(first);
+        rest.length && accumulator.push(...rest);
+        accumulator.push(last);
+      };
 
-    // veryStartGroup.length && (preBlocks[0] = veryStartGroup.join('\n') + '\n\n' + preBlocks[0]);
-    // veryEndGroup.length && (preBlocks[preBlocks.length - 1] = preBlocks[preBlocks.length - 1] + '\n\n' + veryEndGroup.join('\n'));
+      accumulator.push('\n');
+      // (index < array.length - 1) && accumulator.push('\n'); // for each block except last
+      return accumulator;
+    }, []);
+
+    if (preBlocks[preBlocks.length - 1] === '\n') {
+      preBlocks.pop()
+    }
+
+    veryStartGroup.length && (preBlocks[0] = veryStartGroup + preBlocks[0]);
+    veryEndGroup.length && (preBlocks[preBlocks.length - 1] = preBlocks[preBlocks.length - 1] + veryEndGroup);
 
     console.log('4 - preBlocks', preBlocks);
-
-
-
-    // const preBlocks = preGroupedLines2.reduce((accumulator, block, index, array) => {
-
-
-
-    // }, []);
 
 
     // **************************************
@@ -416,8 +415,7 @@ export default class Pages {
     const blockAndLineElementsArray = preBlocks.map(
       block => {
         const blockElement = this.DOM.createNeutral();
-        // after each line, including the blank line, add '\n'
-        this.DOM.setInnerHTML(blockElement, block + '\n');
+        this.DOM.setInnerHTML(blockElement, block);
         return blockElement;
       }
     )
