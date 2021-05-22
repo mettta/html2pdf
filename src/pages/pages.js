@@ -335,6 +335,13 @@ export default class Pages {
       firstPartLines = firstPartLines - (this.minPreLastBlockLines - lastPartLines);
     }
 
+    // *** try split by blocks
+    // TODO <br>
+
+    // TODO
+    // const linesJoiner = '\n';
+    // const blocksJoiner = '\n\n';
+
     // correction for line break, not affecting the block view, but affecting the calculations
     let preText = this.DOM.getInnerHTML(node);
     if (preText.charAt(preText.length - 1) === '\n') {
@@ -360,118 +367,53 @@ export default class Pages {
     }, [[]])
       .filter(array => array.length);
 
+    let veryStartGroup = [];
+    let veryEndGroup = [];
 
-    // TODO
-    // const linesJoiner = '\n';
-    // const blocksJoiner = '\n\n';
-
-    // if (preGroupedLines[0].length < this.minPreFirstBlockLines) {
-    //   const firstGroup = preGroupedLines.shift();
-    //   // the second becomes the first
-    //   const newFirstLine = preGroupedLines[0][0];
-    //   preGroupedLines[0][0] = firstGroup.join(linesJoiner) + blocksJoiner + newFirstLine;
-    // }
-    // if (preGroupedLines[preGroupedLines.length - 1].length < this.minPreFirstBlockLines) {
-    //   const lastGroup = preGroupedLines.pop();
-    //   // the penultimate becomes the last
-    //   const newLastLine = preGroupedLines[preGroupedLines.length - 1][preGroupedLines.length - 1]
-    //   preGroupedLines[preGroupedLines.length - 1][preGroupedLines.length - 1] = newLastLine + blocksJoiner + lastGroup.join(linesJoiner);
-    // }
+    if (preGroupedLines[0].length < this.minPreFirstBlockLines) {
+      veryStartGroup = preGroupedLines.shift();
+    }
+    if (preGroupedLines[preGroupedLines.length - 1].length < this.minPreLastBlockLines) {
+      veryEndGroup = preGroupedLines.pop();
+    }
 
     console.log('3 - preGroupedLines', preGroupedLines);
 
-
-    const preBlocks2 = preGroupedLines.map(block => { // todo REDUCE **********************************************************
+    // ["000"], [Array(3), Array(3)], [Array(3), "010", "011", Array(3)], .....
+    const preBlocks = preGroupedLines.map(block => {
 
       if (block.length < this.minPreBreakableLines) {
-        return block;
+        return [block.join('\n'), '\n'];
       } else {
-        const first = block.slice(0, this.minPreFirstBlockLines);
+        const first = block.slice(0, this.minPreFirstBlockLines).join('\n') + '\n';
         const rest = block.slice(this.minPreFirstBlockLines, - this.minPreLastBlockLines);
-        const last = block.slice(-this.minPreLastBlockLines);
+        const last = block.slice(-this.minPreLastBlockLines).join('\n') + '\n';
         const res = [];
         res.push(first);
         rest.length && res.push(...rest);
         res.push(last);
+        res.push('\n');
         return res;
       }
     });
 
-    console.log('3 - preBlocks2', preBlocks2);
+    // veryStartGroup.length && (preBlocks[0] = veryStartGroup.join('\n') + '\n\n' + preBlocks[0]);
+    // veryEndGroup.length && (preBlocks[preBlocks.length - 1] = preBlocks[preBlocks.length - 1] + '\n\n' + veryEndGroup.join('\n'));
 
-    // TODO HERE
-    // if (preBlocks[0].length < this.minPreFirstBlockLines) {
-    //   const firstBlock = preBlocks.shift();
-    //   // the second becomes the first
-    //   preBlocks[0] = [
-    //     firstBlock,
-    //     [],
-    //     ...preBlocks[0]
-    //   ]
-    // }
-    // if (preBlocks[preBlocks.length - 1].length < this.minPreFirstBlockLines) {
-    //   const lastBlock = preBlocks.pop();
-    //   // the penultimate becomes the last
-    //   preBlocks[preBlocks.length - 1] = [
-    //     ...preBlocks[preBlocks.length - 1],
-    //     [],
-    //     lastBlock
-    //   ]
-    // }
+    console.log('4 - preBlocks', preBlocks);
 
 
 
+    // const preBlocks = preGroupedLines2.reduce((accumulator, block, index, array) => {
 
+
+
+    // }, []);
 
 
     // **************************************
 
-    // TODO <br>
-    const preLinesArray = preText.split('\n');
-
-    // try split by blocks
-
-    // console.log(preLinesArray);
-
-    const blocksTextArray = preLinesArray.reduce((accumulator, current, index, array) => {
-
-      if (current === '') {
-        accumulator.push([]);
-      } else {
-        accumulator[accumulator.length - 1].push(current)
-      }
-
-      return accumulator;
-    }, [[]]).filter(array => array.length);
-
-    // console.log('blocksTextArray', blocksTextArray);
-
-    const processedBlocksTextArray = blocksTextArray.reduce((accumulator, current, index, array) => {
-
-      // this.minPreBreakableLines = this.minPreFirstBlockLines + this.minPreLastBlockLines;
-      if (current.length < this.minPreBreakableLines) {
-        accumulator.push(current);
-
-      } else {
-        const first = current.slice(0, this.minPreFirstBlockLines).join('\n');
-        const rest = current.slice(this.minPreFirstBlockLines, - this.minPreLastBlockLines).map(line => [line]);
-        const last = current.slice(-this.minPreLastBlockLines).join('\n');
-
-        accumulator.push(first);
-        rest.length && accumulator.push(...rest);
-        accumulator.push(last);
-      }
-
-      // add \n\n after block
-      accumulator.push(['']);
-      return accumulator;
-
-    }, []);
-
-    console.log('******************************* processedBlocksTextArray');
-    console.log('processedBlocksTextArray', processedBlocksTextArray);
-
-    const blockAndLineElementsArray = processedBlocksTextArray.map(
+    const blockAndLineElementsArray = preBlocks.map(
       block => {
         const blockElement = this.DOM.createNeutral();
         // after each line, including the blank line, add '\n'
