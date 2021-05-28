@@ -4,6 +4,7 @@ export default class DocumentObjectModel {
 
   constructor(DOM) {
     this.DOM = DOM;
+    this.body = DOM.body;
   }
 
   // STYLES
@@ -537,19 +538,19 @@ export default class DocumentObjectModel {
   }
 
   getElementHeight(element) {
-    return element.offsetHeight;
+    return element?.offsetHeight || undefined;
   }
 
   getElementWidth(element) {
-    return element.offsetWidth;
+    return element?.offsetWidth || undefined;
   }
 
   getElementTop(element) {
-    return element.offsetTop;
+    return element?.offsetTop || undefined;
   }
 
   getElementBottom(element) {
-    return element.offsetTop + element.offsetHeight;
+    return element?.offsetTop + element?.offsetHeight || undefined;
   }
 
   // TODO make Obj with offsetTop and use it later
