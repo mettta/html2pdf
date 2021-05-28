@@ -199,18 +199,6 @@ export default class DocumentObjectModel {
 
   // GET TEMPLATES
 
-  getFooterTemplate() {
-    return this.getInnerHTML(SELECTOR.footerTemplate);
-  }
-
-  getHeaderTemplate() {
-    return this.getInnerHTML(SELECTOR.headerTemplate);
-  }
-
-  getFrontpageTemplate() {
-    return this.getInnerHTML(SELECTOR.frontpageTemplate);
-  }
-
   clearTemplates(root) {
     // Remove all <template>s, if there are any in the Root.
     const templates = root.querySelectorAll('template');
@@ -326,163 +314,14 @@ export default class DocumentObjectModel {
 
   // PAPER
 
-  createVirtualPaperGap() {
-    return this.create(SELECTOR.virtualPaperGap);
-  }
-
-  createPaper({
-    header,
-    body,
-    footer,
-    currentPage,
-    totalPages,
-  }) {
-    const paper = this._createVirtualPaper();
-
-    paper.append(
-      this._createVirtualPaperTopMargin(),
-      header,
-      body,
-      footer,
-      this._createVirtualPaperBottomMargin(),
-    );
-
-    if (currentPage && totalPages) {
-      this._setPageNumber(header, currentPage, totalPages);
-      this._setPageNumber(footer, currentPage, totalPages);
-    }
-
-    return paper;
-  }
-
-  _setPageNumber(target, current, total) {
-    const container = target.querySelector(SELECTOR.pageNumberRoot);
-    if (container) {
-      container.querySelector(SELECTOR.pageNumberCurrent).innerHTML = current;
-      container.querySelector(SELECTOR.pageNumberTotal).innerHTML = total;
-    }
-  }
-
-  createFrontpageContent(template, factor) {
-    const _node = this.create(SELECTOR.frontpageContent);
-    template && (_node.innerHTML = template);
-    if (factor) {
-      _node.style.transform = `scale(${factor})`;
-    }
-    return _node;
-  }
-
-  // TODO calculate Paper body content  on insertion,
-  // allow to insert any content, not only pre-prepared content
-
-  createPaperBody(height, content) {
-    const _node = this.create(SELECTOR.paperBody);
-    // Lock the height of the paperBody for the content area.
-    // This affects the correct printing of the paper layer.
-    height && (_node.style.height = height + 'px');
-    // To create a frontpage, we can pass content here.
-    content && (_node.append(content));
-    return _node;
-  }
-
-  createPaperHeader(template) {
-    const _node = this.create(SELECTOR.paperHeader);
-
-    if (template) {
-      const content = this.create(SELECTOR.headerContent);
-      content.innerHTML = template;
-      _node.append(content)
-    }
-    return _node;
-  }
-
-  createPaperFooter(template) {
-    const _node = this.create(SELECTOR.paperFooter);
-
-    if (template) {
-      const content = this.create(SELECTOR.footerContent);
-      content.innerHTML = template;
-      _node.append(content)
-    }
-    return _node;
-  }
-
-  calculatePaperParams({
-    frontpageTemplate,
-    headerTemplate,
-    footerTemplate,
-  }) {
-
-    // CREATE TEST PAPER ELEMENTS
-    const body = this.createPaperBody();
-    const frontpage = this.createFrontpageContent(frontpageTemplate);
-    const header = this.createPaperHeader(headerTemplate);
-    const footer = this.createPaperFooter(footerTemplate);
-
-    // CREATE TEST PAPER
-    const paper = this.createPaper({
-      header,
-      body,
-      footer,
-    });
-    // TODO?
-    // const paper = this._createVirtualPaper();
-    // paper.append(
-    //   this._createVirtualPaperTopMargin(),
-    //   header,
-    //   body,
-    //   footer,
-    //   this._createVirtualPaperBottomMargin(),
-    // );
-
-
-    // CREATE TEMP CONTAINER
-    const workbench = this.create('#workbench');
-    workbench.style = `
-      position:absolute;
-      left: -3000px;
-      `;
-    workbench.append(paper);
-    this.DOM.body.prepend(workbench);
-
-    // get heights for an blank page
-    const paperHeight = paper.getBoundingClientRect().height;
-    const headerHeight = header?.offsetHeight || 0;
-    const footerHeight = footer?.offsetHeight || 0;
-    const bodyHeight = body.offsetHeight;
-    const bodyWidth = body.offsetWidth;
-
-    // add frontpage text
-    body.append(frontpage);
-    // get height for the frontpage content
-    const filledBodyHeight = body.offsetHeight;
-
-    const frontpageFactor = (filledBodyHeight > bodyHeight)
-      ? bodyHeight / filledBodyHeight
-      : 1;
-
-    // REMOVE TEMP CONTAINER
-    workbench.remove();
-
-    return {
-      paperHeight,
-      headerHeight,
-      footerHeight,
-      bodyHeight,
-      bodyWidth,
-      frontpageFactor
-    }
-  }
-
-  _createVirtualPaper() {
-    return this.create(SELECTOR.virtualPaper);
-  }
 
   _createVirtualPaperTopMargin() {
+    // TODO is in Paper and in insertHeaderSpacer()
     return this.create(SELECTOR.virtualPaperTopMargin);
   }
 
   _createVirtualPaperBottomMargin() {
+    // TODO is in Paper and in insertFooterSpacer()
     return this.create(SELECTOR.virtualPaperBottomMargin);
   }
 
@@ -615,6 +454,10 @@ export default class DocumentObjectModel {
   }
 
   // PREVIEW
+
+  createVirtualPaperGap() {
+    return this.create(SELECTOR.virtualPaperGap);
+  }
 
   insertFooterSpacer(target, footerHeight, paperSeparator) {
 
