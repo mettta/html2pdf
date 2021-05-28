@@ -254,6 +254,13 @@ export default class DocumentObjectModel {
     element.innerHTML = '';
   }
 
+  setStyles(element, styles) {
+    // styles is object
+    Object.entries(styles)
+      .forEach(([key, value]) =>
+        element.style[key] = value);
+  }
+
   // CREATE ELEMENTS
 
   create(element) {
