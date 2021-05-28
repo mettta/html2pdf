@@ -18,6 +18,10 @@ export default class DocumentObjectModel {
 
   // -
 
+  getElement(selector, target = this.DOM) {
+    return target.querySelector(selector);
+  }
+
   removeNode(element) {
     element.remove();
   }
