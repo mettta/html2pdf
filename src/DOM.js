@@ -34,6 +34,18 @@ export default class DocumentObjectModel {
     element.before(...payload)
   }
 
+  insertAfter(element, ...payload) {
+    element.after(...payload)
+  }
+
+  insertAtEnd(element, ...payload) {
+    element.append(...payload);
+  }
+
+  insertAtStart(element, ...payload) {
+    element.prepend(...payload);
+  }
+
   insertInsteadOf(element, ...payload) {
     element.before(...payload);
     element.remove();
