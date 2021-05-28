@@ -537,6 +537,10 @@ export default class DocumentObjectModel {
     // element.style.margin = '0 auto';
   }
 
+  getElementBCR(element) {
+    return element.getBoundingClientRect();
+  }
+
   getElementHeight(element) {
     return element?.offsetHeight || undefined;
   }
