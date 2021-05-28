@@ -542,18 +542,19 @@ export default class DocumentObjectModel {
   }
 
   getElementHeight(element) {
-    return element?.offsetHeight || undefined;
+    return element?.offsetHeight;
   }
 
   getElementWidth(element) {
-    return element?.offsetWidth || undefined;
+    return element?.offsetWidth;
   }
 
   getElementTop(element) {
-    return element?.offsetTop || undefined;
+    return element?.offsetTop;
   }
 
   getElementBottom(element) {
+    // BUG ? 
     return element?.offsetTop + element?.offsetHeight || undefined;
   }
 
