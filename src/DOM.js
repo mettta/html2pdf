@@ -69,32 +69,13 @@ export default class DocumentObjectModel {
 
   // ATTRIBUTES / dataset
 
-  _setAttribute(element, selector) {
+  setDataAttribute(element, selector) {
     element.setAttribute(selector.substring(1, selector.length - 1), '');
-  }
-  // todo ^^^
-  // if (!String.prototype.trim) {
-  //   (function() {
-  //     // Вырезаем BOM и неразрывный пробел
-  //     String.prototype.trim = function() {
-  //       return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
-  //     };
-  //   })();
-  // }
-
-  setPrintIgnore(element) {
-    // element.dataset.printIgnore = '';
-    this._setAttribute(element, SELECTOR.printIgnore)
   }
 
   setPrintNoBreak(element) {
     // element.dataset.printIgnore = '';
-    this._setAttribute(element, SELECTOR.printNoBreak)
-  }
-
-  setPrintHide(element) {
-    // element.dataset.printHide = '';
-    this._setAttribute(element, SELECTOR.printHide)
+    this.setDataAttribute(element, SELECTOR.printNoBreak)
   }
 
   wrapTextNode(element) {
@@ -109,7 +90,7 @@ export default class DocumentObjectModel {
 
   createNeutral() {
     const neutral = this.DOM.createElement('span');
-    this._setAttribute(neutral, SELECTOR.neutral);
+    this.setDataAttribute(neutral, SELECTOR.neutral);
     return neutral;
   }
 
@@ -156,11 +137,6 @@ export default class DocumentObjectModel {
   isNeutral(element) {
     // SELECTOR.neutral
     return element.dataset?.hasOwnProperty('neutral')
-  }
-
-  isPrintEnd(element) {
-    // SELECTOR.printEnd
-    return element.dataset?.hasOwnProperty('printEnd')
   }
 
   isForcedPageBreak(element) {
@@ -243,10 +219,6 @@ export default class DocumentObjectModel {
     selector.innerHTML = html;
   }
 
-  clearInnerHTML(element) {
-    element.innerHTML = '';
-  }
-
   setStyles(element, styles) {
     // styles is object
     Object.entries(styles)
@@ -287,10 +259,6 @@ export default class DocumentObjectModel {
     return el;
   }
 
-  createPrintEnd() {
-    return this.create(SELECTOR.printEnd);
-  }
-
   createPrintPageBreak() {
     return this.create(SELECTOR.printPageBreak);
   }
@@ -325,34 +293,6 @@ export default class DocumentObjectModel {
     return this.create(SELECTOR.virtualPaperBottomMargin);
   }
 
-  // LAYOUT
-
-  getRoot() {
-    // Prepare root element
-    const root = this.DOM.querySelector(SELECTOR.root) || this.DOM.body;
-    if (!root) {
-      // TODO warn
-      console.warn(`Add ${SELECTOR.root} to the root element of the area you want to print`);
-    }
-
-    return root;
-  }
-
-  createPaperFlow() {
-    return this.create(SELECTOR.paperFlow);
-  }
-
-  createContentFlow() {
-    return this.create(SELECTOR.contentFlow);
-  }
-
-  markPrintEnd(contentFlow) {
-    contentFlow.append(this.createPrintEnd());
-  }
-
-  createLayout(root, paperFlow, contentFlow) {
-    root.append(paperFlow, contentFlow);
-  }
 
   // PAGES
 

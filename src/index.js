@@ -7,6 +7,7 @@ import Layout from './layout';
 import Pages from './pages';
 import Paper from './paper';
 import Preview from './preview';
+import SELECTOR from './selector';
 
 window.addEventListener("load", function (event) {
   console.time("printTHIS");
@@ -17,7 +18,10 @@ window.addEventListener("load", function (event) {
 
   DOM.insertStyle(new Style(config()).create());
 
-  const paper = new Paper(DOM);
+  const paper = new Paper({
+    DOM: DOM,
+    selector: SELECTOR
+  });
 
   // console.log(paper.paperHeight);
   // console.log(paper.headerHeight);
@@ -28,7 +32,10 @@ window.addEventListener("load", function (event) {
   // window.document.body.prepend(paper.createFrontpage());
   // window.document.body.prepend(paper.create(3, 5));
 
-  const layout = new Layout(DOM);
+  const layout = new Layout({
+    DOM: DOM,
+    selector: SELECTOR
+  });
 
   // console.log(layout.root);
   // console.log(layout.paperFlow);
