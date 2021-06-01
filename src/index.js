@@ -18,6 +18,11 @@ window.addEventListener("load", function (event) {
 
   DOM.insertStyle(new Style(config()).create());
 
+  const layout = new Layout({
+    DOM: DOM,
+    selector: SELECTOR
+  });
+
   const paper = new Paper({
     DOM: DOM,
     selector: SELECTOR
@@ -32,10 +37,10 @@ window.addEventListener("load", function (event) {
   // window.document.body.prepend(paper.createFrontpage());
   // window.document.body.prepend(paper.create(3, 5));
 
-  const layout = new Layout({
-    DOM: DOM,
-    selector: SELECTOR
-  });
+  // const layout = new Layout({
+  //   DOM: DOM,
+  //   selector: SELECTOR
+  // });
 
   // console.log(layout.root);
   // console.log(layout.paperFlow);
