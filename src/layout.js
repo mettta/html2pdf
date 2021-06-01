@@ -32,19 +32,20 @@ export default class Layout {
     this.DOM.insertAtEnd(this.root, this.paperFlow, this.contentFlow)
 
     // disable printing the root environment
-    this._ignorePrintingEnvironment(this.root);
+    if (this.root !== this.DOM.body) {
+      this._ignorePrintingEnvironment(this.root);
+    }
   }
 
   _initRoot() {
-    // return this.DOM.getRoot();
-
     // Prepare root element
-    const root = this.DOM.getElement(this.rootSelector) || this.DOM.body;
+    let root = this.DOM.getElement(this.rootSelector);
+    console.log(root);
     if (!root) {
-      // TODO warn
-      console.warn(`Add ${this.rootSelector} to the root element of the area you want to print`);
+      root = this.DOM.body;
+      this.DOM.setAttribute(root, this.rootSelector)
+      console.warn(`Add ${this.rootSelector} to the root element of the area you want to print. ${this.rootSelector} is now automatically added to the BODY tag.`);
     }
-
     return root;
   }
 
@@ -56,12 +57,19 @@ export default class Layout {
   _createContentFlow() {
     const contentFlow = this.DOM.create(this.contentFlowSelector);
 
-    // Copy the content from Root into contentFlow,
-    this.DOM.setInnerHTML(contentFlow, this.DOM.getInnerHTML(this.root));
-    // remove all <template>s, if there are any in the Root,
-    this.DOM.clearTemplates(contentFlow);
-    // add an empty div as a safeguard element to the end of content flow,
-    this.DOM.insertAtEnd(contentFlow, this.DOM.create('[data-content-flow-end]'));
+    const printedContent = this.DOM.getInnerHTML(this.root);
+    const significantPrintedContent = (printedContent.trim().length > 0) ? true : false;
+
+    if (significantPrintedContent) {
+      // Copy the content from Root into contentFlow,
+      this.DOM.setInnerHTML(contentFlow, printedContent);
+      // remove all <template>s, if there are any in the Root,
+      this.DOM.clearTemplates(contentFlow);
+      // add an empty div as a safeguard element to the end of content flow,
+      this.DOM.insertAtEnd(contentFlow, this.DOM.create('[data-content-flow-end]'));
+    } else {
+      console.warn(`It looks like you don't have any printable content.`);
+    }
 
     return contentFlow;
   }
