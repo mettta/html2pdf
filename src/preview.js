@@ -4,14 +4,23 @@ export default class Preview {
 
   constructor({
     DOM,
+    selector,
+
     pages,
     contentFlow,
     paperFlow,
     paper,
-
   }) {
 
     this.DOM = DOM;
+    this.selector = selector;
+
+    // selectors
+    this.virtualPaperGapSelector = selector?.virtualPaperGap;
+    this.runningSafetySelector = selector?.runningSafety;
+    this.printPageBreakSelector = selector?.printPageBreak;
+
+    // data
     this.pages = pages;
     this.contentFlow = contentFlow;
     this.paperFlow = paperFlow;
@@ -35,7 +44,7 @@ export default class Preview {
 
       // insert Frontpage Spacer into Content Flow,
       // get a reference to the inserted element,
-      const frontpage = this.DOM.insertFrontpageSpacer(this.contentFlow, this.paper.bodyHeight);
+      const frontpage = this._insertFrontpageSpacer(this.contentFlow, this.paper.bodyHeight);
 
       // register the added Frontpage Spacer in pages array,
       // thereby increasing the number of pages by 1.
@@ -69,7 +78,7 @@ export default class Preview {
         currentPage: index + 1,
         totalPages: this.pages.length
       });
-      const paperSeparator = this.DOM.createVirtualPaperGap();
+      const paperSeparator = this._createVirtualPaperGap();
 
       // insert with pre-separator
       this._insertIntoPaperFlow(paper, paperSeparator)
@@ -83,7 +92,7 @@ export default class Preview {
     // ADD VIRTUAL PAGE into Paper Flow,
     // with corresponding page number and pre-filled or blank,
     // with or without pre-separator.
-    this.DOM.insertPaper(
+    this._insertPaper(
       this.paperFlow,
       paper,
       separator,
@@ -93,7 +102,110 @@ export default class Preview {
   _insertIntoContentFlow(element, separator) {
     // ADD FOOTER and HEADER into Content Flow (as page break),
     // ADD ONLY HEADER into Content Flow before the first page.
-    separator && this.DOM.insertFooterSpacer(element, this.paper.footerHeight, separator);
-    this.DOM.insertHeaderSpacer(element, this.paper.headerHeight);
+    separator && this._insertFooterSpacer(element, this.paper.footerHeight, separator);
+    this._insertHeaderSpacer(element, this.paper.headerHeight);
   }
+
+  _insertPaper(paperFlow, paper, separator) {
+    if (separator) {
+      // pages that come after the page break
+      this.DOM.insertAtEnd(
+        paperFlow,
+        // this.createPrintPageBreak(), // has no effect
+        separator,
+        paper,
+      );
+    } else {
+      // first page
+      this.DOM.insertAtEnd(
+        paperFlow,
+        paper,
+      );
+    }
+  }
+
+  // create elements
+
+  _createVirtualPaperGap() {
+    return this.DOM.create(this.virtualPaperGapSelector);
+  }
+
+  _createVirtualPaperTopMargin() {
+    return this.paper.createVirtualTopMargin()
+  }
+
+  _createVirtualPaperBottomMargin() {
+    return this.paper.createVirtualBottomMargin()
+  }
+
+  _insertFrontpageSpacer(target, bodyHeight) {
+    // create spacer element
+    const spacer = this.DOM.create();
+    this.DOM.setStyles(spacer, { paddingBottom: bodyHeight + 'px' });
+
+    // insert filler element into content
+    this.DOM.insertAtStart(target, spacer);
+
+    // return ref
+    return spacer;
+  }
+
+  _insertHeaderSpacer(target, headerHeight) {
+
+    // In the virtual footer/header we add an empty element
+    // with a calculated height instead of the content.
+    // We use margins to compensate for possible opposite margins in the content.
+    const balancingHeader = this.DOM.create(this.runningSafetySelector);
+    headerHeight && this.DOM.setStyles(balancingHeader, { marginBottom: headerHeight + 'px' });
+
+    const headerSpacer = this.DOM.createDocumentFragment();
+    this.DOM.insertAtEnd(
+      headerSpacer,
+      this._createVirtualPaperTopMargin(),
+      balancingHeader,
+    )
+
+    // Put into DOM
+    this.DOM.insertBefore(target, headerSpacer)
+  }
+
+  _insertFooterSpacer(target, footerHeight, paperSeparator) {
+
+    // In the virtual footer/header we add an empty element
+    // with a calculated height instead of the content.
+    // We use margins to compensate for possible opposite margins in the content.
+
+    // In this element we will add a compensator.
+    // We create it with a basic compensator,
+    // which takes into account now only the footerHeight.
+    const balancingFooter = this.DOM.create(this.runningSafetySelector);
+    footerHeight && this.DOM.setStyles(balancingFooter, { marginTop: footerHeight + 'px' });
+
+    // Based on contentSeparator (virtual, not printed element, inserted into contentFlow)
+    // and paperSeparator (virtual, not printed element, inserted into paperFlow),
+    // calculate the height of the necessary compensator to visually fit page breaks
+    // in the content in contentFlow and virtual page images on the screen in paperFlow.
+    const contentSeparator = this._createVirtualPaperGap();
+
+    const footerSpacer = this.DOM.createDocumentFragment();
+    this.DOM.insertAtEnd(
+      footerSpacer,
+      balancingFooter,
+      this._createVirtualPaperBottomMargin(),
+      this.DOM.create(this.printPageBreakSelector), // PageBreak
+      contentSeparator,
+    )
+
+    // Put into DOM
+    this.DOM.insertBefore(target, footerSpacer)
+
+    // Determine what inaccuracy there is visually in the break simulation position,
+    // and compensate for it.
+    const balancer = this.DOM.getElementTop(paperSeparator) - this.DOM.getElementTop(contentSeparator);
+    this.DOM.setStyles(balancingFooter, { marginBottom: balancer + 'px' });
+
+    // TODO check if negative on large documents
+    // console.log(balancer);
+  }
+
 }

@@ -54,6 +54,7 @@ window.addEventListener("load", function (event) {
 
   new Preview({
     DOM,
+    selector: SELECTOR,
     contentFlow: layout.contentFlow,
     paperFlow: layout.paperFlow,
     paper: paper,

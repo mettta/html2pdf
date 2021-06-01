@@ -74,6 +74,13 @@ export default class Paper {
     });
   }
 
+  createVirtualTopMargin() {
+    return this.DOM.create(this.virtualPaperTopMarginSelector);
+  }
+  createVirtualBottomMargin() {
+    return this.DOM.create(this.virtualPaperBottomMarginSelector);
+  }
+
   // TODO make createPaper() dependent on templates and parameters:
   // Don't create parts of the page here?
 
@@ -89,11 +96,11 @@ export default class Paper {
 
     this.DOM.insertAtEnd(
       paper,
-      this.DOM.create(this.virtualPaperTopMarginSelector),
+      this.createVirtualTopMargin(),
       header,
       body,
       footer,
-      this.DOM.create(this.virtualPaperBottomMarginSelector),
+      this.createVirtualBottomMargin(),
     );
 
     if (currentPage && totalPages) {
