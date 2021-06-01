@@ -73,13 +73,35 @@ export default class DocumentObjectModel {
 
   // ATTRIBUTES / dataset
 
-  setDataAttribute(element, selector) {
-    element.setAttribute(selector.substring(1, selector.length - 1), '');
+  setAttribute(element, selector) {
+    if (!element || !selector) {
+      console.warn('setAttribute() must have 2 params');
+      return;
+    }
+
+    const first = selector.charAt(0);
+
+    if (first === '.') {
+      const cl = selector.substring(1);
+      element.classList.add(cl);
+
+    }
+    if (first === '#') {
+      const id = selector.substring(1);
+      element.id = id;
+
+    }
+    if (first === '[') {
+      const attr = selector.substring(1, selector.length - 1);
+      element.setAttribute(attr, '');
+
+    }
+
   }
 
   setPrintNoBreak(element) {
     // element.dataset.printIgnore = '';
-    this.setDataAttribute(element, SELECTOR.printNoBreak)
+    this.setAttribute(element, SELECTOR.printNoBreak)
   }
 
   wrapTextNode(element) {
@@ -94,7 +116,7 @@ export default class DocumentObjectModel {
 
   createNeutral() {
     const neutral = this.DOM.createElement('span');
-    this.setDataAttribute(neutral, SELECTOR.neutral);
+    this.setAttribute(neutral, SELECTOR.neutral);
     return neutral;
   }
 
