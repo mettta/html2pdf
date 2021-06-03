@@ -108,6 +108,7 @@ export default class Style {
   ${SELECTOR.frontpageContent} {
     transform-origin: top center;
     padding: .1px;
+    height: 100%;
   }
 
   ${SELECTOR.neutral},
