@@ -805,4 +805,26 @@ export default class Pages {
   //   const takeAsWhole = (tag === 'IMG' || tag === 'svg' || tag === 'TABLE' || this.DOM.isNoBreak(element) || tag === 'OBJECT')
   //   return takeAsWhole;
   // }
+
+
+  _getElementRootedTop(element, topAcc = 0) {
+
+    const offsetParent = this.DOM.getElementOffsetParent(element);
+    const currTop = this.DOM.getElementTop(element);
+
+    if (!offsetParent) {
+      return currTop
+    }
+
+    if (offsetParent === this.root) {
+      return (currTop + topAcc);
+    } else {
+      console.log('offsetParent', [element]);
+      return this._getElementRootedTop(offsetParent, topAcc + currTop);
+    }
+  }
+
+  _getElementRootedBottom(element) {
+    return this.DOM.getElementHeight(element) + this._getElementRootedTop(element);
+  }
 }
