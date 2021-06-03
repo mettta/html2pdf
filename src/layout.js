@@ -40,7 +40,7 @@ export default class Layout {
   _initRoot() {
     // Prepare root element
     let root = this.DOM.getElement(this.rootSelector);
-    console.log(root);
+    // console.log(root);
     if (!root) {
       root = this.DOM.body;
       this.DOM.setAttribute(root, this.rootSelector)

@@ -12,7 +12,7 @@ import SELECTOR from './selector';
 window.addEventListener("load", function (event) {
   console.time("printTHIS");
 
-  _emulateContent();
+  // _emulateContent();
 
   const DOM = new DocumentObjectModel(window.document);
 
@@ -50,7 +50,7 @@ window.addEventListener("load", function (event) {
 
   const pages = new Pages({
     DOM,
-    contentFlow: layout.contentFlow,
+    layout: layout,
     referenceHeight: paper.bodyHeight,
     referenceWidth: paper.bodyWidth,
   }).calculate();

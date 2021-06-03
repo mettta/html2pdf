@@ -5,13 +5,16 @@ export default class Pages {
 
   constructor({
     DOM,
-    contentFlow,
+    layout,
     referenceWidth,
     referenceHeight
   }) {
 
     this.DOM = DOM;
-    this.contentFlow = contentFlow;
+
+    this.root = layout.root;
+    this.contentFlow = layout.contentFlow;
+
     this.referenceWidth = referenceWidth;
     this.referenceHeight = referenceHeight;
 
@@ -211,8 +214,10 @@ export default class Pages {
       // IF currentElement does fit
       // in the remaining space on the page,
       if (this.DOM.getElementBottom(currentElement) <= newPageBottom) {
-        // we need <= because splitted elements often get equal height // todo comment 
-        console.log('%c -- check BOTTOM of', 'color:yellow', currentElement);
+        // we need <= because splitted elements often get equal height // todo comment
+
+        // console.log('%c -- check BOTTOM of', 'color:yellow', currentElement);
+
         this._registerPageStart(nextElement);
         return
       }
