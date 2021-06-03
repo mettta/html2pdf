@@ -67,6 +67,10 @@ export default class DocumentObjectModel {
     return item.previousElementSibling
   }
 
+  getElementOffsetParent(element) {
+    return element.offsetParent
+  }
+
   getDataId(item) { // (pages)
     return item.dataset.id;
   }
