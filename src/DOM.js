@@ -340,13 +340,45 @@ export default class DocumentObjectModel {
     return element?.offsetWidth;
   }
 
-  getElementTop(element) {
+  getElementRelativeTop(element) {
     return element?.offsetTop;
   }
 
-  getElementBottom(element) {
+  getElementRootedTop(element, root, topAcc = 0) {
+
+    if (!element) {
+      console.warn('element must be provided', element);
+      return
+    }
+
+    if (!root) {
+      console.warn('root must be provided', element);
+      return
+    }
+
+    const offsetParent = element.offsetParent;
+
+    if (!offsetParent) {
+      console.warn('element has no offset parent', element);
+      return
+    }
+
+    const currTop = element.offsetTop;
+
+    if (offsetParent === root) {
+      return (currTop + topAcc);
+    } else {
+      return this.getElementRootedTop(offsetParent, root, topAcc + currTop);
+    }
+  }
+
+  getElementRelativeBottom(element) {
     // BUG ? 
     return element?.offsetTop + element?.offsetHeight || undefined;
+  }
+
+  getElementRootedBottom(element, root) {
+    return this.getElementRootedTop(element, root) + this.getElementHeight(element);
   }
 
   // TODO make Obj with offsetTop and use it later

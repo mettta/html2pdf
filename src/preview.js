@@ -201,7 +201,7 @@ export default class Preview {
 
     // Determine what inaccuracy there is visually in the break simulation position,
     // and compensate for it.
-    const balancer = this.DOM.getElementTop(paperSeparator) - this.DOM.getElementTop(contentSeparator);
+    const balancer = this.DOM.getElementRootedTop(paperSeparator, this.root) - this.DOM.getElementRootedTop(contentSeparator, this.root);
     this.DOM.setStyles(balancingFooter, { marginBottom: balancer + 'px' });
 
     // TODO check if negative on large documents

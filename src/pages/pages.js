@@ -107,15 +107,15 @@ export default class Pages {
     // if relative? -> offsetParent + offsetThis
 
     // TODO
-    // this.DOM.getElementTop(pageStart)???????
+    // this.DOM.getElementRootedTop(pageStart)???????
     // this.pages[this.pages.length - 1].pageStart
 
     // const lastElem = this.pages[this.pages.length - 1].pageEnd;
-    // const flowCutPoint = lastElem ? this.DOM.getElementBottom(lastElem) : 0;
+    // const flowCutPoint = lastElem ? this.DOM.getElement...Bottom(lastElem) : 0;
     // const newPageBottom = flowCutPoint + this.referenceHeight;
 
     const lastPageStart = this.pages[this.pages.length - 1].pageStart;
-    const flowCutPoint = lastPageStart ? this.DOM.getElementTop(lastPageStart) : 0;
+    const flowCutPoint = lastPageStart ? this.DOM.getElementRootedTop(lastPageStart, this.root) : 0;
     const newPageBottom = flowCutPoint + this.referenceHeight;
 
     if (this.DOM.isForcedPageBreak(currentElement)) {
@@ -127,14 +127,14 @@ export default class Pages {
     // we should check if the current one fits in the page,
     // because it could be because of the margin
     // TODO if next elem is SVG it has no offset Top!
-    if (this.DOM.getElementTop(nextElement) > newPageBottom) {
+    if (this.DOM.getElementRootedTop(nextElement, this.root) > newPageBottom) {
 
       // console.log(
       //   '\n previousElement:', previousElement,
       //   '\n currentElement:', currentElement,
       //   '\n nextElement:', nextElement,
       //   // '\n newPageBottom', newPageBottom,
-      //   // '\n elBot', this.DOM.getElementBottom(currentElement),
+      //   // '\n elBot', this.DOM.getElement...Bottom(currentElement),
       // );
 
       // Here nextElement is a candidate to start a new page,
@@ -161,7 +161,7 @@ export default class Pages {
           ? this.DOM.wrapWithPrintNoBreak(currentElement)
           : currentElement;
 
-        const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
+        const availableSpace = newPageBottom - this.DOM.getElementRootedTop(currentImage, this.root);
         const currentImageHeight = this.DOM.getElementHeight(currentImage);
         const currentImageWidth = this.DOM.getElementWidth(currentImage);
 
@@ -213,7 +213,7 @@ export default class Pages {
       // TODO check BOTTOMS??? vs MARGINS
       // IF currentElement does fit
       // in the remaining space on the page,
-      if (this.DOM.getElementBottom(currentElement) <= newPageBottom) {
+      if (this.DOM.getElementRootedBottom(currentElement, this.root) <= newPageBottom) {
         // we need <= because splitted elements often get equal height // todo comment
 
         // console.log('%c -- check BOTTOM of', 'color:yellow', currentElement);
@@ -307,7 +307,7 @@ export default class Pages {
     // TODO check if there are NODES except text nodes
 
     // Prepare node parameters
-    const nodeTop = this.DOM.getElementTop(node);
+    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
     const nodeHeight = this.DOM.getElementHeight(node);
     const nodeLineHeight = this.DOM.getLineHeight(node);
     const preWrapperHeight = this.DOM.getEmptyNodeHeight(node);
@@ -451,11 +451,11 @@ export default class Pages {
       const current = blockAndLineElementsArray[index];
 
       // TODO move to DOM
-      if (this.DOM.getElementBottom(current) > floater) {
+      if (this.DOM.getElementRootedBottom(current, this.root) > floater) {
 
         splitters.push(index);
         page += 1;
-        floater = this.DOM.getElementTop(current) + pageSpace;
+        floater = this.DOM.getElementRootedTop(current, this.root) + pageSpace;
       }
     }
 
@@ -494,7 +494,7 @@ export default class Pages {
   _splitTableNode(node, pageBottom) {
     console.log('%c WE HAVE A TABLE', 'color:yellow');
     console.log('pageBottom', pageBottom);
-    console.log('nodeBottom', this.DOM.getElementBottom(node));
+    console.log('nodeBottom', this.DOM.getElementRootedBottom(node, this.root));
 
     console.time('_splitTableNode')
 
@@ -574,7 +574,7 @@ export default class Pages {
     }
 
     // Prepare node parameters
-    const nodeTop = this.DOM.getElementTop(node);
+    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
     const nodeHeight = this.DOM.getElementHeight(node);
 
     const firstPartHeight = pageBottom
@@ -586,8 +586,8 @@ export default class Pages {
       - this.DOM.getElementHeight(nodeEntries.caption)
       - 2 * this.signpostHeight - tableWrapperHeight;
     const topsArr = [
-      ...nodeEntries.rows.map((row) => this.DOM.getElementTop(row)),
-      this.DOM.getElementTop(nodeEntries.tfoot) || nodeHeight
+      ...nodeEntries.rows.map((row) => this.DOM.getElementRootedTop(row, node)),
+      this.DOM.getElementRootedTop(nodeEntries.tfoot, node) || nodeHeight
     ]
 
     // calculate Table Splits Ids
@@ -673,7 +673,7 @@ export default class Pages {
   _splitTextNode(node, pageBottom) {
 
     // Prepare node parameters
-    const nodeTop = this.DOM.getElementTop(node);
+    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
     const nodeHeight = this.DOM.getElementHeight(node);
     const nodeLineHeight = this.DOM.getLineHeight(node);
 
@@ -718,7 +718,8 @@ export default class Pages {
             arr: nodeWordItems,
             floater: splitter,
             topRef: endLine * nodeLineHeight,
-            getElementTop: this.DOM.getElementTop,
+            getElementTop: this.DOM.getElementRootedTop,
+            root: this.root
           })
           : null
     );
@@ -806,25 +807,4 @@ export default class Pages {
   //   return takeAsWhole;
   // }
 
-
-  _getElementRootedTop(element, topAcc = 0) {
-
-    const offsetParent = this.DOM.getElementOffsetParent(element);
-    const currTop = this.DOM.getElementTop(element);
-
-    if (!offsetParent) {
-      return currTop
-    }
-
-    if (offsetParent === this.root) {
-      return (currTop + topAcc);
-    } else {
-      console.log('offsetParent', [element]);
-      return this._getElementRootedTop(offsetParent, topAcc + currTop);
-    }
-  }
-
-  _getElementRootedBottom(element) {
-    return this.DOM.getElementHeight(element) + this._getElementRootedTop(element);
-  }
 }
