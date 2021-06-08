@@ -102,18 +102,6 @@ export default class Pages {
       return
     }
 
-    // TODO
-    // offsetParent: div#printTHIS
-    // if relative? -> offsetParent + offsetThis
-
-    // TODO
-    // this.DOM.getElementRootedTop(pageStart)???????
-    // this.pages[this.pages.length - 1].pageStart
-
-    // const lastElem = this.pages[this.pages.length - 1].pageEnd;
-    // const flowCutPoint = lastElem ? this.DOM.getElement...Bottom(lastElem) : 0;
-    // const newPageBottom = flowCutPoint + this.referenceHeight;
-
     const lastPageStart = this.pages[this.pages.length - 1].pageStart;
     const flowCutPoint = lastPageStart ? this.DOM.getElementRootedTop(lastPageStart, this.root) : 0;
     const newPageBottom = flowCutPoint + this.referenceHeight;
@@ -122,6 +110,11 @@ export default class Pages {
       this._registerPageStart(nextElement)
       return
     }
+
+    console.assert( // is filtered in the function _gerChildren()
+      this.DOM.getElementOffsetParent(currentElement),
+      'it is expected that the element has an offset parent',
+      [currentElement]);
 
     // IF nextElement does not start on the current page,
     // we should check if the current one fits in the page,
@@ -753,16 +746,26 @@ export default class Pages {
     // TODO first Li
 
     const childrenArr = [...this.DOM.getChildNodes(element)]
-      .map(
-        item =>
-          this.DOM.isSignificantTextNode(item)
-            ? this.DOM.wrapTextNode(item)
-            : item
-      )
-      .filter(
-        item =>
-          this.DOM.isElementNode(item)
-      );
+      .reduce(
+        (acc, item) => {
+
+          if (!this.DOM.getElementOffsetParent(item)) {
+            const ch = this._getChildren(item);
+            ch.length > 0 && acc.push(...ch);
+            return acc;
+          }
+
+          if (this.DOM.isSignificantTextNode(item)) {
+            acc.push(this.DOM.wrapTextNode(item));
+            return acc;
+          }
+
+          if (this.DOM.isElementNode(item)) {
+            acc.push(item);
+            return acc;
+          };
+
+        }, [])
 
     return childrenArr;
   }
