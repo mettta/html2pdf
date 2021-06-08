@@ -55,13 +55,12 @@ window.addEventListener("load", function (event) {
     referenceWidth: paper.bodyWidth,
   }).calculate();
 
-  console.log(pages);
+  console.log('pages', pages);
 
   new Preview({
     DOM,
     selector: SELECTOR,
-    contentFlow: layout.contentFlow,
-    paperFlow: layout.paperFlow,
+    layout: layout,
     paper: paper,
     pages: pages,
   }).create();

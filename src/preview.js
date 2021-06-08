@@ -7,8 +7,7 @@ export default class Preview {
     selector,
 
     pages,
-    contentFlow,
-    paperFlow,
+    layout,
     paper,
   }) {
 
@@ -22,8 +21,9 @@ export default class Preview {
 
     // data
     this.pages = pages;
-    this.contentFlow = contentFlow;
-    this.paperFlow = paperFlow;
+    this.root = layout.root;
+    this.contentFlow = layout.contentFlow;
+    this.paperFlow = layout.paperFlow;
     this.paper = paper;
 
   }
