@@ -444,11 +444,11 @@ export default class Pages {
       const current = blockAndLineElementsArray[index];
 
       // TODO move to DOM
-      if (this.DOM.getElementRootedBottom(current, this.root) > floater) {
+      if (this.DOM.getElementRootedBottom(current, testNode) > floater) {
 
         splitters.push(index);
         page += 1;
-        floater = this.DOM.getElementRootedTop(current, this.root) + pageSpace;
+        floater = this.DOM.getElementRootedTop(current, testNode) + pageSpace;
       }
     }
 
