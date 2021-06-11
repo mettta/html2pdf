@@ -142,6 +142,7 @@ export default class Preview {
     // create spacer element
     const spacer = this.DOM.create();
     this.DOM.setStyles(spacer, { paddingBottom: bodyHeight + 'px' });
+    this.DOM.setAttribute(spacer, '.printFrontpageSpacer');
 
     // insert filler element into content
     this.DOM.insertAtStart(target, spacer);
