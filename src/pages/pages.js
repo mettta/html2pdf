@@ -60,6 +60,8 @@ export default class Pages {
 
     const content = this._getChildren(this.contentFlow);
 
+    console.log('content', content);
+
     // TODO put this into main calculations?
     // FIRST ELEMENT: register the beginning of the first page.
     this._registerPageStart(content[0]);
@@ -122,13 +124,7 @@ export default class Pages {
     // TODO if next elem is SVG it has no offset Top!
     if (this.DOM.getElementRootedTop(nextElement, this.root) > newPageBottom) {
 
-      // console.log(
-      //   '\n previousElement:', previousElement,
-      //   '\n currentElement:', currentElement,
-      //   '\n nextElement:', nextElement,
-      //   // '\n newPageBottom', newPageBottom,
-      //   // '\n elBot', this.DOM.getElement...Bottom(currentElement),
-      // );
+      console.log('+++++++++', this.DOM.getElementRootedTop(nextElement, this.root), '>', newPageBottom);
 
       // Here nextElement is a candidate to start a new page,
       // and currentElement is a candidate
@@ -209,26 +205,57 @@ export default class Pages {
       if (this.DOM.getElementRootedBottom(currentElement, this.root) <= newPageBottom) {
         // we need <= because splitted elements often get equal height // todo comment
 
-        // console.log('%c -- check BOTTOM of', 'color:yellow', currentElement);
+        console.log('%c -- check BOTTOM of', 'color:yellow', currentElement);
 
         this._registerPageStart(nextElement);
         return
       }
+
+      console.log('+-------', this.DOM.getElementRootedBottom(currentElement, this.root), '>', newPageBottom);
+
 
       // otherwise try to break it and loop the children:
       let children = [];
 
       if (this.DOM.isNoBreak(currentElement) || this._notSolved(currentElement)) {
         // don't break apart, thus keep an empty children array
+        console.log('%c do not break', 'color:green', currentElement);
         children = [];
       } else if (this._isTextNode(currentElement)) {
+        // console.log('text node', currentElement);
         children = this._splitTextNode(currentElement, newPageBottom) || [];
       } else if (this._isPRE(currentElement)) {
+        // console.log('pre', currentElement);
         children = this._splitPreNode(currentElement, newPageBottom) || [];
       } else if (this._isTableNode(currentElement)) {
+        // console.log('table', currentElement);
         children = this._splitTableNode(currentElement, newPageBottom) || [];
+        // } else if (this._isLiNode(currentElement)) {
+        //   // todo
+        //   // now make all except UL unbreakable
+        //   const liChildren = this._getChildren(currentElement)
+        //     .reduce((acc, child) => {
+        //       if (this.DOM.getElementTagName(child) === 'UL') {
+        //         acc.push(child);
+        //       } else {
+        //         // TODO сразу собирать в нейтральный объект
+        //         // и проверить display contents!! чтобы брать положение, но отключать стили и влияние на другие
+        //         if (acc[acc.length - 1]?.length) {
+        //           acc[acc.length - 1].push(child);
+        //         } else {
+        //           acc.push([child]);
+        //         }
+        //       }
+        //       return acc
+        //     }, []);
+        //   console.log(liChildren);
       } else {
         children = this._getChildren(currentElement);
+        // console.log('just children', currentElement, children);
+        // BUG
+        if (this.DOM.getElementTagName(currentElement) === 'A') {
+          // console.log("A", currentElement, children);
+        }
       }
 
 
@@ -290,7 +317,7 @@ export default class Pages {
 
   _splitPreNode(node, pageBottom) {
 
-    console.log('PRE', node);
+    // console.log('PRE', node);
 
     // TODO the same in splitTextNode - make one code piece
 
@@ -307,31 +334,21 @@ export default class Pages {
     const totalLines = (nodeHeight - preWrapperHeight) / nodeLineHeight;
 
     if (totalLines < this.minPreBreakableLines) {
-      this._registerPageStart(node);
-      return
+      // this._registerPageStart(node);
+      return []
     }
 
-    // Prepare parameters for splitters calculation
-    let availableSpace = pageBottom - nodeTop - preWrapperHeight;
-    const pageSpace = this.referenceHeight - preWrapperHeight;
 
-    let firstPartLines = Math.trunc(availableSpace / nodeLineHeight);
-    const linesPerPage = Math.trunc(pageSpace / nodeLineHeight);
 
-    if (firstPartLines < this.minPreFirstBlockLines) {
-      console.log('availableSpace is too small');
-      availableSpace = this.referenceHeight;
-      firstPartLines = linesPerPage;
-    }
 
-    const restLines = totalLines - firstPartLines;
 
-    const fullPages = Math.floor(restLines / linesPerPage);
-    const lastPartLines = restLines % linesPerPage;
+    console.log('\n\n\n\n -------PRE-------- \n');
 
-    if (lastPartLines < this.minPreLastBlockLines) {
-      firstPartLines = firstPartLines - (this.minPreLastBlockLines - lastPartLines);
-    }
+
+
+
+
+
 
     // *** try split by blocks
     // TODO <br>
@@ -347,11 +364,52 @@ export default class Pages {
       preText = preText.slice(0, -1);
     }
 
-    console.log('1 - preText');
+    // console.log('1 - preText');
 
     const preLines = preText.split('\n');
     // "000", "", "001", "002", "003", "004", "005", "006", "", "007" .....
-    console.log('2 - preLines', preLines);
+    console.log('#### 2 - preLines', preLines);
+
+
+    if (preLines.length < this.minPreBreakableLines) {
+      // this._registerPageStart(node);
+      return []
+    }
+
+
+    // TODO
+    // нужны ли эти странные вычисления,
+    // нужно смотреть, сколько реальных строк помещается в первой части/
+    // А НАДО ЛИ ЭТО?
+    // может просто разбить на возможные части и отправить выше, пусть сами распределяют
+
+    // Prepare parameters for splitters calculation
+    let availableSpace = pageBottom - nodeTop - preWrapperHeight;
+    const pageSpace = this.referenceHeight - preWrapperHeight;
+
+    console.log('availableSpace', availableSpace, '=', pageBottom, '-', nodeTop, '-', preWrapperHeight);
+
+    let firstPartLines = Math.trunc(availableSpace / nodeLineHeight);
+    const linesPerPage = Math.trunc(pageSpace / nodeLineHeight);
+
+    if (firstPartLines < this.minPreFirstBlockLines) {
+      // console.log('availableSpace is too small');
+      availableSpace = this.referenceHeight;
+      firstPartLines = linesPerPage;
+    }
+
+    const restLines = totalLines - firstPartLines;
+    // console.log(restLines); // BUG -32 ????
+
+    const fullPages = Math.floor(restLines / linesPerPage);
+    const lastPartLines = restLines % linesPerPage;
+    // console.log(lastPartLines);
+
+    if (lastPartLines < this.minPreLastBlockLines) {
+      firstPartLines = firstPartLines - (this.minPreLastBlockLines - lastPartLines);
+      // console.log(firstPartLines);
+    }
+
 
     // ["000"], ["001", "002", "003", "004", "005", "006"], ["007", .....
     const preGroupedLines = preLines.reduce((accumulator, line, index, array) => {
@@ -365,6 +423,9 @@ export default class Pages {
     }, [[]])
       .filter(array => array.length);
 
+    console.log('3 BEFORE - preGroupedLines', preGroupedLines);
+
+    // TODO TEST THIS! logik is too compex
     let veryStartGroup = '';
     let veryEndGroup = '';
 
@@ -375,10 +436,14 @@ export default class Pages {
       veryEndGroup = '\n' + preGroupedLines.pop().join('\n');
     }
 
-    console.log('3 - preGroupedLines', preGroupedLines);
+    console.log('3 AFTER - preGroupedLines', preGroupedLines);
+    console.log('veryStartGroup', veryStartGroup)
+    console.log('veryEndGroup', veryEndGroup)
 
     // ["000"], [Array(3), Array(3)], [Array(3), "010", "011", Array(3)], .....
     const preBlocks = preGroupedLines.reduce((accumulator, block, index, array) => {
+
+      console.log('preBlocks block #', index, block)
 
       if (block.length < this.minPreBreakableLines) {
         accumulator.push(block.join('\n') + '\n')
@@ -407,6 +472,13 @@ export default class Pages {
 
     console.log('4 - preBlocks', preBlocks);
 
+    // TODO TEST THIS! its hack
+
+    if (preBlocks.length === 1) {
+      console.log('%c DONT SPLIT IT', 'color:yellow');
+      return []
+    }
+
 
     // **************************************
 
@@ -418,7 +490,7 @@ export default class Pages {
       }
     )
 
-    // console.log(blockAndLineElementsArray);
+    console.log(blockAndLineElementsArray);
 
     //TODO move to DOM, like prepareSplittedNode(node)
 
@@ -439,9 +511,17 @@ export default class Pages {
     let splitters = [];
     let floater = availableSpace;
 
+    console.log('floater', floater);
+
     for (let index = 0; index < blockAndLineElementsArray.length; index++) {
       // const floater = availableSpace + page * pageSpace;
       const current = blockAndLineElementsArray[index];
+
+
+      // TODO      ###???###
+      // если у нас есть кусочек страницы, и
+      // если первая ЧАСТЬ больше, чем этот ксочек.. 
+      // получается, что мы делаем разбиение как бы для первой части ???
 
       // TODO move to DOM
       if (this.DOM.getElementRootedBottom(current, testNode) > floater) {
@@ -455,7 +535,7 @@ export default class Pages {
     // register last part end
     splitters.push(null);
 
-    console.log(splitters);
+    console.log('splitters', splitters);
 
 
     const splitsArr = splitters.map((id, index, splitters) => {
@@ -469,12 +549,18 @@ export default class Pages {
       const start = splitters[index - 1] || 0;
       const end = id || splitters[splitters.length];
 
+      console.log(' ### SPLIT:', index, ' - ', start, end);
+
       part.append(...blockAndLineElementsArray.slice(start, end));
 
       return part;
     });
 
     console.log('PRE splitsArr', splitsArr);
+
+
+    console.log('\n -------// PRE-------- \n\n\n\n');
+
 
     this.DOM.insertInsteadOf(node, ...splitsArr);
     return splitsArr;
@@ -745,6 +831,9 @@ export default class Pages {
     // TODO last child
     // TODO first Li
 
+    // fon display:none / contents
+    // this.DOM.getElementOffsetParent(currentElement)
+
     const childrenArr = [...this.DOM.getChildNodes(element)]
       .reduce(
         (acc, item) => {
@@ -783,6 +872,9 @@ export default class Pages {
   }
   _isTableNode(element) {
     return this.DOM.getElementTagName(element) === 'TABLE';
+  }
+  _isLiNode(element) {
+    return this.DOM.getElementTagName(element) === 'LI';
   }
 
   _notSolved(element) {
