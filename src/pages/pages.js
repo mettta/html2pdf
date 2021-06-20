@@ -251,21 +251,16 @@ export default class Pages {
         //   console.log(liChildren);
       } else {
         children = this._getChildren(currentElement);
-        // console.log('just children', currentElement, children);
-        // BUG
-        if (this.DOM.getElementTagName(currentElement) === 'A') {
-          // console.log("A", currentElement, children);
-        }
+      }
+
+      if (this._isVerticalFlowDisrupted(children)) {
+        // [] => false
+        children = this._processChildrenThoroughly(children);
       }
 
 
       // parse children
       if (children.length) {
-
-
-        if (this._isVerticalFlowDisrupted(children)) {
-          console.log('%c isVerticalFlowDisrupted', 'background:blue', children);
-        }
 
         // Process children if exist:
         this._parseNodes({
@@ -287,6 +282,11 @@ export default class Pages {
 
     }
     // IF currentElement fits, continue.
+  }
+
+  _processChildrenThoroughly(children) {
+    console.log('%c _processChildrenThoroughly', 'background:blue', children);
+    return children
   }
 
   _isVerticalFlowDisrupted(arrayOfElements) {
@@ -863,7 +863,6 @@ export default class Pages {
         (acc, item) => {
 
           if (this.DOM.isSignificantTextNode(item)) {
-
             acc.push(this.DOM.wrapTextNode(item));
             return acc;
           }
