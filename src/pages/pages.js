@@ -261,6 +261,12 @@ export default class Pages {
 
       // parse children
       if (children.length) {
+
+
+        if (this._isVerticalFlowDisrupted(children)) {
+          console.log('%c isVerticalFlowDisrupted', 'background:blue', children);
+        }
+
         // Process children if exist:
         this._parseNodes({
           array: children,
@@ -281,6 +287,24 @@ export default class Pages {
 
     }
     // IF currentElement fits, continue.
+  }
+
+  _isVerticalFlowDisrupted(arrayOfElements) {
+    return arrayOfElements.some(
+
+      (current, currentIndex, array) => {
+
+        const currentElement = current;
+        const nextElement = array[currentIndex + 1];
+
+
+        if (!nextElement) {
+          return false
+        };
+
+        return this.DOM.getElementRelativeBottom(currentElement) > this.DOM.getElementRelativeTop(nextElement);
+      }
+    )
   }
 
   _canNotBeLast(element) {
