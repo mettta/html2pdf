@@ -838,14 +838,15 @@ export default class Pages {
       .reduce(
         (acc, item) => {
 
-          if (!this.DOM.getElementOffsetParent(item)) {
-            const ch = this._getChildren(item);
-            ch.length > 0 && acc.push(...ch);
+          if (this.DOM.isSignificantTextNode(item)) {
+
+            acc.push(this.DOM.wrapTextNode(item));
             return acc;
           }
 
-          if (this.DOM.isSignificantTextNode(item)) {
-            acc.push(this.DOM.wrapTextNode(item));
+          if (!this.DOM.getElementOffsetParent(item)) {
+            const ch = this._getChildren(item);
+            ch.length > 0 && acc.push(...ch);
             return acc;
           }
 
