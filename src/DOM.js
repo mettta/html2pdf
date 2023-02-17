@@ -4,6 +4,7 @@ export default class DocumentObjectModel {
 
   constructor(DOM) {
     this.DOM = DOM;
+    this.body = DOM.body;
   }
 
   // STYLES
@@ -16,7 +17,15 @@ export default class DocumentObjectModel {
     head.append(style);
   }
 
+  createDocumentFragment() {
+    return this.DOM.createDocumentFragment()
+  }
+
   // -
+
+  getElement(selector, target = this.DOM) {
+    return target.querySelector(selector);
+  }
 
   removeNode(element) {
     element.remove();
@@ -34,6 +43,18 @@ export default class DocumentObjectModel {
     element.before(...payload)
   }
 
+  insertAfter(element, ...payload) {
+    element.after(...payload)
+  }
+
+  insertAtEnd(element, ...payload) {
+    element.append(...payload);
+  }
+
+  insertAtStart(element, ...payload) {
+    element.prepend(...payload);
+  }
+
   insertInsteadOf(element, ...payload) {
     element.before(...payload);
     element.remove();
@@ -46,38 +67,45 @@ export default class DocumentObjectModel {
     return item.previousElementSibling
   }
 
+  getElementOffsetParent(element) {
+    return element.offsetParent
+  }
+
   getDataId(item) { // (pages)
     return item.dataset.id;
   }
 
   // ATTRIBUTES / dataset
 
-  _setAttribute(element, selector) {
-    element.setAttribute(selector.substring(1, selector.length - 1), '');
-  }
-  // todo ^^^
-  // if (!String.prototype.trim) {
-  //   (function() {
-  //     // Вырезаем BOM и неразрывный пробел
-  //     String.prototype.trim = function() {
-  //       return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
-  //     };
-  //   })();
-  // }
+  setAttribute(element, selector) {
+    if (!element || !selector) {
+      console.warn('setAttribute() must have 2 params');
+      return;
+    }
 
-  setPrintIgnore(element) {
-    // element.dataset.printIgnore = '';
-    this._setAttribute(element, SELECTOR.printIgnore)
+    const first = selector.charAt(0);
+
+    if (first === '.') {
+      const cl = selector.substring(1);
+      element.classList.add(cl);
+
+    }
+    if (first === '#') {
+      const id = selector.substring(1);
+      element.id = id;
+
+    }
+    if (first === '[') {
+      const attr = selector.substring(1, selector.length - 1);
+      element.setAttribute(attr, '');
+
+    }
+
   }
 
   setPrintNoBreak(element) {
     // element.dataset.printIgnore = '';
-    this._setAttribute(element, SELECTOR.printNoBreak)
-  }
-
-  setPrintHide(element) {
-    // element.dataset.printHide = '';
-    this._setAttribute(element, SELECTOR.printHide)
+    this.setAttribute(element, SELECTOR.printNoBreak)
   }
 
   wrapTextNode(element) {
@@ -92,7 +120,7 @@ export default class DocumentObjectModel {
 
   createNeutral() {
     const neutral = this.DOM.createElement('span');
-    this._setAttribute(neutral, SELECTOR.neutral);
+    this.setAttribute(neutral, SELECTOR.neutral);
     return neutral;
   }
 
@@ -141,11 +169,6 @@ export default class DocumentObjectModel {
     return element.dataset?.hasOwnProperty('neutral')
   }
 
-  isPrintEnd(element) {
-    // SELECTOR.printEnd
-    return element.dataset?.hasOwnProperty('printEnd')
-  }
-
   isForcedPageBreak(element) {
     // SELECTOR.printForcedPageBreak
     return element.dataset?.hasOwnProperty('printForcedPageBreak')
@@ -181,18 +204,6 @@ export default class DocumentObjectModel {
   }
 
   // GET TEMPLATES
-
-  getFooterTemplate() {
-    return this.getInnerHTML(SELECTOR.footerTemplate);
-  }
-
-  getHeaderTemplate() {
-    return this.getInnerHTML(SELECTOR.headerTemplate);
-  }
-
-  getFrontpageTemplate() {
-    return this.getInnerHTML(SELECTOR.frontpageTemplate);
-  }
 
   clearTemplates(root) {
     // Remove all <template>s, if there are any in the Root.
@@ -238,8 +249,11 @@ export default class DocumentObjectModel {
     selector.innerHTML = html;
   }
 
-  clearInnerHTML(element) {
-    element.innerHTML = '';
+  setStyles(element, styles) {
+    // styles is object
+    Object.entries(styles)
+      .forEach(([key, value]) =>
+        element.style[key] = value);
   }
 
   // CREATE ELEMENTS
@@ -275,10 +289,6 @@ export default class DocumentObjectModel {
     return el;
   }
 
-  createPrintEnd() {
-    return this.create(SELECTOR.printEnd);
-  }
-
   createPrintPageBreak() {
     return this.create(SELECTOR.printPageBreak);
   }
@@ -294,201 +304,6 @@ export default class DocumentObjectModel {
     element.before(wrapper);
     wrapper.append(element);
     return wrapper;
-  }
-
-  createRunningSafety() {
-    return this.create(SELECTOR.runningSafety);
-  }
-
-  // PAPER
-
-  createVirtualPaperGap() {
-    return this.create(SELECTOR.virtualPaperGap);
-  }
-
-  createPaper({
-    header,
-    body,
-    footer,
-    currentPage,
-    totalPages,
-  }) {
-    const paper = this._createVirtualPaper();
-
-    paper.append(
-      this._createVirtualPaperTopMargin(),
-      header,
-      body,
-      footer,
-      this._createVirtualPaperBottomMargin(),
-    );
-
-    if (currentPage && totalPages) {
-      this._setPageNumber(header, currentPage, totalPages);
-      this._setPageNumber(footer, currentPage, totalPages);
-    }
-
-    return paper;
-  }
-
-  _setPageNumber(target, current, total) {
-    const container = target.querySelector(SELECTOR.pageNumberRoot);
-    if (container) {
-      container.querySelector(SELECTOR.pageNumberCurrent).innerHTML = current;
-      container.querySelector(SELECTOR.pageNumberTotal).innerHTML = total;
-    }
-  }
-
-  createFrontpageContent(template, factor) {
-    const _node = this.create(SELECTOR.frontpageContent);
-    template && (_node.innerHTML = template);
-    if (factor) {
-      _node.style.transform = `scale(${factor})`;
-    }
-    return _node;
-  }
-
-  // TODO calculate Paper body content  on insertion,
-  // allow to insert any content, not only pre-prepared content
-
-  createPaperBody(height, content) {
-    const _node = this.create(SELECTOR.paperBody);
-    // Lock the height of the paperBody for the content area.
-    // This affects the correct printing of the paper layer.
-    height && (_node.style.height = height + 'px');
-    // To create a frontpage, we can pass content here.
-    content && (_node.append(content));
-    return _node;
-  }
-
-  createPaperHeader(template) {
-    const _node = this.create(SELECTOR.paperHeader);
-
-    if (template) {
-      const content = this.create(SELECTOR.headerContent);
-      content.innerHTML = template;
-      _node.append(content)
-    }
-    return _node;
-  }
-
-  createPaperFooter(template) {
-    const _node = this.create(SELECTOR.paperFooter);
-
-    if (template) {
-      const content = this.create(SELECTOR.footerContent);
-      content.innerHTML = template;
-      _node.append(content)
-    }
-    return _node;
-  }
-
-  calculatePaperParams({
-    frontpageTemplate,
-    headerTemplate,
-    footerTemplate,
-  }) {
-
-    // CREATE TEST PAPER ELEMENTS
-    const body = this.createPaperBody();
-    const frontpage = this.createFrontpageContent(frontpageTemplate);
-    const header = this.createPaperHeader(headerTemplate);
-    const footer = this.createPaperFooter(footerTemplate);
-
-    // CREATE TEST PAPER
-    const paper = this.createPaper({
-      header,
-      body,
-      footer,
-    });
-    // TODO?
-    // const paper = this._createVirtualPaper();
-    // paper.append(
-    //   this._createVirtualPaperTopMargin(),
-    //   header,
-    //   body,
-    //   footer,
-    //   this._createVirtualPaperBottomMargin(),
-    // );
-
-
-    // CREATE TEMP CONTAINER
-    const workbench = this.create('#workbench');
-    workbench.style = `
-      position:absolute;
-      left: -3000px;
-      `;
-    workbench.append(paper);
-    this.DOM.body.prepend(workbench);
-
-    // get heights for an blank page
-    const paperHeight = paper.getBoundingClientRect().height;
-    const headerHeight = header?.offsetHeight || 0;
-    const footerHeight = footer?.offsetHeight || 0;
-    const bodyHeight = body.offsetHeight;
-    const bodyWidth = body.offsetWidth;
-
-    // add frontpage text
-    body.append(frontpage);
-    // get height for the frontpage content
-    const filledBodyHeight = body.offsetHeight;
-
-    const frontpageFactor = (filledBodyHeight > bodyHeight)
-      ? bodyHeight / filledBodyHeight
-      : 1;
-
-    // REMOVE TEMP CONTAINER
-    workbench.remove();
-
-    return {
-      paperHeight,
-      headerHeight,
-      footerHeight,
-      bodyHeight,
-      bodyWidth,
-      frontpageFactor
-    }
-  }
-
-  _createVirtualPaper() {
-    return this.create(SELECTOR.virtualPaper);
-  }
-
-  _createVirtualPaperTopMargin() {
-    return this.create(SELECTOR.virtualPaperTopMargin);
-  }
-
-  _createVirtualPaperBottomMargin() {
-    return this.create(SELECTOR.virtualPaperBottomMargin);
-  }
-
-  // LAYOUT
-
-  getRoot() {
-    // Prepare root element
-    const root = this.DOM.querySelector(SELECTOR.root) || this.DOM.body;
-    if (!root) {
-      // TODO warn
-      console.warn(`Add ${SELECTOR.root} to the root element of the area you want to print`);
-    }
-
-    return root;
-  }
-
-  createPaperFlow() {
-    return this.create(SELECTOR.paperFlow);
-  }
-
-  createContentFlow() {
-    return this.create(SELECTOR.contentFlow);
-  }
-
-  markPrintEnd(contentFlow) {
-    contentFlow.append(this.createPrintEnd());
-  }
-
-  createLayout(root, paperFlow, contentFlow) {
-    root.append(paperFlow, contentFlow);
   }
 
   // PAGES
@@ -513,20 +328,58 @@ export default class DocumentObjectModel {
     // element.style.margin = '0 auto';
   }
 
+  getElementBCR(element) {
+    return element.getBoundingClientRect();
+  }
+
   getElementHeight(element) {
-    return element.offsetHeight;
+    return element?.offsetHeight;
   }
 
   getElementWidth(element) {
-    return element.offsetWidth;
+    return element?.offsetWidth;
   }
 
-  getElementTop(element) {
-    return element.offsetTop;
+  getElementRelativeTop(element) {
+    return element?.offsetTop;
   }
 
-  getElementBottom(element) {
-    return element.offsetTop + element.offsetHeight;
+  getElementRootedTop(element, root, topAcc = 0) {
+
+    if (!element) {
+      console.warn('element must be provided', element);
+      return
+    }
+
+    if (!root) {
+      console.warn('root must be provided', element);
+      return
+    }
+
+    const offsetParent = element.offsetParent;
+
+    if (!offsetParent) {
+      console.warn('element has no offset parent', element);
+      return
+    }
+
+    const currTop = element.offsetTop;
+
+    if (offsetParent === root) {
+      return (currTop + topAcc);
+    } else {
+      console.log('%c offsetParent', 'background:yellow', offsetParent);
+      return this.getElementRootedTop(offsetParent, root, topAcc + currTop);
+    }
+  }
+
+  getElementRelativeBottom(element) {
+    // BUG ? 
+    return element?.offsetTop + element?.offsetHeight || undefined;
+  }
+
+  getElementRootedBottom(element, root) {
+    return this.getElementRootedTop(element, root) + this.getElementHeight(element);
   }
 
   // TODO make Obj with offsetTop and use it later
@@ -583,96 +436,6 @@ export default class DocumentObjectModel {
     table.append(tableBody);
     tfoot && table.append(tfoot);
     return table;
-  }
-
-  // PREVIEW
-
-  insertFooterSpacer(target, footerHeight, paperSeparator) {
-
-    // In the virtual footer/header we add an empty element
-    // with a calculated height instead of the content.
-    // We use margins to compensate for possible opposite margins in the content.
-
-    // In this element we will add a compensator.
-    // We create it with a basic compensator,
-    // which takes into account now only the footerHeight.
-    const balancingFooter = this.createRunningSafety();
-    footerHeight && (balancingFooter.style.marginTop = footerHeight + 'px');
-
-    // Based on contentSeparator (virtual, not printed element, inserted into contentFlow)
-    // and paperSeparator (virtual, not printed element, inserted into paperFlow),
-    // calculate the height of the necessary compensator to visually fit page breaks
-    // in the content in contentFlow and virtual page images on the screen in paperFlow.
-    const contentSeparator = this.createVirtualPaperGap();
-
-    const footerSpacer = document.createDocumentFragment();
-    footerSpacer.append(
-      balancingFooter,
-      this._createVirtualPaperBottomMargin(),
-      this.createPrintPageBreak(),
-      contentSeparator,
-    );
-
-    // Put into DOM
-    target.before(
-      footerSpacer,
-    );
-
-    // Determine what inaccuracy there is visually in the break simulation position,
-    // and compensate for it.
-    const balancer = paperSeparator.offsetTop - contentSeparator.offsetTop;
-    balancingFooter.style.marginBottom = balancer + 'px';
-
-    // TODO check if negative on large documents
-    // console.log(balancer);
-  }
-
-  insertHeaderSpacer(target, headerHeight) {
-
-    // In the virtual footer/header we add an empty element
-    // with a calculated height instead of the content.
-    // We use margins to compensate for possible opposite margins in the content.
-    const balancingHeader = this.createRunningSafety();
-    headerHeight && (balancingHeader.style.marginBottom = headerHeight + 'px');
-
-    const headerSpacer = document.createDocumentFragment();
-    headerSpacer.append(
-      this._createVirtualPaperTopMargin(),
-      balancingHeader,
-    );
-
-    // Put into DOM
-    target.before(
-      headerSpacer,
-    );
-  }
-
-  insertFrontpageSpacer(target, bodyHeight) {
-    // create spacer element
-    const spacer = this.create();
-    spacer.style.paddingBottom = bodyHeight + 'px';
-
-    // insert filler element into content
-    target.prepend(spacer);
-
-    // return ref
-    return spacer;
-  }
-
-  insertPaper(paperFlow, paper, separator) {
-    if (separator) {
-      // pages that come after the page break
-      paperFlow.append(
-        // this.createPrintPageBreak(), // has no effect
-        separator,
-        paper,
-      );
-    } else {
-      // first page
-      paperFlow.append(
-        paper,
-      );
-    }
   }
 
 }

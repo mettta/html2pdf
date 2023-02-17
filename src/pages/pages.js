@@ -5,13 +5,16 @@ export default class Pages {
 
   constructor({
     DOM,
-    contentFlow,
+    layout,
     referenceWidth,
     referenceHeight
   }) {
 
     this.DOM = DOM;
-    this.contentFlow = contentFlow;
+
+    this.root = layout.root;
+    this.contentFlow = layout.contentFlow;
+
     this.referenceWidth = referenceWidth;
     this.referenceHeight = referenceHeight;
 
@@ -57,6 +60,8 @@ export default class Pages {
 
     const content = this._getChildren(this.contentFlow);
 
+    console.log('content', content);
+
     // TODO put this into main calculations?
     // FIRST ELEMENT: register the beginning of the first page.
     this._registerPageStart(content[0]);
@@ -99,20 +104,8 @@ export default class Pages {
       return
     }
 
-    // TODO
-    // offsetParent: div#printTHIS
-    // if relative? -> offsetParent + offsetThis
-
-    // TODO
-    // this.DOM.getElementTop(pageStart)???????
-    // this.pages[this.pages.length - 1].pageStart
-
-    // const lastElem = this.pages[this.pages.length - 1].pageEnd;
-    // const flowCutPoint = lastElem ? this.DOM.getElementBottom(lastElem) : 0;
-    // const newPageBottom = flowCutPoint + this.referenceHeight;
-
     const lastPageStart = this.pages[this.pages.length - 1].pageStart;
-    const flowCutPoint = lastPageStart ? this.DOM.getElementTop(lastPageStart) : 0;
+    const flowCutPoint = lastPageStart ? this.DOM.getElementRootedTop(lastPageStart, this.root) : 0;
     const newPageBottom = flowCutPoint + this.referenceHeight;
 
     if (this.DOM.isForcedPageBreak(currentElement)) {
@@ -120,19 +113,18 @@ export default class Pages {
       return
     }
 
+    console.assert( // is filtered in the function _gerChildren()
+      this.DOM.getElementOffsetParent(currentElement),
+      'it is expected that the element has an offset parent',
+      [currentElement]);
+
     // IF nextElement does not start on the current page,
     // we should check if the current one fits in the page,
     // because it could be because of the margin
     // TODO if next elem is SVG it has no offset Top!
-    if (this.DOM.getElementTop(nextElement) > newPageBottom) {
+    if (this.DOM.getElementRootedTop(nextElement, this.root) > newPageBottom) {
 
-      // console.log(
-      //   '\n previousElement:', previousElement,
-      //   '\n currentElement:', currentElement,
-      //   '\n nextElement:', nextElement,
-      //   // '\n newPageBottom', newPageBottom,
-      //   // '\n elBot', this.DOM.getElementBottom(currentElement),
-      // );
+      // console.log('+++++++++', this.DOM.getElementRootedTop(nextElement, this.root), '>', newPageBottom);
 
       // Here nextElement is a candidate to start a new page,
       // and currentElement is a candidate
@@ -158,7 +150,7 @@ export default class Pages {
           ? this.DOM.wrapWithPrintNoBreak(currentElement)
           : currentElement;
 
-        const availableSpace = newPageBottom - this.DOM.getElementTop(currentImage);
+        const availableSpace = newPageBottom - this.DOM.getElementRootedTop(currentImage, this.root);
         const currentImageHeight = this.DOM.getElementHeight(currentImage);
         const currentImageWidth = this.DOM.getElementWidth(currentImage);
 
@@ -210,32 +202,66 @@ export default class Pages {
       // TODO check BOTTOMS??? vs MARGINS
       // IF currentElement does fit
       // in the remaining space on the page,
-      if (this.DOM.getElementBottom(currentElement) <= newPageBottom) {
-        // we need <= because splitted elements often get equal height // todo comment 
+      if (this.DOM.getElementRootedBottom(currentElement, this.root) <= newPageBottom) {
+        // we need <= because splitted elements often get equal height // todo comment
+
         console.log('%c -- check BOTTOM of', 'color:yellow', currentElement);
+
         this._registerPageStart(nextElement);
         return
       }
+
+      // console.log('+-------', this.DOM.getElementRootedBottom(currentElement, this.root), '>', newPageBottom);
+
 
       // otherwise try to break it and loop the children:
       let children = [];
 
       if (this.DOM.isNoBreak(currentElement) || this._notSolved(currentElement)) {
         // don't break apart, thus keep an empty children array
+        console.log('%c do not break', 'color:green', currentElement);
         children = [];
       } else if (this._isTextNode(currentElement)) {
+        // console.log('text node', currentElement);
         children = this._splitTextNode(currentElement, newPageBottom) || [];
       } else if (this._isPRE(currentElement)) {
+        // console.log('pre', currentElement);
         children = this._splitPreNode(currentElement, newPageBottom) || [];
       } else if (this._isTableNode(currentElement)) {
+        // console.log('table', currentElement);
         children = this._splitTableNode(currentElement, newPageBottom) || [];
+        // } else if (this._isLiNode(currentElement)) {
+        //   // todo
+        //   // now make all except UL unbreakable
+        //   const liChildren = this._getChildren(currentElement)
+        //     .reduce((acc, child) => {
+        //       if (this.DOM.getElementTagName(child) === 'UL') {
+        //         acc.push(child);
+        //       } else {
+        //         // TODO сразу собирать в нейтральный объект
+        //         // и проверить display contents!! чтобы брать положение, но отключать стили и влияние на другие
+        //         if (acc[acc.length - 1]?.length) {
+        //           acc[acc.length - 1].push(child);
+        //         } else {
+        //           acc.push([child]);
+        //         }
+        //       }
+        //       return acc
+        //     }, []);
+        //   console.log(liChildren);
       } else {
         children = this._getChildren(currentElement);
+      }
+
+      if (this._isVerticalFlowDisrupted(children)) {
+        // [] => false
+        children = this._processChildrenThoroughly(children, currentElement, newPageBottom);
       }
 
 
       // parse children
       if (children.length) {
+
         // Process children if exist:
         this._parseNodes({
           array: children,
@@ -256,6 +282,80 @@ export default class Pages {
 
     }
     // IF currentElement fits, continue.
+  }
+
+  _processChildrenThoroughly(children, node, pageBottom) {
+    console.log('%c _processChildrenThoroughly', 'background:blue', children);
+
+    // todo
+    // // Paragraph:
+    // this.minLeftLines = 2;
+    // this.minDanglingLines = 2;
+    // this.minBreakableLines = this.minLeftLines + this.minDanglingLines;
+
+    // Prepare node parameters
+    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
+    const nodeHeight = this.DOM.getElementHeight(node);
+    const nodeLineHeight = this.DOM.getLineHeight(node);
+
+    // Prepare parameters for splitters calculation
+    const availableSpace = pageBottom - nodeTop;
+
+    const nodeLines = ~~(nodeHeight / nodeLineHeight);
+    const firstPartLines = ~~(availableSpace / nodeLineHeight);
+
+    if (nodeLines < this.minBreakableLines || firstPartLines < this.minLeftLines) {
+      return []
+    }
+
+    const nodeChildren = children.reduce((accumulator, child, index, array) => {
+
+      if (this._isTextNode(child)) {
+        const words = child.innerHTML.split(' ');
+
+        const items = words
+          .filter(item => item.length)
+          .map((item) => {
+            const span = this.DOM.create('span');
+            span.innerHTML = item + ' ';
+            return span;
+          });
+
+        accumulator = [
+          ...accumulator,
+          ...items,
+        ]
+      } else {
+        accumulator = [
+          ...accumulator,
+          child,
+        ]
+      }
+
+      return accumulator;
+    }, [])
+
+    // console.log(nodeChildren);
+    return children
+  }
+
+  _isVerticalFlowDisrupted(arrayOfElements) {
+    // console.log('%c TRY', 'background:blue');
+    return arrayOfElements.some(
+
+      (current, currentIndex, array) => {
+
+        const currentElement = current;
+        const nextElement = array[currentIndex + 1];
+
+
+        if (!nextElement) {
+          return false
+        };
+
+        return this.DOM.getElementRelativeBottom(currentElement) > this.DOM.getElementRelativeTop(nextElement);
+      }
+    )
   }
 
   _canNotBeLast(element) {
@@ -292,7 +392,7 @@ export default class Pages {
 
   _splitPreNode(node, pageBottom) {
 
-    console.log('PRE', node);
+    // console.log('PRE', node);
 
     // TODO the same in splitTextNode - make one code piece
 
@@ -302,38 +402,28 @@ export default class Pages {
     // TODO check if there are NODES except text nodes
 
     // Prepare node parameters
-    const nodeTop = this.DOM.getElementTop(node);
+    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
     const nodeHeight = this.DOM.getElementHeight(node);
     const nodeLineHeight = this.DOM.getLineHeight(node);
     const preWrapperHeight = this.DOM.getEmptyNodeHeight(node);
     const totalLines = (nodeHeight - preWrapperHeight) / nodeLineHeight;
 
     if (totalLines < this.minPreBreakableLines) {
-      this._registerPageStart(node);
-      return
+      // this._registerPageStart(node);
+      return []
     }
 
-    // Prepare parameters for splitters calculation
-    let availableSpace = pageBottom - nodeTop - preWrapperHeight;
-    const pageSpace = this.referenceHeight - preWrapperHeight;
 
-    let firstPartLines = Math.trunc(availableSpace / nodeLineHeight);
-    const linesPerPage = Math.trunc(pageSpace / nodeLineHeight);
 
-    if (firstPartLines < this.minPreFirstBlockLines) {
-      console.log('availableSpace is too small');
-      availableSpace = this.referenceHeight;
-      firstPartLines = linesPerPage;
-    }
 
-    const restLines = totalLines - firstPartLines;
 
-    const fullPages = Math.floor(restLines / linesPerPage);
-    const lastPartLines = restLines % linesPerPage;
+    // console.log('\n\n\n\n -------PRE-------- \n');
 
-    if (lastPartLines < this.minPreLastBlockLines) {
-      firstPartLines = firstPartLines - (this.minPreLastBlockLines - lastPartLines);
-    }
+
+
+
+
+
 
     // *** try split by blocks
     // TODO <br>
@@ -349,11 +439,53 @@ export default class Pages {
       preText = preText.slice(0, -1);
     }
 
-    console.log('1 - preText');
+    // console.log('1 - preText');
 
     const preLines = preText.split('\n');
     // "000", "", "001", "002", "003", "004", "005", "006", "", "007" .....
-    console.log('2 - preLines', preLines);
+
+    // console.log('#### 2 - preLines', preLines);
+
+
+    if (preLines.length < this.minPreBreakableLines) {
+      // this._registerPageStart(node);
+      return []
+    }
+
+
+    // TODO
+    // нужны ли эти странные вычисления,
+    // нужно смотреть, сколько реальных строк помещается в первой части/
+    // А НАДО ЛИ ЭТО?
+    // может просто разбить на возможные части и отправить выше, пусть сами распределяют
+
+    // Prepare parameters for splitters calculation
+    let availableSpace = pageBottom - nodeTop - preWrapperHeight;
+    const pageSpace = this.referenceHeight - preWrapperHeight;
+
+    // console.log('availableSpace', availableSpace, '=', pageBottom, '-', nodeTop, '-', preWrapperHeight);
+
+    let firstPartLines = Math.trunc(availableSpace / nodeLineHeight);
+    const linesPerPage = Math.trunc(pageSpace / nodeLineHeight);
+
+    if (firstPartLines < this.minPreFirstBlockLines) {
+      // console.log('availableSpace is too small');
+      availableSpace = this.referenceHeight;
+      firstPartLines = linesPerPage;
+    }
+
+    const restLines = totalLines - firstPartLines;
+    // console.log(restLines); // BUG -32 ????
+
+    const fullPages = Math.floor(restLines / linesPerPage);
+    const lastPartLines = restLines % linesPerPage;
+    // console.log(lastPartLines);
+
+    if (lastPartLines < this.minPreLastBlockLines) {
+      firstPartLines = firstPartLines - (this.minPreLastBlockLines - lastPartLines);
+      // console.log(firstPartLines);
+    }
+
 
     // ["000"], ["001", "002", "003", "004", "005", "006"], ["007", .....
     const preGroupedLines = preLines.reduce((accumulator, line, index, array) => {
@@ -367,6 +499,9 @@ export default class Pages {
     }, [[]])
       .filter(array => array.length);
 
+    // console.log('3 BEFORE - preGroupedLines', preGroupedLines);
+
+    // TODO TEST THIS! logik is too compex
     let veryStartGroup = '';
     let veryEndGroup = '';
 
@@ -377,10 +512,14 @@ export default class Pages {
       veryEndGroup = '\n' + preGroupedLines.pop().join('\n');
     }
 
-    console.log('3 - preGroupedLines', preGroupedLines);
+    // console.log('3 AFTER - preGroupedLines', preGroupedLines);
+    // console.log('veryStartGroup', veryStartGroup)
+    // console.log('veryEndGroup', veryEndGroup)
 
     // ["000"], [Array(3), Array(3)], [Array(3), "010", "011", Array(3)], .....
     const preBlocks = preGroupedLines.reduce((accumulator, block, index, array) => {
+
+      // console.log('preBlocks block #', index, block)
 
       if (block.length < this.minPreBreakableLines) {
         accumulator.push(block.join('\n') + '\n')
@@ -407,7 +546,14 @@ export default class Pages {
     veryStartGroup.length && (preBlocks[0] = veryStartGroup + preBlocks[0]);
     veryEndGroup.length && (preBlocks[preBlocks.length - 1] = preBlocks[preBlocks.length - 1] + veryEndGroup);
 
-    console.log('4 - preBlocks', preBlocks);
+    // console.log('4 - preBlocks', preBlocks);
+
+    // TODO TEST THIS! its hack
+
+    if (preBlocks.length === 1) {
+      console.log('%c DONT SPLIT IT', 'color:yellow');
+      return []
+    }
 
 
     // **************************************
@@ -441,23 +587,31 @@ export default class Pages {
     let splitters = [];
     let floater = availableSpace;
 
+    // console.log('floater', floater);
+
     for (let index = 0; index < blockAndLineElementsArray.length; index++) {
       // const floater = availableSpace + page * pageSpace;
       const current = blockAndLineElementsArray[index];
 
+
+      // TODO      ###???###
+      // если у нас есть кусочек страницы, и
+      // если первая ЧАСТЬ больше, чем этот ксочек.. 
+      // получается, что мы делаем разбиение как бы для первой части ???
+
       // TODO move to DOM
-      if (this.DOM.getElementBottom(current) > floater) {
+      if (this.DOM.getElementRootedBottom(current, testNode) > floater) {
 
         splitters.push(index);
         page += 1;
-        floater = this.DOM.getElementTop(current) + pageSpace;
+        floater = this.DOM.getElementRootedTop(current, testNode) + pageSpace;
       }
     }
 
     // register last part end
     splitters.push(null);
 
-    console.log(splitters);
+    // console.log('splitters', splitters);
 
 
     const splitsArr = splitters.map((id, index, splitters) => {
@@ -471,12 +625,18 @@ export default class Pages {
       const start = splitters[index - 1] || 0;
       const end = id || splitters[splitters.length];
 
+      // console.log(' ### SPLIT:', index, ' - ', start, end);
+
       part.append(...blockAndLineElementsArray.slice(start, end));
 
       return part;
     });
 
-    console.log('PRE splitsArr', splitsArr);
+    // console.log('PRE splitsArr', splitsArr);
+
+
+    // console.log('\n -------// PRE-------- \n\n\n\n');
+
 
     this.DOM.insertInsteadOf(node, ...splitsArr);
     return splitsArr;
@@ -489,7 +649,7 @@ export default class Pages {
   _splitTableNode(node, pageBottom) {
     console.log('%c WE HAVE A TABLE', 'color:yellow');
     console.log('pageBottom', pageBottom);
-    console.log('nodeBottom', this.DOM.getElementBottom(node));
+    console.log('nodeBottom', this.DOM.getElementRootedBottom(node, this.root));
 
     console.time('_splitTableNode')
 
@@ -569,7 +729,7 @@ export default class Pages {
     }
 
     // Prepare node parameters
-    const nodeTop = this.DOM.getElementTop(node);
+    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
     const nodeHeight = this.DOM.getElementHeight(node);
 
     const firstPartHeight = pageBottom
@@ -581,8 +741,8 @@ export default class Pages {
       - this.DOM.getElementHeight(nodeEntries.caption)
       - 2 * this.signpostHeight - tableWrapperHeight;
     const topsArr = [
-      ...nodeEntries.rows.map((row) => this.DOM.getElementTop(row)),
-      this.DOM.getElementTop(nodeEntries.tfoot) || nodeHeight
+      ...nodeEntries.rows.map((row) => this.DOM.getElementRootedTop(row, node)),
+      this.DOM.getElementRootedTop(nodeEntries.tfoot, node) || nodeHeight
     ]
 
     // calculate Table Splits Ids
@@ -668,7 +828,7 @@ export default class Pages {
   _splitTextNode(node, pageBottom) {
 
     // Prepare node parameters
-    const nodeTop = this.DOM.getElementTop(node);
+    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
     const nodeHeight = this.DOM.getElementHeight(node);
     const nodeLineHeight = this.DOM.getLineHeight(node);
 
@@ -713,7 +873,8 @@ export default class Pages {
             arr: nodeWordItems,
             floater: splitter,
             topRef: endLine * nodeLineHeight,
-            getElementTop: this.DOM.getElementTop,
+            getElementTop: this.DOM.getElementRelativeTop, // we are inside the 'absolute' test node
+            root: this.root
           })
           : null
     );
@@ -746,17 +907,30 @@ export default class Pages {
     // TODO last child
     // TODO first Li
 
+    // fon display:none / contents
+    // this.DOM.getElementOffsetParent(currentElement)
+
     const childrenArr = [...this.DOM.getChildNodes(element)]
-      .map(
-        item =>
-          this.DOM.isSignificantTextNode(item)
-            ? this.DOM.wrapTextNode(item)
-            : item
-      )
-      .filter(
-        item =>
-          this.DOM.isElementNode(item)
-      );
+      .reduce(
+        (acc, item) => {
+
+          if (this.DOM.isSignificantTextNode(item)) {
+            acc.push(this.DOM.wrapTextNode(item));
+            return acc;
+          }
+
+          if (!this.DOM.getElementOffsetParent(item)) {
+            const ch = this._getChildren(item);
+            ch.length > 0 && acc.push(...ch);
+            return acc;
+          }
+
+          if (this.DOM.isElementNode(item)) {
+            acc.push(item);
+            return acc;
+          };
+
+        }, [])
 
     return childrenArr;
   }
@@ -774,6 +948,9 @@ export default class Pages {
   }
   _isTableNode(element) {
     return this.DOM.getElementTagName(element) === 'TABLE';
+  }
+  _isLiNode(element) {
+    return this.DOM.getElementTagName(element) === 'LI';
   }
 
   _notSolved(element) {
@@ -800,4 +977,5 @@ export default class Pages {
   //   const takeAsWhole = (tag === 'IMG' || tag === 'svg' || tag === 'TABLE' || this.DOM.isNoBreak(element) || tag === 'OBJECT')
   //   return takeAsWhole;
   // }
+
 }

@@ -4,9 +4,11 @@ import long from './long';
 import table from './table';
 import image from './image';
 import pre from './pre';
+import strictDoc from './strictDoc';
 
 export default function _emulateContent() {
   const temp = document.createElement('div');
-  temp.innerHTML = pre;
+  console.log(strictDoc);
+  temp.innerHTML = strictDoc;
   document.body.append(temp);
 }

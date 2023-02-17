@@ -47,7 +47,6 @@ const SELECTOR = {
   printForcedPageBreak: '[data-print-forced-page-break]',
 
   // service attributes
-  printEnd: '[data-print-end]',
   neutral: '[data-neutral]',
 
 };
