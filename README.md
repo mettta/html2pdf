@@ -35,3 +35,13 @@ To run unit tests:
 ```sh
 npm test
 ```
+
+## Testing web server
+
+To run the web server:
+
+```sh
+npm run test_server
+```
+
+Open server at [http://127.0.0.1:8080](http://127.0.0.1:8080).
