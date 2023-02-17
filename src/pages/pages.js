@@ -124,7 +124,7 @@ export default class Pages {
     // TODO if next elem is SVG it has no offset Top!
     if (this.DOM.getElementRootedTop(nextElement, this.root) > newPageBottom) {
 
-      console.log('+++++++++', this.DOM.getElementRootedTop(nextElement, this.root), '>', newPageBottom);
+      // console.log('+++++++++', this.DOM.getElementRootedTop(nextElement, this.root), '>', newPageBottom);
 
       // Here nextElement is a candidate to start a new page,
       // and currentElement is a candidate
@@ -211,7 +211,7 @@ export default class Pages {
         return
       }
 
-      console.log('+-------', this.DOM.getElementRootedBottom(currentElement, this.root), '>', newPageBottom);
+      // console.log('+-------', this.DOM.getElementRootedBottom(currentElement, this.root), '>', newPageBottom);
 
 
       // otherwise try to break it and loop the children:
@@ -255,7 +255,7 @@ export default class Pages {
 
       if (this._isVerticalFlowDisrupted(children)) {
         // [] => false
-        children = this._processChildrenThoroughly(children);
+        children = this._processChildrenThoroughly(children, currentElement, newPageBottom);
       }
 
 
@@ -284,12 +284,63 @@ export default class Pages {
     // IF currentElement fits, continue.
   }
 
-  _processChildrenThoroughly(children) {
+  _processChildrenThoroughly(children, node, pageBottom) {
     console.log('%c _processChildrenThoroughly', 'background:blue', children);
+
+    // todo
+    // // Paragraph:
+    // this.minLeftLines = 2;
+    // this.minDanglingLines = 2;
+    // this.minBreakableLines = this.minLeftLines + this.minDanglingLines;
+
+    // Prepare node parameters
+    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
+    const nodeHeight = this.DOM.getElementHeight(node);
+    const nodeLineHeight = this.DOM.getLineHeight(node);
+
+    // Prepare parameters for splitters calculation
+    const availableSpace = pageBottom - nodeTop;
+
+    const nodeLines = ~~(nodeHeight / nodeLineHeight);
+    const firstPartLines = ~~(availableSpace / nodeLineHeight);
+
+    if (nodeLines < this.minBreakableLines || firstPartLines < this.minLeftLines) {
+      return []
+    }
+
+    const nodeChildren = children.reduce((accumulator, child, index, array) => {
+
+      if (this._isTextNode(child)) {
+        const words = child.innerHTML.split(' ');
+
+        const items = words
+          .filter(item => item.length)
+          .map((item) => {
+            const span = this.DOM.create('span');
+            span.innerHTML = item + ' ';
+            return span;
+          });
+
+        accumulator = [
+          ...accumulator,
+          ...items,
+        ]
+      } else {
+        accumulator = [
+          ...accumulator,
+          child,
+        ]
+      }
+
+      return accumulator;
+    }, [])
+
+    // console.log(nodeChildren);
     return children
   }
 
   _isVerticalFlowDisrupted(arrayOfElements) {
+    // console.log('%c TRY', 'background:blue');
     return arrayOfElements.some(
 
       (current, currentIndex, array) => {
@@ -366,7 +417,7 @@ export default class Pages {
 
 
 
-    console.log('\n\n\n\n -------PRE-------- \n');
+    // console.log('\n\n\n\n -------PRE-------- \n');
 
 
 
@@ -392,7 +443,8 @@ export default class Pages {
 
     const preLines = preText.split('\n');
     // "000", "", "001", "002", "003", "004", "005", "006", "", "007" .....
-    console.log('#### 2 - preLines', preLines);
+
+    // console.log('#### 2 - preLines', preLines);
 
 
     if (preLines.length < this.minPreBreakableLines) {
@@ -411,7 +463,7 @@ export default class Pages {
     let availableSpace = pageBottom - nodeTop - preWrapperHeight;
     const pageSpace = this.referenceHeight - preWrapperHeight;
 
-    console.log('availableSpace', availableSpace, '=', pageBottom, '-', nodeTop, '-', preWrapperHeight);
+    // console.log('availableSpace', availableSpace, '=', pageBottom, '-', nodeTop, '-', preWrapperHeight);
 
     let firstPartLines = Math.trunc(availableSpace / nodeLineHeight);
     const linesPerPage = Math.trunc(pageSpace / nodeLineHeight);
@@ -447,7 +499,7 @@ export default class Pages {
     }, [[]])
       .filter(array => array.length);
 
-    console.log('3 BEFORE - preGroupedLines', preGroupedLines);
+    // console.log('3 BEFORE - preGroupedLines', preGroupedLines);
 
     // TODO TEST THIS! logik is too compex
     let veryStartGroup = '';
@@ -460,14 +512,14 @@ export default class Pages {
       veryEndGroup = '\n' + preGroupedLines.pop().join('\n');
     }
 
-    console.log('3 AFTER - preGroupedLines', preGroupedLines);
-    console.log('veryStartGroup', veryStartGroup)
-    console.log('veryEndGroup', veryEndGroup)
+    // console.log('3 AFTER - preGroupedLines', preGroupedLines);
+    // console.log('veryStartGroup', veryStartGroup)
+    // console.log('veryEndGroup', veryEndGroup)
 
     // ["000"], [Array(3), Array(3)], [Array(3), "010", "011", Array(3)], .....
     const preBlocks = preGroupedLines.reduce((accumulator, block, index, array) => {
 
-      console.log('preBlocks block #', index, block)
+      // console.log('preBlocks block #', index, block)
 
       if (block.length < this.minPreBreakableLines) {
         accumulator.push(block.join('\n') + '\n')
@@ -494,7 +546,7 @@ export default class Pages {
     veryStartGroup.length && (preBlocks[0] = veryStartGroup + preBlocks[0]);
     veryEndGroup.length && (preBlocks[preBlocks.length - 1] = preBlocks[preBlocks.length - 1] + veryEndGroup);
 
-    console.log('4 - preBlocks', preBlocks);
+    // console.log('4 - preBlocks', preBlocks);
 
     // TODO TEST THIS! its hack
 
@@ -514,7 +566,7 @@ export default class Pages {
       }
     )
 
-    console.log(blockAndLineElementsArray);
+    // console.log(blockAndLineElementsArray);
 
     //TODO move to DOM, like prepareSplittedNode(node)
 
@@ -535,7 +587,7 @@ export default class Pages {
     let splitters = [];
     let floater = availableSpace;
 
-    console.log('floater', floater);
+    // console.log('floater', floater);
 
     for (let index = 0; index < blockAndLineElementsArray.length; index++) {
       // const floater = availableSpace + page * pageSpace;
@@ -559,7 +611,7 @@ export default class Pages {
     // register last part end
     splitters.push(null);
 
-    console.log('splitters', splitters);
+    // console.log('splitters', splitters);
 
 
     const splitsArr = splitters.map((id, index, splitters) => {
@@ -573,17 +625,17 @@ export default class Pages {
       const start = splitters[index - 1] || 0;
       const end = id || splitters[splitters.length];
 
-      console.log(' ### SPLIT:', index, ' - ', start, end);
+      // console.log(' ### SPLIT:', index, ' - ', start, end);
 
       part.append(...blockAndLineElementsArray.slice(start, end));
 
       return part;
     });
 
-    console.log('PRE splitsArr', splitsArr);
+    // console.log('PRE splitsArr', splitsArr);
 
 
-    console.log('\n -------// PRE-------- \n\n\n\n');
+    // console.log('\n -------// PRE-------- \n\n\n\n');
 
 
     this.DOM.insertInsteadOf(node, ...splitsArr);
@@ -821,7 +873,7 @@ export default class Pages {
             arr: nodeWordItems,
             floater: splitter,
             topRef: endLine * nodeLineHeight,
-            getElementTop: this.DOM.getElementRootedTop,
+            getElementTop: this.DOM.getElementRelativeTop, // we are inside the 'absolute' test node
             root: this.root
           })
           : null

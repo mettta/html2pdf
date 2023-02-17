@@ -368,6 +368,7 @@ export default class DocumentObjectModel {
     if (offsetParent === root) {
       return (currTop + topAcc);
     } else {
+      console.log('%c offsetParent', 'background:yellow', offsetParent);
       return this.getElementRootedTop(offsetParent, root, topAcc + currTop);
     }
   }
