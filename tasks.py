@@ -87,3 +87,49 @@ def test_end2end(
     """
 
     run_invoke(context, test_command)
+
+
+@task
+def test_integration(
+    context,
+    focus=None,
+    debug=False,
+):
+    clean_itest_artifacts(context)
+
+    cwd = os.getcwd()
+
+    html2pdf_exec = f'python3 \\"{cwd}/html2pdf.py\\"'
+
+    focus_or_none = f"--filter {focus}" if focus else ""
+    debug_opts = "-vv --show-all" if debug else ""
+
+    itest_command = f"""
+        lit
+        --param HTML2PDF_EXEC="{html2pdf_exec}"
+        -v
+        {debug_opts}
+        {focus_or_none}
+        {cwd}/tests/python
+    """
+
+    # It looks like LIT does not open the RUN: subprocesses in the same
+    # environment from which it itself is run from. This issue has been known by
+    # us for a couple of years by now. Not using Tox on Windows for the time
+    # being.
+    if os.name == "nt":
+        run_invoke(context, itest_command)
+        return
+
+    run_invoke(context, itest_command)
+
+
+@task
+def clean_itest_artifacts(context):
+    # https://unix.stackexchange.com/a/689930/77389
+    find_command = """
+        git clean -dfX tests/python/
+    """
+    # The command sometimes exits with 1 even if the files are deleted.
+    # warn=True ensures that the execution continues.
+    run_invoke(context, find_command, warn=True)
