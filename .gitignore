@@ -28,7 +28,7 @@ ehthumbs.db
 Thumbs.db
 
 # Python API integration tests
-tests/python/**/Output/**
-tests/python/**/output/**
-tests/python/.lit_test_times.txt
+test/python/**/Output/**
+test/python/**/output/**
+test/python/.lit_test_times.txt
 
