@@ -1,10 +1,21 @@
+# IDEA and PyCharm
+.idea
+
+# Python
+*.pyc
+
+#
 .cache/
 coverage/
 dist/*
 # !dist/index.html
 node_modules/
 *.log
+
+# Visual Studio Code
 .vscode/
+
+#
 temp/
 
 # OS generated files
