@@ -129,6 +129,7 @@ def test_integration(
     run_invoke(context, itest_command)
 
 
+@task
 def test(context):
     test_unit(context)
     test_integration(context)
