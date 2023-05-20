@@ -50,6 +50,11 @@ def build(context):
     run_invoke(context, "npm run build")
 
 
+@task
+def test_unit(context):
+    run_invoke(context, "npm run test")
+
+
 @task(build)
 def test_end2end(
     context,
@@ -83,7 +88,7 @@ def test_end2end(
             {focus_argument}
             {exit_first_argument}
             {long_timeouts_argument}
-            tests/end2end
+            test/end2end
     """
 
     run_invoke(context, test_command)
@@ -110,7 +115,7 @@ def test_integration(
         -v
         {debug_opts}
         {focus_or_none}
-        {cwd}/tests/python
+        {cwd}/test/python
     """
 
     # It looks like LIT does not open the RUN: subprocesses in the same
@@ -122,6 +127,12 @@ def test_integration(
         return
 
     run_invoke(context, itest_command)
+
+
+def test(context):
+    test_unit(context)
+    test_integration(context)
+    test_end2end(context)
 
 
 @task
