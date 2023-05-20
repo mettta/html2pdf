@@ -1,5 +1,5 @@
 {
-  "name": "paginated",
+  "name": "html2pdf",
   "version": "0.1.1",
   "description": "Splits the selected piece of html into pages, prepared for printing, and provides a preview in the browser. Optional to add frontpage and footers.",
   "author": "mettta",
