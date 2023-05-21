@@ -1,0 +1,13 @@
+invoke
+
+### Integration tests ###
+# LIT/FileCheck test tools
+lit
+filecheck
+
+# Integration tests use PyPDF to check the contents of the printed PDF.
+pypdf==3.9.0
+
+# End-to-end tests
+seleniumbase
+chromedriver-py

@@ -46,6 +46,11 @@ def run_invoke(
 
 
 @task
+def bootstrap(context):
+    run_invoke(context, "pip install -r requirements.txt")
+
+
+@task
 def build(context):
     run_invoke(context, "npm run build")
 
