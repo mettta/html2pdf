@@ -72,6 +72,23 @@ Open server at [http://127.0.0.1:8080](http://127.0.0.1:8080).
 
 ## How it works
 
+Here is a general overview of what HTML2PDF does:
+
+1. Using the CSS, it is possible to isolate a part of the page and allow the
+   printer to print only that content.
+2. Right in the browser, HTML2PDF shows how the printer will print content
+   pages.
+3. Since the printer inserts page breaks based solely on geometry, including in
+   unexpected places, reading the printed document can be inconvenient. For
+   example, a heading may be split from a paragraph, leaving a single hanging
+   line at the end of a page, or a page may start with the last line or word of
+   a paragraph, and so on. The algorithm handles such cases and determines where
+   the printer needs to insert page breaks.
+4. The resulting PDF can be enhanced by adding running titles, page numbers, and
+   a cover page. This customization can be done using HTML templates.
+
+### How HTML2PDF works with DOM
+
 HTML2PDF attaches to an existing page and modifies its DOM to transform it into
 a printable page.
 
