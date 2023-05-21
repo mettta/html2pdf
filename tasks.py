@@ -51,6 +51,15 @@ def build(context):
 
 
 @task
+def format_readme(context):
+    run_invoke(context, """
+    prettier
+        --write --print-width 80 --prose-wrap always --parser=markdown
+        README.md
+    """)
+
+
+@task
 def test_unit(context):
     run_invoke(context, "npm run test")
 
