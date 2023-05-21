@@ -5,8 +5,8 @@ from seleniumbase import BaseCase
 path_to_this_test_file_folder = os.path.dirname(os.path.abspath(__file__))
 
 
-class Test_HelloWorld(BaseCase):
-    def test_01(self):
+class Test_T001_HelloWorld(BaseCase):
+    def test_001(self):
         index_html_file_url = (
             "file:///" +
             os.path.join(path_to_this_test_file_folder, "index.html")
