@@ -1,0 +1,4 @@
+RUN: %html2pdf %S/index.html %S/Output/index.pdf
+
+RUN: %check_exists --file "%S/Output/index.pdf"
+RUN: python %S/test.py
