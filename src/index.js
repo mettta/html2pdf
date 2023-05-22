@@ -12,7 +12,7 @@ import SELECTOR from './selector';
 window.addEventListener("load", function (event) {
   console.time("printTHIS");
 
-  // _emulateContent();
+  _emulateContent();
 
   const DOM = new DocumentObjectModel(window.document);
 
