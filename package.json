@@ -23,8 +23,6 @@
     "webpack-dev-server": "^4.15.0"
   },
   "scripts": {
-    "isolated": "webpack serve --open --config webpack.isolated.js",
-    "strictdoc": "webpack serve --open --config webpack.strictdoc.js",
     "start": "webpack serve --open --config webpack.dev.js",
     "build": "webpack --config webpack.prod.js",
     "test": "mocha",
