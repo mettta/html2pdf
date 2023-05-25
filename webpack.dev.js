@@ -15,9 +15,9 @@ module.exports = merge(common, {
       template: './examples/index.html',
       title: '✌ index',
       inject: false,
-      templateParameters: {
-        dataAttribute1: 'value1',
-      },
+      // templateParameters: {
+      //   dataConfig: 'test',
+      // },
     }),
     new HtmlWebpackPlugin({
       appMountId: 'app',
