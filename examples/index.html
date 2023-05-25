@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <title>✌ index</title>
+  <title><%= htmlWebpackPlugin.options.title %></title>
+
+  <script
+  defer
+  data-attribute1="<%= htmlWebpackPlugin.options.templateParameters.dataAttribute1 %>"
+  src="bundle.js"></script>
 </head>
 <body>
   <div><h4>Test for printing:</h4> <a href="isolated.html">isolated</a> / <a href="strictdoc.html">strictdoc</a></div>

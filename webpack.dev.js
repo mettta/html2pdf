@@ -1,7 +1,6 @@
 const { merge } = require('webpack-merge');
 const common = require('./webpack.common.js');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const htmlWebpackInjectAttributesPlugin = require('html-webpack-inject-attributes-plugin');
 
 module.exports = merge(common, {
   mode: 'development',
@@ -14,9 +13,10 @@ module.exports = merge(common, {
       appMountId: 'app',
       filename: 'index.html',
       template: './examples/index.html',
-      attributes: {
-        'data-src': function (tag) { return tag.attributes.src },
-        'config': '{printLeftMargin: 40,}',
+      title: '✌ index',
+      inject: false,
+      templateParameters: {
+        dataAttribute1: 'value1',
       },
     }),
     new HtmlWebpackPlugin({
@@ -29,6 +29,5 @@ module.exports = merge(common, {
       filename: 'strictdoc.html',
       template: './examples/strictdoc.html',
     }),
-    new htmlWebpackInjectAttributesPlugin()
   ],
 });
