@@ -11,21 +11,23 @@ module.exports = merge(common, {
   plugins: [
     new HtmlWebpackPlugin({
       appMountId: 'app',
-      title: '&star; isolated',
+      filename: 'index.html',
+      template: './examples/index.html',
+      title: '✌ index',
+      inject: false,
+      // templateParameters: {
+      //   dataConfig: 'test',
+      // },
+    }),
+    new HtmlWebpackPlugin({
+      appMountId: 'app',
       filename: 'isolated.html',
       template: './examples/isolated.html',
     }),
     new HtmlWebpackPlugin({
       appMountId: 'app',
-      title: '&star; simple',
-      filename: 'simple.html',
-      template: './examples/simple.html',
-    }),
-    new HtmlWebpackPlugin({
-      appMountId: 'app',
-      title: '&star; STRICTDOC',
       filename: 'strictdoc.html',
       template: './examples/strictdoc.html',
-    })
+    }),
   ],
 });

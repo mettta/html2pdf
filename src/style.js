@@ -23,12 +23,12 @@ export default class Style {
   @page {
     size: A4;
     /* 2 values: width then height */
-    size: ${this.config.width + this.config.printUnits} ${this.config.height + this.config.printUnits};
+    size: ${this.config.printWidth + this.config.printUnits} ${this.config.printHeight + this.config.printUnits};
 
-    margin-left: ${this.config.left - 1 + this.config.printUnits};
-    margin-right: ${this.config.right - 1 + this.config.printUnits};
-    margin-top: ${this.config.top - 0 + this.config.printUnits};
-    margin-bottom: ${this.config.bottom - 2 + this.config.printUnits};
+    margin-left: ${this.config.printLeftMargin - 1 + this.config.printUnits};
+    margin-right: ${this.config.printRightMargin - 1 + this.config.printUnits};
+    margin-top: ${this.config.printTopMargin - 0 + this.config.printUnits};
+    margin-bottom: ${this.config.printBottomMargin - 2 + this.config.printUnits};
   }
 
   ${SELECTOR.root} {
@@ -43,8 +43,8 @@ export default class Style {
 
     /* set print styles: affects previews */
     margin: 0 auto;
-    width: ${this.config.width - this.config.left - this.config.right}${this.config.printUnits};
-    font-size: ${this.config.fontSize};
+    width: ${this.config.printWidth - this.config.printLeftMargin - this.config.printRightMargin}${this.config.printUnits};
+    font-size: ${this.config.printFontSize};
 
     /* protection against unpredictability of margins */
     padding-top: .1px;
@@ -57,17 +57,17 @@ export default class Style {
     grid-template-rows: minmax(min-content, max-content) minmax(min-content, max-content) 1fr minmax(min-content, max-content) minmax(min-content, max-content);
     place-items: stretch stretch;
     place-content: stretch stretch;
-    width: ${this.config.width - this.config.left - this.config.right}${this.config.printUnits};
-    height: ${this.config.height}${this.config.printUnits};
-    font-size: ${this.config.fontSize};
+    width: ${this.config.printWidth - this.config.printLeftMargin - this.config.printRightMargin}${this.config.printUnits};
+    height: ${this.config.printHeight}${this.config.printUnits};
+    font-size: ${this.config.printFontSize};
   }
 
   ${SELECTOR.virtualPaper}::before {
     position: absolute;
     content: '';
-    width: ${this.config.width}${this.config.printUnits};
-    height: ${this.config.height}${this.config.printUnits};
-    left: -${this.config.left}${this.config.printUnits};
+    width: ${this.config.printWidth}${this.config.printUnits};
+    height: ${this.config.printHeight}${this.config.printUnits};
+    left: -${this.config.printLeftMargin}${this.config.printUnits};
     background-color: #fff;
     box-shadow: rgba(0, 0, 0, 0.1) 2px 2px 12px 0px;
     z-index: -1;
@@ -94,11 +94,11 @@ export default class Style {
   }
 
   ${SELECTOR.virtualPaperTopMargin} {
-    height: ${this.config.top}${this.config.printUnits};
+    height: ${this.config.printTopMargin}${this.config.printUnits};
   }
 
   ${SELECTOR.virtualPaperBottomMargin} {
-    height: ${this.config.bottom}${this.config.printUnits};
+    height: ${this.config.printBottomMargin}${this.config.printUnits};
   }
 
   ${SELECTOR.virtualPaperGap} {
@@ -155,7 +155,7 @@ export default class Style {
     }
   }
 
-  /* FOR TEST*/
+  /* FOR TEST */
   ${SELECTOR.virtualPaperGap} {
     background: #ff000020;
   }
