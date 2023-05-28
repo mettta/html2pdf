@@ -6,12 +6,13 @@
   <meta name="keywords" content="HTML2PDF, end2end" />
   <meta name="description" content="HTML2PDF end2end test" />
   <title>Test page</title>
+  <!-- todo: add config to set top/bottom margins -->
   <script src="../../../dist/bundle.js"></script>
 </head>
 
 <body>
-  <div filler style="height:1039px"></div>
-  <p>I want to be on page 2.</p>
+  <div filler style="height:1024px"></div>
+  <div>I want to be on page 2.<span data-testid="testPoint">tp</span></div>
 </body>
 
 </html>

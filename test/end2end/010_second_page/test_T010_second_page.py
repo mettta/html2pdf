@@ -10,6 +10,7 @@ index_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "index.html")
 )
 test_text = "I want to be on page 2."
+test_element = '//*[@data-testid="testPoint"]'
 
 class Test_T010_SecondPage(BaseCase):
     def test_01(self):
@@ -17,7 +18,5 @@ class Test_T010_SecondPage(BaseCase):
         helper.do_open_and_assert(index_html_file_url, test_text)
 
         helper.assert_document_has_pages(2, True)
-        helper.assert_element_on_the_page(f'//*[contains(., "{test_text}")]', 2)
-
-        # /*[@data-content-flow-end]
-
+        helper.assert_element_on_the_page(test_element, 2, True)
+        # f'//*[contains(., "{test_text}")]', 2, True
