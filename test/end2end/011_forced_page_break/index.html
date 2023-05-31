@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <!-- todo: add config to set top/bottom margins -->
+  <script src="../../../dist/bundle.js"></script>
+</head>
+
+<body>
+  <!-- Expected blank 1st page -->
+
+  <div data-print-forced-page-break>
+    <!-- At the very start of the document -->
+  </div>
+  <!-- Expected start of the 2nd page -->
+  <span data-testid="testPoint1">
+    I want to be on the 2nd page
+  </span>
+
+  <div data-print-forced-page-break>
+    <!-- In the middle between the content elements -->
+  </div>
+  <!-- Expected start of the 3st -->
+  <span data-testid="testPoint2">
+    I want to be on the 3rd page
+  </span>
+
+  <div data-print-forced-page-break>
+    <!-- At the very end of the document -->
+  </div>
+  <!-- Expected start of the 4st -->
+
+  <!--
+    todo: data-print-forced-page-break
+    only works if the content is more than 1 sheet.
+    Otherwise we just don't start calculating
+    and therefore can't just print empty sheets.
+
+    This is where I add filler to make up
+    for the total height of the content flow:
+  -->
+  <div filler style="height:1024px"></div>
+</body>
+
+</html>

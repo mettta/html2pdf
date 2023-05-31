@@ -171,6 +171,8 @@ export default class DocumentObjectModel {
 
   isForcedPageBreak(element) {
     // SELECTOR.printForcedPageBreak
+    // todo: add one more attribute like [print-forced-page-break]
+    // element.hasAttribute('data-print-forced-page-break') && console.log(element, element.hasAttribute('data-print-forced-page-break'));
     return element.dataset?.hasOwnProperty('printForcedPageBreak')
   }
 
