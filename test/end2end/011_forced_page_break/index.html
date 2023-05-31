@@ -36,14 +36,12 @@
 
   <!--
     todo: data-print-forced-page-break
-    only works if the content is more than 1 sheet.
-    Otherwise we just don't start calculating
-    and therefore can't just print empty sheets.
+    only works if the forced page break markers are direct children
+    of the root element.
 
-    This is where I add filler to make up
-    for the total height of the content flow:
+    We have to improve the code
+    and write a test when the markers are deeper in the element tree.
   -->
-  <div filler style="height:1024px"></div>
 </body>
 
 </html>
