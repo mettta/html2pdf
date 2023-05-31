@@ -109,6 +109,7 @@ export default class Pages {
     const newPageBottom = flowCutPoint + this.referenceHeight;
 
     if (this.DOM.isForcedPageBreak(currentElement)) {
+      // console.log('%c ************', 'background:red', nextElement);
       this._registerPageStart(nextElement)
       return
     }
