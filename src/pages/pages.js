@@ -51,8 +51,26 @@ export default class Pages {
     // IF contentFlow is less than one page,
 
     if (this.DOM.getElementHeight(this.contentFlow) < this.referenceHeight) {
-      // register a single page
-      this._registerPageStart(this.contentFlow);
+      // In the case of a single page,
+      // the markup was inserted BEFORE the contentFlow.
+      // Because our script is lazy and won't go through the children
+      // if it's not necessary.
+      // So we insert the contentFlowStart element and register it
+      // as the start of the page.
+      // In doing so, we still don't examine the contentFlow children.
+
+      // register a FIRST page
+      // todo: make a DOM function
+      const contentFlowStart = this.DOM.create('[data-content-flow-start]');
+      this.DOM.insertAtStart(this.contentFlow, contentFlowStart);
+      this._registerPageStart(contentFlowStart);
+
+      // Check for forced page breaks, and if they are, we register these pages.
+      // If not - we'll have a single page.
+      this.DOM.findAllForcedPageBreakInside(this.contentFlow).forEach(
+        element => this._registerPageStart(element)
+      );
+
       return;
     }
 

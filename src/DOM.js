@@ -176,6 +176,10 @@ export default class DocumentObjectModel {
     return element.dataset?.hasOwnProperty('printForcedPageBreak')
   }
 
+  findAllForcedPageBreakInside(element) {
+    return [...element.querySelectorAll('[data-print-forced-page-break]')];
+  }
+
   isNoBreak(element) {
     // SELECTOR.printNoBreak
     return element.dataset?.hasOwnProperty('printNoBreak')
