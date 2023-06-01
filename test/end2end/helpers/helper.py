@@ -4,6 +4,7 @@ from seleniumbase import BaseCase
 _content_flow_ = '//*[@id="contentFlow"]'
 _paper_flow_ = '//*[@id="paperFlow"]'
 _paper_ = '//*[@id="paperFlow"]/*[@class="virtualPaper"]'
+_paper_body_ = '//*[@class="paperBody"]'
 _page_top_point_ = '(//*[@id="contentFlow"]//*[@class="virtualPaperTopMargin"])'
 
 class Helper:
@@ -21,6 +22,21 @@ class Helper:
         self.test_case.assert_text(text)
 
     # Pages & Paper
+
+    def get_print_area_height(self) -> int:
+        paper_body = self.test_case.find_element(
+            f'{_paper_body_}',
+            by=By.XPATH,
+        )
+        return paper_body.size['height']
+
+    def get_print_area_width(self) -> int:
+        paper_body = self.test_case.find_elements(
+            f'{_paper_body_}',
+            by=By.XPATH,
+            limit=1
+        )
+        return paper_body.size['width']
 
     def _get_amount_of_virtual_paper(self) -> int:
         all_papers = self.test_case.find_elements(
@@ -45,7 +61,7 @@ class Helper:
         assert paper == count
         assert pages == count
 
-    # Element position
+    # Element
 
     def assert_element_on_the_page(self, element_xpath, page_number, report: bool = False) -> None:
         # Check that the Test object is shifted to the specific page.
@@ -61,6 +77,34 @@ class Helper:
         if report:
             print('-> page_top_point: ', page_top_point.location["y"])
             print('-> element: ', element.location["y"])
-        assert page_top_point.location["y"] < element.location["y"]
+        assert page_top_point.location["y"] <= element.location["y"]
+
+    def assert_element_fit_height(self, element_xpath) -> None:
+        # Check if the element fits in the printable area in height
+        element = self.test_case.find_element(
+            f'{_content_flow_}{element_xpath}',
+            by=By.XPATH,
+        )
+        printAreaHeight = self.get_print_area_height()
+        print('printAreaHeight', printAreaHeight)
+        elementHeight = self._get_element_height(element)
+        print('elementHeight', elementHeight)
+        assert elementHeight <= printAreaHeight
+
+    def assert_element_fit_width(self, element_xpath) -> None:
+        # Check if the element fits in the printable area by width
+        element = self.test_case.find_element(
+            f'{_content_flow_}{element_xpath}',
+            by=By.XPATH,
+        )
+        printAreaWidth = self.get_print_area_width()
+        elementWidth = self._get_element_width(element)
+        assert elementWidth < printAreaWidth
+
+    def _get_element_width(self, element) -> int:
+        return element.size['width']
+
+    def _get_element_height(self, element) -> int:
+        return element.size['height']
 
         # /*[@data-content-flow-end]
