@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <!-- todo: add config to set top/bottom margins -->
+  <script src="../../../dist/bundle.js"></script>
+</head>
+
+<body>
+  <!-- Expected start of the 1st page -->
+  <img data-testid="testImageHorizontal" style="width:2222px;height:222px;background:red;" src="data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="></img>
+  <p>
+    I want to be on the 1nd page <span data-testid="testPoint1">*</span>
+  </p>
+  <!-- Expected start of the 2nd page -->
+  <img data-testid="testImageVertical" style="width:222px;height:2222px;background:red;" src="data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="></img>
+  <!-- Expected start of the 3rd page -->
+  <p>
+    I want to be on the 2nd page <span data-testid="testPoint2">*</span>
+  </p>
+
+  <!-- <div data-print-forced-page-break> -->
+</body>
+
+</html>
