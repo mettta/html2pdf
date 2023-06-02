@@ -9,18 +9,45 @@ path_to_this_test_file_folder = os.path.dirname(os.path.abspath(__file__))
 index_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "index.html")
 )
-
-test_image_vertical = '//*[@data-testid="testImageVertical"]'
-test_image_horizontal = '//*[@data-testid="testImageHorizontal"]'
-test_element1 = '//*[@data-testid="testPoint1"]'
-test_element2 = '//*[@data-testid="testPoint2"]'
+case1_html_file_url = (
+    "file:///" + os.path.join(path_to_this_test_file_folder, "case1.html")
+)
+case2_html_file_url = (
+    "file:///" + os.path.join(path_to_this_test_file_folder, "case2.html")
+)
+case3_html_file_url = (
+    "file:///" + os.path.join(path_to_this_test_file_folder, "case3.html")
+)
+case4_html_file_url = (
+    "file:///" + os.path.join(path_to_this_test_file_folder, "case4.html")
+)
+case5_html_file_url = (
+    "file:///" + os.path.join(path_to_this_test_file_folder, "case5.html")
+)
 
 class Test_T031_TextSplit(BaseCase):
     def test_01(self):
         helper= Helper(self)
-        helper.do_open(index_html_file_url)
+        helper.do_open(case1_html_file_url)
+        helper.assert_document_has_pages(1)
 
+    def test_02(self):
+        helper= Helper(self)
+        helper.do_open(case2_html_file_url)
         helper.assert_document_has_pages(2)
-        # helper.assert_element_on_the_page(test_element1, 1, True)
-        # helper.assert_element_on_the_page(test_element2, 2, True)
-        # self.sleep(1000)
+
+    def test_03(self):
+        helper= Helper(self)
+        helper.do_open(case3_html_file_url)
+        helper.assert_document_has_pages(2)
+
+    def test_04(self):
+        helper= Helper(self)
+        helper.do_open(case4_html_file_url)
+        helper.assert_document_has_pages(2)
+
+    def test_05(self):
+        helper= Helper(self)
+        helper.do_open(case5_html_file_url)
+        helper.assert_document_has_pages(2)
+
