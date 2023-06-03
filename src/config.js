@@ -8,7 +8,7 @@ export default function createConfig(params) {
     printRightMargin: '21',
     printTopMargin: '12',
     printBottomMargin: '12',
-    printFontSize: '11pt', // todo 16+
+    printFontSize: '12pt', // todo 16+ // 1:18px 2:36px 3:54px
     // html template
     screenUnits: 'px',
     headerMargin: '16',

@@ -21,6 +21,11 @@ module.exports = merge(common, {
     }),
     new HtmlWebpackPlugin({
       appMountId: 'app',
+      filename: 'resizing.html',
+      template: './examples/resizing.html',
+    }),
+    new HtmlWebpackPlugin({
+      appMountId: 'app',
       filename: 'isolated.html',
       template: './examples/isolated.html',
     }),
