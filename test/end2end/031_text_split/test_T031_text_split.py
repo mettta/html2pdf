@@ -26,28 +26,26 @@ case5_html_file_url = (
 )
 
 class Test_T031_TextSplit(BaseCase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = Helper(self)
+
     def test_01(self):
-        helper= Helper(self)
-        helper.do_open(case1_html_file_url)
-        helper.assert_document_has_pages(1)
+        self.helper.do_open(case1_html_file_url)
+        self.helper.assert_document_has_pages(1)
 
     def test_02(self):
-        helper= Helper(self)
-        helper.do_open(case2_html_file_url)
-        helper.assert_document_has_pages(2)
+        self.helper.do_open(case2_html_file_url)
+        self.helper.assert_document_has_pages(2)
 
     def test_03(self):
-        helper= Helper(self)
-        helper.do_open(case3_html_file_url)
-        helper.assert_document_has_pages(2)
+        self.helper.do_open(case3_html_file_url)
+        self.helper.assert_document_has_pages(2)
 
     def test_04(self):
-        helper= Helper(self)
-        helper.do_open(case4_html_file_url)
-        helper.assert_document_has_pages(2)
+        self.helper.do_open(case4_html_file_url)
+        self.helper.assert_document_has_pages(2)
 
     def test_05(self):
-        helper= Helper(self)
-        helper.do_open(case5_html_file_url)
-        helper.assert_document_has_pages(2)
-
+        self.helper.do_open(case5_html_file_url)
+        self.helper.assert_document_has_pages(2)
