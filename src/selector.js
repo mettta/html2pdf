@@ -49,14 +49,15 @@ const SELECTOR = {
   // ? used in layout
   printIgnore: '[data-print-ignore]',
   printHide: '[data-print-hide]',
-  printNoBreak: '[data-print-no-break]',
-
+  
   // printed page break
   // ? used in preview
   printPageBreak: '[data-print-page-break]',
   // processed page break
   // ? DOM
   printForcedPageBreak: '[data-print-forced-page-break]',
+  // page break ban
+  printNoBreak: '[data-print-no-break]',
 
   // service attributes
   // ? DOM
