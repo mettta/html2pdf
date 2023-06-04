@@ -1,8 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
+
+<!doctype html>
+<html lang="">
+
 <head>
-  <meta charset="UTF-8"/>
-  <title><%= htmlWebpackPlugin.options.title %></title>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
   <!--
     * data-print-paper-size='a4' // default, 1032px
     * data-print-height='88'      => 242px
@@ -20,34 +24,33 @@
       5 lines: 242 - 90 = 152px -
       6 lines: 242 - 108 = 134px -
   -->
-  <!-- data-preloader='true' -->
   <script
-  defer
-  data-print-height='88' // 242px
-  data-print-font-size='12pt' // 1:18 2:36 3:54
-  src="bundle.js"></script>
+    defer
+    data-print-height='88'
+    data-print-font-size='12pt'
+    src="../../../dist/bundle.js"></script>
 </head>
+
 <body>
-  <p><b>Test for printing:</b>
-    <a href="resizing.html">resizing</a> /
-    <a href="isolated.html">isolated</a> /
-    <a href="strictdoc.html">strictdoc</a>
-  </p>
+  <!--
+      It will be split by list items only.
+      Because each list item has 3 rows, and they will not be split.
+  -->
 
-  <div id="printTHIS">
-
-    <div filler style="height:152px"></div>
-    <div>
-      <!-- <span data-testid="testPoint1">*</span> -->
-      Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
-      Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+  <!-- Case #5 -->
+  <div filler style="height:152px"></div>
+  <ul style="margin-block-start:0;margin-block-end:0;">
+    <li>
       Proident do duis minim sit officia duis occaecat.
       Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
       Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+    </li>
+    <li>
       Proident do duis minim sit officia duis occaecat.
-      <!-- <span data-testid="testPoint2">*</span> -->
-    </div>
-
-  </div>
+      Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
+      Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+    </li>
+  </ul>
 </body>
+
 </html>
