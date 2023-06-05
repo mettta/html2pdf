@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <!--
+    * data-print-paper-size='a4' // default, 1032px
+    * data-print-height='88'      => 242px
+    * data-print-font-size='12pt' => 1 line:  18px
+    *                                2 lines: 36px
+    *                                3 lines: 54px
+    *                                4 lines: 72px
+    *                                5 lines: 90px
+    ? filler sizes for Paragraph cases (without margin-block):
+      1 line:  242 - 18 = 224px -
+      2 lines: 242 - 36 = 206px -
+      3 lines: 242 - 54 = 188px -
+      4 lines: 242 - 72 = 170px -
+      5 lines: 242 - 90 = 152px -
+  -->
+  <script
+    defer
+    data-print-height='88'
+    data-print-font-size='12pt'
+    src="../../../dist/bundle.js"></script>
+</head>
+
+<body>
+  <div filler style="height:188px"></div>
+  <div>
+    <!-- todo -->
+    <span data-testid="testPoint1">*</span>
+    Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
+    Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+    Proident do duis minim sit officia duis occaecat.
+    Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
+    Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+    Proident do duis minim sit officia duis occaecat.
+    <span data-testid="testPoint2">*</span>
+  </div>
+</body>
+
+</html>
