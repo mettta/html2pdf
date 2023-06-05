@@ -14,6 +14,8 @@ export default class Preloader {
   }
 
   remove() {
+    if (!this.preloader) { return }
+
     let op = 1;  // initial opacity
 
     const fadeTimer = setInterval(() => {

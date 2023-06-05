@@ -7,14 +7,11 @@ import Layout from './layout';
 import Pages from './pages';
 import Paper from './paper';
 import Preview from './preview';
-import Preloader from './preloader';
+// import Preloader from './preloader';
 
 export default class HTML2PDF4DOC {
   constructor(params) {
     this.params = params;
-    this.preloader = (this.params.preloader === 'true')
-                   ? new Preloader()
-                   : undefined;
   }
 
   config() {
@@ -27,9 +24,6 @@ export default class HTML2PDF4DOC {
   }
 
   render() {
-
-    // (this.params.preloader === 'true') && (this.preloader = new Preloader());
-    this.preloader && this.preloader.create();
 
     const DOM = new DocumentObjectModel(window.document);
     DOM.insertStyle(new Style(this.config()).create());
@@ -84,8 +78,6 @@ export default class HTML2PDF4DOC {
       paper: paper,
       pages: pages,
     }).create();
-
-    this.preloader && this.preloader.remove();
 
     console.log('%c ✔ Preview.create() ', 'background:cyan');
   }
