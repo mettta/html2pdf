@@ -34,5 +34,10 @@ module.exports = merge(common, {
       filename: 'strictdoc.html',
       template: './examples/strictdoc.html',
     }),
+    new HtmlWebpackPlugin({
+      appMountId: 'app',
+      filename: 'tags.html',
+      template: './examples/tags.html',
+    }),
   ],
 });
