@@ -15,6 +15,9 @@ resize_html_file_url = (
 inline_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "inline.html")
 )
+inline_res_html_file_url = (
+    "file:///" + os.path.join(path_to_this_test_file_folder, "inline-res.html")
+)
 
 test_image_vertical = '//*[@data-testid="testImageVertical"]'
 test_image_horizontal = '//*[@data-testid="testImageHorizontal"]'
@@ -46,4 +49,8 @@ class Test_T022_Image(BaseCase):
         self.helper.assert_element_on_the_page(test_element1, 1, True)
         self.helper.assert_element_on_the_page(test_element2, 3, True)
 
+    def test_04_inline_res(self):
+        self.helper.do_open(inline_res_html_file_url)
+        # self.helper.assert_document_has_pages(1)
+        self.sleep(1000)
         # todo: inline elements & image resize
