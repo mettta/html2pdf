@@ -28,6 +28,12 @@ module.exports = merge(common, {
     }),
     new HtmlWebpackPlugin({
       appMountId: 'app',
+      filename: 'document.html',
+      template: './examples/strictdoc/document.html',
+      // inject: false,
+    }),
+    new HtmlWebpackPlugin({
+      appMountId: 'app',
       filename: 'resizing.html',
       template: './examples/resizing.html',
     }),
