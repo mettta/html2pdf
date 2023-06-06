@@ -21,6 +21,13 @@ module.exports = merge(common, {
     }),
     new HtmlWebpackPlugin({
       appMountId: 'app',
+      filename: 'strictdoc.html',
+      template: './examples/strictdoc.html',
+      title: '🌲 strictdoc',
+      inject: false,
+    }),
+    new HtmlWebpackPlugin({
+      appMountId: 'app',
       filename: 'resizing.html',
       template: './examples/resizing.html',
     }),
@@ -28,11 +35,6 @@ module.exports = merge(common, {
       appMountId: 'app',
       filename: 'isolated.html',
       template: './examples/isolated.html',
-    }),
-    new HtmlWebpackPlugin({
-      appMountId: 'app',
-      filename: 'strictdoc.html',
-      template: './examples/strictdoc.html',
     }),
     new HtmlWebpackPlugin({
       appMountId: 'app',

@@ -4,9 +4,10 @@
 <head>
 
   <meta charset="UTF-8" />
+  <title><%= htmlWebpackPlugin.options.title %></title>
+
   <link rel="shortcut icon" href="../examples/strictdoc/_static/favicon.ico" type="image/x-icon" />
   <link rel="icon" href="../examples/strictdoc/_static/favicon.ico" type="image/x-icon" />
-
 
   <!-- <link rel="stylesheet" href="../examples/strictdoc/_static/_base.css" />
   <link rel="stylesheet" href="../examples/strictdoc/_static/_layout.css" />
@@ -16,7 +17,10 @@
   <link rel="stylesheet" href="../examples/strictdoc/_static/_print.css" />
   <script type="text/javascript" src="../examples/strictdoc/_static/toc.js"></script> -->
 
-  <!-- <script type="text/javascript" src="../../dist/bundle.js"></script> -->
+  <script
+  defer
+  data-preloader='true'
+  src="bundle.js"></script>
 
   <style>
     /* base */
