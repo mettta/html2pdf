@@ -92,6 +92,7 @@ export default class Pages {
   _registerPageStart(pageStart) {
     this.pages.push({
       pageStart: pageStart,
+      pageBottom: this.DOM.getElementRootedTop(pageStart, this.root) + this.referenceHeight,
     })
   }
 
@@ -122,10 +123,6 @@ export default class Pages {
       return
     }
 
-    const lastPageStart = this.pages[this.pages.length - 1].pageStart;
-    const flowCutPoint = lastPageStart ? this.DOM.getElementRootedTop(lastPageStart, this.root) : 0;
-    const newPageBottom = flowCutPoint + this.referenceHeight;
-
     if (this.DOM.isForcedPageBreak(currentElement)) {
       // console.log('%c ************', 'background:red', nextElement);
       this._registerPageStart(nextElement)
@@ -136,6 +133,8 @@ export default class Pages {
       this.DOM.getElementOffsetParent(currentElement),
       'it is expected that the element has an offset parent',
       [currentElement]);
+
+    const newPageBottom = this.pages.at(-1).pageBottom;
 
     // IF nextElement does not start on the current page,
     // we should check if the current one fits in the page,
