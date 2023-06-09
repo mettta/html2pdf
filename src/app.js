@@ -7,7 +7,10 @@ import Layout from './layout';
 import Pages from './pages';
 import Paper from './paper';
 import Preview from './preview';
-// import Preloader from './preloader';
+
+const CONSOLE_CSS_LABEL_APP = 'border:1px solid #66CC00;'
+                            + 'background:#EEEEEE;'
+                            + 'color:#66CC00;'
 
 export default class HTML2PDF4DOC {
   constructor(params) {
@@ -57,8 +60,7 @@ export default class HTML2PDF4DOC {
     // console.log(layout.contentFlow);
 
     layout.create();
-
-    console.log('%c ✔ layout.create() ', 'background:cyan');
+    console.log('%c ✔ layout.create() ', CONSOLE_CSS_LABEL_APP);
 
     const pages = new Pages({
       DOM,
@@ -66,10 +68,9 @@ export default class HTML2PDF4DOC {
       referenceHeight: paper.bodyHeight,
       referenceWidth: paper.bodyWidth,
     }).calculate();
+    console.log('%c ✔ Pages.calculate() ', CONSOLE_CSS_LABEL_APP);
 
-    console.log('%c ✔ Pages.calculate() ', 'background:cyan');
-
-    console.log('pages', pages);
+    // console.log('pages', pages);
 
     new Preview({
       DOM,
@@ -79,6 +80,6 @@ export default class HTML2PDF4DOC {
       pages: pages,
     }).create();
 
-    console.log('%c ✔ Preview.create() ', 'background:cyan');
+    console.log('%c ✔ Preview.create() ', CONSOLE_CSS_LABEL_APP);
   }
 }
