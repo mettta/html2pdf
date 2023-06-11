@@ -1,6 +1,8 @@
 import calculateSplitters from './calculateSplitters';
 import findSplitId from './findSplitId';
 
+const CONSOLE_CSS_LABEL_PAGES = 'color:#FFBB00';
+
 export default class Pages {
 
   constructor({
@@ -77,8 +79,7 @@ export default class Pages {
     // ELSE:
 
     const content = this._getChildren(this.contentFlow);
-
-    console.log('content', content);
+    console.log('%c🚸 children(contentFlow)', CONSOLE_CSS_LABEL_PAGES, content);
 
     // TODO put this into main calculations?
     // FIRST ELEMENT: register the beginning of the first page.
@@ -112,20 +113,33 @@ export default class Pages {
     }
   }
 
+  // 📍
   _parseNode({
     previousElement,
     currentElement,
     nextElement,
   }) {
 
-    // THE END:
+    // console.log('🏴')
+
+    console.group('📍_parseNode()'); // groupCollapsed
+      console.log('👈', previousElement)
+      console.log('👌', currentElement)
+      console.log('👉', nextElement)
+    // console.groupEnd();
+
+    // THE END of content flow:
+    // if there is no next element, then
+    // we are in a case where the [data-content-flow-end] element is current.
     if (!nextElement) {
+      console.log('🏁 THE END')
       return
     }
 
+    // FORCED BREAK
     if (this.DOM.isForcedPageBreak(currentElement)) {
-      // console.log('%c ************', 'background:red', nextElement);
       this._registerPageStart(nextElement)
+      console.log('🚩 FORCED BREAK');
       return
     }
 
@@ -141,8 +155,6 @@ export default class Pages {
     // because it could be because of the margin
     // TODO if next elem is SVG it has no offset Top!
     if (this.DOM.getElementRootedTop(nextElement, this.root) > newPageBottom) {
-
-      // console.log('+++++++++', this.DOM.getElementRootedTop(nextElement, this.root), '>', newPageBottom);
 
       // Here nextElement is a candidate to start a new page,
       // and currentElement is a candidate
@@ -223,21 +235,15 @@ export default class Pages {
       if (this.DOM.getElementRootedBottom(currentElement, this.root) <= newPageBottom) {
         // we need <= because splitted elements often get equal height // todo comment
 
-        console.log('%c -- check BOTTOM of', 'color:yellow', currentElement);
-
         this._registerPageStart(nextElement);
         return
       }
-
-      // console.log('+-------', this.DOM.getElementRootedBottom(currentElement, this.root), '>', newPageBottom);
-
 
       // otherwise try to break it and loop the children:
       let children = [];
 
       if (this.DOM.isNoBreak(currentElement) || this._notSolved(currentElement)) {
         // don't break apart, thus keep an empty children array
-        console.log('%c do not break', 'color:green', currentElement);
         children = [];
       } else if (this._isTextNode(currentElement)) {
         // console.log('text node', currentElement);
@@ -269,6 +275,7 @@ export default class Pages {
         //   console.log(liChildren);
       } else {
         children = this._getChildren(currentElement);
+        console.log('🚸f() children', children);
       }
 
       if (this._isVerticalFlowDisrupted(children)) {
@@ -300,10 +307,13 @@ export default class Pages {
 
     }
     // IF currentElement fits, continue.
+    console.log('🏳️ curr', currentElement)
+
+    console.groupEnd();
   }
 
   _processChildrenThoroughly(children, node, pageBottom) {
-    console.log('%c _processChildrenThoroughly', 'background:blue', children);
+    console.groupCollapsed('%c_processChildrenThoroughly()',CONSOLE_CSS_LABEL_PAGES)
 
     // todo
     // // Paragraph:
@@ -327,7 +337,7 @@ export default class Pages {
     }
 
     const nodeChildren = children.reduce((accumulator, child, index, array) => {
-
+      console.log('child', child);
       if (this._isTextNode(child)) {
         const words = child.innerHTML.split(' ');
 
@@ -353,25 +363,25 @@ export default class Pages {
       return accumulator;
     }, [])
 
-    // console.log(nodeChildren);
+    console.log(nodeChildren);
+    console.log('🪴children (Thoroughly)',children);
+    console.groupEnd();
     return children
   }
 
   _isVerticalFlowDisrupted(arrayOfElements) {
-    // console.log('%c TRY', 'background:blue');
     return arrayOfElements.some(
 
       (current, currentIndex, array) => {
-
         const currentElement = current;
         const nextElement = array[currentIndex + 1];
-
 
         if (!nextElement) {
           return false
         };
-
-        return this.DOM.getElementRelativeBottom(currentElement) > this.DOM.getElementRelativeTop(nextElement);
+        const isTrue = this.DOM.getElementRelativeBottom(currentElement) > this.DOM.getElementRelativeTop(nextElement);
+        isTrue && console.log('***', currentElement);
+        return isTrue;
       }
     )
   }
