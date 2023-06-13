@@ -49,7 +49,7 @@ const SELECTOR = {
   // ? used in layout
   printIgnore: '[data-print-ignore]',
   printHide: '[data-print-hide]',
-  
+
   // printed page break
   // ? used in preview
   printPageBreak: '[data-print-page-break]',
@@ -62,6 +62,7 @@ const SELECTOR = {
   // service attributes
   // ? DOM
   neutral: '[data-neutral]',
+  textBlock: 'html2pdf-text-block',
 
 };
 

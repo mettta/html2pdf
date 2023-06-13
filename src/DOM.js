@@ -163,6 +163,21 @@ export default class DocumentObjectModel {
     return wrapperHeight;
   }
 
+  createTextBlock() {
+    const textBlock = this.create();
+    textBlock.className = "text-block";
+    textBlock.setAttribute(SELECTOR.textBlock, '');
+    return textBlock;
+  }
+
+  isTextBlock(element) {
+    return element.hasAttribute(SELECTOR.textBlock)
+  }
+
+  isInline(element) {
+    return window.getComputedStyle(element).display == 'inline';
+  }
+
   // todo {class, id, dataset, value} ?
   isNeutral(element) {
     // SELECTOR.neutral
@@ -303,6 +318,11 @@ export default class DocumentObjectModel {
     const element = this.create(SELECTOR.printNoBreak);
     style && (element.style = style);
     return element;
+  }
+
+  wrapNode(node, wrapper) {
+    node.before(wrapper);
+    wrapper.append(node);
   }
 
   wrapWithPrintNoBreak(element) {

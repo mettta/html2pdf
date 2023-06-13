@@ -245,6 +245,8 @@ export default class Pages {
       if (this.DOM.isNoBreak(currentElement) || this._notSolved(currentElement)) {
         // don't break apart, thus keep an empty children array
         children = [];
+      } else if (this.DOM.isTextBlock(currentElement)) {
+        children = this._splitTextBlock(currentElement, newPageBottom) || [];
       } else if (this._isTextNode(currentElement)) {
         // console.log('text node', currentElement);
         children = this._splitTextNode(currentElement, newPageBottom) || [];
@@ -279,8 +281,11 @@ export default class Pages {
       }
 
       if (this._isVerticalFlowDisrupted(children)) {
+        // if the vertical flow is disturbed and the elements are side by side:
         // [] => false
-        children = this._processChildrenThoroughly(children, currentElement, newPageBottom);
+        // children = this._processChildrenThoroughly(children, currentElement, newPageBottom);
+
+        children = this._processInlineChildren(children);
       }
 
 
@@ -310,6 +315,39 @@ export default class Pages {
     console.log('🏳️ curr', currentElement)
 
     console.groupEnd();
+  }
+
+  _processInlineChildren(children) {
+
+    let textBlock = null;
+    const newChildren = [];
+
+    children.forEach(child => {
+      if (this.DOM.isInline(child)) {
+        if (!textBlock) {
+          // the first inline child
+          textBlock = this.DOM.createTextBlock();
+          this.DOM.wrapNode(child, textBlock);
+          newChildren.push(textBlock);
+        }
+        // not the first inline child
+        this.DOM.insertAtEnd(textBlock, child)
+      } else {
+        // A block child is encountered,
+        // so interrupt the collection of elements in the textBlock:
+        textBlock = null;
+        newChildren.push(child);
+      }
+    })
+
+    console.log('🎈', newChildren);
+    return newChildren
+  }
+
+  _splitTextBlock(node, pageBottom) {
+    // TODO "textBlock"
+    console.log('%ctextBlock', 'color:red')
+    return []
   }
 
   _processChildrenThoroughly(children, node, pageBottom) {
@@ -601,8 +639,8 @@ export default class Pages {
 
 
     const testNode = this.DOM.createTestNodeFrom(node);
-    testNode.append(...blockAndLineElementsArray);
-    node.append(testNode);
+    testNode.append(...blockAndLineElementsArray); // todo this.DOM.insertAtEnd(element, ...payload)
+    node.append(testNode); // todo this.DOM.insertAtEnd(element, ...payload)
 
 
 
@@ -655,7 +693,7 @@ export default class Pages {
 
       // console.log(' ### SPLIT:', index, ' - ', start, end);
 
-      part.append(...blockAndLineElementsArray.slice(start, end));
+      part.append(...blockAndLineElementsArray.slice(start, end)); // todo this.DOM.insertAtEnd(element, ...payload)
 
       return part;
     });
@@ -817,9 +855,10 @@ export default class Pages {
 
       if (startId) {
         // if is not first part
-        part.append(this.DOM.createSignpost('(table continued)', this.signpostHeight));
+        part.append(this.DOM.createSignpost('(table continued)', this.signpostHeight)); // todo this.DOM.insertAtEnd(element, ...payload)
       }
 
+      // todo this.DOM.insertAtEnd(element, ...payload)
       part.append(
         this.DOM.createTable({
           wrapper: tableWrapper,
@@ -841,7 +880,7 @@ export default class Pages {
     // create LAST PART
     const lastPart = this.DOM.createPrintNoBreak();
     node.before(lastPart);
-    lastPart.append(
+    lastPart.append( // todo this.DOM.insertAtEnd(element, ...payload)
       this.DOM.createSignpost('(table continued)', this.signpostHeight),
       node
     )
