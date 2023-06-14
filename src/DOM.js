@@ -124,23 +124,27 @@ export default class DocumentObjectModel {
     return neutral;
   }
 
-  createTestNode() {
-    const testNode = this.createNeutral();
-    testNode.classList = 'test-node'
-    testNode.style = "position:absolute; left:-10000px; width:100%; background:rgba(255,255,255,0.2)";
-    return testNode;
-  }
-  // TODO createTestNodeFrom vs createTestNode
   createTestNodeFrom(node) {
     const testNode = node.cloneNode(false);
     testNode.classList = 'test-node'
-    // testNode.style = "position:absolute; left:-10000px; width:100%; background:rgba(255,255,255,0.2)";
     testNode.style.position = 'absolute';
-    // testNode.style.left = '-10000px';
-    testNode.style.width = '100%';
-    // testNode.style.background = 'rgba(255,255,255,0.2)';
     testNode.style.background = 'rgb(255 239 177)';
+    // testNode.style.left = '-10000px';
+    testNode.style.width = this.getMaxWidth(node) + 'px';
     return testNode;
+  }
+
+  getMaxWidth(node) {
+    // * width adjustment for createTestNodeFrom()
+    // ? problem: if the node is inline,
+    // it may not show its maximum width in the parent context.
+    // So we make a block element that shows
+    // the maximum width of the node in the current context:
+    const tempDiv = this.create();
+    node.append(tempDiv);
+    const width = this.getElementWidth(tempDiv);
+    tempDiv.remove();
+    return width;
   }
 
   getLineHeight(node) {
@@ -419,7 +423,7 @@ export default class DocumentObjectModel {
       return span;
     })
 
-    const testNode = this.createTestNode();
+    const testNode = this.createTestNodeFrom(node);
     testNode.append(...nodeWordItems)
     node.append(testNode);
 
