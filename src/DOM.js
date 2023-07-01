@@ -167,15 +167,15 @@ export default class DocumentObjectModel {
     return wrapperHeight;
   }
 
-  createTextBlock() {
+  createComplexTextBlock() {
     const textBlock = this.create();
-    textBlock.className = "text-block";
-    textBlock.setAttribute(SELECTOR.textBlock, '');
+    textBlock.className = "complex-text-block";
+    textBlock.setAttribute(SELECTOR.complexTextBlock, '');
     return textBlock;
   }
 
-  isTextBlock(element) {
-    return element.hasAttribute(SELECTOR.textBlock)
+  isComplexTextBlock(element) {
+    return element.hasAttribute(SELECTOR.complexTextBlock)
   }
 
   isInline(element) {

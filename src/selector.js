@@ -62,7 +62,7 @@ const SELECTOR = {
   // service attributes
   // ? DOM
   neutral: '[data-neutral]',
-  textBlock: 'html2pdf-text-block',
+  complexTextBlock: 'html2pdf-complex-text-block',
 
 };
 

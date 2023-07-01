@@ -131,6 +131,9 @@ export default class Pages {
     // THE END of content flow:
     // if there is no next element, then
     // we are in a case where the [data-content-flow-end] element is current.
+    // todo
+    // Потому что next всегда есть или собственного уровня, или родительский,
+    // или мы в конце контент-флоу.
     if (!nextElement) {
       console.log('🏁 THE END')
       return
@@ -245,8 +248,8 @@ export default class Pages {
       if (this.DOM.isNoBreak(currentElement) || this._notSolved(currentElement)) {
         // don't break apart, thus keep an empty children array
         children = [];
-      } else if (this.DOM.isTextBlock(currentElement)) {
-        children = this._splitTextBlock(currentElement, newPageBottom) || [];
+      } else if (this.DOM.isComplexTextBlock(currentElement)) {
+        children = this._splitComplexTextBlock(currentElement, newPageBottom) || [];
       } else if (this._isTextNode(currentElement)) {
         // console.log('text node', currentElement);
         children = this._splitTextNode(currentElement, newPageBottom) || [];
@@ -304,6 +307,8 @@ export default class Pages {
         if (this._canNotBeLast(previousElement)) {
           // if previousElement can't be the last element on the page,
           // move it to the next page.
+          // todo
+          // а если там подряд несколько заголовков, и перед previousElement есть еще заголовки, которые мы не проверяли еслтенствнно, и они будут висеть
           this._registerPageStart(previousElement)
         } else {
           this._registerPageStart(currentElement)
@@ -319,23 +324,23 @@ export default class Pages {
 
   _processInlineChildren(children) {
 
-    let textBlock = null;
+    let complexTextBlock = null;
     const newChildren = [];
 
     children.forEach(child => {
       if (this.DOM.isInline(child)) {
-        if (!textBlock) {
+        if (!complexTextBlock) {
           // the first inline child
-          textBlock = this.DOM.createTextBlock();
-          this.DOM.wrapNode(child, textBlock);
-          newChildren.push(textBlock);
+          complexTextBlock = this.DOM.createComplexTextBlock();
+          this.DOM.wrapNode(child, complexTextBlock);
+          newChildren.push(complexTextBlock);
         }
         // not the first inline child
-        this.DOM.insertAtEnd(textBlock, child)
+        this.DOM.insertAtEnd(complexTextBlock, child)
       } else {
         // A block child is encountered,
-        // so interrupt the collection of elements in the textBlock:
-        textBlock = null;
+        // so interrupt the collection of elements in the complexTextBlock:
+        complexTextBlock = null;
         newChildren.push(child);
       }
     })
@@ -344,8 +349,10 @@ export default class Pages {
     return newChildren
   }
 
-  _splitTextBlock(node, pageBottom) {
-    // TODO "textBlock"
+  _splitComplexTextBlock(node, pageBottom) {
+    // TODO "complexTextBlock"
+
+    console.log('%c ⛱️ complexTextBlock ⛱️ ', 'color:red;background:yellow');
 
     // Prepare node parameters
     const nodeTop = this.DOM.getElementRootedTop(node, this.root);
@@ -354,8 +361,6 @@ export default class Pages {
 
     // Prepare parameters for splitters calculation
     const availableSpace = pageBottom - nodeTop;
-
-    console.log('%c••• textBlock •••', 'color:red;background:yellow');
 
     // !!!
 
