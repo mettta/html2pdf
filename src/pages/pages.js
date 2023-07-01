@@ -346,7 +346,27 @@ export default class Pages {
 
   _splitTextBlock(node, pageBottom) {
     // TODO "textBlock"
-    console.log('%ctextBlock', 'color:red')
+
+    // Prepare node parameters
+    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
+    const nodeHeight = this.DOM.getElementHeight(node);
+    const nodeLineHeight = this.DOM.getLineHeight(node);
+
+    // Prepare parameters for splitters calculation
+    const availableSpace = pageBottom - nodeTop;
+
+    console.log('%c••• textBlock •••', 'color:red;background:yellow');
+
+    // !!!
+
+    const testBlock = document.createElement('div');
+    testBlock.classList.add('testBlock');
+    testBlock.style.border = '1px solid red';
+    testBlock.style.whiteSpace = 'nowrap';
+    testBlock.style.position = 'absolute';
+    testBlock.innerHTML = node.innerHTML;
+    // node.prepend(testBlock);
+
     return []
   }
 
