@@ -362,6 +362,14 @@ export default class DocumentObjectModel {
     return element.getBoundingClientRect();
   }
 
+  getElementTop(element) {
+    return element?.offsetTop;
+  }
+
+  getElementLeft(element) {
+    return element?.offsetLeft;
+  }
+
   getElementHeight(element) {
     return element?.offsetHeight;
   }

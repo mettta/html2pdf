@@ -352,25 +352,99 @@ export default class Pages {
   _splitComplexTextBlock(node, pageBottom) {
     // TODO "complexTextBlock"
 
-    console.log('%c ⛱️ complexTextBlock ⛱️ ', 'color:red;background:yellow');
-
     // Prepare node parameters
     const nodeTop = this.DOM.getElementRootedTop(node, this.root);
     const nodeHeight = this.DOM.getElementHeight(node);
+    const nodeWidth = this.DOM.getElementWidth(node);
     const nodeLineHeight = this.DOM.getLineHeight(node);
 
     // Prepare parameters for splitters calculation
     const availableSpace = pageBottom - nodeTop;
 
+    // calculate approximate splitters
+    // const approximateSplitters = calculateSplitters({
+    //   nodeLines: nodeLines,
+    //   pageLines: pageLines,
+    //   firstPartLines: firstPartLines,
+    //   // const
+    //   minBreakableLines: this.minBreakableLines,
+    //   minLeftLines: this.minLeftLines,
+    //   minDanglingLines: this.minDanglingLines,
+    // });
+
+    // ? calculating the approximate breakdown parts
+    // тут мы еще не знаем, какие высоты строк есть в параграфе,
+    // и считаем просто высоты контейнеров
+    console.group('%c approximate breakdown parts ', 'background:#00FFFF');
+
+    console.log('%c availableSpace: ', 'background:#CCFFFF', availableSpace);
+    console.log('%c nodeLineHeight: ', 'background:#CCFFFF', nodeLineHeight);
+    console.log('%c nodeHeight: ', 'background:#CCFFFF', nodeHeight);
+
+    console.groupEnd();
+    // ? END of calculating the approximate breakdown parts
+
+    const complexChildren = this._getChildren(node).map(
+      element => {
+        const lineHeight = this.DOM.getLineHeight(element);
+        const height = this.DOM.getElementHeight(element);
+        const left = this.DOM.getElementLeft(element);
+        const top = this.DOM.getElementTop(element);
+        const lines = ~~(height / lineHeight);
+
+        return {
+          element,
+          left,
+          top,
+          lineHeight,
+          lines,
+        }
+      }
+    );
+
+    console.log('%c ⛱️ complexTextBlock ⛱️ ', 'color:red;background:yellow', complexChildren);
+
+
+
     // !!!
 
-    const testBlock = document.createElement('div');
-    testBlock.classList.add('testBlock');
-    testBlock.style.border = '1px solid red';
-    testBlock.style.whiteSpace = 'nowrap';
-    testBlock.style.position = 'absolute';
-    testBlock.innerHTML = node.innerHTML;
-    // node.prepend(testBlock);
+    // проверяем наибольшую высоту строки
+    const testNowrapBlock = document.createElement('div');
+    testNowrapBlock.classList.add('testNowrapBlock');
+    testNowrapBlock.style.outline = '1px solid red';
+    testNowrapBlock.style.whiteSpace = 'nowrap';
+    testNowrapBlock.style.position = 'absolute';
+    testNowrapBlock.innerHTML = node.innerHTML;
+    node.prepend(testNowrapBlock);
+    const maxLineHeight = this.DOM.getElementHeight(testNowrapBlock);
+    console.log('%c maxLineHeight', 'color:red;background:yellow', maxLineHeight);
+    testNowrapBlock.remove();
+
+    // todo Если maxLineHeight и nodeLineHeight не равны
+
+    // находим многострочные - и только их разбиваем!
+    // у многострочного ширина считается по самому левому и самому правому краю,
+    // и он фактически ПОЧТИ равен родителю?
+
+
+    // ? Предположим, maxLineHeight и nodeLineHeight равны
+    const estimatedNodeLines = ~~(nodeHeight / nodeLineHeight);
+    console.log('%c estimatedNodeLines', 'color:green;background:yellow', estimatedNodeLines);
+
+    complexChildren.forEach(item => {
+
+      // const nodeLineHeight = this.DOM.getLineHeight(node);
+
+      // const left = item.element.offsetLeft;
+      // const width = item.element.offsetWidth;
+      // const delta = nodeWidth - width - left;
+
+      // console.group('complex')
+      // console.log(item.element)
+      // console.log(' left:', left, ' width:', width)
+      // console.log('delta', delta)
+      // console.groupEnd()
+    })
 
     return []
   }
@@ -449,32 +523,7 @@ export default class Pages {
     )
   }
 
-  _canNotBeLast(element) {
 
-    // TODO
-    // if Header is only child of element
-
-    const tag = this.DOM.getElementTagName(element);
-    return (
-      tag === 'H1'
-      || tag === 'H2'
-      || tag === 'H3'
-      || tag === 'H4'
-      || tag === 'H5'
-      || tag === 'H6'
-    )
-    //nodeName
-  }
-
-  _isPRE(element) {
-    return this.DOM.getElementTagName(element) === 'PRE'
-  }
-  _isIMG(element) {
-    return this.DOM.getElementTagName(element) === 'IMG'
-  }
-  _isSVG(element) {
-    return this.DOM.getElementTagName(element) === 'svg'
-  }
 
   // TODO
   // - если не разбиваемый и его высота больше чем страница - уменьшать
@@ -1035,12 +1084,43 @@ export default class Pages {
     return (tag !== 'A' && tag !== 'TT' && this.DOM.getElementHeight(child) > 0);
   }
 
+  _canNotBeLast(element) {
+
+    // TODO
+    // if Header is only child of element
+
+    const tag = this.DOM.getElementTagName(element);
+    return (
+      tag === 'H1'
+      || tag === 'H2'
+      || tag === 'H3'
+      || tag === 'H4'
+      || tag === 'H5'
+      || tag === 'H6'
+    )
+    //nodeName
+  }
+
+  _isPRE(element) {
+    return this.DOM.getElementTagName(element) === 'PRE'
+  }
+
+  _isIMG(element) {
+    return this.DOM.getElementTagName(element) === 'IMG'
+  }
+
+  _isSVG(element) {
+    return this.DOM.getElementTagName(element) === 'svg'
+  }
+
   _isTextNode(element) {
     return this.DOM.isNeutral(element);
   }
+
   _isTableNode(element) {
     return this.DOM.getElementTagName(element) === 'TABLE';
   }
+
   _isLiNode(element) {
     return this.DOM.getElementTagName(element) === 'LI';
   }
