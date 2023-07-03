@@ -923,7 +923,9 @@ export default class Pages {
         ...acc,
         unexpected: [
           ...acc.unexpected,
-          ...curr,
+          // BUG: •Uncaught TypeError: t is not iterable at bundle.js:1:19184
+          // ...curr,
+          curr,
         ]
       }
     }, {
