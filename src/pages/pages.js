@@ -123,9 +123,9 @@ export default class Pages {
     // console.log('🏴')
 
     console.group('📍_parseNode()'); // groupCollapsed
-      console.log('👈', previousElement)
-      console.log('👌', currentElement)
-      console.log('👉', nextElement)
+      // console.log('👈', previousElement)
+      // console.log('👌', currentElement)
+      // console.log('👉', nextElement)
     // console.groupEnd();
 
     // THE END of content flow:
@@ -149,7 +149,7 @@ export default class Pages {
     console.assert( // is filtered in the function _gerChildren()
       this.DOM.getElementOffsetParent(currentElement),
       'it is expected that the element has an offset parent',
-      [currentElement]);
+      currentElement);
 
     const newPageBottom = this.pages.at(-1).pageBottom;
 
@@ -317,7 +317,7 @@ export default class Pages {
 
     }
     // IF currentElement fits, continue.
-    console.log('🏳️ curr', currentElement)
+    console.log('🏳️ currentElement fits', currentElement)
 
     console.groupEnd();
   }
@@ -375,14 +375,16 @@ export default class Pages {
     // ? calculating the approximate breakdown parts
     // тут мы еще не знаем, какие высоты строк есть в параграфе,
     // и считаем просто высоты контейнеров
-    console.group('%c approximate breakdown parts ', 'background:#00FFFF');
+    // console.group('%c approximate breakdown parts ', 'background:#00FF00');
 
-    console.log('%c availableSpace: ', 'background:#CCFFFF', availableSpace);
-    console.log('%c nodeLineHeight: ', 'background:#CCFFFF', nodeLineHeight);
-    console.log('%c nodeHeight: ', 'background:#CCFFFF', nodeHeight);
+    // console.log('%c availableSpace: ', 'background:#CCFFFF', availableSpace);
+    // console.log('%c nodeLineHeight: ', 'background:#CCFFFF', nodeLineHeight);
+    // console.log('%c nodeHeight: ', 'background:#CCFFFF', nodeHeight);
 
-    console.groupEnd();
+    // console.groupEnd();
     // ? END of calculating the approximate breakdown parts
+
+    // GET CHILDREN
 
     const complexChildren = this._getChildren(node).map(
       element => {
@@ -404,10 +406,6 @@ export default class Pages {
 
     console.log('%c ⛱️ complexTextBlock ⛱️ ', 'color:red;background:yellow', complexChildren);
 
-
-
-    // !!!
-
     // проверяем наибольшую высоту строки
     const testNowrapBlock = document.createElement('div');
     testNowrapBlock.classList.add('testNowrapBlock');
@@ -426,27 +424,94 @@ export default class Pages {
     // у многострочного ширина считается по самому левому и самому правому краю,
     // и он фактически ПОЧТИ равен родителю?
 
-
     // ? Предположим, maxLineHeight и nodeLineHeight равны
-    const estimatedNodeLines = ~~(nodeHeight / nodeLineHeight);
-    console.log('%c estimatedNodeLines', 'color:green;background:yellow', estimatedNodeLines);
+    // const estimatedNodeLines = ~~(nodeHeight / nodeLineHeight);
+    // console.log('%c estimatedNodeLines', 'color:green;background:yellow', estimatedNodeLines);
 
-    complexChildren.forEach(item => {
+    // !!!
+    // ? break it all down into lines
 
-      // const nodeLineHeight = this.DOM.getLineHeight(node);
+    const newArr = complexChildren.flatMap((item) => { // need flatMap because of array
+      // * Break it down as needed:
+      if (item.lines > 1) {
+        return this._breakItIntoLines(item); // array
+      }
+      // console.log('%c no break ', 'color:red', item);
+      // * Else:
+      return item.element;
+    });
 
-      // const left = item.element.offsetLeft;
-      // const width = item.element.offsetWidth;
-      // const delta = nodeWidth - width - left;
+    // const part = this.DOM.createPrintNoBreak();
+    //   node.before(part);
 
-      // console.group('complex')
-      // console.log(item.element)
-      // console.log(' left:', left, ' width:', width)
-      // console.log('delta', delta)
-      // console.groupEnd()
-    })
-
+    console.log('%c newArr ', 'color:blue', newArr);
     return []
+  }
+
+  _breakItIntoLines(item) {
+    console.group('%c break it down? ', 'background:#00FFFF');
+    // console.log('%c item: ', 'background:#CCFFFF', item.element);
+    // console.log('%c lines: ', 'background:#CCFFFF', item.lines);
+
+    // Take the element:
+    const splittedItem = item.element;
+
+    // Split the splittedItem into spans.
+    // * array with words:
+    const itemWords = splittedItem.innerHTML.split(' ');
+    // * array with words wrapped with the inline tag 'html2pdf-s':
+    const itemWrappedWords = itemWords.map((item, index) => {
+      const span = this.DOM.create('html2pdf-s');
+      span.dataset.index = index;
+      span.innerHTML = item + ' ';
+      return span;
+    });
+
+    // Replacing the contents of the splittedItem with a span sequence:
+    splittedItem.innerHTML = '';
+    splittedItem.append(...itemWrappedWords);
+
+    // Split the splittedItem into lines.
+    // Let's find the elements that start a new line.
+    const beginnerNumbers = itemWrappedWords.reduce((result, currentWord, currentIndex) => {
+      if (currentIndex > 0 && (itemWrappedWords[currentIndex - 1].offsetTop + itemWrappedWords[currentIndex - 1].offsetHeight) <= currentWord.offsetTop) {
+        result.push(currentIndex);
+      }
+      return result;
+    }, [0]);
+
+    // Create the needed number of lines,
+    // fill them with text from itemWords, relying on the data from beginnerNumbers,
+    // and replace splittedItem with these lines:
+    // * insert new lines before the source element,
+    const newLines = beginnerNumbers.reduce(
+      (result, currentElement, currentIndex) => {
+        const line = this.DOM.cloneNodeWrapper(splittedItem);
+        const start = beginnerNumbers[currentIndex];
+        const end = beginnerNumbers[currentIndex + 1];
+        const text = itemWords.slice(start, end).join(' ') + ' ';
+        this.DOM.setInnerHTML(line, text);
+        this.DOM.insertBefore(splittedItem, line);
+        // Keep the ID only on the first clone
+        (currentIndex > 0) && line.removeAttribute("id");
+
+        result.push(line);
+        return result;
+      }, []);
+
+    console.assert(
+      newLines.length == item.lines,
+      'The number of new lines is not equal to the expected number of lines when splitting.',
+      '\nNew lines:',
+      newLines
+    );
+    // * and then delete the source element.
+    splittedItem.remove();
+
+    console.log('%c newLines: ', 'background:#CCFFFF', newLines);
+    console.groupEnd();
+
+    return newLines;
   }
 
   _processChildrenThoroughly(children, node, pageBottom) {
