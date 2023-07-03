@@ -11,7 +11,7 @@ const CONSOLE_CSS_LABEL_IND = 'border:1px solid #aa0000;'
 // params
 const customConfig = document.currentScript.dataset;
 const app = new HTML2PDF4DOC(customConfig);
-const preloader = new Preloader();
+const preloader = new Preloader(customConfig);
 
 // add listener
 
@@ -23,7 +23,7 @@ window.addEventListener("load", function (event) {
 })
 
 if (customConfig.preloader === 'true') {
-  window.addEventListener("%c DOMContentLoaded", function (event) {
+  window.addEventListener("DOMContentLoaded", function (event) {
     preloader.create();
   });
   window.addEventListener("load", function (event) {

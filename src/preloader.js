@@ -1,7 +1,9 @@
 export default class Preloader {
 
-  constructor() {
+  constructor(customConfig) {
     this.preloader;
+    this.preloaderTarget = document.querySelector(customConfig.preloaderTarget) || document.body;
+    this.preloaderBackground = customConfig.preloaderBackground || 'white';
   }
 
   create() {
@@ -10,7 +12,7 @@ export default class Preloader {
 
     this.preloader = document.createElement('div');
     this.preloader.classList.add('lds-dual-ring');
-    document.body.append(this.preloader);
+    this.preloaderTarget.append(this.preloader);
   }
 
   remove() {
@@ -42,10 +44,10 @@ export default class Preloader {
     return `
     /* PRELOADER */
     .lds-dual-ring {
-      position: fixed;
+      position: absolute;
       z-index: 99999;
       top: 0; left: 0; bottom: 0; right: 0;
-      background: #fff;
+      background: ${this.preloaderBackground};
       display: flex;
       justify-content: center;
       align-items: center;

@@ -61,6 +61,7 @@ export default class HTML2PDF4DOC {
 
     layout.create();
     console.log('%c ✔ layout.create() ', CONSOLE_CSS_LABEL_APP);
+    console.log('%c ✔ layout.root ',  CONSOLE_CSS_LABEL_APP, layout.root);
 
     const pages = new Pages({
       DOM,
