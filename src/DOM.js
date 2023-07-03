@@ -152,7 +152,10 @@ export default class DocumentObjectModel {
     // if node has padding, this affects so cant be taken bode clone as wrapper // todo comment
     // const testNode = node.cloneNode(false);
     testNode.innerHTML = '!';
-    testNode.style = "position:absolute; left:-10000px; width:100%;";
+    // ! 'absolute' added extra height to the element:
+    // testNode.style.position = 'absolute';
+    // testNode.style.left = '-10000px';
+    // testNode.style.width = '100%';
     node.append(testNode);
     const lineHeight = testNode.offsetHeight;
     testNode.remove();
