@@ -888,6 +888,13 @@ export default class Pages {
         }
       }
 
+      if (tag === 'COLGROUP') {
+        return {
+          ...acc,
+          colgroup: curr
+        }
+      }
+
       if (tag === 'THEAD') {
         return {
           ...acc,
