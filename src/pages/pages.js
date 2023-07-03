@@ -431,21 +431,60 @@ export default class Pages {
     // !!!
     // ? break it all down into lines
 
-    const newArr = complexChildren.flatMap((item) => { // need flatMap because of array
-      // * Break it down as needed:
-      if (item.lines > 1) {
-        return this._breakItIntoLines(item); // array
-      }
-      // console.log('%c no break ', 'color:red', item);
-      // * Else:
-      return item.element;
-    });
+    const newComplexChildren = complexChildren
+      // * Process the children of the block:
+      .flatMap((item) => { // need flatMap because of array
+        // * Break it down as needed:
+        if (item.lines > 1) {
+          return this._breakItIntoLines(item); // array
+        }
+        // console.log('%c no break ', 'color:red', item);
+        // * otherwise keep the original element:
+        return item.element;
+      })
+      // * Then collect the resulting children into rows
+      // // and blocks of rows,
+      // * which are not to be split further.
+      .reduce(
+        (result, currentElement, currentIndex, array) => {
+          // * If this is the beginning, or if a new line:
+          if(!result.length || this.DOM.isLineChanged(result.at(-1).at(-1), currentElement)) {
+            result.push([currentElement]);
+            return result;
+          }
+          if(result.length && this.DOM.isLineKept(result.at(-1).at(-1), currentElement)) {
+            result.at(-1).push(currentElement);
+            return result;
+          }
 
+          console.assert(
+            true,
+            'An unexpected case of splitting a complex paragraph into lines.',
+            '\nOn the element:',
+            currentElement
+          );
+        }, []
+      )
+      .map(
+        (arr, index) => {
+          // * Create a new line
+          const line = this.DOM.createPrintNoBreak();
+          line.dataset.index = index;
+          // * Replace the array of elements with a line
+          // * that contains all these elements:
+          this.DOM.insertBefore(arr[0], line);
+          this.DOM.insertAtEnd(line, ...arr);
+          // * Return a new unbreakable line.
+          return line;
+        }
+      );
+
+      // wrapNode(node, wrapper)
     // const part = this.DOM.createPrintNoBreak();
     //   node.before(part);
 
-    console.log('%c newArr ', 'color:blue', newArr);
-    return []
+    console.log('%c newComplexChildren ', 'color:blue', newComplexChildren);
+    return newComplexChildren
   }
 
   _breakItIntoLines(item) {
@@ -469,16 +508,18 @@ export default class Pages {
 
     // Replacing the contents of the splittedItem with a span sequence:
     splittedItem.innerHTML = '';
-    splittedItem.append(...itemWrappedWords);
+    this.DOM.insertAtEnd(splittedItem, ...itemWrappedWords);
 
     // Split the splittedItem into lines.
     // Let's find the elements that start a new line.
-    const beginnerNumbers = itemWrappedWords.reduce((result, currentWord, currentIndex) => {
-      if (currentIndex > 0 && (itemWrappedWords[currentIndex - 1].offsetTop + itemWrappedWords[currentIndex - 1].offsetHeight) <= currentWord.offsetTop) {
-        result.push(currentIndex);
-      }
-      return result;
-    }, [0]);
+    const beginnerNumbers = itemWrappedWords.reduce(
+      (result, currentWord, currentIndex) => {
+        if (currentIndex > 0 && (itemWrappedWords[currentIndex - 1].offsetTop + itemWrappedWords[currentIndex - 1].offsetHeight) <= currentWord.offsetTop) {
+          result.push(currentIndex);
+        }
+        return result;
+      }, [0]
+    );
 
     // Create the needed number of lines,
     // fill them with text from itemWords, relying on the data from beginnerNumbers,
@@ -778,8 +819,8 @@ export default class Pages {
 
 
     const testNode = this.DOM.createTestNodeFrom(node);
-    testNode.append(...blockAndLineElementsArray); // todo this.DOM.insertAtEnd(element, ...payload)
-    node.append(testNode); // todo this.DOM.insertAtEnd(element, ...payload)
+    this.DOM.insertAtEnd(testNode, ...blockAndLineElementsArray);
+    this.DOM.insertAtEnd(node, testNode);
 
 
 
@@ -832,7 +873,7 @@ export default class Pages {
 
       // console.log(' ### SPLIT:', index, ' - ', start, end);
 
-      part.append(...blockAndLineElementsArray.slice(start, end)); // todo this.DOM.insertAtEnd(element, ...payload)
+      this.DOM.insertAtEnd(part, ...blockAndLineElementsArray.slice(start, end));
 
       return part;
     });
@@ -994,11 +1035,11 @@ export default class Pages {
 
       if (startId) {
         // if is not first part
-        part.append(this.DOM.createSignpost('(table continued)', this.signpostHeight)); // todo this.DOM.insertAtEnd(element, ...payload)
+        this.DOM.insertAtEnd(part, this.DOM.createSignpost('(table continued)', this.signpostHeight));
       }
 
-      // todo this.DOM.insertAtEnd(element, ...payload)
-      part.append(
+      this.DOM.insertAtEnd(
+        part,
         this.DOM.createTable({
           wrapper: tableWrapper,
           caption: this.DOM.cloneNode(nodeEntries.caption),
@@ -1019,10 +1060,11 @@ export default class Pages {
     // create LAST PART
     const lastPart = this.DOM.createPrintNoBreak();
     node.before(lastPart);
-    lastPart.append( // todo this.DOM.insertAtEnd(element, ...payload)
+    this.DOM.insertAtEnd(
+      lastPart,
       this.DOM.createSignpost('(table continued)', this.signpostHeight),
       node
-    )
+    );
 
     console.timeEnd('_splitTableNode')
     return [...splits, lastPart]

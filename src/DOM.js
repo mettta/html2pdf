@@ -420,6 +420,17 @@ export default class DocumentObjectModel {
     return this.getElementRootedTop(element, root) + this.getElementHeight(element);
   }
 
+  isLineChanged(current, next) {
+    const vert = this.getElementRelativeBottom(current) <= this.getElementRelativeTop(next);
+    // const gor = this.getElementLeft(current) + this.getElementWidth(current) > this.getElementLeft(next);
+    return vert;
+  }
+
+  isLineKept(current, next) {
+    const vert = this.getElementRelativeBottom(current) > this.getElementRelativeTop(next);
+    return vert;
+  }
+
   // TODO make Obj with offsetTop and use it later
   prepareSplittedNode(node) {
     const splittedNode = node;
