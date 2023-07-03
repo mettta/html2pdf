@@ -352,38 +352,6 @@ export default class Pages {
   _splitComplexTextBlock(node, pageBottom) {
     // TODO "complexTextBlock"
 
-    // Prepare node parameters
-    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
-    const nodeHeight = this.DOM.getElementHeight(node);
-    const nodeWidth = this.DOM.getElementWidth(node);
-    const nodeLineHeight = this.DOM.getLineHeight(node);
-
-    // Prepare parameters for splitters calculation
-    const availableSpace = pageBottom - nodeTop;
-
-    // calculate approximate splitters
-    // const approximateSplitters = calculateSplitters({
-    //   nodeLines: nodeLines,
-    //   pageLines: pageLines,
-    //   firstPartLines: firstPartLines,
-    //   // const
-    //   minBreakableLines: this.minBreakableLines,
-    //   minLeftLines: this.minLeftLines,
-    //   minDanglingLines: this.minDanglingLines,
-    // });
-
-    // ? calculating the approximate breakdown parts
-    // тут мы еще не знаем, какие высоты строк есть в параграфе,
-    // и считаем просто высоты контейнеров
-    // console.group('%c approximate breakdown parts ', 'background:#00FF00');
-
-    // console.log('%c availableSpace: ', 'background:#CCFFFF', availableSpace);
-    // console.log('%c nodeLineHeight: ', 'background:#CCFFFF', nodeLineHeight);
-    // console.log('%c nodeHeight: ', 'background:#CCFFFF', nodeHeight);
-
-    // console.groupEnd();
-    // ? END of calculating the approximate breakdown parts
-
     // GET CHILDREN
 
     const complexChildren = this._getChildren(node).map(
@@ -404,7 +372,7 @@ export default class Pages {
       }
     );
 
-    // console.log('%c ⛱️ complexTextBlock ⛱️ ', 'color:red;background:yellow', complexChildren);
+    console.log('%c ⛱️ complexTextBlock ⛱️ ', 'color:red;background:yellow', complexChildren);
 
     // !!!
     // ? break it all down into lines
@@ -447,6 +415,12 @@ export default class Pages {
     // * this.minLeftLines
     // * this.minDanglingLines
 
+    if (newComplexChildrenGroups.length < this.minBreakableLines) {
+      // Not to break it up
+      console.log('%c newComplexChildrenGroups ', 'color:red; font-size:48px', newComplexChildrenGroups);
+      return []
+    }
+
     const firstUnbreakablePart = newComplexChildrenGroups.slice(0, this.minLeftLines).flat();
     const lastUnbreakablePart = newComplexChildrenGroups.slice(-this.minDanglingLines).flat();
 
@@ -471,19 +445,14 @@ export default class Pages {
       }
     );
 
-    if (linedChildren.length < this.minBreakableLines) {
-      // Not to break it up
-      return []
-    }
-
-    console.log('%c linedChildren ', 'color:blue', linedChildren);
+    console.log('%c linedChildren ', 'color:blue; font-size:48px', linedChildren);
     return linedChildren
   }
 
   _breakItIntoLines(item) {
     console.group('%c break it down? ', 'background:#00FFFF');
-    // console.log('%c item: ', 'background:#CCFFFF', item.element);
-    // console.log('%c lines: ', 'background:#CCFFFF', item.lines);
+    console.log('%c item: ', 'background:#CCFFFF', item.element);
+    console.log('%c lines: ', 'background:#CCFFFF', item.lines);
 
     // Take the element:
     const splittedItem = item.element;
@@ -537,7 +506,8 @@ export default class Pages {
       newLines.length == item.lines,
       'The number of new lines is not equal to the expected number of lines when splitting.',
       '\nNew lines:',
-      newLines
+      newLines,
+      item.lines
     );
     // * and then delete the source element.
     splittedItem.remove();
@@ -616,7 +586,6 @@ export default class Pages {
           return false
         };
         const isTrue = this.DOM.getElementRelativeBottom(currentElement) > this.DOM.getElementRelativeTop(nextElement);
-        isTrue && console.log('***', currentElement);
         return isTrue;
       }
     )
