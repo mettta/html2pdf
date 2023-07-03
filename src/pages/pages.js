@@ -404,87 +404,80 @@ export default class Pages {
       }
     );
 
-    console.log('%c ⛱️ complexTextBlock ⛱️ ', 'color:red;background:yellow', complexChildren);
-
-    // проверяем наибольшую высоту строки
-    const testNowrapBlock = document.createElement('div');
-    testNowrapBlock.classList.add('testNowrapBlock');
-    testNowrapBlock.style.outline = '1px solid red';
-    testNowrapBlock.style.whiteSpace = 'nowrap';
-    testNowrapBlock.style.position = 'absolute';
-    testNowrapBlock.innerHTML = node.innerHTML;
-    node.prepend(testNowrapBlock);
-    const maxLineHeight = this.DOM.getElementHeight(testNowrapBlock);
-    console.log('%c maxLineHeight', 'color:red;background:yellow', maxLineHeight);
-    testNowrapBlock.remove();
-
-    // todo Если maxLineHeight и nodeLineHeight не равны
-
-    // находим многострочные - и только их разбиваем!
-    // у многострочного ширина считается по самому левому и самому правому краю,
-    // и он фактически ПОЧТИ равен родителю?
-
-    // ? Предположим, maxLineHeight и nodeLineHeight равны
-    // const estimatedNodeLines = ~~(nodeHeight / nodeLineHeight);
-    // console.log('%c estimatedNodeLines', 'color:green;background:yellow', estimatedNodeLines);
+    // console.log('%c ⛱️ complexTextBlock ⛱️ ', 'color:red;background:yellow', complexChildren);
 
     // !!!
     // ? break it all down into lines
 
-    const newComplexChildren = complexChildren
-      // * Process the children of the block:
-      .flatMap((item) => { // need flatMap because of array
-        // * Break it down as needed:
-        if (item.lines > 1) {
-          return this._breakItIntoLines(item); // array
+    // * Process the children of the block:
+    const newComplexChildren = complexChildren.flatMap((item) => {
+      // * Break it down as needed:
+      if (item.lines > 1) {
+        return this._breakItIntoLines(item); // array
+      }
+      // console.log('%c no break ', 'color:red', item);
+      // * otherwise keep the original element:
+      return item.element;
+    });
+    // * Prepare an array of arrays containing references to elements
+    // * that fit into the same row:
+    const newComplexChildrenGroups = newComplexChildren.reduce(
+      (result, currentElement, currentIndex, array) => {
+        // * If this is the beginning, or if a new line:
+        if(!result.length || this.DOM.isLineChanged(result.at(-1).at(-1), currentElement)) {
+          result.push([currentElement]);
+          return result;
         }
-        // console.log('%c no break ', 'color:red', item);
-        // * otherwise keep the original element:
-        return item.element;
-      })
-      // * Then collect the resulting children into rows
-      // // and blocks of rows,
-      // * which are not to be split further.
-      .reduce(
-        (result, currentElement, currentIndex, array) => {
-          // * If this is the beginning, or if a new line:
-          if(!result.length || this.DOM.isLineChanged(result.at(-1).at(-1), currentElement)) {
-            result.push([currentElement]);
-            return result;
-          }
-          if(result.length && this.DOM.isLineKept(result.at(-1).at(-1), currentElement)) {
-            result.at(-1).push(currentElement);
-            return result;
-          }
-
-          console.assert(
-            true,
-            'An unexpected case of splitting a complex paragraph into lines.',
-            '\nOn the element:',
-            currentElement
-          );
-        }, []
-      )
-      .map(
-        (arr, index) => {
-          // * Create a new line
-          const line = this.DOM.createPrintNoBreak();
-          line.dataset.index = index;
-          // * Replace the array of elements with a line
-          // * that contains all these elements:
-          this.DOM.insertBefore(arr[0], line);
-          this.DOM.insertAtEnd(line, ...arr);
-          // * Return a new unbreakable line.
-          return line;
+        if(result.length && this.DOM.isLineKept(result.at(-1).at(-1), currentElement)) {
+          result.at(-1).push(currentElement);
+          return result;
         }
-      );
 
-      // wrapNode(node, wrapper)
-    // const part = this.DOM.createPrintNoBreak();
-    //   node.before(part);
+        console.assert(
+          true,
+          'newComplexChildrenGroups: An unexpected case of splitting a complex paragraph into lines.',
+          '\nOn the element:',
+          currentElement
+        );
+      }, []
+    );
 
-    console.log('%c newComplexChildren ', 'color:blue', newComplexChildren);
-    return newComplexChildren
+    // Consider the paragraph partitioning settings:
+    // * this.minBreakableLines
+    // * this.minLeftLines
+    // * this.minDanglingLines
+
+    const firstUnbreakablePart = newComplexChildrenGroups.slice(0, this.minLeftLines).flat();
+    const lastUnbreakablePart = newComplexChildrenGroups.slice(-this.minDanglingLines).flat();
+
+    newComplexChildrenGroups.splice(0, this.minLeftLines, firstUnbreakablePart);
+    newComplexChildrenGroups.splice(-1, this.minDanglingLines, lastUnbreakablePart);
+
+    // console.log(newComplexChildrenGroups)
+
+    // * Then collect the resulting children into rows
+    // * which are not to be split further.
+    const linedChildren = newComplexChildrenGroups.map(
+      (arr, index) => {
+        // * Create a new line
+        const line = this.DOM.createPrintNoBreak();
+        line.dataset.index = index;
+        // * Replace the array of elements with a line
+        // * that contains all these elements:
+        this.DOM.insertBefore(arr[0], line);
+        this.DOM.insertAtEnd(line, ...arr);
+        // * Return a new unbreakable line.
+        return line;
+      }
+    );
+
+    if (linedChildren.length < this.minBreakableLines) {
+      // Not to break it up
+      return []
+    }
+
+    console.log('%c linedChildren ', 'color:blue', linedChildren);
+    return linedChildren
   }
 
   _breakItIntoLines(item) {
