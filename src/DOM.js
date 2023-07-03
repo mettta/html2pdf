@@ -179,7 +179,8 @@ export default class DocumentObjectModel {
   }
 
   isInline(element) {
-    return window.getComputedStyle(element).display == 'inline';
+    const res = window.getComputedStyle(element).display === "inline" || window.getComputedStyle(element).display === "inline-block" || window.getComputedStyle(element).display === "inline-table";
+    return res;
   }
 
   // todo {class, id, dataset, value} ?
