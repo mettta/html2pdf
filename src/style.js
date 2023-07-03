@@ -74,10 +74,12 @@ export default class Style {
   }
 
   ${SELECTOR.headerContent} {
+    display: block;
     padding-bottom: ${this.config.headerMargin}${this.config.screenUnits};
   }
 
   ${SELECTOR.footerContent} {
+    display: block;
     padding-top: ${this.config.footerMargin}${this.config.screenUnits};
   }
 
@@ -90,22 +92,27 @@ export default class Style {
   }
 
   ${SELECTOR.runningSafety} {
+    display: block;
     padding: .1px;
   }
 
   ${SELECTOR.virtualPaperTopMargin} {
+    display: block;
     height: ${this.config.printTopMargin}${this.config.printUnits};
   }
 
   ${SELECTOR.virtualPaperBottomMargin} {
+    display: block;
     height: ${this.config.printBottomMargin}${this.config.printUnits};
   }
 
   ${SELECTOR.virtualPaperGap} {
+    display: block;
     padding-top: ${this.config.virtualPagesGap}${this.config.screenUnits};
   }
 
   ${SELECTOR.frontpageContent} {
+    display: block;
     transform-origin: top center;
     padding: .1px;
     height: 100%;
@@ -113,6 +120,7 @@ export default class Style {
 
   ${SELECTOR.neutral},
   ${SELECTOR.neutral} span {
+    display: inline;
     padding: 0;
     margin: 0;
     font: inherit;
