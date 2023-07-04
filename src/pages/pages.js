@@ -459,7 +459,7 @@ export default class Pages {
 
     // Split the splittedItem into spans.
     // * array with words:
-    const itemWords = splittedItem.innerHTML.split(' ');
+    const itemWords = this.DOM.splitByWordsGreedy(splittedItem);
     // * array with words wrapped with the inline tag 'html2pdf-s':
     const itemWrappedWords = itemWords.map((item, index) => {
       const span = this.DOM.create('html2pdf-s');
@@ -545,7 +545,7 @@ export default class Pages {
     const nodeChildren = children.reduce((accumulator, child, index, array) => {
       console.log('child', child);
       if (this._isTextNode(child)) {
-        const words = child.innerHTML.split(' ');
+        const words = this.DOM.splitByWordsGreedy(child);
 
         const items = words
           .filter(item => item.length)

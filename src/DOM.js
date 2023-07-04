@@ -435,10 +435,14 @@ export default class DocumentObjectModel {
     return vert;
   }
 
+  splitByWordsGreedy(node) {
+    return node.innerHTML.split(/\s+/)
+  }
+
   // TODO make Obj with offsetTop and use it later
   prepareSplittedNode(node) {
     const splittedNode = node;
-    const nodeWords = node.innerHTML.split(' ');
+    const nodeWords = this.splitByWordsGreedy(node);
 
     const nodeWordItems = nodeWords.map((item) => {
       const span = this.DOM.createElement('span');
