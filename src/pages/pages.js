@@ -285,9 +285,6 @@ export default class Pages {
 
       if (this._isVerticalFlowDisrupted(children)) {
         // if the vertical flow is disturbed and the elements are side by side:
-        // [] => false
-        // children = this._processChildrenThoroughly(children, currentElement, newPageBottom);
-
         children = this._processInlineChildren(children);
       }
 
@@ -516,63 +513,6 @@ export default class Pages {
     console.groupEnd();
 
     return newLines;
-  }
-
-  _processChildrenThoroughly(children, node, pageBottom) {
-    console.groupCollapsed('%c_processChildrenThoroughly()',CONSOLE_CSS_LABEL_PAGES)
-
-    // todo
-    // // Paragraph:
-    // this.minLeftLines = 2;
-    // this.minDanglingLines = 2;
-    // this.minBreakableLines = this.minLeftLines + this.minDanglingLines;
-
-    // Prepare node parameters
-    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
-    const nodeHeight = this.DOM.getElementHeight(node);
-    const nodeLineHeight = this.DOM.getLineHeight(node);
-
-    // Prepare parameters for splitters calculation
-    const availableSpace = pageBottom - nodeTop;
-
-    const nodeLines = ~~(nodeHeight / nodeLineHeight);
-    const firstPartLines = ~~(availableSpace / nodeLineHeight);
-
-    if (nodeLines < this.minBreakableLines || firstPartLines < this.minLeftLines) {
-      return []
-    }
-
-    const nodeChildren = children.reduce((accumulator, child, index, array) => {
-      console.log('child', child);
-      if (this._isTextNode(child)) {
-        const words = this.DOM.splitByWordsGreedy(child);
-
-        const items = words
-          .filter(item => item.length)
-          .map((item) => {
-            const span = this.DOM.create('span');
-            span.innerHTML = item + ' ';
-            return span;
-          });
-
-        accumulator = [
-          ...accumulator,
-          ...items,
-        ]
-      } else {
-        accumulator = [
-          ...accumulator,
-          child,
-        ]
-      }
-
-      return accumulator;
-    }, [])
-
-    console.log(nodeChildren);
-    console.log('🪴children (Thoroughly)',children);
-    console.groupEnd();
-    return children
   }
 
   _isVerticalFlowDisrupted(arrayOfElements) {
