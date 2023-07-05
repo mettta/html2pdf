@@ -5,6 +5,7 @@ const CONSOLE_CSS_LABEL_PRELOADER = 'border:1px dashed #cccccc;'
 export default class Preloader {
 
   constructor(customConfig) {
+    this.debugMode = customConfig.debugMode; // Only enabled via user configuration
     this.preloader;
     this.preloaderTarget = document.querySelector(customConfig.preloaderTarget) || document.body;
     this.preloaderBackground = customConfig.preloaderBackground || 'white';

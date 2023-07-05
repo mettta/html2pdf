@@ -7,6 +7,7 @@ export default function createConfig(params) {
     // * in order to display messages in the browser console,
     // * this line can be uncommented:
     // debugMode: true,
+    // ** The preloader is only debugged when enabled via user configuration.
 
     // print
     printUnits: 'mm',
