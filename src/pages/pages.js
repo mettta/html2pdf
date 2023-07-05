@@ -249,7 +249,7 @@ export default class Pages {
         // don't break apart, thus keep an empty children array
         children = [];
       } else if (this.DOM.isComplexTextBlock(currentElement)) {
-        children = this._splitComplexTextBlock(currentElement, newPageBottom) || [];
+        children = this._splitComplexTextBlock(currentElement) || [];
       } else if (this._isTextNode(currentElement)) {
         // console.log('text node', currentElement);
         children = this._splitTextNode(currentElement, newPageBottom) || [];
@@ -346,7 +346,7 @@ export default class Pages {
     return newChildren
   }
 
-  _splitComplexTextBlock(node, pageBottom) {
+  _splitComplexTextBlock(node) {
     // TODO "complexTextBlock"
 
     // GET CHILDREN
