@@ -1,8 +1,13 @@
+const CONSOLE_CSS_LABEL_PREVIEW = 'border:1px solid #ee00ee;'
+                                + 'background:#EEEEEE;'
+                                + 'color:#ee00ee;'
+
 export default class Preview {
 
   // TODO SHOW STATS (with close option)
 
   constructor({
+    debugMode,
     DOM,
     selector,
 
@@ -11,6 +16,7 @@ export default class Preview {
     paper,
   }) {
 
+    this.debugMode = debugMode;
     this.DOM = DOM;
     this.selector = selector;
 
@@ -29,9 +35,10 @@ export default class Preview {
   }
 
   create() {
-
+    this.debugMode && console.groupCollapsed('%c Preview ', CONSOLE_CSS_LABEL_PREVIEW);
     this._processFirstPage();
     this._processOtherPages();
+    this.debugMode && console.groupEnd('%c Preview ', CONSOLE_CSS_LABEL_PREVIEW);
 
   }
 
@@ -206,7 +213,7 @@ export default class Preview {
     this.DOM.setStyles(balancingFooter, { marginBottom: balancer + 'px' });
 
     // TODO check if negative on large documents
-    // console.log(balancer);
+    this.debugMode && console.log('%c balancer ', CONSOLE_CSS_LABEL_PREVIEW, balancer);
   }
 
 }

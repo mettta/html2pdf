@@ -1,9 +1,16 @@
+const CONSOLE_CSS_LABEL_LAYOUT = 'border:1px solid #8888CC;'
+                               + 'background:#EEEEEE;'
+                               + 'color:#8888CC;'
+
 export default class Layout {
 
   constructor({
+    debugMode,
     DOM,
     selector
   }) {
+
+    this.debugMode = debugMode;
 
     this.DOM = DOM;
     this.selector = selector;
@@ -25,6 +32,8 @@ export default class Layout {
   // чтобы его верстка не пострадала.
 
   create() {
+    this.debugMode && console.groupCollapsed('%c Layout ', CONSOLE_CSS_LABEL_LAYOUT);
+
     // clean up the Root before append.
     this.DOM.setInnerHTML(this.root, '');
 
@@ -35,12 +44,14 @@ export default class Layout {
     if (this.root !== this.DOM.body) {
       this._ignorePrintingEnvironment(this.root);
     }
+
+    this.debugMode && console.groupEnd('%c Layout ', CONSOLE_CSS_LABEL_LAYOUT);
   }
 
   _initRoot() {
     // Prepare root element
     let root = this.DOM.getElement(this.rootSelector);
-    // console.log(root);
+    this.debugMode && console.log('%c Layout: init root ', CONSOLE_CSS_LABEL_LAYOUT, root);
     if (!root) {
       root = this.DOM.body;
       this.DOM.setAttribute(root, this.rootSelector)

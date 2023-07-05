@@ -16,10 +16,7 @@ const preloader = new Preloader(customConfig);
 // add listener
 
 window.addEventListener("load", function (event) {
-  console.log("🔥 on Load Event ");
-  console.time("printTHIS");
   app.render();
-  console.timeEnd("printTHIS");
 })
 
 if (customConfig.preloader === 'true') {

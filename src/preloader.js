@@ -1,3 +1,7 @@
+const CONSOLE_CSS_LABEL_PRELOADER = 'border:1px dashed #cccccc;'
+                                  + 'background:#ffffff;'
+                                  + 'color:#cccccc;'
+
 export default class Preloader {
 
   constructor(customConfig) {
@@ -7,12 +11,15 @@ export default class Preloader {
   }
 
   create() {
-    console.log("Preloader created");
+    this.debugMode && console.groupCollapsed('%c Preloader ', CONSOLE_CSS_LABEL_PRELOADER);
+
     this._insertStyle();
 
     this.preloader = document.createElement('div');
     this.preloader.classList.add('lds-dual-ring');
     this.preloaderTarget.append(this.preloader);
+
+    this.debugMode && console.groupEnd('%c Preloader ', CONSOLE_CSS_LABEL_PRELOADER);
   }
 
   remove() {
@@ -29,7 +36,7 @@ export default class Preloader {
         op -= op * 0.1;
     }, 50);
 
-    console.log("Preloader removed");
+    this.debugMode && console.log("%c Preloader removed ", CONSOLE_CSS_LABEL_PRELOADER);
   }
 
   _insertStyle() {

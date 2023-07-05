@@ -1,17 +1,21 @@
 import calculateSplitters from './calculateSplitters';
 import findSplitId from './findSplitId';
 
-const CONSOLE_CSS_LABEL_PAGES = 'color:#FFBB00';
+const CONSOLE_CSS_LABEL_PAGES = 'border:1px solid #66CC00;'
+                              + 'background:#EEEEEE;'
+                              + 'color:#66CC00;'
 
 export default class Pages {
 
   constructor({
+    debugMode,
     DOM,
     layout,
     referenceWidth,
     referenceHeight
   }) {
 
+    this.debugMode = debugMode;
     this.DOM = DOM;
 
     this.root = layout.root;
@@ -45,10 +49,13 @@ export default class Pages {
 
   calculate() {
     this._calculate();
+    this.debugMode && console.log('%c ✔ Pages.calculate()', CONSOLE_CSS_LABEL_PAGES, this.pages);
+
     return this.pages;
   }
 
   _calculate() {
+    this.debugMode && console.groupCollapsed('%c Pages ', CONSOLE_CSS_LABEL_PAGES);
 
     // IF contentFlow is less than one page,
 
@@ -79,7 +86,7 @@ export default class Pages {
     // ELSE:
 
     const content = this._getChildren(this.contentFlow);
-    console.log('%c🚸 children(contentFlow)', CONSOLE_CSS_LABEL_PAGES, content);
+    this.debugMode && console.log('%c🚸 children(contentFlow)', CONSOLE_CSS_LABEL_PAGES, content);
 
     // TODO put this into main calculations?
     // FIRST ELEMENT: register the beginning of the first page.
@@ -88,6 +95,8 @@ export default class Pages {
     this._parseNodes({
       array: content
     });
+
+    this.debugMode && console.groupEnd('%c Pages ');
   }
 
   _registerPageStart(pageStart) {
@@ -120,13 +129,13 @@ export default class Pages {
     nextElement,
   }) {
 
-    // console.log('🏴')
+    // this.debugMode && console.log('🏴')
 
-    console.group('📍_parseNode()'); // groupCollapsed
-      // console.log('👈', previousElement)
-      // console.log('👌', currentElement)
-      // console.log('👉', nextElement)
-    // console.groupEnd();
+
+      // this.debugMode && console.log('👈', previousElement)
+      // this.debugMode && console.log('👌', currentElement)
+      // this.debugMode && console.log('👉', nextElement)
+
 
     // THE END of content flow:
     // if there is no next element, then
@@ -135,14 +144,14 @@ export default class Pages {
     // Потому что next всегда есть или собственного уровня, или родительский,
     // или мы в конце контент-флоу.
     if (!nextElement) {
-      console.log('🏁 THE END')
+      this.debugMode && console.log('🏁 THE END')
       return
     }
 
     // FORCED BREAK
     if (this.DOM.isForcedPageBreak(currentElement)) {
       this._registerPageStart(nextElement)
-      console.log('🚩 FORCED BREAK');
+      this.debugMode && console.log('🚩 FORCED BREAK');
       return
     }
 
@@ -251,13 +260,10 @@ export default class Pages {
       } else if (this.DOM.isComplexTextBlock(currentElement)) {
         children = this._splitComplexTextBlock(currentElement) || [];
       } else if (this._isTextNode(currentElement)) {
-        // console.log('text node', currentElement);
         children = this._splitTextNode(currentElement, newPageBottom) || [];
       } else if (this._isPRE(currentElement)) {
-        // console.log('pre', currentElement);
         children = this._splitPreNode(currentElement, newPageBottom) || [];
       } else if (this._isTableNode(currentElement)) {
-        // console.log('table', currentElement);
         children = this._splitTableNode(currentElement, newPageBottom) || [];
         // } else if (this._isLiNode(currentElement)) {
         //   // todo
@@ -277,10 +283,10 @@ export default class Pages {
         //       }
         //       return acc
         //     }, []);
-        //   console.log(liChildren);
+
       } else {
         children = this._getChildren(currentElement);
-        console.log('🚸f() children', children);
+        // this.debugMode && console.log('🚸f() children', children);
       }
 
       if (this._isVerticalFlowDisrupted(children)) {
@@ -314,9 +320,7 @@ export default class Pages {
 
     }
     // IF currentElement fits, continue.
-    console.log('🏳️ currentElement fits', currentElement)
-
-    console.groupEnd();
+    // this.debugMode && console.log('🏳️ currentElement fits', currentElement)
   }
 
   _processInlineChildren(children) {
@@ -342,7 +346,7 @@ export default class Pages {
       }
     })
 
-    console.log('🎈', newChildren);
+    // this.debugMode && console.log('🎈', newChildren);
     return newChildren
   }
 
@@ -369,7 +373,7 @@ export default class Pages {
       }
     );
 
-    console.log('%c ⛱️ complexTextBlock ⛱️ ', 'color:red;background:yellow', complexChildren);
+    // this.debugMode && console.log('%c ⛱️ complexTextBlock ⛱️ ', 'color:red;background:yellow', complexChildren);
 
     // !!!
     // ? break it all down into lines
@@ -380,7 +384,7 @@ export default class Pages {
       if (item.lines > 1) {
         return this._breakItIntoLines(item); // array
       }
-      // console.log('%c no break ', 'color:red', item);
+      // this.debugMode && console.log('%c no break ', 'color:red', item);
       // * otherwise keep the original element:
       return item.element;
     });
@@ -414,7 +418,6 @@ export default class Pages {
 
     if (newComplexChildrenGroups.length < this.minBreakableLines) {
       // Not to break it up
-      console.log('%c newComplexChildrenGroups ', 'color:red; font-size:48px', newComplexChildrenGroups);
       return []
     }
 
@@ -423,8 +426,6 @@ export default class Pages {
 
     newComplexChildrenGroups.splice(0, this.minLeftLines, firstUnbreakablePart);
     newComplexChildrenGroups.splice(-1, this.minDanglingLines, lastUnbreakablePart);
-
-    // console.log(newComplexChildrenGroups)
 
     // * Then collect the resulting children into rows
     // * which are not to be split further.
@@ -442,14 +443,10 @@ export default class Pages {
       }
     );
 
-    console.log('%c linedChildren ', 'color:blue; font-size:48px', linedChildren);
     return linedChildren
   }
 
   _breakItIntoLines(item) {
-    console.group('%c break it down? ', 'background:#00FFFF');
-    console.log('%c item: ', 'background:#CCFFFF', item.element);
-    console.log('%c lines: ', 'background:#CCFFFF', item.lines);
 
     // Take the element:
     const splittedItem = item.element;
@@ -509,9 +506,6 @@ export default class Pages {
     // * and then delete the source element.
     splittedItem.remove();
 
-    console.log('%c newLines: ', 'background:#CCFFFF', newLines);
-    console.groupEnd();
-
     return newLines;
   }
 
@@ -540,7 +534,7 @@ export default class Pages {
 
   _splitPreNode(node, pageBottom) {
 
-    // console.log('PRE', node);
+    // this.debugMode && console.log('PRE', node);
 
     // TODO the same in splitTextNode - make one code piece
 
@@ -565,7 +559,7 @@ export default class Pages {
 
 
 
-    // console.log('\n\n\n\n -------PRE-------- \n');
+    // this.debugMode && console.log('\n\n\n\n -------PRE-------- \n');
 
 
 
@@ -583,16 +577,16 @@ export default class Pages {
     // correction for line break, not affecting the block view, but affecting the calculations
     let preText = this.DOM.getInnerHTML(node);
     if (preText.charAt(preText.length - 1) === '\n') {
-      // console.log('LAST CHAR IS BREAK');
+      // this.debugMode && console.log('LAST CHAR IS BREAK');
       preText = preText.slice(0, -1);
     }
 
-    // console.log('1 - preText');
+    // this.debugMode && console.log('1 - preText');
 
     const preLines = preText.split('\n');
     // "000", "", "001", "002", "003", "004", "005", "006", "", "007" .....
 
-    // console.log('#### 2 - preLines', preLines);
+    // this.debugMode && console.log('#### 2 - preLines', preLines);
 
 
     if (preLines.length < this.minPreBreakableLines) {
@@ -611,27 +605,27 @@ export default class Pages {
     let availableSpace = pageBottom - nodeTop - preWrapperHeight;
     const pageSpace = this.referenceHeight - preWrapperHeight;
 
-    // console.log('availableSpace', availableSpace, '=', pageBottom, '-', nodeTop, '-', preWrapperHeight);
+    // this.debugMode && console.log('availableSpace', availableSpace, '=', pageBottom, '-', nodeTop, '-', preWrapperHeight);
 
     let firstPartLines = Math.trunc(availableSpace / nodeLineHeight);
     const linesPerPage = Math.trunc(pageSpace / nodeLineHeight);
 
     if (firstPartLines < this.minPreFirstBlockLines) {
-      // console.log('availableSpace is too small');
+      // this.debugMode && console.log('availableSpace is too small');
       availableSpace = this.referenceHeight;
       firstPartLines = linesPerPage;
     }
 
     const restLines = totalLines - firstPartLines;
-    // console.log(restLines); // BUG -32 ????
+    // this.debugMode && console.log(restLines); // BUG -32 ????
 
     const fullPages = Math.floor(restLines / linesPerPage);
     const lastPartLines = restLines % linesPerPage;
-    // console.log(lastPartLines);
+    // this.debugMode && console.log(lastPartLines);
 
     if (lastPartLines < this.minPreLastBlockLines) {
       firstPartLines = firstPartLines - (this.minPreLastBlockLines - lastPartLines);
-      // console.log(firstPartLines);
+      // this.debugMode && console.log(firstPartLines);
     }
 
 
@@ -647,7 +641,7 @@ export default class Pages {
     }, [[]])
       .filter(array => array.length);
 
-    // console.log('3 BEFORE - preGroupedLines', preGroupedLines);
+    // this.debugMode && console.log('3 BEFORE - preGroupedLines', preGroupedLines);
 
     // TODO TEST THIS! logik is too compex
     let veryStartGroup = '';
@@ -660,14 +654,14 @@ export default class Pages {
       veryEndGroup = '\n' + preGroupedLines.pop().join('\n');
     }
 
-    // console.log('3 AFTER - preGroupedLines', preGroupedLines);
-    // console.log('veryStartGroup', veryStartGroup)
-    // console.log('veryEndGroup', veryEndGroup)
+    // this.debugMode && console.log('3 AFTER - preGroupedLines', preGroupedLines);
+    // this.debugMode && console.log('veryStartGroup', veryStartGroup)
+    // this.debugMode && console.log('veryEndGroup', veryEndGroup)
 
     // ["000"], [Array(3), Array(3)], [Array(3), "010", "011", Array(3)], .....
     const preBlocks = preGroupedLines.reduce((accumulator, block, index, array) => {
 
-      // console.log('preBlocks block #', index, block)
+      // this.debugMode && console.log('preBlocks block #', index, block)
 
       if (block.length < this.minPreBreakableLines) {
         accumulator.push(block.join('\n') + '\n')
@@ -694,12 +688,12 @@ export default class Pages {
     veryStartGroup.length && (preBlocks[0] = veryStartGroup + preBlocks[0]);
     veryEndGroup.length && (preBlocks[preBlocks.length - 1] = preBlocks[preBlocks.length - 1] + veryEndGroup);
 
-    // console.log('4 - preBlocks', preBlocks);
+    // this.debugMode && console.log('4 - preBlocks', preBlocks);
 
     // TODO TEST THIS! its hack
 
     if (preBlocks.length === 1) {
-      console.log('%c DONT SPLIT IT', 'color:yellow');
+      // this.debugMode && console.log('%c DONT SPLIT IT', 'color:yellow');
       return []
     }
 
@@ -714,7 +708,7 @@ export default class Pages {
       }
     )
 
-    // console.log(blockAndLineElementsArray);
+    // this.debugMode && console.log(blockAndLineElementsArray);
 
     //TODO move to DOM, like prepareSplittedNode(node)
 
@@ -726,8 +720,8 @@ export default class Pages {
 
 
 
-    // console.log('availableSpace', availableSpace);
-    // console.log('pageSpace', pageSpace);
+    // this.debugMode && console.log('availableSpace', availableSpace);
+    // this.debugMode && console.log('pageSpace', pageSpace);
 
     // find starts of parts splitters
 
@@ -735,7 +729,7 @@ export default class Pages {
     let splitters = [];
     let floater = availableSpace;
 
-    // console.log('floater', floater);
+    // this.debugMode && console.log('floater', floater);
 
     for (let index = 0; index < blockAndLineElementsArray.length; index++) {
       // const floater = availableSpace + page * pageSpace;
@@ -759,7 +753,7 @@ export default class Pages {
     // register last part end
     splitters.push(null);
 
-    // console.log('splitters', splitters);
+    // this.debugMode && console.log('splitters', splitters);
 
 
     const splitsArr = splitters.map((id, index, splitters) => {
@@ -773,17 +767,17 @@ export default class Pages {
       const start = splitters[index - 1] || 0;
       const end = id || splitters[splitters.length];
 
-      // console.log(' ### SPLIT:', index, ' - ', start, end);
+      // this.debugMode && console.log(' ### SPLIT:', index, ' - ', start, end);
 
       this.DOM.insertAtEnd(part, ...blockAndLineElementsArray.slice(start, end));
 
       return part;
     });
 
-    // console.log('PRE splitsArr', splitsArr);
+    // this.debugMode && console.log('PRE splitsArr', splitsArr);
 
 
-    // console.log('\n -------// PRE-------- \n\n\n\n');
+    // this.debugMode && console.log('\n -------// PRE-------- \n\n\n\n');
 
 
     this.DOM.insertInsteadOf(node, ...splitsArr);
@@ -795,11 +789,11 @@ export default class Pages {
   }
 
   _splitTableNode(node, pageBottom) {
-    console.log('%c WE HAVE A TABLE', 'color:yellow');
-    console.log('pageBottom', pageBottom);
-    console.log('nodeBottom', this.DOM.getElementRootedBottom(node, this.root));
+    this.debugMode && console.log('%c WE HAVE A TABLE', 'color:orange');
+    // this.debugMode && console.log('pageBottom', pageBottom);
+    // this.debugMode && console.log('nodeBottom', this.DOM.getElementRootedBottom(node, this.root));
 
-    console.time('_splitTableNode')
+    this.debugMode && console.time('_splitTableNode')
 
     // calculate table wrapper (empty table element) height
     // to calculate the available space for table content
@@ -875,7 +869,7 @@ export default class Pages {
       rows: [],
       unexpected: [],
     });
-    console.log('nodeEntries', nodeEntries);
+    // this.debugMode && console.log('nodeEntries', nodeEntries);
 
     if (nodeEntries.unexpected.length > 0) {
       console.warn('something unexpected is found in the table');
@@ -912,7 +906,7 @@ export default class Pages {
       if (topsArr[index] > currentPageBottom) {
 
         // TODO split long TR
-        // console.log('%c calculateRowSplits', 'color: #47D447');
+        // this.debugMode && console.log('%c calculateRowSplits', 'color: #47D447');
 
         if (index > this.minLeftRows) {
           // avoid < minLeftRows rows on first page
@@ -931,7 +925,7 @@ export default class Pages {
     if (splitsIds[splitsIds.length - 1] > maxSplittingId) {
       splitsIds[splitsIds.length - 1] = maxSplittingId;
     }
-    console.log('splitsIds', splitsIds);
+    // this.debugMode && console.log('splitsIds', splitsIds);
 
 
 
@@ -966,7 +960,7 @@ export default class Pages {
 
     const splits = splitsIds.map((value, index, array) => insertTableSplit(array[index - 1] || 0, value))
 
-    console.log('splits', splits);
+    // this.debugMode && console.log('splits', splits);
 
     // create LAST PART
     const lastPart = this.DOM.createPrintNoBreak();
@@ -977,7 +971,7 @@ export default class Pages {
       node
     );
 
-    console.timeEnd('_splitTableNode')
+    this.debugMode && console.timeEnd('_splitTableNode')
     return [...splits, lastPart]
   }
 
@@ -1009,10 +1003,10 @@ export default class Pages {
       minDanglingLines: this.minDanglingLines,
     });
 
-    // console.log('approximateSplitters', approximateSplitters);
+    // this.debugMode && console.log('approximateSplitters', approximateSplitters);
 
     if (approximateSplitters.length < 2) {
-      console.log(' ... do not break', node);
+      // this.debugMode && console.log(' ... do not break', node);
       return []
     }
 
@@ -1158,7 +1152,7 @@ export default class Pages {
 
   //   // BUG WITH OBJECT: in FF is ignored, in Chrome get wrong height
   //   // if (tag === 'OBJECT') {
-  //   //   console.log('i am object');
+  //   //   this.debugMode && console.log('i am object');
   //   //   resizeObserver.observe(currentElement)
   //   // }
 

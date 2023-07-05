@@ -2,6 +2,12 @@ export default function createConfig(params) {
 
   // ? used in style.js
   let config = {
+    // * Debug mode is set in the user configuration.
+    // * In the case of connecting the script in HTML without configuration
+    // * in order to display messages in the browser console,
+    // * this line can be uncommented:
+    // debugMode: true,
+
     // print
     printUnits: 'mm',
     printLeftMargin: '21',

@@ -1,5 +1,9 @@
 import SELECTOR from './selector';
 
+const CONSOLE_CSS_LABEL_DOM = 'border:1px solid #FFBB00;'
+                            + 'background:#EEEEEE;'
+                            + 'color:#FFBB00;'
+
 export default class DocumentObjectModel {
 
   constructor(DOM) {
@@ -195,7 +199,6 @@ export default class DocumentObjectModel {
   isForcedPageBreak(element) {
     // SELECTOR.printForcedPageBreak
     // todo: add one more attribute like [print-forced-page-break]
-    // element.hasAttribute('data-print-forced-page-break') && console.log(element, element.hasAttribute('data-print-forced-page-break'));
     return element.dataset?.hasOwnProperty('printForcedPageBreak')
   }
 
@@ -343,7 +346,6 @@ export default class DocumentObjectModel {
   // PAGES
 
   fitElementWithinBoundaries({ element, height, width, vspace, hspace }) {
-    console.log(element);
 
     const hRatio = vspace / height;
     const wRatio = hspace / width;
@@ -410,7 +412,6 @@ export default class DocumentObjectModel {
     if (offsetParent === root) {
       return (currTop + topAcc);
     } else {
-      // console.log('%c offsetParent', 'background:yellow', offsetParent);
       return this.getElementRootedTop(offsetParent, root, topAcc + currTop);
     }
   }
