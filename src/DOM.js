@@ -1,12 +1,15 @@
 import SELECTOR from './selector';
 
+const DOM_DEBAG_TOGGLER = true;
+
 const CONSOLE_CSS_LABEL_DOM = 'border:1px solid #FFBB00;'
                             + 'background:#EEEEEE;'
                             + 'color:#FFBB00;'
 
 export default class DocumentObjectModel {
 
-  constructor(DOM) {
+  constructor({DOM, debugMode}) {
+    this.debugMode = debugMode;
     this.DOM = DOM;
     this.body = DOM.body;
   }
@@ -421,7 +424,7 @@ export default class DocumentObjectModel {
   }
 
   getElementRelativeBottom(element) {
-    // BUG ? 
+    // BUG ?
     return element?.offsetTop + element?.offsetHeight || undefined;
   }
 

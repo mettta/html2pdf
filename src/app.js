@@ -27,7 +27,7 @@ export default class HTML2PDF4DOC {
 
     this.debugMode && console.time("printTHIS");
 
-    const DOM = new DocumentObjectModel(window.document);
+    const DOM = new DocumentObjectModel({DOM: window.document, debugMode: this.debugMode});
     DOM.insertStyle(new Style(this.config()).create());
 
     const layout = new Layout({
