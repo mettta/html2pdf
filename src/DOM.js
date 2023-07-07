@@ -432,6 +432,23 @@ export default class DocumentObjectModel {
     return this.getElementRootedTop(element, root) + this.getElementHeight(element);
   }
 
+  getElementRootedRealBottom(element, root) {
+    // * Because of the possible bottom margin
+    // * of the parent element or nested last children,
+    // * the exact check will be through the creation of the test element.
+    // TODO : performance
+    // ? However, the performance compared to getElementRootedBottom() decreases:
+    // ? 0.001 to 0.3 ms per such operation.
+    const test = this.create();
+    element && element.after(test);
+    const top = element ? this.getElementRootedTop(test, root) : undefined;
+    // this.debugMode && DOM_DEBAG_TOGGLER && console.log(
+    //   '%c getElementRootedBottom ', CONSOLE_CSS_LABEL_DOM,
+    //    {element, top});
+    test.remove();
+    return top;
+  }
+
   isLineChanged(current, next) {
     const vert = this.getElementRelativeBottom(current) <= this.getElementRelativeTop(next);
     // const gor = this.getElementLeft(current) + this.getElementWidth(current) > this.getElementLeft(next);
