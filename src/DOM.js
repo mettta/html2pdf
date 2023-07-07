@@ -185,8 +185,12 @@ export default class DocumentObjectModel {
     return element.hasAttribute(SELECTOR.complexTextBlock)
   }
 
+  getComputedStyle(element) {
+    return window.getComputedStyle(element);
+  }
+
   isInline(element) {
-    const res = window.getComputedStyle(element).display === "inline" || window.getComputedStyle(element).display === "inline-block" || window.getComputedStyle(element).display === "inline-table";
+    const res = this.getComputedStyle(element).display === "inline" || this.getComputedStyle(element).display === "inline-block" || this.getComputedStyle(element).display === "inline-table";
     return res;
   }
 
