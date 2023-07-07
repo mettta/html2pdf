@@ -472,7 +472,7 @@ export default class Pages {
     const lastUnbreakablePart = newComplexChildrenGroups.slice(-this.minDanglingLines).flat();
 
     newComplexChildrenGroups.splice(0, this.minLeftLines, firstUnbreakablePart);
-    newComplexChildrenGroups.splice(-1, this.minDanglingLines, lastUnbreakablePart);
+    newComplexChildrenGroups.splice(-this.minDanglingLines, this.minDanglingLines, lastUnbreakablePart);
 
     // * Then collect the resulting children into rows
     // * which are not to be split further.
