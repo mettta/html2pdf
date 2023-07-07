@@ -1,9 +1,12 @@
 import calculateSplitters from './calculateSplitters';
 import findSplitId from './findSplitId';
 
-const CONSOLE_CSS_LABEL_PAGES = 'border:1px solid #66CC00;'
-                              + 'background:#EEEEEE;'
-                              + 'color:#66CC00;'
+const CONSOLE_CSS_COLOR_PAGES = '#66CC00';
+const CONSOLE_CSS_PRIMARY_PAGES = `color: ${CONSOLE_CSS_COLOR_PAGES};font-weight:bold`;
+const CONSOLE_CSS_SECONDARY_PAGES = `color: ${CONSOLE_CSS_COLOR_PAGES};font-weight:bold;font-size:smaller;`;
+const CONSOLE_CSS_LABEL_PAGES = `border:1px solid ${CONSOLE_CSS_COLOR_PAGES};`
+                              + `background:#EEEEEE;`
+                              + `color:${CONSOLE_CSS_COLOR_PAGES};`
 
 export default class Pages {
 
@@ -55,7 +58,7 @@ export default class Pages {
   }
 
   _calculate() {
-    this.debugMode && console.groupCollapsed('%c Pages ', CONSOLE_CSS_LABEL_PAGES);
+    this.debugMode && console.group('%c Pages ', CONSOLE_CSS_LABEL_PAGES);
 
     // IF contentFlow is less than one page,
 
@@ -113,12 +116,13 @@ export default class Pages {
   }) {
 
     for (let i = 0; i < array.length; i++) {
-
+      this.debugMode && console.group('%c_parseNode', CONSOLE_CSS_PRIMARY_PAGES);
       this._parseNode({
         previousElement: array[i - 1] || previous,
         currentElement: array[i],
         nextElement: array[i + 1] || next,
       });
+      this.debugMode && console.groupEnd('%c_parseNode');
     }
   }
 
@@ -129,20 +133,18 @@ export default class Pages {
     nextElement,
   }) {
 
-    // this.debugMode && console.log('🏴')
-
-
-      // this.debugMode && console.log('👈', previousElement)
-      // this.debugMode && console.log('👌', currentElement)
-      // this.debugMode && console.log('👉', nextElement)
-
+    this.debugMode && console.log(
+      '%c 3 nodes: ',
+      CONSOLE_CSS_LABEL_PAGES,
+      {
+        previousElement,
+        currentElement,
+        nextElement,
+      });
 
     // THE END of content flow:
-    // if there is no next element, then
-    // we are in a case where the [data-content-flow-end] element is current.
-    // todo
-    // Потому что next всегда есть или собственного уровня, или родительский,
-    // или мы в конце контент-флоу.
+    // if there is no next element, then we are in a case
+    // where the [data-content-flow-end] element is current.
     if (!nextElement) {
       this.debugMode && console.log('🏁 THE END')
       return
@@ -161,6 +163,10 @@ export default class Pages {
       currentElement);
 
     const newPageBottom = this.pages.at(-1).pageBottom;
+    this.debugMode && console.log(
+      '•••',
+      newPageBottom,
+      '•••');
 
     // IF nextElement does not start on the current page,
     // we should check if the current one fits in the page,
@@ -256,14 +262,19 @@ export default class Pages {
 
       if (this.DOM.isNoBreak(currentElement) || this._notSolved(currentElement)) {
         // don't break apart, thus keep an empty children array
+        this.debugMode && console.info('%c isNoBreak ', CONSOLE_CSS_SECONDARY_PAGES);
         children = [];
       } else if (this.DOM.isComplexTextBlock(currentElement)) {
+        this.debugMode && console.info('%c ComplexTextBlock ', CONSOLE_CSS_SECONDARY_PAGES);
         children = this._splitComplexTextBlock(currentElement) || [];
       } else if (this._isTextNode(currentElement)) {
+        this.debugMode && console.info('%c TextNode ', CONSOLE_CSS_SECONDARY_PAGES);
         children = this._splitTextNode(currentElement, newPageBottom) || [];
       } else if (this._isPRE(currentElement)) {
+        this.debugMode && console.info('%c PRE ', CONSOLE_CSS_SECONDARY_PAGES);
         children = this._splitPreNode(currentElement, newPageBottom) || [];
       } else if (this._isTableNode(currentElement)) {
+        this.debugMode && console.info('%c TABLE ', CONSOLE_CSS_SECONDARY_PAGES);
         children = this._splitTableNode(currentElement, newPageBottom) || [];
         // } else if (this._isLiNode(currentElement)) {
         //   // todo
@@ -286,30 +297,33 @@ export default class Pages {
 
       } else {
         children = this._getChildren(currentElement);
-        // this.debugMode && console.log('🚸f() children', children);
+        this.debugMode && console.info(
+          '%c 🚸 get element children ',
+          CONSOLE_CSS_SECONDARY_PAGES,
+          children
+        );
       }
 
       if (this._isVerticalFlowDisrupted(children)) {
-        // if the vertical flow is disturbed and the elements are side by side:
+        // * If the vertical flow is disturbed and the elements are side by side:
         children = this._processInlineChildren(children);
       }
 
 
-      // parse children
+      // * Parse children:
       if (children.length) {
-
-        // Process children if exist:
+        // * Process children if exist:
         this._parseNodes({
           array: children,
           previous: previousElement,
           next: nextElement
         })
       } else {
-        // If no children, move element to the next page.
-        // But,
+        // * If no children, move element to the next page.
+        // ** But,
         if (this._canNotBeLast(previousElement)) {
-          // if previousElement can't be the last element on the page,
-          // move it to the next page.
+          // ** if previousElement can't be the last element on the page,
+          // ** move it to the next page.
           // todo
           // а если там подряд несколько заголовков, и перед previousElement есть еще заголовки, которые мы не проверяли еслтенствнно, и они будут висеть
           this._registerPageStart(previousElement)
