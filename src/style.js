@@ -131,6 +131,11 @@ export default class Style {
   }
 
   @media print {
+    ${SELECTOR.root} {
+      /* to prevent a blank last page */
+      padding: 0;
+    }
+
     ${SELECTOR.paperFlow} {
       padding-bottom: 0;
     }

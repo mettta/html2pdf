@@ -62,7 +62,7 @@ export default class Pages {
 
     // IF contentFlow is less than one page,
 
-    if (this.DOM.getElementHeight(this.contentFlow) < this.referenceHeight) {
+    if (this.DOM.getElementRootedRealBottom(this.contentFlow, this.root) < this.referenceHeight) {
       // In the case of a single page,
       // the markup was inserted BEFORE the contentFlow.
       // Because our script is lazy and won't go through the children
