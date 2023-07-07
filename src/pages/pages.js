@@ -112,17 +112,32 @@ export default class Pages {
   _parseNodes({
     array,
     previous,
-    next
+    next,
+    parentBottom,
   }) {
 
     for (let i = 0; i < array.length; i++) {
-      this.debugMode && console.group('%c_parseNode', CONSOLE_CSS_PRIMARY_PAGES);
+      const lastChild = i === array.length - 1;
+
+      // *** If the parent item has a bottom margin, we must consider it
+      // *** when deciding on the last child.
+      // *** Otherwise, this margin may be lost
+      // *** and not counted in the calculation of the next page height,
+      // *** causing blank unaccounted pages.
+
+      this.debugMode && console.group(
+        `%c_parseNode`, CONSOLE_CSS_PRIMARY_PAGES,
+        `${lastChild ? '★last★' : ''}`
+        );
+
       this._parseNode({
         previousElement: array[i - 1] || previous,
         currentElement: array[i],
         nextElement: array[i + 1] || next,
+        // *** for the last child:
+        parentBottom: lastChild ? parentBottom : undefined,
       });
-      this.debugMode && console.groupEnd('%c_parseNode');
+      this.debugMode && console.groupEnd(`%c_parseNode`);
     }
   }
 
@@ -131,8 +146,10 @@ export default class Pages {
     previousElement,
     currentElement,
     nextElement,
+    parentBottom,
   }) {
 
+    this.debugMode && parentBottom && console.log('%c parentBottom ', 'color:red', parentBottom);
     this.debugMode && console.log(
       '%c 3 nodes: ',
       CONSOLE_CSS_LABEL_PAGES,
@@ -163,28 +180,28 @@ export default class Pages {
       currentElement);
 
     const newPageBottom = this.pages.at(-1).pageBottom;
-    this.debugMode && console.log(
-      '•••',
-      newPageBottom,
-      '•••');
+    this.debugMode && console.log('•••', newPageBottom, '•••');
 
-    // IF nextElement does not start on the current page,
-    // we should check if the current one fits in the page,
-    // because it could be because of the margin
+    const nextElementTop = this.DOM.getElementRootedTop(nextElement, this.root);
+    this.debugMode && console.log('next Top',nextElementTop);
+
     // TODO if next elem is SVG it has no offset Top!
-    if (this.DOM.getElementRootedTop(nextElement, this.root) > newPageBottom) {
+    if (nextElementTop > newPageBottom) {
+      // * nextElement does not start on the current page.
+      // * Possible cases for the currentElement:
+      // *** (0) in one piece should be moved to the next page
+      // *** (1) is fit in one piece on the current page
+      // *** (2) must be split
 
-      // Here nextElement is a candidate to start a new page,
-      // and currentElement is a candidate
-      // (1) EITHER to end the current page (being taken as a whole or being splitted)
-      // (2) OR to start a new page.
-      // Check the possibility of (1).
+      // * Check the possibility of (0)
       if (this._canNotBeLast(currentElement)) {
         // if currentElement can't be the last element on the page,
         // immediately move it to the next page:
         this._registerPageStart(currentElement);
         return
       }
+
+      // * Check the possibility of (1) or (0): on current or next page in one piece?
 
       // IMAGE with optional resizing
       // TODO float images
@@ -247,10 +264,17 @@ export default class Pages {
         return
       }
 
+      // * Check the possibility of (1) or (2): split or not?
+
       // TODO check BOTTOMS??? vs MARGINS
+      const currentElementBottom = parentBottom || this.DOM.getElementRootedRealBottom(currentElement, this.root);
+      this.debugMode && console.log('curr RR Bottom', currentElementBottom);
+
+      // FIX parentMargin ?????
+
       // IF currentElement does fit
       // in the remaining space on the page,
-      if (this.DOM.getElementRootedBottom(currentElement, this.root) <= newPageBottom) {
+      if (currentElementBottom <= newPageBottom) {
         // we need <= because splitted elements often get equal height // todo comment
 
         this._registerPageStart(nextElement);
@@ -269,7 +293,12 @@ export default class Pages {
         children = this._splitComplexTextBlock(currentElement) || [];
       } else if (this._isTextNode(currentElement)) {
         this.debugMode && console.info('%c TextNode ', CONSOLE_CSS_SECONDARY_PAGES);
-        children = this._splitTextNode(currentElement, newPageBottom) || [];
+
+        // TODO: Compare performance of _splitComplexTextBlock and _splitTextNode!
+        // temporarily use the less productive function.
+
+        // children = this._splitTextNode(currentElement, newPageBottom) || [];
+        children = this._splitComplexTextBlock(currentElement) || [];
       } else if (this._isPRE(currentElement)) {
         this.debugMode && console.info('%c PRE ', CONSOLE_CSS_SECONDARY_PAGES);
         children = this._splitPreNode(currentElement, newPageBottom) || [];
@@ -309,14 +338,14 @@ export default class Pages {
         children = this._processInlineChildren(children);
       }
 
-
       // * Parse children:
       if (children.length) {
         // * Process children if exist:
         this._parseNodes({
           array: children,
           previous: previousElement,
-          next: nextElement
+          next: nextElement,
+          parentBottom: currentElementBottom,
         })
       } else {
         // * If no children, move element to the next page.
@@ -333,7 +362,11 @@ export default class Pages {
       }
 
     }
-    // IF currentElement fits, continue.
+
+    // * ELSE IF: nextElementTop <= newPageBottom,
+    // * then currentElement fits,
+    // * then continue.
+
     // this.debugMode && console.log('🏳️ currentElement fits', currentElement)
   }
 
