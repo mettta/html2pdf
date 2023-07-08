@@ -96,6 +96,8 @@ export default class Pages {
     this._registerPageStart(content[0]);
 
     this._parseNodes({
+      // don't register the parent here,
+      // only on inner nodes that do not split
       array: content
     });
 
@@ -113,6 +115,7 @@ export default class Pages {
     array,
     previous,
     next,
+    parent,
     parentBottom,
   }) {
 
@@ -131,9 +134,11 @@ export default class Pages {
         );
 
       this._parseNode({
+        i,
         previousElement: array[i - 1] || previous,
         currentElement: array[i],
         nextElement: array[i + 1] || next,
+        parent,
         // *** for the last child:
         parentBottom: lastChild ? parentBottom : undefined,
       });
@@ -143,12 +148,15 @@ export default class Pages {
 
   // 📍
   _parseNode({
+    i,
     previousElement,
     currentElement,
     nextElement,
+    parent,
     parentBottom,
   }) {
 
+    this.debugMode && console.log('%c parent ', 'color:red;background:yellow', parent);
     this.debugMode && parentBottom && console.log('%c parentBottom ', 'color:red', parentBottom);
     this.debugMode && console.log(
       '%c 3 nodes: ',
@@ -158,6 +166,13 @@ export default class Pages {
         currentElement,
         nextElement,
       });
+
+    // TODO #retainedParent
+    // * If we want to start a new page from the current node,
+    // * which is the first (i == 0) or only child (= has 'parent'),
+    // * we want to register its parent as the start of the page.
+    const currentPageStart = (i == 0 && parent) ? parent : currentElement;
+    this.debugMode && parentBottom && console.log('%c currentPageStart ', 'color:red;background:yellow', currentPageStart);
 
     // THE END of content flow:
     // if there is no next element, then we are in a case
@@ -195,9 +210,13 @@ export default class Pages {
 
       // * Check the possibility of (0)
       if (this._canNotBeLast(currentElement)) {
-        // if currentElement can't be the last element on the page,
-        // immediately move it to the next page:
-        this._registerPageStart(currentElement);
+        // ** if currentElement can't be the last element on the page,
+        // ** immediately move it to the next page:
+
+        // TODO #retainedParent
+        // this._registerPageStart(currentElement);
+        // ** And if it's the first child, move the parent node to the next page.
+        this._registerPageStart(currentPageStart);
         return
       }
 
@@ -338,26 +357,49 @@ export default class Pages {
         children = this._processInlineChildren(children);
       }
 
+      // **
+      // * The children are processed.
+      // * Depending on the number of children:
+
+      const childrenNumber = children.length;
+      this.debugMode && console.log('%c childrenNumber ', 'color:red', childrenNumber);
+      this.debugMode && console.log('%c currentElement ', 'color:red', currentElement);
+
+      // TODO #retainedParent
+      // ** If it is an only child (it means that the parent node is not split),
+      // ** as well as if the first child is being registered,
+      // ** -- we want to use the past parent (=wrapper of the current node)
+      // ** as the start of the page.
+      const retainedParent = (childrenNumber <= 1 || i == 0)
+                            ? (parent ? parent : currentElement)
+                            : undefined;
+      this.debugMode && console.log('%c set retainedParent', 'background:yellow', retainedParent)
+
       // * Parse children:
-      if (children.length) {
+      if (childrenNumber) {
         // * Process children if exist:
         this._parseNodes({
           array: children,
           previous: previousElement,
           next: nextElement,
+          parent: retainedParent,
           parentBottom: currentElementBottom,
         })
       } else {
-        // * If no children, move element to the next page.
+        // * If no children,
+        // * move element to the next page.
         // ** But,
         if (this._canNotBeLast(previousElement)) {
           // ** if previousElement can't be the last element on the page,
           // ** move it to the next page.
-          // todo
+          // TODO #_canNotBeLast
           // а если там подряд несколько заголовков, и перед previousElement есть еще заголовки, которые мы не проверяли еслтенствнно, и они будут висеть
           this._registerPageStart(previousElement)
         } else {
-          this._registerPageStart(currentElement)
+          // TODO #retainedParent
+          // this._registerPageStart(currentElement);
+          this._registerPageStart(currentPageStart);
+          this.debugMode && console.log('%c +++ register:', 'background:yellow', currentPageStart);
         }
       }
 
@@ -827,7 +869,15 @@ export default class Pages {
     // this.debugMode && console.log('\n -------// PRE-------- \n\n\n\n');
 
 
-    this.DOM.insertInsteadOf(node, ...splitsArr);
+    //// this.DOM.insertInsteadOf(node, ...splitsArr);
+    // * We need to keep the original node,
+    // * we may need it as a parent in this._parseNode().
+    this.DOM.setInnerHTML(node, '');
+    this.DOM.insertAtEnd(node, ...splitsArr);
+    // * We open the wrapper node, but leave it.
+    node.style.display = 'content';
+    node.classList = '';
+
     return splitsArr;
 
     // TODO переполнение ширины страницы
