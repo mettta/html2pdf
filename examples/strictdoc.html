@@ -2938,32 +2938,7 @@ a.field_action:hover {
 <body data-viewtype="html2pdf" data-turbo="false">
 <div id="connection_status" class="connection_status"></div>
 
-<script>
-  var clientId = Date.now();
-  var ws_protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  var ws = new WebSocket(`${ws_protocol}//${window.location.host}/ws/${clientId}`);
-  ws.onmessage = function(event) {
-    // Nothing just yet.
-  };
-  ws.onopen = function(e) {
-    // Nothing just yet.
-  }
-  ws.onclose = function(e) {
-    document.getElementById("connection_status").innerHTML = `
-      Connection with the server is lost.
-      <a href="#" onclick="location.reload(); return false;">Click to reload</a>
-    `;
-  };
-  window.onbeforeunload = function (e) {
-    // Suprisingly, the last milleseconds of the page lifecycle let the page
-    // still update its HTML which creates a visual artefact when refreshing the
-    // page in the browser continuously.
-    // This event ensures that we disable websockets when the page is about to
-    // be refreshed/left.
-    ws.onclose = null;
-  };
-
-</script><div class="layout" id="layout">
+<div class="layout" id="layout">
 
     <nav class="layout_nav">
       
