@@ -164,7 +164,13 @@ export default class Style {
     }
 
     ${SELECTOR.printNoBreak} {
-      break-inside: avoid-page;
+      /*
+      TODO: temporary commented!
+      When splitting blocks, printPageBreak falls INTO this element,
+      and in Firefox it causes a blank page.
+      FIX the split of complex blocks and check in Firefox.
+      */
+      /* break-inside: avoid-page; */
     }
   }
 
