@@ -170,7 +170,10 @@ export default class DocumentObjectModel {
   }
 
   getEmptyNodeHeight(node) {
-    const wrapper = node.cloneNode(false);
+    const wrapper = this.create();
+    wrapper.style.padding = '0.1px';
+    const clone = node.cloneNode(false);
+    wrapper.append(clone);
     node.before(wrapper);
     const wrapperHeight = wrapper.offsetHeight;
     wrapper.remove();
