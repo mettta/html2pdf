@@ -623,7 +623,11 @@ export default class Pages {
 
   _splitPreNode(node, pageBottom) {
 
-    // this.debugMode && console.log('PRE', node);
+    const splitPreNodeDebugToggler = true;
+    const consoleMark = ['%c_splitPreNode\n', 'color:white',]
+
+    this.debugMode && splitPreNodeDebugToggler && console.group('%c_splitPreNode', 'background:cyan');
+    this.debugMode && splitPreNodeDebugToggler && console.log(...consoleMark, 'node', node);
 
     // TODO the same in splitTextNode - make one code piece
 
@@ -648,7 +652,6 @@ export default class Pages {
 
 
 
-    // this.debugMode && console.log('\n\n\n\n -------PRE-------- \n');
 
 
 
@@ -666,20 +669,33 @@ export default class Pages {
     // correction for line break, not affecting the block view, but affecting the calculations
     let preText = this.DOM.getInnerHTML(node);
     if (preText.charAt(preText.length - 1) === '\n') {
-      // this.debugMode && console.log('LAST CHAR IS BREAK');
+      this.debugMode && splitPreNodeDebugToggler && console.log(
+        ...consoleMark,
+        'LAST CHAR IS \\n'
+      );
       preText = preText.slice(0, -1);
     }
 
-    // this.debugMode && console.log('1 - preText');
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark,
+      '1 - preText'
+    );
 
     const preLines = preText.split('\n');
     // "000", "", "001", "002", "003", "004", "005", "006", "", "007" .....
 
-    // this.debugMode && console.log('#### 2 - preLines', preLines);
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark,
+      '#### 2 - preLines', preLines
+    );
 
 
     if (preLines.length < this.minPreBreakableLines) {
       // this._registerPageStart(node);
+      this.debugMode && splitPreNodeDebugToggler && console.log(
+        ...consoleMark,
+        '< minPreBreakableLines => return []'
+      );
       return []
     }
 
@@ -690,33 +706,61 @@ export default class Pages {
     // А НАДО ЛИ ЭТО?
     // может просто разбить на возможные части и отправить выше, пусть сами распределяют
 
-    // Prepare parameters for splitters calculation
+    // ? Can we not do all these calculations,
+    // ? but just split up into lines and send them upstairs to make decisions?
+    // * The current answer:
+    // ** When we split, we create new nodes,
+    // ** so we need to know exactly what pieces we can and should split into.
+
+    // * Prepare parameters for splitters calculation
+    // TODO : availableSpace considers the upper margin, but does not consider the lower margin
     let availableSpace = pageBottom - nodeTop - preWrapperHeight;
     const pageSpace = this.referenceHeight - preWrapperHeight;
 
-    // this.debugMode && console.log('availableSpace', availableSpace, '=', pageBottom, '-', nodeTop, '-', preWrapperHeight);
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark,
+      'availableSpace: \n',
+      `${availableSpace} = ${pageBottom} - ${nodeTop} - ${preWrapperHeight}`,
+    );
 
     let firstPartLines = Math.trunc(availableSpace / nodeLineHeight);
     const linesPerPage = Math.trunc(pageSpace / nodeLineHeight);
 
     if (firstPartLines < this.minPreFirstBlockLines) {
-      // this.debugMode && console.log('availableSpace is too small');
+      this.debugMode && splitPreNodeDebugToggler && console.log(
+        ...consoleMark,
+        'availableSpace is too small \n (availableSpace = this.referenceHeight)'
+      );
       availableSpace = this.referenceHeight;
       firstPartLines = linesPerPage;
     }
 
     const restLines = totalLines - firstPartLines;
-    // this.debugMode && console.log(restLines); // BUG -32 ????
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark,
+      'restLines:', restLines
+    ); // BUG -32 ????
 
     const fullPages = Math.floor(restLines / linesPerPage);
     const lastPartLines = restLines % linesPerPage;
-    // this.debugMode && console.log(lastPartLines);
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark,
+      'lastPartLines:', lastPartLines
+    );
 
     if (lastPartLines < this.minPreLastBlockLines) {
       firstPartLines = firstPartLines - (this.minPreLastBlockLines - lastPartLines);
-      // this.debugMode && console.log(firstPartLines);
+      this.debugMode && splitPreNodeDebugToggler && console.log(
+        ...consoleMark,
+        'firstPartLines:', firstPartLines
+      );
     }
 
+
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark,
+      '#### 3 - grouping lines',
+    );
 
     // ["000"], ["001", "002", "003", "004", "005", "006"], ["007", .....
     const preGroupedLines = preLines.reduce((accumulator, line, index, array) => {
@@ -730,7 +774,10 @@ export default class Pages {
     }, [[]])
       .filter(array => array.length);
 
-    // this.debugMode && console.log('3 BEFORE - preGroupedLines', preGroupedLines);
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark,
+      '(3) raw preGroupedLines:', ...preGroupedLines
+    );
 
     // TODO TEST THIS! logik is too compex
     let veryStartGroup = '';
@@ -743,17 +790,38 @@ export default class Pages {
       veryEndGroup = '\n' + preGroupedLines.pop().join('\n');
     }
 
-    // this.debugMode && console.log('3 AFTER - preGroupedLines', preGroupedLines);
-    // this.debugMode && console.log('veryStartGroup', veryStartGroup)
-    // this.debugMode && console.log('veryEndGroup', veryEndGroup)
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark, '(3) split into groups of lines:'
+    );
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark,
+      'veryStartGroup', veryStartGroup
+    );
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark,
+      'preGroupedLines', preGroupedLines
+    );
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark,
+      'veryEndGroup', veryEndGroup
+    );
 
     // ["000"], [Array(3), Array(3)], [Array(3), "010", "011", Array(3)], .....
     const preBlocks = preGroupedLines.reduce((accumulator, block, index, array) => {
 
-      // this.debugMode && console.log('preBlocks block #', index, block)
+      this.debugMode && splitPreNodeDebugToggler && console.log(
+        ...consoleMark,
+        `preBlocks block # ${index}`,
+        block
+      );
 
       if (block.length < this.minPreBreakableLines) {
-        accumulator.push(block.join('\n') + '\n')
+        accumulator.push(block.join('\n') + '\n');
+
+        this.debugMode && splitPreNodeDebugToggler && console.log(
+          ...consoleMark,
+          `this block.length < this.minPreBreakableLines`
+        );
       } else {
         const first = block.slice(0, this.minPreFirstBlockLines).join('\n') + '\n';
         const rest = block.slice(this.minPreFirstBlockLines, - this.minPreLastBlockLines)
@@ -777,12 +845,19 @@ export default class Pages {
     veryStartGroup.length && (preBlocks[0] = veryStartGroup + preBlocks[0]);
     veryEndGroup.length && (preBlocks[preBlocks.length - 1] = preBlocks[preBlocks.length - 1] + veryEndGroup);
 
-    // this.debugMode && console.log('4 - preBlocks', preBlocks);
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark,
+      '#### 4 - preBlocks',
+      preBlocks
+    );
 
     // TODO TEST THIS! its hack
 
     if (preBlocks.length === 1) {
-      // this.debugMode && console.log('%c DONT SPLIT IT', 'color:yellow');
+      this.debugMode && splitPreNodeDebugToggler && console.log(
+        ...consoleMark,
+        `DON'T SPLIT IT`
+      );
       return []
     }
 
@@ -797,7 +872,11 @@ export default class Pages {
       }
     )
 
-    // this.debugMode && console.log(blockAndLineElementsArray);
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark,
+      'blockAndLineElementsArray',
+      blockAndLineElementsArray
+    );
 
     //TODO move to DOM, like prepareSplittedNode(node)
 
@@ -809,8 +888,12 @@ export default class Pages {
 
 
 
-    // this.debugMode && console.log('availableSpace', availableSpace);
-    // this.debugMode && console.log('pageSpace', pageSpace);
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark,
+      `• availableSpace: ${availableSpace}`,
+      '\n',
+      `• pageSpace: ${pageSpace}`,
+    );
 
     // find starts of parts splitters
 
@@ -818,34 +901,63 @@ export default class Pages {
     let splitters = [];
     let floater = availableSpace;
 
-    // this.debugMode && console.log('floater', floater);
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark,
+      'Find starts of parts splitters\n',
+      '◆ page: #', page,
+      '\n',
+      '◆ floater:', floater,
+    );
 
     for (let index = 0; index < blockAndLineElementsArray.length; index++) {
       // const floater = availableSpace + page * pageSpace;
       const current = blockAndLineElementsArray[index];
+      const currentBottom = this.DOM.getElementRootedBottom(current, testNode);
 
 
-      // TODO      ###???###
-      // если у нас есть кусочек страницы, и
-      // если первая ЧАСТЬ больше, чем этот ксочек.. 
-      // получается, что мы делаем разбиение как бы для первой части ???
+      // TODO: If the first part does not fit in the available space,
+      // start the second page.
+
+
+      this.debugMode && splitPreNodeDebugToggler && console.log(
+        'currentBottom:', currentBottom
+      );
 
       // TODO move to DOM
       if (this.DOM.getElementRootedBottom(current, testNode) > floater) {
-
-        splitters.push(index);
-        page += 1;
+        index && splitters.push(index);
+        index && (page += 1);
         floater = this.DOM.getElementRootedTop(current, testNode) + pageSpace;
+
+        this.debugMode && splitPreNodeDebugToggler && console.log(
+          ...consoleMark,
+          '◆ page: #', page,
+          '\n',
+          '◆ new floater:', floater,
+        );
       }
     }
 
-    // register last part end
+    // * Delete the test node that is no longer needed.
+    testNode.remove();
+
+    // * The last part end is registered automatically.
+    // * Thus, this array has at least 1 element.
     splitters.push(null);
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark,
+      'splitters', splitters
+    );
+    // * The last part end may be the only part. Check it out below.
+    if(splitters.length < 2) {
+      // ** If we have only one part, we return an empty array
+      // ** and the original node will be taken in its entirety.
+      return []
+    }
 
-    // this.debugMode && console.log('splitters', splitters);
+    // * If there are more parts and the node will be split, continue.
 
-
-    const splitsArr = splitters.map((id, index, splitters) => {
+    const newPreElementsArray = splitters.map((id, index, splitters) => {
       // Avoid trying to break this node: createPrintNoBreak()
       // We can't wrap in createPrintNoBreak()
       // because PRE may have margins and that will affect the height of the wrapper.
@@ -856,29 +968,34 @@ export default class Pages {
       const start = splitters[index - 1] || 0;
       const end = id || splitters[splitters.length];
 
-      // this.debugMode && console.log(' ### SPLIT:', index, ' - ', start, end);
-
       this.DOM.insertAtEnd(part, ...blockAndLineElementsArray.slice(start, end));
 
       return part;
     });
 
-    // this.debugMode && console.log('PRE splitsArr', splitsArr);
+    this.debugMode && splitPreNodeDebugToggler && console.log(
+      ...consoleMark,
+      'newPreElementsArray',
+      newPreElementsArray
+    );
 
 
-    // this.debugMode && console.log('\n -------// PRE-------- \n\n\n\n');
 
 
-    //// this.DOM.insertInsteadOf(node, ...splitsArr);
+
+    //// this.DOM.insertInsteadOf(node, ...newPreElementsArray);
     // * We need to keep the original node,
     // * we may need it as a parent in this._parseNode().
     this.DOM.setInnerHTML(node, '');
-    this.DOM.insertAtEnd(node, ...splitsArr);
-    // * We open the wrapper node, but leave it.
-    node.style.display = 'content';
+    this.DOM.insertAtEnd(node, ...newPreElementsArray);
+    // * We "open" the slough node, but leave it.
+    node.style.display = 'contents';
+    node.setAttribute('slough-node', '')
     node.classList = '';
 
-    return splitsArr;
+    this.debugMode && splitPreNodeDebugToggler && console.groupEnd('%c_splitPreNode', 'background:cyan');
+
+    return newPreElementsArray;
 
     // TODO переполнение ширины страницы
     // overflow-x hidden + warning
