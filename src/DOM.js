@@ -196,7 +196,12 @@ export default class DocumentObjectModel {
   }
 
   isInline(element) {
-    const res = this.getComputedStyle(element).display === "inline" || this.getComputedStyle(element).display === "inline-block" || this.getComputedStyle(element).display === "inline-table";
+    const display = this.getComputedStyle(element).display;
+    const res = display === "inline" ||
+                display === "inline-block" ||
+                display === "inline-table" ||
+                display === "inline-flex" ||
+                display === "inline-grid";
     return res;
   }
 
