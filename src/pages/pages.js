@@ -623,7 +623,7 @@ export default class Pages {
 
   _splitPreNode(node, pageBottom) {
 
-    const splitPreNodeDebugToggler = true;
+    const splitPreNodeDebugToggler = false;
     const consoleMark = ['%c_splitPreNode\n', 'color:white',]
 
     this.debugMode && splitPreNodeDebugToggler && console.group('%c_splitPreNode', 'background:cyan');
@@ -1003,11 +1003,16 @@ export default class Pages {
   }
 
   _splitTableNode(node, pageBottom) {
-    this.debugMode && console.log('%c WE HAVE A TABLE', 'color:orange');
-    // this.debugMode && console.log('pageBottom', pageBottom);
-    // this.debugMode && console.log('nodeBottom', this.DOM.getElementRootedBottom(node, this.root));
+    const splitTableNodeDebugToggler = true;
+    const consoleMark = ['%c_splitTableNode\n', 'color:white',];
 
-    this.debugMode && console.time('_splitTableNode')
+    this.debugMode && splitTableNodeDebugToggler && console.group('%c_splitTableNode', 'background:cyan');
+    this.debugMode && splitTableNodeDebugToggler && console.log(...consoleMark, 'node', node);
+
+    // this.debugMode && splitTableNodeDebugToggler && console.log(...consoleMark,'pageBottom', pageBottom);
+    // this.debugMode && splitTableNodeDebugToggler && console.log(...consoleMark,s'nodeBottom', this.DOM.getElementRootedBottom(node, this.root));
+
+    this.debugMode && splitTableNodeDebugToggler && console.time('_splitTableNode')
 
     // calculate table wrapper (empty table element) height
     // to calculate the available space for table content
@@ -1072,8 +1077,8 @@ export default class Pages {
         unexpected: [
           ...acc.unexpected,
           // BUG: •Uncaught TypeError: t is not iterable at bundle.js:1:19184
-          // ...curr,
-          curr,
+          // curr,
+          ...curr,
         ]
       }
     }, {
@@ -1083,10 +1088,15 @@ export default class Pages {
       rows: [],
       unexpected: [],
     });
-    // this.debugMode && console.log('nodeEntries', nodeEntries);
+    this.debugMode && splitTableNodeDebugToggler && console.log(
+      ...consoleMark,
+      'nodeEntries', nodeEntries
+    );
 
     if (nodeEntries.unexpected.length > 0) {
-      console.warn('something unexpected is found in the table');
+      this.debugMode
+        && splitTableNodeDebugToggler
+        && console.warn(...consoleMark, 'something unexpected is found in the table');
     }
 
     if (nodeEntries.rows.length < this.minBreakableRows) {
@@ -1100,17 +1110,32 @@ export default class Pages {
     const firstPartHeight = pageBottom
       - nodeTop
       - this.signpostHeight - tableWrapperHeight;
+
     const fullPagePartHeight = this.referenceHeight
-      - this.DOM.getElementHeight(nodeEntries.thead)
-      - this.DOM.getElementHeight(nodeEntries.tfoot)
-      - this.DOM.getElementHeight(nodeEntries.caption)
+      - (this.DOM.getElementHeight(nodeEntries.thead) || 0)
+      - (this.DOM.getElementHeight(nodeEntries.tfoot) || 0)
+      - (this.DOM.getElementHeight(nodeEntries.caption) || 0)
       - 2 * this.signpostHeight - tableWrapperHeight;
+
     const topsArr = [
       ...nodeEntries.rows.map((row) => this.DOM.getElementRootedTop(row, node)),
       this.DOM.getElementRootedTop(nodeEntries.tfoot, node) || nodeHeight
-    ]
+    ];
 
-    // calculate Table Splits Ids
+    this.debugMode && splitTableNodeDebugToggler && console.log(
+      ...consoleMark,
+      'firstPartHeight', firstPartHeight
+    );
+    this.debugMode && splitTableNodeDebugToggler && console.log(
+      ...consoleMark,
+      'fullPagePartHeight', fullPagePartHeight
+    );
+    this.debugMode && splitTableNodeDebugToggler && console.log(
+      ...consoleMark,
+      '• topsArr', topsArr
+    );
+
+    // * Calculate Table Splits Ids
 
     let splitsIds = [];
     let currentPageBottom = firstPartHeight;
@@ -1120,10 +1145,11 @@ export default class Pages {
       if (topsArr[index] > currentPageBottom) {
 
         // TODO split long TR
-        // this.debugMode && console.log('%c calculateRowSplits', 'color: #47D447');
 
         if (index > this.minLeftRows) {
-          // avoid < minLeftRows rows on first page
+          // * avoid < minLeftRows rows on first page
+          // *** If a table row starts in the next part,
+          // *** register the previous one as the beginning of the next part.
           splitsIds.push(index - 1);
         }
 
@@ -1132,20 +1158,34 @@ export default class Pages {
         // check if next fits
 
       }
+    };
+
+    this.debugMode && splitTableNodeDebugToggler && console.log(
+      ...consoleMark,
+      'splitsIds', splitsIds
+    );
+
+    if (!splitsIds.length) {
+      return []
     }
 
-    // avoid < minDanglingRows rows on last page
+    // * avoid < minDanglingRows rows on last page
     const maxSplittingId = (topsArr.length - 1) - this.minDanglingRows;
     if (splitsIds[splitsIds.length - 1] > maxSplittingId) {
       splitsIds[splitsIds.length - 1] = maxSplittingId;
     }
-    // this.debugMode && console.log('splitsIds', splitsIds);
-
 
 
     const insertTableSplit = (startId, endId) => {
+      // * The function is called later.
+      // TODO Put it in a separate method
+
+      this.debugMode && splitTableNodeDebugToggler && console.log(
+        ...consoleMark, `=> insertTableSplit(${startId}, ${endId})`
+      );
 
       const tableWrapper = this.DOM.cloneNodeWrapper(node);
+      tableWrapper.style.width = `${this.DOM.getElementWidth(node)}px`;
 
       const partEntries = nodeEntries.rows.slice(startId, endId);
 
@@ -1174,7 +1214,10 @@ export default class Pages {
 
     const splits = splitsIds.map((value, index, array) => insertTableSplit(array[index - 1] || 0, value))
 
-    // this.debugMode && console.log('splits', splits);
+    this.debugMode && splitTableNodeDebugToggler && console.log(
+      ...consoleMark,
+      'splits', splits
+    );
 
     // create LAST PART
     const lastPart = this.DOM.createPrintNoBreak();
@@ -1185,7 +1228,7 @@ export default class Pages {
       node
     );
 
-    this.debugMode && console.timeEnd('_splitTableNode')
+    this.debugMode && splitTableNodeDebugToggler && console.timeEnd('_splitTableNode')
     return [...splits, lastPart]
   }
 
