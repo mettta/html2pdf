@@ -3036,52 +3036,68 @@
       <div class="main" id="printTHISpreloader">
         <div class="content" id="printTHIS">
 
-          <div filler style="height:666px"></div>
+          <!-- height:585px -->
+          <div filler style="height:585px"></div>
           <!-- HTML2PDF: TEST CONTENT GOES HERE -->
 
 
           <sdoc-section>
-            <sdoc-section-title data-level="6.3.1">
-              <h4>6.3.1.&nbsp;Supported field types</h4>
+            <sdoc-section-title data-level="6.2.2">
+              <h4>6.2.2.&nbsp;Requirement</h4>
             </sdoc-section-title>
             <sdoc-section-text>
               <div class="document">
-                <p>The supported field types are:</p>
+                <p>The following <tt class="docutils literal">REQUIREMENT</tt> fields are supported:</p>
                 <table border="1" class="docutils">
-                  <caption>SDoc grammar field types</caption>
+                  <caption>SDoc grammar <tt class="docutils literal">REQUIREMENT</tt> fields</caption>
                   <colgroup>
                     <col width="20%">
                     <col width="80%">
                   </colgroup>
                   <thead valign="bottom">
                     <tr>
-                      <th class="head"><strong>Field Type</strong></th>
+                      <th class="head"><strong>Field</strong></th>
                       <th class="head"><strong>Description</strong></th>
                     </tr>
                   </thead>
                   <tbody valign="top">
                     <tr>
-                      <td><tt class="docutils literal">String</tt></td>
-                      <td>Simple String</td>
+                      <td><tt class="docutils literal">UID</tt></td>
+                      <td>Unique identifier of the requirement</td>
                     </tr>
                     <tr>
-                      <td><tt class="docutils literal">SingleChoice</tt></td>
-                      <td>Enum-like behavior, one choice is possible</td>
+                      <td><tt class="docutils literal">LEVEL</tt></td>
+                      <td>Define section/requirement Level numbering</td>
                     </tr>
                     <tr>
-                      <td><tt class="docutils literal">MultipleChoice</tt></td>
-                      <td>comma-separated words with fixed options</td>
+                      <td><tt class="docutils literal">STATUS</tt></td>
+                      <td>Status of the requirement, e.g. <tt class="docutils literal">Draft</tt>, <tt
+                          class="docutils literal">Active</tt>, <tt class="docutils literal">Deleted</tt></td>
                     </tr>
                     <tr>
-                      <td><tt class="docutils literal">Tag</tt></td>
-                      <td>comma-separated list of tags/key words. Only Alphanumeric tags (a-z, A-Z, 0-9 and underscore) are
-                        supported.</td>
+                      <td><tt class="docutils literal">TAGS</tt></td>
+                      <td>Tags of the requirement (comma separated AlphaNum words)</td>
                     </tr>
                     <tr>
-                      <td><tt class="docutils literal">Reference</tt></td>
-                      <td>comma-separated list with allowed reference types: <tt class="docutils literal">ParentReqReference</tt>,
-                        <tt class="docutils literal">FileReference</tt>
-                      </td>
+                      <td><tt class="docutils literal">REFS</tt></td>
+                      <td>List of Parent and File references</td>
+                    </tr>
+                    <tr>
+                      <td><tt class="docutils literal">TITLE</tt></td>
+                      <td>Title of the requirement</td>
+                    </tr>
+                    <tr>
+                      <td><tt class="docutils literal">STATEMENT</tt></td>
+                      <td>The statement of the requirement. The field can be single-line or multiline.</td>
+                    </tr>
+                    <tr>
+                      <td><tt class="docutils literal">RATIONALE</tt></td>
+                      <td>The rationale of the requirement. The field can be single-line or multiline.</td>
+                    </tr>
+                    <tr>
+                      <td><tt class="docutils literal">COMMENT</tt></td>
+                      <td>Comments to the rationale. The field can be single-line or multiline.
+                        Note: Multiple comment fields are possible.</td>
                     </tr>
                   </tbody>
                 </table>

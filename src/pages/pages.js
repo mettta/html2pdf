@@ -48,6 +48,14 @@ export default class Pages {
     this.signpostHeight = 24;
 
     this.pages = [];
+
+    // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browsers
+    // Firefox 1.0+
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=820891
+    // * Reason: caption is considered as an external element
+    // * and is not taken into account in calculation
+    // * of offset parameters of table rows.
+    this.isFirefox = typeof InstallTrigger !== 'undefined';
   }
 
   calculate() {
@@ -59,6 +67,7 @@ export default class Pages {
 
   _calculate() {
     this.debugMode && console.group('%c Pages ', CONSOLE_CSS_LABEL_PAGES);
+    this.debugMode && console.info('isFirefox', this.isFirefox);
 
     // IF contentFlow is less than one page,
 
@@ -585,7 +594,7 @@ export default class Pages {
         return result;
       }, []);
 
-    console.assert(
+      this.debugMode && console.assert(
       newLines.length == item.lines,
       'The number of new lines is not equal to the expected number of lines when splitting.',
       '\nNew lines:',
@@ -1003,16 +1012,16 @@ export default class Pages {
   }
 
   _splitTableNode(node, pageBottom) {
-    const splitTableNodeDebugToggler = true;
+    const splitTableNodeDebugToggler = false;
     const consoleMark = ['%c_splitTableNode\n', 'color:white',];
+
+    this.debugMode && splitTableNodeDebugToggler && console.time('_splitTableNode')
 
     this.debugMode && splitTableNodeDebugToggler && console.group('%c_splitTableNode', 'background:cyan');
     this.debugMode && splitTableNodeDebugToggler && console.log(...consoleMark, 'node', node);
 
     // this.debugMode && splitTableNodeDebugToggler && console.log(...consoleMark,'pageBottom', pageBottom);
     // this.debugMode && splitTableNodeDebugToggler && console.log(...consoleMark,s'nodeBottom', this.DOM.getElementRootedBottom(node, this.root));
-
-    this.debugMode && splitTableNodeDebugToggler && console.time('_splitTableNode')
 
     // calculate table wrapper (empty table element) height
     // to calculate the available space for table content
@@ -1117,8 +1126,24 @@ export default class Pages {
       - (this.DOM.getElementHeight(nodeEntries.caption) || 0)
       - 2 * this.signpostHeight - tableWrapperHeight;
 
+    this.debugMode && splitTableNodeDebugToggler && console.log(
+      ...consoleMark,
+      'pageBottom', pageBottom,
+      '\n',
+      '- nodeTop', nodeTop,
+      '\n',
+      '- tableWrapperHeight', tableWrapperHeight,
+      '\n',
+      '- this.signpostHeight', this.signpostHeight,
+      '\n',
+      '= firstPartHeight', firstPartHeight,
+    );
+
     const topsArr = [
-      ...nodeEntries.rows.map((row) => this.DOM.getElementRootedTop(row, node)),
+      ...nodeEntries.rows.map(
+        (row) => this.DOM.getElementRootedTop(row, node)
+        + (this.isFirefox * this.DOM.getElementHeight(nodeEntries.caption))
+      ),
       this.DOM.getElementRootedTop(nodeEntries.tfoot, node) || nodeHeight
     ];
 
