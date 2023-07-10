@@ -86,7 +86,7 @@ export default class DocumentObjectModel {
 
   setAttribute(element, selector) {
     if (!element || !selector) {
-      console.warn('setAttribute() must have 2 params');
+      console.warn && console.warn('setAttribute() must have 2 params');
       return;
     }
 
@@ -406,19 +406,28 @@ export default class DocumentObjectModel {
   getElementRootedTop(element, root, topAcc = 0) {
 
     if (!element) {
-      console.warn('element must be provided', element);
+      this.debugMode && console.warn(
+        'element must be provided, but was received:', element,
+        '\nThe function returned:', undefined
+      );
       return
     }
 
     if (!root) {
-      console.warn('root must be provided', element);
+      this.debugMode && console.warn(
+        'root must be provided, but was received:', element,
+        '\nThe function returned:', undefined
+      );
       return
     }
 
     const offsetParent = element.offsetParent;
 
     if (!offsetParent) {
-      console.warn('element has no offset parent', element);
+      this.debugMode && console.warn(
+        'element has no offset parent', element,
+        '\nThe function returned:', undefined
+      );
       return
     }
 
