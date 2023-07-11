@@ -104,6 +104,9 @@ export default class Pages {
     // FIRST ELEMENT: register the beginning of the first page.
     this._registerPageStart(content[0]);
 
+    console.warn(this.DOM.getElementRootedRealTop(content[0], this.root));
+    console.warn(this.DOM.getElementRootedTop(content[0], this.root));
+
     this._parseNodes({
       // don't register the parent here,
       // only on inner nodes that do not split
@@ -116,7 +119,7 @@ export default class Pages {
   _registerPageStart(pageStart) {
     this.pages.push({
       pageStart: pageStart,
-      pageBottom: this.DOM.getElementRootedTop(pageStart, this.root) + this.referenceHeight,
+      pageBottom: this.DOM.getElementRootedRealTop(pageStart, this.root) + this.referenceHeight,
     })
   }
 

@@ -3036,74 +3036,108 @@
       <div class="main" id="printTHISpreloader">
         <div class="content" id="printTHIS">
 
-          <!-- height:585px -->
-          <div filler style="height:585px"></div>
+          <!-- height:574px - 575px -->
+          <!-- <div filler style="height:590.56px; margin-top:24px;"></div> -->
           <!-- HTML2PDF: TEST CONTENT GOES HERE -->
 
+<sdoc-section>
+<sdoc-section-text>
+<div class="document">
 
-          <sdoc-section>
-            <sdoc-section-title data-level="6.2.2">
-              <h4>6.2.2.&nbsp;Requirement</h4>
-            </sdoc-section-title>
-            <sdoc-section-text>
-              <div class="document">
-                <p>The following <tt class="docutils literal">REQUIREMENT</tt> fields are supported:</p>
-                <table border="1" class="docutils">
-                  <caption>SDoc grammar <tt class="docutils literal">REQUIREMENT</tt> fields</caption>
-                  <colgroup>
-                    <col width="20%">
-                    <col width="80%">
-                  </colgroup>
-                  <thead valign="bottom">
-                    <tr>
-                      <th class="head"><strong>Field</strong></th>
-                      <th class="head"><strong>Description</strong></th>
-                    </tr>
-                  </thead>
-                  <tbody valign="top">
-                    <tr>
-                      <td><tt class="docutils literal">UID</tt></td>
-                      <td>Unique identifier of the requirement</td>
-                    </tr>
-                    <tr>
-                      <td><tt class="docutils literal">LEVEL</tt></td>
-                      <td>Define section/requirement Level numbering</td>
-                    </tr>
-                    <tr>
-                      <td><tt class="docutils literal">STATUS</tt></td>
-                      <td>Status of the requirement, e.g. <tt class="docutils literal">Draft</tt>, <tt
-                          class="docutils literal">Active</tt>, <tt class="docutils literal">Deleted</tt></td>
-                    </tr>
-                    <tr>
-                      <td><tt class="docutils literal">TAGS</tt></td>
-                      <td>Tags of the requirement (comma separated AlphaNum words)</td>
-                    </tr>
-                    <tr>
-                      <td><tt class="docutils literal">REFS</tt></td>
-                      <td>List of Parent and File references</td>
-                    </tr>
-                    <tr>
-                      <td><tt class="docutils literal">TITLE</tt></td>
-                      <td>Title of the requirement</td>
-                    </tr>
-                    <tr>
-                      <td><tt class="docutils literal">STATEMENT</tt></td>
-                      <td>The statement of the requirement. The field can be single-line or multiline.</td>
-                    </tr>
-                    <tr>
-                      <td><tt class="docutils literal">RATIONALE</tt></td>
-                      <td>The rationale of the requirement. The field can be single-line or multiline.</td>
-                    </tr>
-                    <tr>
-                      <td><tt class="docutils literal">COMMENT</tt></td>
-                      <td>Comments to the rationale. The field can be single-line or multiline.
-                        Note: Multiple comment fields are possible.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </sdoc-section-text>
-          </sdoc-section>
+<p style="margin-top:24px;">The command goes over all requirements in the project tree and assigns missing UIDs automatically. The project tree is mutated in-place.</p>
+<p>By default, the assignment happens based on the requirement mask <tt class="docutils literal">REQ-</tt>, so the requirements will get the UIDs of <tt class="docutils literal"><span class="pre">REQ-001</span></tt>, <tt class="docutils literal"><span class="pre">REQ-002</span></tt>, ...</p>
+<p>If a document-level or a section-level requirement mask is provided, the UIDs will be generated based on that mask.</p>
+<p>A document-level requirement mask:</p>
+<pre class="code literal-block">
+[DOCUMENT]
+TITLE: Hello world doc
+REQ_PREFIX: MYDOC-
+</pre>
+<p>A section-level requirement mask:</p>
+<pre class="code literal-block">
+[SECTION]
+TITLE: Section 2.
+REQ_PREFIX: LEVEL2-REQ-
+</pre>
+</div>
+
+</sdoc-section-text>
+</sdoc-section>
+
+<sdoc-section>
+<sdoc-section-title
+  data-level="10"
+>
+  <h2>10.&nbsp;Traceability between requirements and source code</h2>
+</sdoc-section-title>
+  <!-- <table class="table_meta">
+  <tr>
+    <th>
+      UID:
+    </th>
+    <td>
+      SECTION-TRACEABILITY-REQS-TO-SOURCE-CODE
+    </td>
+  </tr>
+  </table> -->
+  <div filler style="height:32.38px;"></div>
+  <sdoc-section-text>
+    <div class="document">
+<p><strong>Note:</strong> This feature is experimental, the documentation is incomplete.</p>
+<p>StrictDoc allows connecting requirements to source code files. Two types of
+links are supported:</p>
+<p>1) A basic link where a requirement links to a whole file.</p>
+<pre class="code text literal-block">
+[REQUIREMENT]
+UID: REQ-001
+REFS:
+- TYPE: File
+  VALUE: file.py
+TITLE: File reference
+STATEMENT: This requirement references the file.
+</pre>
+<p>2) A range-based link where a requirement links to a file and
+additionally in the file, there is a reverse link that connects a source range
+back to the requirement:</p>
+<p>The requirement declaration contains a reference of the type <tt class="docutils literal">File</tt>:</p>
+<pre class="code text literal-block">
+[REQUIREMENT]
+UID: REQ-001
+REFS:
+- TYPE: File
+  VALUE: file.py
+TITLE: Whole file reference
+STATEMENT: This requirement references the file.py file.
+COMMENT: &gt;&gt;&gt;
+If the file.py contains a source range that is connected back to this
+requirement (REQ-001), the link becomes a link to the source range.
+&lt;&lt;&lt;
+</pre>
+<p>The source file:</p>
+<pre class="code py literal-block">
+<span class="comment single"># [REQ-002]</span><span class="whitespace">
+</span><span class="keyword">def</span> <span class="name function">hello_world</span><span class="punctuation">():</span><span class="whitespace">
+</span>    <span class="name builtin">print</span><span class="punctuation">(</span><span class="literal string double">&quot;hello world&quot;</span><span class="punctuation">)</span><span class="whitespace">
+</span><span class="comment single"># [/REQ-002]</span>
+</pre>
+<p>To activate the traceability to source files, configure the project config with a dedicated feature:</p>
+<pre class="code yaml literal-block">
+<span class="punctuation indicator">[</span><span class="name variable">project</span><span class="punctuation indicator">]</span><span class="whitespace">
+
+</span><span class="literal scalar plain">features = [</span><span class="whitespace">
+  </span><span class="literal scalar plain">&quot;REQUIREMENT_TO_SOURCE_TRACEABILITY&quot;</span><span class="whitespace">
+</span><span class="literal scalar plain">]</span>
+</pre>
+<p>See <a href="#13.1-Project-level-options">🔗&nbsp;Project-level options</a> for more details about the project-level options.</p>
+<p>Currently, StrictDoc looks for source files in a directory from which the <tt class="docutils literal">strictdoc</tt> command is run.</p>
+<p>The
+<a class="reference external" href="https://github.com/strictdoc-project/strictdoc-examples">strictdoc-examples</a>
+repository contains executable examples including the example of
+requirements-to-source-code traceability.</p>
+</div>
+
+  </sdoc-section-text>
+</sdoc-section>
 
 
           <!-- // HTML2PDF: TEST CONTENT GOES HERE -->

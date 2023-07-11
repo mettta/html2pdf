@@ -457,11 +457,25 @@ export default class DocumentObjectModel {
     // ? However, the performance compared to getElementRootedBottom() decreases:
     // ? 0.001 to 0.3 ms per such operation.
     const test = this.create();
+    // *** The bottom margin pushes the DIV below the margin,
+    // *** so no dummy padding is needed.
     element && element.after(test);
     const top = element ? this.getElementRootedTop(test, root) : undefined;
     // this.debugMode && DOM_DEBAG_TOGGLER && console.log(
     //   '%c getElementRootedBottom ', CONSOLE_CSS_LABEL_DOM,
     //    {element, top});
+    test.remove();
+    return top;
+  }
+
+  getElementRootedRealTop(element, root) {
+    // TODO : performance
+    const test = this.create();
+    // *** Top margin is permeable to DIV,
+    // *** so it should add some padding to pop up above the margin.
+    test.style.paddingBottom = '0.1px';
+    element && element.before(test);
+    const top = element ? this.getElementRootedTop(test, root) : undefined;
     test.remove();
     return top;
   }
