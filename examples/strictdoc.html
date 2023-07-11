@@ -3656,16 +3656,58 @@ li[draggable="true"] .dragIndicator::before {
       <div class="content" id="printTHIS">
           
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <sdoc-section>
   
-<sdoc-section-title data-level="1">
+<sdoc-section-title
+  data-level="1"
+>
   
   <h2>1.&nbsp;Introduction</h2>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>StrictDoc is software for technical documentation and requirements management.</p>
-<sdoc-anchor id="AD1" data-anchor="📋AD1" style="top:unset"></sdoc-anchor><p>Summary of StrictDoc features:</p>
+<p>Summary of StrictDoc features:</p>
 <ul class="simple">
 <li>The documentation files are stored as human-readable text files.</li>
 <li>A simple domain-specific language DSL is used for writing the documents. The
@@ -3676,19 +3718,19 @@ document tree.</li>
 into a number of formats including HTML, RST, ReqIF, PDF, Excel.</li>
 <li>StrictDoc has a web-based user interface which allows viewing and editing the documents and requirements. The changes are written back to .sdoc files.</li>
 <li>The focus of the tool is modeling requirements and specifications documents.
-Such documents consist of multiple statements like "system X shall do Y"
+Such documents consist of multiple statements like &quot;system X shall do Y&quot;
 called requirements.</li>
 <li>The requirements can be linked together to form the relationships, such as
-"parent-child". From these connections, many useful features, such as
+&quot;parent-child&quot;. From these connections, many useful features, such as
 <a class="reference external" href="https://en.wikipedia.org/wiki/Requirements_traceability">Requirements Traceability</a>
 and Documentation Coverage, can be derived.</li>
 <li>Requirements to source files traceability (experimental). See
-<a href="http://127.0.0.1:5111/strictdoc/docs/strictdoc_01_user_guide-PDF.html#10-Traceability-between-requirements-and-source-code">🔗&nbsp;Traceability between requirements and source code</a>.</li>
+<a href="#10-Traceability-between-requirements-and-source-code">🔗&nbsp;Traceability between requirements and source code</a>.</li>
 <li>Custom grammar and custom fields support. The StrictDoc's grammar can be
 extended to support arbitrary special fields, such as <tt class="docutils literal">PRIORITY</tt>, <tt class="docutils literal">OWNER</tt>,
 or even more specialized fields, such as
 <tt class="docutils literal">Automotive Safety Integrity Level (ASIL)</tt> or <tt class="docutils literal">Verification method</tt>.
-See <a href="http://127.0.0.1:5111/strictdoc/docs/strictdoc_01_user_guide-PDF.html#6.3-Custom-grammars">🔗&nbsp;Custom grammars</a>.</li>
+See <a href="#6.3-Custom-grammars">🔗&nbsp;Custom grammars</a>.</li>
 <li>Good performance of the <a class="reference external" href="https://github.com/textX/textX">textX</a>
 parser and parallelized incremental generation of documents: generation of
 document trees with up to 2000–3000 requirements into HTML pages stays within
@@ -3704,13 +3746,26 @@ Further performance tuning should be possible.</li>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="1.1">
+<sdoc-section-title
+  data-level="1.1"
+>
   
   <h3>1.1.&nbsp;Contact the developers</h3>
 </sdoc-section-title>
+  <table class="table_meta">
+  <tr>
+    <th>
+      UID:
+    </th>
+    <td>
+      SDOC_UG_CONTACT
+    </td>
+  </tr>
+  </table>
   <sdoc-section-text>
     <div class="document">
-<p><a href="http://127.0.0.1:5111/strictdoc/docs/strictdoc_01_user_guide-PDF.html#AD1">🔗&nbsp;AD1</a></p>
+<p>Join us in Discord. Here is the invitation link: <a class="reference external" href="https://discord.gg/4BAAME9MmG">https://discord.gg/4BAAME9MmG</a></p>
+<p>The author can be also contacted via <a class="reference external" href="mailto:s.pankevich&#64;gmail.com">email</a>.</p>
 </div>
 
   </sdoc-section-text>
@@ -3719,24 +3774,40 @@ Further performance tuning should be possible.</li>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="2">
+<sdoc-section-title
+  data-level="2"
+>
   
   <h2>2.&nbsp;Examples</h2>
 </sdoc-section-title>
+  
   
 </sdoc-section>
           
 
 <sdoc-section>
   
-<sdoc-section-title data-level="2.1">
+<sdoc-section-title
+  data-level="2.1"
+>
   
   <h3>2.1.&nbsp;Hello World</h3>
 </sdoc-section-title>
+  <table class="table_meta">
+  <tr>
+    <th>
+      UID:
+    </th>
+    <td>
+      SDOC_UG_HELLO_WORLD
+    </td>
+  </tr>
+  </table>
   <sdoc-section-text>
     <div class="document">
-<p>"Hello World" example of the SDoc text language:</p>
-<pre class="code text literal-block">[DOCUMENT]
+<p>&quot;Hello World&quot; example of the SDoc text language:</p>
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: StrictDoc
 
 [REQUIREMENT]
@@ -3745,11 +3816,13 @@ TITLE: Requirements management
 STATEMENT: StrictDoc shall enable requirements management.
 </pre>
 <p>Create a file called <tt class="docutils literal">hello_world.sdoc</tt> somewhere on your file system and copy the above text to it. <strong>The file must end with a newline character</strong>.</p>
-<p>Once you have <tt class="docutils literal">strictdoc</tt> installed (see <a href="http://127.0.0.1:5111/strictdoc/docs/strictdoc_01_user_guide-PDF.html#3-Installing-StrictDoc">🔗&nbsp;Installing StrictDoc</a> below), run StrictDoc as follows:</p>
-<pre class="code text literal-block">strictdoc export hello.sdoc
+<p>Once you have <tt class="docutils literal">strictdoc</tt> installed (see <a href="#3-Installing-StrictDoc">🔗&nbsp;Installing StrictDoc</a> below), run StrictDoc as follows:</p>
+<pre class="code text literal-block">
+strictdoc export hello.sdoc
 </pre>
 <p>The expected output:</p>
-<pre class="code text literal-block">$ strictdoc export hello.sdoc
+<pre class="code text literal-block">
+$ strictdoc export hello.sdoc
 Parallelization: Enabled
 Step 'Collect traceability information' start
 Step 'Find and read SDoc files' start
@@ -3764,10 +3837,12 @@ Export completed. Documentation tree can be found at:
 .../output/html
 </pre>
 <p>The HTML output produced so far has been generated statically. Now, start a StrictDoc server from the same directory:</p>
-<pre class="code bash literal-block">strictdoc<span class="whitespace"> </span>server<span class="whitespace"> </span>.
+<pre class="code bash literal-block">
+strictdoc<span class="whitespace"> </span>server<span class="whitespace"> </span>.
 </pre>
 <p>The expected output should contain the following line:</p>
-<pre class="code text literal-block">INFO:     Uvicorn running on http://127.0.0.1:5111 (Press CTRL+C to quit)
+<pre class="code text literal-block">
+INFO:     Uvicorn running on http://127.0.0.1:5111 (Press CTRL+C to quit)
 </pre>
 <p>Open the URL in the browser and explore the contents of the example.</p>
 </div>
@@ -3778,10 +3853,13 @@ Export completed. Documentation tree can be found at:
 
 <sdoc-section>
   
-<sdoc-section-title data-level="2.2">
+<sdoc-section-title
+  data-level="2.2"
+>
   
   <h3>2.2.&nbsp;StrictDoc Examples repository</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>The <a class="reference external" href="https://github.com/strictdoc-project/strictdoc-examples">strictdoc-examples</a> repository contains a collection of basic examples. Visit the repository and read its README for details.</p>
@@ -3793,10 +3871,13 @@ Export completed. Documentation tree can be found at:
 
 <sdoc-section>
   
-<sdoc-section-title data-level="2.3">
+<sdoc-section-title
+  data-level="2.3"
+>
   
   <h3>2.3.&nbsp;StrictDoc Templates repository</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>The <a class="reference external" href="https://github.com/strictdoc-project/strictdoc-templates">strictdoc-templates</a> repository contains a growing collection of templates from the industry standards like DO-178C (aviation) and ECSS-E-ST-40C (space).</p>
@@ -3808,17 +3889,20 @@ Export completed. Documentation tree can be found at:
 
 <sdoc-section>
   
-<sdoc-section-title data-level="2.4">
+<sdoc-section-title
+  data-level="2.4"
+>
   
   <h3>2.4.&nbsp;Other examples</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>For a more comprehensive example, check the source file of this documentation
 which is written using StrictDoc:
 <a class="reference external" href="https://github.com/strictdoc-project/strictdoc/blob/main/docs/strictdoc_01_user_guide.sdoc">strictdoc_01_user_guide.sdoc</a>.</p>
 <ul class="simple">
-<li><a class="reference external" href="https://strictdoc-project.github.io/">StrictDoc HTML export</a></li>
+<li><a class="reference external" href="https://strictdoc-project.github.io">StrictDoc HTML export</a></li>
 <li><a class="reference external" href="https://strictdoc.readthedocs.io/en/latest">StrictDoc HTML export using Sphinx</a></li>
 <li><a class="reference external" href="https://strictdoc.readthedocs.io/_/downloads/en/latest/pdf/">StrictDoc PDF export using Sphinx</a></li>
 </ul>
@@ -3830,20 +3914,35 @@ which is written using StrictDoc:
 
 <sdoc-section>
   
-<sdoc-section-title data-level="3">
+<sdoc-section-title
+  data-level="3"
+>
   
   <h2>3.&nbsp;Installing StrictDoc</h2>
 </sdoc-section-title>
+  <table class="table_meta">
+  <tr>
+    <th>
+      UID:
+    </th>
+    <td>
+      SDOC_UG_GETTING_STARTED
+    </td>
+  </tr>
+  </table>
   
 </sdoc-section>
           
 
 <sdoc-section>
   
-<sdoc-section-title data-level="3.1">
+<sdoc-section-title
+  data-level="3.1"
+>
   
   <h3>3.1.&nbsp;Requirements</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <ul class="simple">
@@ -3858,13 +3957,17 @@ which is written using StrictDoc:
 
 <sdoc-section>
   
-<sdoc-section-title data-level="3.2">
+<sdoc-section-title
+  data-level="3.2"
+>
   
   <h3>3.2.&nbsp;Installing StrictDoc as a Pip package (recommended way)</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
-<pre class="code text literal-block">pip install strictdoc
+<pre class="code text literal-block">
+pip install strictdoc
 </pre>
 </div>
 
@@ -3874,14 +3977,18 @@ which is written using StrictDoc:
 
 <sdoc-section>
   
-<sdoc-section-title data-level="3.3">
+<sdoc-section-title
+  data-level="3.3"
+>
   
   <h3>3.3.&nbsp;Installing "nightly" StrictDoc as a Pip package</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>Sometimes, it takes a while before the latest features and fixes reach the stable Pip release. In that case, installing a Pip package from the Git repository directly is possible:</p>
-<pre class="code literal-block">pip install -U --pre git+https://github.com/strictdoc-project/strictdoc.git@main
+<pre class="code literal-block">
+pip install -U --pre git+https://github.com/strictdoc-project/strictdoc.git&#64;main
 </pre>
 </div>
 
@@ -3891,21 +3998,26 @@ which is written using StrictDoc:
 
 <sdoc-section>
   
-<sdoc-section-title data-level="3.4">
+<sdoc-section-title
+  data-level="3.4"
+>
   
   <h3>3.4.&nbsp;Installing StrictDoc into a Docker container</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>StrictDoc can be invoked inside of a Docker container. To make data available
 to the Docker container (here: <tt class="docutils literal">strictdoc:latest</tt>) as well as to the host
 system, one needs to mount a volume via <tt class="docutils literal"><span class="pre">-v</span></tt> option.</p>
 <p>In the host operating system terminal:</p>
-<pre class="code text literal-block">docker build . -t strictdoc:latest
-docker run --name strictdoc --rm -v "$(pwd)/docs:/data" -i -t strictdoc:latest
+<pre class="code text literal-block">
+docker build . -t strictdoc:latest
+docker run --name strictdoc --rm -v &quot;$(pwd)/docs:/data&quot; -i -t strictdoc:latest
 </pre>
 <p>In the container terminal:</p>
-<pre class="code text literal-block">bash-5.1# strictdoc export .
+<pre class="code text literal-block">
+bash-5.1# strictdoc export .
 bash-5.1# exit
 </pre>
 <p>The documentation resides in <tt class="docutils literal">./docs/output/html</tt>.</p>
@@ -3917,10 +4029,13 @@ bash-5.1# exit
 
 <sdoc-section>
   
-<sdoc-section-title data-level="3.5">
+<sdoc-section-title
+  data-level="3.5"
+>
   
   <h3>3.5.&nbsp;Installing StrictDoc as a Snap package (not maintained)</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>This way of installing StrictDoc is not maintained anymore. If you want to
@@ -3933,25 +4048,32 @@ use it, refer to the instructions located in <tt class="docutils literal">develo
 
 <sdoc-section>
   
-<sdoc-section-title data-level="4">
+<sdoc-section-title
+  data-level="4"
+>
   
   <h2>4.&nbsp;Running StrictDoc</h2>
 </sdoc-section-title>
   
+  
 </sdoc-section>
           
 
 <sdoc-section>
   
-<sdoc-section-title data-level="4.1">
+<sdoc-section-title
+  data-level="4.1"
+>
   
   <h3>4.1.&nbsp;Static HTML export</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
-<p>The easiest way to see the static HTML export feature in action is to run the <a href="http://127.0.0.1:5111/strictdoc/docs/strictdoc_01_user_guide-PDF.html#2.1-Hello-World">🔗&nbsp;Hello World</a> example.</p>
+<p>The easiest way to see the static HTML export feature in action is to run the <a href="#2.1-Hello-World">🔗&nbsp;Hello World</a> example.</p>
 <p>The <tt class="docutils literal">export</tt> command is the main producer of documentation. The native export format of StrictDoc is HTML. The <tt class="docutils literal">export</tt> command supports a number of parameters, including the option for selecting export formats (HTML, RST, Excel, etc.). The options can be explored with the <tt class="docutils literal"><span class="pre">--help</span></tt> command.</p>
-<pre class="code bash literal-block">strictdoc<span class="whitespace"> </span><span class="name builtin">export</span><span class="whitespace"> </span>--help
+<pre class="code bash literal-block">
+strictdoc<span class="whitespace"> </span><span class="name builtin">export</span><span class="whitespace"> </span>--help
 </pre>
 </div>
 
@@ -3961,17 +4083,22 @@ use it, refer to the instructions located in <tt class="docutils literal">develo
 
 <sdoc-section>
   
-<sdoc-section-title data-level="4.2">
+<sdoc-section-title
+  data-level="4.2"
+>
   
   <h3>4.2.&nbsp;Web server</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>StrictDoc supports a web-based user interface. The StrictDoc web server is launched via the <tt class="docutils literal">server</tt> command which accepts a path to a documentation tree as a parameter.</p>
-<pre class="code bash literal-block">strictdoc<span class="whitespace"> </span>server<span class="whitespace"> </span>.
+<pre class="code bash literal-block">
+strictdoc<span class="whitespace"> </span>server<span class="whitespace"> </span>.
 </pre>
 <p>The <tt class="docutils literal">server</tt> command accepts a number of options. To explore the options, run:</p>
-<pre class="code bash literal-block">strictdoc<span class="whitespace"> </span>server<span class="whitespace"> </span>--help
+<pre class="code bash literal-block">
+strictdoc<span class="whitespace"> </span>server<span class="whitespace"> </span>--help
 </pre>
 </div>
 
@@ -3981,10 +4108,13 @@ use it, refer to the instructions located in <tt class="docutils literal">develo
 
 <sdoc-section>
   
-<sdoc-section-title data-level="4.2.1">
+<sdoc-section-title
+  data-level="4.2.1"
+>
   
   <h4>4.2.1.&nbsp;Limitations of web user interface</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>The existing implementation of the web user interface is alpha-quality and incomplete. The user interface and the underlying backend implementation are not yet autonomous from the command-line workflow. A user still has to access the command line to run the server and commit the documents to Git manually.</p>
@@ -4005,7 +4135,7 @@ Example: The <tt class="docutils literal">SingleChoice</tt> type will not work i
 <li>Numerous validation aspects and edge cases of content editing.</li>
 <li>A separate screen for editing project settings.</li>
 </ul>
-<p>See the Backlog's section <a href="http://127.0.0.1:5111/strictdoc/docs/strictdoc_04_backlog-PDF.html#1-Backlog-Web-based-user-interface">🔗&nbsp;Backlog: Web-based user interface</a> for more details.</p>
+<p>See the Backlog's section <a href="../../strictdoc/docs/strictdoc_04_backlog-PDF.html#1-Backlog-Web-based-user-interface">🔗&nbsp;Backlog: Web-based user interface</a> for more details.</p>
 </div>
 
   </sdoc-section-text>
@@ -4014,10 +4144,13 @@ Example: The <tt class="docutils literal">SingleChoice</tt> type will not work i
 
 <sdoc-section>
   
-<sdoc-section-title data-level="4.2.1.1">
+<sdoc-section-title
+  data-level="4.2.1.1"
+>
   
   <h5>4.2.1.1.&nbsp;Concurrent use of web user interface</h5>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>StrictDoc's web user interface does not handle concurrency. If the same requirement/section is edited by two users at the same time, the last write wins.</p>
@@ -4030,10 +4163,22 @@ Example: The <tt class="docutils literal">SingleChoice</tt> type will not work i
 
 <sdoc-section>
   
-<sdoc-section-title data-level="5">
+<sdoc-section-title
+  data-level="5"
+>
   
   <h2>5.&nbsp;IDE support</h2>
 </sdoc-section-title>
+  <table class="table_meta">
+  <tr>
+    <th>
+      UID:
+    </th>
+    <td>
+      SDOC_UG_IDE_SUPPORT
+    </td>
+  </tr>
+  </table>
   <sdoc-section-text>
     <div class="document">
 <p>StrictDoc language markup (SDoc) can be activated in all IDEs that support the
@@ -4075,10 +4220,13 @@ roadmap, see <a class="reference external" href="https://github.com/strictdoc-pr
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6">
+<sdoc-section-title
+  data-level="6"
+>
   
   <h2>6.&nbsp;SDoc syntax</h2>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>StrictDoc defines a special syntax for writing specifications documents. This
@@ -4089,7 +4237,8 @@ tool.</p>
 located in a single file:
 <a class="reference external" href="https://github.com/strictdoc-project/strictdoc/blob/main/strictdoc/backend/sdoc/grammar/grammar.py">grammar.py</a>.</p>
 <p>This is how a minimal possible SDoc document looks like:</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: StrictDoc
 </pre>
 <p>This documentation is written using StrictDoc. Here is the source file:
@@ -4102,10 +4251,13 @@ TITLE: StrictDoc
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.1">
+<sdoc-section-title
+  data-level="6.1"
+>
   
   <h3>6.1.&nbsp;Document structure</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>An SDoc document consists of a <tt class="docutils literal">[DOCUMENT]</tt> declaration followed by one or many
@@ -4132,10 +4284,13 @@ into <tt class="docutils literal">[SECTION]</tt> blocks.</p>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.1.1">
+<sdoc-section-title
+  data-level="6.1.1"
+>
   
   <h4>6.1.1.&nbsp;Strict rule #1: One empty line between all nodes</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>StrictDoc's grammar requires each node, such as <tt class="docutils literal">[REQUIREMENT]</tt>, <tt class="docutils literal">[SECTION]</tt>,
@@ -4150,10 +4305,13 @@ than one empty line between two nodes will result in an SDoc parsing error.</p>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.1.2">
+<sdoc-section-title
+  data-level="6.1.2"
+>
   
   <h4>6.1.2.&nbsp;Strict rule #2: No content is allowed outside of SDoc grammar</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>StrictDoc's grammar does not allow any content to be written outside of the SDoc
@@ -4170,17 +4328,21 @@ be only attached to the <tt class="docutils literal">[DOCUMENT]</tt> and <tt cla
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.1.3">
+<sdoc-section-title
+  data-level="6.1.3"
+>
   
   <h4>6.1.3.&nbsp;Strict rule #3: No empty strings</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>StrictDoc's grammar does not allow empty strings. This rule is applicable to
 both single-line and multiline strings and both section fields and requirement
 fields. A field is either missing or is a non-empty string.</p>
 <p>The following patterns are all invalid for single-line fields:</p>
-<pre class="code literal-block">[SECTION]
+<pre class="code literal-block">
+[SECTION]
 TITLE:
 
 [SECTION]
@@ -4193,7 +4355,8 @@ STATEMENT:
 STATEMENT: (any number of space characters after colons)
 </pre>
 <p>The following patterns are all invalid for multiline fields:</p>
-<pre class="code literal-block">[REQUIREMENT]
+<pre class="code literal-block">
+[REQUIREMENT]
 COMMENT: &gt;&gt;&gt;
 &lt;&lt;&lt;
 
@@ -4203,7 +4366,7 @@ COMMENT: &gt;&gt;&gt;
 &lt;&lt;&lt;
 </pre>
 <p>If you need to provide a placeholder for a field that you know has to be filled
-out soon, add a "TBD" (to be done, by our team) or a "TBC" (to be confirmed with a customer or a supplier) string.</p>
+out soon, add a &quot;TBD&quot; (to be done, by our team) or a &quot;TBC&quot; (to be confirmed with a customer or a supplier) string.</p>
 <p>One of the upcoming features of StrictDoc is a calculation of document maturity
 based on a number of TBD/TBCs found in document. This is a common practice in
 the regulared industries.</p>
@@ -4215,25 +4378,41 @@ the regulared industries.</p>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2">
+<sdoc-section-title
+  data-level="6.2"
+>
   
   <h3>6.2.&nbsp;Grammar elements</h3>
 </sdoc-section-title>
+  
   
 </sdoc-section>
           
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.1">
+<sdoc-section-title
+  data-level="6.2.1"
+>
   
   <h4>6.2.1.&nbsp;Document</h4>
 </sdoc-section-title>
+  <table class="table_meta">
+  <tr>
+    <th>
+      UID:
+    </th>
+    <td>
+      ELEMENT_DOCUMENT
+    </td>
+  </tr>
+  </table>
   <sdoc-section-text>
     <div class="document">
 <p>The <tt class="docutils literal">[DOCUMENT]</tt> element must always be present in an SDoc document. It is a
 root of an SDoc document graph.</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: StrictDoc
 (newline)
 </pre>
@@ -4241,8 +4420,8 @@ TITLE: StrictDoc
 <table border="1" class="docutils">
 <caption>SDoc grammar <tt class="docutils literal">DOCUMENT</tt> fields</caption>
 <colgroup>
-<col width="20%">
-<col width="80%">
+<col width="20%" />
+<col width="80%" />
 </colgroup>
 <thead valign="bottom">
 <tr><th class="head"><strong>Field</strong></th>
@@ -4273,7 +4452,8 @@ fields are optional. The <tt class="docutils literal">OPTIONS</tt> field can be 
 the document configuration options. Note: The sequence of the fields is defined
 by the document's Grammar, i.e. should not be changed.</p>
 <p>Finally an optional <tt class="docutils literal">[FREETEXT]</tt> block can be included.</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: StrictDoc
 OPTIONS:
   REQUIREMENT_STYLE: Table
@@ -4290,18 +4470,30 @@ StrictDoc is software for writing technical requirements and specifications.
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.1.1">
+<sdoc-section-title
+  data-level="6.2.1.1"
+>
   
   <h5>6.2.1.1.&nbsp;Document configuration options</h5>
 </sdoc-section-title>
+  <table class="table_meta">
+  <tr>
+    <th>
+      UID:
+    </th>
+    <td>
+      DOCUMENT_FIELD_OPTIONS
+    </td>
+  </tr>
+  </table>
   <sdoc-section-text>
     <div class="document">
 <p>The <tt class="docutils literal">OPTIONS</tt> field may have the following attribute fields:</p>
 <table border="1" class="docutils">
 <caption>SDoc grammar <tt class="docutils literal">DOCUMENT</tt>-<tt class="docutils literal">OPTIONS</tt> fields</caption>
 <colgroup>
-<col width="20%">
-<col width="80%">
+<col width="20%" />
+<col width="80%" />
 </colgroup>
 <thead valign="bottom">
 <tr><th class="head"><strong>Field</strong></th>
@@ -4331,10 +4523,13 @@ StrictDoc is software for writing technical requirements and specifications.
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.1.1.1">
+<sdoc-section-title
+  data-level="6.2.1.1.1"
+>
   
   <h6>6.2.1.1.1.&nbsp;MARKUP</h6>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>The <tt class="docutils literal">MARKUP</tt> option controls which markup renderer will be used.
@@ -4348,10 +4543,13 @@ The available options are: <tt class="docutils literal">RST</tt>, <tt class="doc
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.1.1.2">
+<sdoc-section-title
+  data-level="6.2.1.1.2"
+>
   
   <h6>6.2.1.1.2.&nbsp;AUTO_LEVELS</h6>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>The <tt class="docutils literal">AUTO_LEVELS</tt> option controls StrictDoc's system of automatic numbering
@@ -4359,7 +4557,7 @@ of the section levels.
 The available options are: <tt class="docutils literal">On</tt> /  <tt class="docutils literal">Off</tt>. Default is <tt class="docutils literal">On</tt>.</p>
 <p>In case of <tt class="docutils literal">On</tt>, the <tt class="docutils literal"><span class="pre">[SECTION].LEVEL</span></tt> fields must be absent or may only
 contain <tt class="docutils literal">None</tt> to exclude that section from StrictDoc's automatic section
-numbering. See also <a href="http://127.0.0.1:5111/strictdoc/docs/strictdoc_01_user_guide-PDF.html#6.2.3.3-Section-without-a-level">🔗&nbsp;Section without a level</a>.</p>
+numbering. See also <a href="#6.2.3.3-Section-without-a-level">🔗&nbsp;Section without a level</a>.</p>
 <p>In case of <tt class="docutils literal">Off</tt>, all <tt class="docutils literal"><span class="pre">[SECTION].LEVEL</span></tt> fields must be populated.</p>
 </div>
 
@@ -4369,16 +4567,20 @@ numbering. See also <a href="http://127.0.0.1:5111/strictdoc/docs/strictdoc_01_u
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.1.1.3">
+<sdoc-section-title
+  data-level="6.2.1.1.3"
+>
   
   <h6>6.2.1.1.3.&nbsp;REQUIREMENT_STYLE</h6>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>The <tt class="docutils literal">REQUIREMENT_STYLE</tt> option controls whether requirement's elements are
 displayed inline or as table blocks. The available options are: <tt class="docutils literal">Inline</tt> /
 <tt class="docutils literal">Table</tt>. Default is <tt class="docutils literal">Inline</tt>.</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: Hello world
 OPTIONS:
   REQUIREMENT_STYLE: Table
@@ -4391,16 +4593,20 @@ OPTIONS:
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.1.1.4">
+<sdoc-section-title
+  data-level="6.2.1.1.4"
+>
   
   <h6>6.2.1.1.4.&nbsp;REQUIREMENT_IN_TOC</h6>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>The <tt class="docutils literal">REQUIREMENT_IN_TOC</tt> option controls whether requirement's title appear
 in the table of contents (TOC). The available options are: <tt class="docutils literal">True</tt> / <tt class="docutils literal">False</tt>.
 Default is <tt class="docutils literal">True</tt>.</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: Hello world
 OPTIONS:
   REQUIREMENT_IN_TOC: True
@@ -4413,14 +4619,27 @@ OPTIONS:
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.2">
+<sdoc-section-title
+  data-level="6.2.2"
+>
   
   <h4>6.2.2.&nbsp;Requirement</h4>
 </sdoc-section-title>
+  <table class="table_meta">
+  <tr>
+    <th>
+      UID:
+    </th>
+    <td>
+      ELEMENT_REQUIREMENT
+    </td>
+  </tr>
+  </table>
   <sdoc-section-text>
     <div class="document">
-<p>Minimal "Hello World" program with 3 empty requirements:</p>
-<pre class="code text literal-block">[DOCUMENT]
+<p>Minimal &quot;Hello World&quot; program with 3 empty requirements:</p>
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: StrictDoc
 
 [REQUIREMENT]
@@ -4433,8 +4652,8 @@ TITLE: StrictDoc
 <table border="1" class="docutils">
 <caption>SDoc grammar <tt class="docutils literal">REQUIREMENT</tt> fields</caption>
 <colgroup>
-<col width="20%">
-<col width="80%">
+<col width="20%" />
+<col width="80%" />
 </colgroup>
 <thead valign="bottom">
 <tr><th class="head"><strong>Field</strong></th>
@@ -4475,7 +4694,8 @@ Note: Multiple comment fields are possible.</td>
 <p>Currently, all <tt class="docutils literal">[REQUIREMENT]</tt>'s fields are optional but most of the time at
 least the <tt class="docutils literal">STATEMENT</tt> field as well as the <tt class="docutils literal">TITLE</tt> field should be
 present.</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: StrictDoc
 
 [REQUIREMENT]
@@ -4490,10 +4710,13 @@ STATEMENT: StrictDoc shall enable requirements management.
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.2.1">
+<sdoc-section-title
+  data-level="6.2.2.1"
+>
   
   <h5>6.2.2.1.&nbsp;UID</h5>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>Unique identifier of the requirement.</p>
@@ -4510,7 +4733,8 @@ typical conventions for naming UIDs:</p>
 <li>Requirements without a number, e.g. <tt class="docutils literal"><span class="pre">SDOC-HIGH-DATA-MODEL</span></tt> (StrictDoc)</li>
 <li><tt class="docutils literal">SAVOIR.OBC.PM.80</tt> (SAVOIR guidelines)</li>
 </ul>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: StrictDoc
 
 [REQUIREMENT]
@@ -4525,10 +4749,13 @@ STATEMENT: STATEMENT: StrictDoc shall be based on a well-defined data model.
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.2.2">
+<sdoc-section-title
+  data-level="6.2.2.2"
+>
   
   <h5>6.2.2.2.&nbsp;Level</h5>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>Also a <tt class="docutils literal">[REQUIREMENT]</tt> can have no section level attached to it. To enable
@@ -4541,10 +4768,13 @@ this behavior, the field <tt class="docutils literal">LEVEL</tt> has to be set t
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.2.3">
+<sdoc-section-title
+  data-level="6.2.2.3"
+>
   
   <h5>6.2.2.3.&nbsp;Status</h5>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>Defines the current status of the <tt class="docutils literal">[REQUIREMENT]</tt>, e.g. <tt class="docutils literal">Draft</tt>, <tt class="docutils literal">Active</tt>,
@@ -4557,10 +4787,13 @@ this behavior, the field <tt class="docutils literal">LEVEL</tt> has to be set t
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.2.4">
+<sdoc-section-title
+  data-level="6.2.2.4"
+>
   
   <h5>6.2.2.4.&nbsp;Tags</h5>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>Allows to add tags to a <tt class="docutils literal">[REQUIREMENT]</tt>. Tags are a comma separated list of
@@ -4574,14 +4807,18 @@ supported.</p>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.2.5">
+<sdoc-section-title
+  data-level="6.2.2.5"
+>
   
   <h5>6.2.2.5.&nbsp;References (REFS)</h5>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>The <tt class="docutils literal">REFS</tt> field is used to connect requirements to each other:</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: StrictDoc
 
 [REQUIREMENT]
@@ -4601,14 +4838,14 @@ STATEMENT: Requirement #2 statement
 <p>The <tt class="docutils literal">TYPE: Parent</tt>-<tt class="docutils literal">VALUE</tt> attribute contains a parent's requirement
 <tt class="docutils literal">UID</tt>. A requirement may reference multiple parent requirements by
 adding multiple <tt class="docutils literal">TYPE: Parent</tt>-<tt class="docutils literal">VALUE</tt> items. The opposite direction i.e.
-"Child" References are traced automatically by strictdoc. Defining circular
+&quot;Child&quot; References are traced automatically by strictdoc. Defining circular
 references e.g. <tt class="docutils literal"><span class="pre">Req-A</span></tt> ⇒ <tt class="docutils literal"><span class="pre">Req-B</span></tt> ⇒ <tt class="docutils literal"><span class="pre">Reg-C</span></tt> ⇒ <tt class="docutils literal"><span class="pre">Req-A</span></tt> must be avoided.</p>
 <p>The <tt class="docutils literal">TYPE: File</tt>-<tt class="docutils literal">VALUE</tt> attribute contains a filename referencing the
 implementation of (parts of) this requirement. A requirement may add multiple
 file references requirements by adding multiple <tt class="docutils literal">TYPE: File</tt>-<tt class="docutils literal">VALUE</tt> items.</p>
 <p><strong>Note:</strong> The <tt class="docutils literal">TYPE: Parent</tt> is currently the only fully supported type of
 connection. Linking requirements to files is still experimental (see also
-<a href="http://127.0.0.1:5111/strictdoc/docs/strictdoc_01_user_guide-PDF.html#10-Traceability-between-requirements-and-source-code">🔗&nbsp;Traceability between requirements and source code</a>).</p>
+<a href="#10-Traceability-between-requirements-and-source-code">🔗&nbsp;Traceability between requirements and source code</a>).</p>
 <p><strong>Note:</strong> In the near future, adding information about external references (e.g.
 company policy documents, technical specifications, regulatory requirements,
 etc.) is planned.</p>
@@ -4622,10 +4859,13 @@ requirements connected with a reference have <tt class="docutils literal">UID</t
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.2.6">
+<sdoc-section-title
+  data-level="6.2.2.6"
+>
   
   <h5>6.2.2.6.&nbsp;Title</h5>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>The title of the requirement.
@@ -4633,7 +4873,8 @@ Every requirement should have its <tt class="docutils literal">TITLE</tt> field 
 <p><strong>Observation:</strong> Many real-world documents have requirements with statements and
 titles but some documents only use statements without title in which case their
 <tt class="docutils literal">UID</tt> becomes their <tt class="docutils literal">TITLE</tt> and vice versa. Example:</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: StrictDoc
 
 [REQUIREMENT]
@@ -4648,10 +4889,13 @@ STATEMENT: StrictDoc shall enable requirements management.
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.2.7">
+<sdoc-section-title
+  data-level="6.2.2.7"
+>
   
   <h5>6.2.2.7.&nbsp;Statement</h5>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>The statement of the requirement. The field can be single-line or multiline.
@@ -4664,16 +4908,20 @@ Every requirement shall have its <tt class="docutils literal">STATEMENT</tt> fie
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.2.8">
+<sdoc-section-title
+  data-level="6.2.2.8"
+>
   
   <h5>6.2.2.8.&nbsp;Rationale</h5>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>A requirement should have a <tt class="docutils literal">RATIONALE</tt> field that explains/justifies why
 the requirement exists. Like comments, the rationale field can be single-line
 or multiline.</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: StrictDoc
 
 [REQUIREMENT]
@@ -4690,15 +4938,19 @@ RATIONALE: The presence of the REQ-001 is justified.
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.2.9">
+<sdoc-section-title
+  data-level="6.2.2.9"
+>
   
   <h5>6.2.2.9.&nbsp;Comment</h5>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>A requirement can have one or more comments explaining the requirement. The
 comments can be single-line or multiline.</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: StrictDoc
 
 [REQUIREMENT]
@@ -4721,16 +4973,29 @@ Each line is rendered as a separate paragraph.
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.3">
+<sdoc-section-title
+  data-level="6.2.3"
+>
   
   <h4>6.2.3.&nbsp;Section</h4>
 </sdoc-section-title>
+  <table class="table_meta">
+  <tr>
+    <th>
+      UID:
+    </th>
+    <td>
+      ELEMENT_SECTION
+    </td>
+  </tr>
+  </table>
   <sdoc-section-text>
     <div class="document">
 <p>The <tt class="docutils literal">[SECTION]</tt> element is used for creating document chapters and grouping
 requirements into logical groups. It is equivalent to the use of <tt class="docutils literal">#</tt>, <tt class="docutils literal">##</tt>,
 <tt class="docutils literal">###</tt>, etc., in Markdown and <tt class="docutils literal"><span class="pre">====</span></tt>, <tt class="docutils literal"><span class="pre">----</span></tt>, <tt class="docutils literal"><span class="pre">~~~~</span></tt> in RST.</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: StrictDoc
 
 [SECTION]
@@ -4759,14 +5024,18 @@ STATEMENT: ...
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.3.1">
+<sdoc-section-title
+  data-level="6.2.3.1"
+>
   
   <h5>6.2.3.1.&nbsp;Nesting sections</h5>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>Sections can be nested within each other.</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: StrictDoc
 
 [SECTION]
@@ -4793,14 +5062,27 @@ sections will have their titles numbered accordingly: <tt class="docutils litera
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.3.2">
+<sdoc-section-title
+  data-level="6.2.3.2"
+>
   
   <h5>6.2.3.2.&nbsp;Free text</h5>
 </sdoc-section-title>
+  <table class="table_meta">
+  <tr>
+    <th>
+      UID:
+    </th>
+    <td>
+      ELEMENT_FREETEXT
+    </td>
+  </tr>
+  </table>
   <sdoc-section-text>
     <div class="document">
 <p>A section can have a block of <tt class="docutils literal">[FREETEXT]</tt> connected to it:</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: StrictDoc
 
 [SECTION]
@@ -4817,7 +5099,7 @@ A sections can have a block of ``[FREETEXT]`` connected to it:
 <p>According to the Strict Rule #2, arbitrary content cannot be written outside
 of StrictDoc's grammar structure. <tt class="docutils literal">[SECTION] / [FREETEXT]</tt> is therefore a
 designated grammar element for writing free text content.</p>
-<p><strong>Note:</strong> Free text can also be called "nonnormative" or "informative" text
+<p><strong>Note:</strong> Free text can also be called &quot;nonnormative&quot; or &quot;informative&quot; text
 because it does not contribute anything to the traceability information of the
 document. The nonnormative text is there to give a context to the reader and
 help with the conceptual understanding of the information. If a certain
@@ -4833,15 +5115,28 @@ statements in the document.</p>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.3.3">
+<sdoc-section-title
+  data-level="6.2.3.3"
+>
   
   <h5>6.2.3.3.&nbsp;Section without a level</h5>
 </sdoc-section-title>
+  <table class="table_meta">
+  <tr>
+    <th>
+      UID:
+    </th>
+    <td>
+      SECTION_WITHOUT_A_LEVEL
+    </td>
+  </tr>
+  </table>
   <sdoc-section-text>
     <div class="document">
 <p>A section can have no level attached to it. To enable this behavior, the field
 <tt class="docutils literal">LEVEL</tt> has to be set to <tt class="docutils literal">None</tt>.</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: Hello world doc
 
 [SECTION]
@@ -4873,10 +5168,13 @@ are set to <tt class="docutils literal">LEVEL: None</tt> by StrictDoc automatica
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.4">
+<sdoc-section-title
+  data-level="6.2.4"
+>
   
   <h4>6.2.4.&nbsp;Composite requirement</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>A <tt class="docutils literal">[COMPOSITE_REQUIREMENT]</tt> is a requirement that combines requirement
@@ -4886,7 +5184,8 @@ where a given section of a document has to describe a single feature and the
 description requires a one or more levels of nesting. In this case, it might be
 natural to use a composite requirement that is tightly connected to a few
 related sub-requirements.</p>
-<pre class="code text literal-block">[COMPOSITE_REQUIREMENT]
+<pre class="code text literal-block">
+[COMPOSITE_REQUIREMENT]
 STATEMENT: Statement
 
 [REQUIREMENT]
@@ -4914,10 +5213,13 @@ elements should do the job.</p>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.2.5">
+<sdoc-section-title
+  data-level="6.2.5"
+>
   
   <h4>6.2.5.&nbsp;Include files</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>StrictDoc <tt class="docutils literal">.sdoc</tt> files can be built-up from including other fragment documents.</p>
@@ -4929,7 +5231,8 @@ directive and cannot contain <tt class="docutils literal">[FREETEXT]</tt> elemen
 <tt class="docutils literal">*.sdoc</tt> files. They can have any filename except a <tt class="docutils literal">.sdoc</tt> extension.</p>
 <p>Here is an example pair of files similar to examples above. First the
 <tt class="docutils literal">.sdoc</tt> file has a <tt class="docutils literal">[FRAGMENT_FROM_FILE]</tt> that references the latter file.</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: StrictDoc
 
 [FREETEXT]
@@ -4942,7 +5245,8 @@ FILE: include.ssec
 [REQUIREMENT]
 </pre>
 <p>Then the referenced file, <tt class="docutils literal">include.ssec</tt>:</p>
-<pre class="code text literal-block">[FRAGMENT]
+<pre class="code text literal-block">
+[FRAGMENT]
 
 [REQUIREMENT]
 
@@ -4957,7 +5261,8 @@ TITLE: Sub section
 [/COMPOSITE_REQUIREMENT]
 </pre>
 <p>Which will resolve to the following document after inclusion:</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: StrictDoc
 
 [FREETEXT]
@@ -4986,10 +5291,22 @@ TITLE: Sub section
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.3">
+<sdoc-section-title
+  data-level="6.3"
+>
   
   <h3>6.3.&nbsp;Custom grammars</h3>
 </sdoc-section-title>
+  <table class="table_meta">
+  <tr>
+    <th>
+      UID:
+    </th>
+    <td>
+      SECTION-CUSTOM-GRAMMARS
+    </td>
+  </tr>
+  </table>
   <sdoc-section-text>
     <div class="document">
 <p><strong>Observation:</strong> Different industries have their own types of requirements
@@ -5001,7 +5318,8 @@ specific to a particular document.</p>
 <p>First, such fields have to be registered on a document level using the
 <tt class="docutils literal">[GRAMMAR]</tt> field. The following example demonstrates a declaration of
 a grammar with four fields including a custom <tt class="docutils literal">VERIFICATION</tt> field.</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: How to declare a custom grammar
 
 [GRAMMAR]
@@ -5029,7 +5347,8 @@ defined by a user. Declaring a special field as <tt class="docutils literal">REQ
 field mandatory for each and every requirement in the document.</p>
 <p>When the fields are registered on the document level, it becomes possible to
 declare them as the <tt class="docutils literal">[REQUIREMENT]</tt> special fields:</p>
-<pre class="code text literal-block">[REQUIREMENT]
+<pre class="code text literal-block">
+[REQUIREMENT]
 UID: ABC-123
 VERIFICATION: Test
 STATEMENT: System A shall do B.
@@ -5045,18 +5364,21 @@ grammar.</p>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.3.1">
+<sdoc-section-title
+  data-level="6.3.1"
+>
   
   <h4>6.3.1.&nbsp;Supported field types</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>The supported field types are:</p>
 <table border="1" class="docutils">
 <caption>SDoc grammar field types</caption>
 <colgroup>
-<col width="20%">
-<col width="80%">
+<col width="20%" />
+<col width="80%" />
 </colgroup>
 <thead valign="bottom">
 <tr><th class="head"><strong>Field Type</strong></th>
@@ -5082,7 +5404,8 @@ grammar.</p>
 </tbody>
 </table>
 <p>Example:</p>
-<pre class="code text literal-block">[DOCUMENT]
+<pre class="code text literal-block">
+[DOCUMENT]
 TITLE: How to declare a custom grammar
 
 [GRAMMAR]
@@ -5140,10 +5463,13 @@ REFS:
 
 <sdoc-section>
   
-<sdoc-section-title data-level="6.3.2">
+<sdoc-section-title
+  data-level="6.3.2"
+>
   
   <h4>6.3.2.&nbsp;Reserved fields</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>While it is possible to declare a grammar with completely custom fields, there
@@ -5152,8 +5478,8 @@ table of contents and document structure:</p>
 <table border="1" class="docutils">
 <caption>Reserved fields in SDoc's grammar</caption>
 <colgroup>
-<col width="20%">
-<col width="80%">
+<col width="20%" />
+<col width="80%" />
 </colgroup>
 <thead valign="bottom">
 <tr><th class="head"><strong>Reserved field</strong></th>
@@ -5193,10 +5519,13 @@ comment.</td>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="7">
+<sdoc-section-title
+  data-level="7"
+>
   
   <h2>7.&nbsp;Markup</h2>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>The Restructured Text (reST) markup is the default markup supported by
@@ -5213,15 +5542,19 @@ for a full reference.</p>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="7.1">
+<sdoc-section-title
+  data-level="7.1"
+>
   
   <h3>7.1.&nbsp;Images</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>To insert an image into a document, create a folder named <tt class="docutils literal">_assets</tt> alongside your document and then place the image file into it.</p>
 <p>This is the example of how images are included using the reST syntax:</p>
-<pre class="code text literal-block">[FREETEXT]
+<pre class="code text literal-block">
+[FREETEXT]
 .. image:: _assets/sandbox1.svg
    :alt: Sandbox demo
    :class: image
@@ -5236,10 +5569,13 @@ for a full reference.</p>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="7.2">
+<sdoc-section-title
+  data-level="7.2"
+>
   
   <h3>7.2.&nbsp;Limitations of RST support by StrictDoc</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>StrictDoc uses Docutils for rendering RST to HTML, not Sphinx. The implication is that no Sphinx-specific RST directives are supported. Refer to this issue for the related discussion of the limitations: <a class="reference external" href="https://github.com/strictdoc-project/strictdoc/issues/1093">Unexpected restriction on specific RST directives / compatibility with Breathe Sphinx Plugin #1093</a>.</p>
@@ -5251,28 +5587,35 @@ for a full reference.</p>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="8">
+<sdoc-section-title
+  data-level="8"
+>
   
   <h2>8.&nbsp;Export formats</h2>
 </sdoc-section-title>
+  
   
 </sdoc-section>
           
 
 <sdoc-section>
   
-<sdoc-section-title data-level="8.1">
+<sdoc-section-title
+  data-level="8.1"
+>
   
   <h3>8.1.&nbsp;HTML documentation tree by StrictDoc</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>This is a default export option supported by StrictDoc.</p>
 <p>The following command creates an HTML export:</p>
-<pre class="code text literal-block">strictdoc export docs/ --formats=html --output-dir output-html
+<pre class="code text literal-block">
+strictdoc export docs/ --formats=html --output-dir output-html
 </pre>
 <p><strong>Example:</strong> This documentation is exported by StrictDoc to HTML:
-<a class="reference external" href="https://strictdoc-project.github.io/">StrictDoc HTML export</a>.</p>
+<a class="reference external" href="https://strictdoc-project.github.io">StrictDoc HTML export</a>.</p>
 <p><strong>Note:</strong> The options <tt class="docutils literal"><span class="pre">--formats=html</span></tt> and <tt class="docutils literal"><span class="pre">--output-dir</span> <span class="pre">output-html</span></tt> can be
 skipped because HTML export is a default export option and the default output
 folder is <tt class="docutils literal">output</tt>.</p>
@@ -5284,19 +5627,24 @@ folder is <tt class="docutils literal">output</tt>.</p>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="8.1.1">
+<sdoc-section-title
+  data-level="8.1.1"
+>
   
   <h4>8.1.1.&nbsp;Mathjax support</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>The option <tt class="docutils literal"><span class="pre">--enable-mathjax</span></tt> makes StrictDoc to include the
 <a class="reference external" href="https://www.mathjax.org/">Mathjax</a> Javascript library to all of the document
 templates.</p>
-<pre class="code text literal-block">strictdoc export docs/ --enable-mathjax --output-dir output-html
+<pre class="code text literal-block">
+strictdoc export docs/ --enable-mathjax --output-dir output-html
 </pre>
 <p>Example of using Mathjax:</p>
-<pre class="code text literal-block">[FREETEXT]
+<pre class="code text literal-block">
+[FREETEXT]
 .. raw:: latex html
     $$
     \mathbf{\underline{k}}_{\text{a}} =
@@ -5314,18 +5662,22 @@ templates.</p>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="8.1.2">
+<sdoc-section-title
+  data-level="8.1.2"
+>
   
   <h4>8.1.2.&nbsp;Standalone HTML pages (experimental)</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>The following command creates a normal HTML export with all pages having their
 assets embedded into HTML using Data URI / Base64. In the project's <tt class="docutils literal">strictdoc.toml</tt> file, specify:</p>
-<pre class="code yaml literal-block"><span class="punctuation indicator">[</span><span class="name variable">project</span><span class="punctuation indicator">]</span><span class="whitespace">
+<pre class="code yaml literal-block">
+<span class="punctuation indicator">[</span><span class="name variable">project</span><span class="punctuation indicator">]</span><span class="whitespace">
 
 </span><span class="literal scalar plain">features = [</span><span class="whitespace">
-  </span><span class="literal scalar plain">"STANDALONE_DOCUMENT_SCREEN"</span><span class="whitespace">
+  </span><span class="literal scalar plain">&quot;STANDALONE_DOCUMENT_SCREEN&quot;</span><span class="whitespace">
 </span><span class="literal scalar plain">]</span>
 </pre>
 <p>The generated document are self-contained HTML pages that can be shared via
@@ -5339,18 +5691,23 @@ a single document instead of a documentation tree with multiple documents.</p>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="8.2">
+<sdoc-section-title
+  data-level="8.2"
+>
   
   <h3>8.2.&nbsp;HTML export via Sphinx</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>The following command creates an RST export:</p>
-<pre class="code text literal-block">strictdoc export YourDoc.sdoc --formats=rst --output-dir output
+<pre class="code text literal-block">
+strictdoc export YourDoc.sdoc --formats=rst --output-dir output
 </pre>
 <p>The created RST files can be copied to a project created using Sphinx, see
 <a class="reference external" href="https://docs.readthedocs.io/en/stable/intro/getting-started-with-sphinx.html">Getting Started with Sphinx</a>.</p>
-<pre class="code text literal-block">cp -v output/YourDoc.rst docs/sphinx/source/
+<pre class="code text literal-block">
+cp -v output/YourDoc.rst docs/sphinx/source/
 cd docs/sphinx &amp;&amp; make html
 </pre>
 <p><a class="reference external" href="https://strictdoc.readthedocs.io/en/latest/">StrictDoc's own Sphinx/HTML documentation</a>
@@ -5364,18 +5721,23 @@ is generated this way, see the Invoke task:
 
 <sdoc-section>
   
-<sdoc-section-title data-level="8.3">
+<sdoc-section-title
+  data-level="8.3"
+>
   
   <h3>8.3.&nbsp;PDF export via Sphinx/LaTeX</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>The following command creates an RST export:</p>
-<pre class="code text literal-block">strictdoc export YourDoc.sdoc --formats=rst --output-dir output
+<pre class="code text literal-block">
+strictdoc export YourDoc.sdoc --formats=rst --output-dir output
 </pre>
 <p>The created RST files can be copied to a project created using Sphinx, see
 <a class="reference external" href="https://docs.readthedocs.io/en/stable/intro/getting-started-with-sphinx.html">Getting Started with Sphinx</a>.</p>
-<pre class="code text literal-block">cp -v output/YourDoc.rst docs/sphinx/source/
+<pre class="code text literal-block">
+cp -v output/YourDoc.rst docs/sphinx/source/
 cd docs/sphinx &amp;&amp; make pdf
 </pre>
 <p><a class="reference external" href="https://strictdoc.readthedocs.io/_/downloads/en/latest/pdf/">StrictDoc's own Sphinx/PDF documentation</a>
@@ -5389,35 +5751,44 @@ is generated this way, see the Invoke task:
 
 <sdoc-section>
   
-<sdoc-section-title data-level="9">
+<sdoc-section-title
+  data-level="9"
+>
   
   <h2>9.&nbsp;Manage project tree</h2>
 </sdoc-section-title>
+  
   
 </sdoc-section>
           
 
 <sdoc-section>
   
-<sdoc-section-title data-level="9.1">
+<sdoc-section-title
+  data-level="9.1"
+>
   
   <h3>9.1.&nbsp;Automatic assignment of requirements UID</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>To assign requirement UIDs automatically:</p>
-<pre class="code literal-block">strictdoc manage auto-uid &lt;path-to-project-tree&gt;
+<pre class="code literal-block">
+strictdoc manage auto-uid &lt;path-to-project-tree&gt;
 </pre>
 <p>The command goes over all requirements in the project tree and assigns missing UIDs automatically. The project tree is mutated in-place.</p>
 <p>By default, the assignment happens based on the requirement mask <tt class="docutils literal">REQ-</tt>, so the requirements will get the UIDs of <tt class="docutils literal"><span class="pre">REQ-001</span></tt>, <tt class="docutils literal"><span class="pre">REQ-002</span></tt>, ...</p>
 <p>If a document-level or a section-level requirement mask is provided, the UIDs will be generated based on that mask.</p>
 <p>A document-level requirement mask:</p>
-<pre class="code literal-block">[DOCUMENT]
+<pre class="code literal-block">
+[DOCUMENT]
 TITLE: Hello world doc
 REQ_PREFIX: MYDOC-
 </pre>
 <p>A section-level requirement mask:</p>
-<pre class="code literal-block">[SECTION]
+<pre class="code literal-block">
+[SECTION]
 TITLE: Section 2.
 REQ_PREFIX: LEVEL2-REQ-
 </pre>
@@ -5429,17 +5800,30 @@ REQ_PREFIX: LEVEL2-REQ-
 
 <sdoc-section>
   
-<sdoc-section-title data-level="10">
+<sdoc-section-title
+  data-level="10"
+>
   
   <h2>10.&nbsp;Traceability between requirements and source code</h2>
 </sdoc-section-title>
+  <table class="table_meta">
+  <tr>
+    <th>
+      UID:
+    </th>
+    <td>
+      SECTION-TRACEABILITY-REQS-TO-SOURCE-CODE
+    </td>
+  </tr>
+  </table>
   <sdoc-section-text>
     <div class="document">
 <p><strong>Note:</strong> This feature is experimental, the documentation is incomplete.</p>
 <p>StrictDoc allows connecting requirements to source code files. Two types of
 links are supported:</p>
 <p>1) A basic link where a requirement links to a whole file.</p>
-<pre class="code text literal-block">[REQUIREMENT]
+<pre class="code text literal-block">
+[REQUIREMENT]
 UID: REQ-001
 REFS:
 - TYPE: File
@@ -5451,7 +5835,8 @@ STATEMENT: This requirement references the file.
 additionally in the file, there is a reverse link that connects a source range
 back to the requirement:</p>
 <p>The requirement declaration contains a reference of the type <tt class="docutils literal">File</tt>:</p>
-<pre class="code text literal-block">[REQUIREMENT]
+<pre class="code text literal-block">
+[REQUIREMENT]
 UID: REQ-001
 REFS:
 - TYPE: File
@@ -5464,19 +5849,21 @@ requirement (REQ-001), the link becomes a link to the source range.
 &lt;&lt;&lt;
 </pre>
 <p>The source file:</p>
-<pre class="code py literal-block"><span class="comment single"># [REQ-002]</span><span class="whitespace">
+<pre class="code py literal-block">
+<span class="comment single"># [REQ-002]</span><span class="whitespace">
 </span><span class="keyword">def</span> <span class="name function">hello_world</span><span class="punctuation">():</span><span class="whitespace">
-</span>    <span class="name builtin">print</span><span class="punctuation">(</span><span class="literal string double">"hello world"</span><span class="punctuation">)</span><span class="whitespace">
+</span>    <span class="name builtin">print</span><span class="punctuation">(</span><span class="literal string double">&quot;hello world&quot;</span><span class="punctuation">)</span><span class="whitespace">
 </span><span class="comment single"># [/REQ-002]</span>
 </pre>
 <p>To activate the traceability to source files, configure the project config with a dedicated feature:</p>
-<pre class="code yaml literal-block"><span class="punctuation indicator">[</span><span class="name variable">project</span><span class="punctuation indicator">]</span><span class="whitespace">
+<pre class="code yaml literal-block">
+<span class="punctuation indicator">[</span><span class="name variable">project</span><span class="punctuation indicator">]</span><span class="whitespace">
 
 </span><span class="literal scalar plain">features = [</span><span class="whitespace">
-  </span><span class="literal scalar plain">"REQUIREMENT_TO_SOURCE_TRACEABILITY"</span><span class="whitespace">
+  </span><span class="literal scalar plain">&quot;REQUIREMENT_TO_SOURCE_TRACEABILITY&quot;</span><span class="whitespace">
 </span><span class="literal scalar plain">]</span>
 </pre>
-<p>See <a href="http://127.0.0.1:5111/strictdoc/docs/strictdoc_01_user_guide-PDF.html#13.1-Project-level-options">🔗&nbsp;Project-level options</a> for more details about the project-level options.</p>
+<p>See <a href="#13.1-Project-level-options">🔗&nbsp;Project-level options</a> for more details about the project-level options.</p>
 <p>Currently, StrictDoc looks for source files in a directory from which the <tt class="docutils literal">strictdoc</tt> command is run.</p>
 <p>The
 <a class="reference external" href="https://github.com/strictdoc-project/strictdoc-examples">strictdoc-examples</a>
@@ -5490,10 +5877,13 @@ requirements-to-source-code traceability.</p>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="11">
+<sdoc-section-title
+  data-level="11"
+>
   
   <h2>11.&nbsp;ReqIF support</h2>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>StrictDoc has an initial support of exporting to and importing from the ReqIF
@@ -5501,10 +5891,10 @@ format.</p>
 <p><strong>Note:</strong> It is not possible to implement a single export/import procedure that
 works well for all ReqIF XML files produced by various requirements management
 tools. The export/import workflow is therefore tool-specific. See
-<a href="http://127.0.0.1:5111/strictdoc/docs/strictdoc_01_user_guide-PDF.html#11.3-ReqIF-implementation-details">🔗&nbsp;ReqIF implementation details</a> for more details.</p>
+<a href="#11.3-ReqIF-implementation-details">🔗&nbsp;ReqIF implementation details</a> for more details.</p>
 <p>Supported formats:</p>
 <ul class="simple">
-<li>StrictDoc's "native" export/import between SDoc and ReqIF</li>
+<li>StrictDoc's &quot;native&quot; export/import between SDoc and ReqIF</li>
 </ul>
 <p>Planned formats:</p>
 <ul class="simple">
@@ -5521,13 +5911,17 @@ management tools.</li>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="11.1">
+<sdoc-section-title
+  data-level="11.1"
+>
   
-  <h3>11.1.&nbsp;Import flow (ReqIF -&gt; SDoc)</h3>
+  <h3>11.1.&nbsp;Import flow (ReqIF -> SDoc)</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
-<pre class="code text literal-block">strictdoc import reqif sdoc input.reqif output.sdoc
+<pre class="code text literal-block">
+strictdoc import reqif sdoc input.reqif output.sdoc
 </pre>
 <p>The command does the following:</p>
 <ol class="arabic simple">
@@ -5546,13 +5940,17 @@ used.</li>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="11.2">
+<sdoc-section-title
+  data-level="11.2"
+>
   
-  <h3>11.2.&nbsp;Export flow (SDoc -&gt; ReqIF)</h3>
+  <h3>11.2.&nbsp;Export flow (SDoc -> ReqIF)</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
-<pre class="code text literal-block">strictdoc export --formats=reqif-sdoc %S/input.sdoc
+<pre class="code text literal-block">
+strictdoc export --formats=reqif-sdoc %S/input.sdoc
 </pre>
 <p>The command does the following:</p>
 <ol class="arabic simple">
@@ -5571,10 +5969,22 @@ library.</li>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="11.3">
+<sdoc-section-title
+  data-level="11.3"
+>
   
   <h3>11.3.&nbsp;ReqIF implementation details</h3>
 </sdoc-section-title>
+  <table class="table_meta">
+  <tr>
+    <th>
+      UID:
+    </th>
+    <td>
+      SECTION-REQIF-DETAILS
+    </td>
+  </tr>
+  </table>
   <sdoc-section-text>
     <div class="document">
 <p>The ReqIF is a <a class="reference external" href="https://www.omg.org/spec/ReqIF">standard</a> which is
@@ -5603,10 +6013,13 @@ documentation.</p>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="12">
+<sdoc-section-title
+  data-level="12"
+>
   
   <h2>12.&nbsp;Excel support</h2>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>StrictDoc provides a support for Excel XLS on input and Excel XLSX on output.</p>
@@ -5614,7 +6027,7 @@ documentation.</p>
 the requirements are imported one row per requirement. A best effort is made by
 the importer to recognize names of headers and map these to strictdoc
 requirement fields.</p>
-<p>Note: A roundtrip "SDoc -&gt; Excel -&gt; SDoc" is not yet supported.</p>
+<p>Note: A roundtrip &quot;SDoc -&gt; Excel -&gt; SDoc&quot; is not yet supported.</p>
 </div>
 
   </sdoc-section-text>
@@ -5623,13 +6036,17 @@ requirement fields.</p>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="12.1">
+<sdoc-section-title
+  data-level="12.1"
+>
   
-  <h3>12.1.&nbsp;Import flow (Excel XLS -&gt; SDoc)</h3>
+  <h3>12.1.&nbsp;Import flow (Excel XLS -> SDoc)</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
-<pre class="code text literal-block">strictdoc import excel basic input.xls output.sdoc
+<pre class="code text literal-block">
+strictdoc import excel basic input.xls output.sdoc
 </pre>
 <p>The command does the following:</p>
 <ol class="arabic simple">
@@ -5645,13 +6062,17 @@ library.</li>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="12.2">
+<sdoc-section-title
+  data-level="12.2"
+>
   
-  <h3>12.2.&nbsp;Export flow (SDoc -&gt; Excel XLSX)</h3>
+  <h3>12.2.&nbsp;Export flow (SDoc -> Excel XLSX)</h3>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
-<pre class="code text literal-block">strictdoc export --formats=excel --output-dir=Output input.sdoc
+<pre class="code text literal-block">
+strictdoc export --formats=excel --output-dir=Output input.sdoc
 </pre>
 <p>The command does the following:</p>
 <ol class="arabic simple">
@@ -5667,20 +6088,35 @@ the <tt class="docutils literal">XlsWriter</tt> library</li>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="13">
+<sdoc-section-title
+  data-level="13"
+>
   
   <h2>13.&nbsp;Options</h2>
 </sdoc-section-title>
+  
   
 </sdoc-section>
           
 
 <sdoc-section>
   
-<sdoc-section-title data-level="13.1">
+<sdoc-section-title
+  data-level="13.1"
+>
   
   <h3>13.1.&nbsp;Project-level options</h3>
 </sdoc-section-title>
+  <table class="table_meta">
+  <tr>
+    <th>
+      UID:
+    </th>
+    <td>
+      SDOC_UG_OPTIONS_PROJECT_LEVEL
+    </td>
+  </tr>
+  </table>
   <sdoc-section-text>
     <div class="document">
 <p>StrictDoc supports reading configuration from a TOML file. The file must be called <tt class="docutils literal">strictdoc.toml</tt> and shall be stored in the same folder which is provided as a path to the SDoc documents.</p>
@@ -5693,15 +6129,19 @@ the <tt class="docutils literal">XlsWriter</tt> library</li>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="13.1.1">
+<sdoc-section-title
+  data-level="13.1.1"
+>
   
   <h4>13.1.1.&nbsp;Project title</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>This option specifies a project title.</p>
-<pre class="code toml literal-block"><span class="keyword">[project]</span><span class="whitespace">
-</span><span class="name">title</span><span class="whitespace"> </span><span class="operator">=</span><span class="whitespace"> </span><span class="literal string">"StrictDoc Documentation"</span>
+<pre class="code toml literal-block">
+<span class="keyword">[project]</span><span class="whitespace">
+</span><span class="name">title</span><span class="whitespace"> </span><span class="operator">=</span><span class="whitespace"> </span><span class="literal string">&quot;StrictDoc Documentation&quot;</span>
 </pre>
 </div>
 
@@ -5711,17 +6151,21 @@ the <tt class="docutils literal">XlsWriter</tt> library</li>
 
 <sdoc-section>
   
-<sdoc-section-title data-level="13.1.2">
+<sdoc-section-title
+  data-level="13.1.2"
+>
   
   <h4>13.1.2.&nbsp;Path to assets</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>By default, StrictDoc copies its CSS/JS and other asset files to a folder <tt class="docutils literal">_static</tt> in the HTML output directory.</p>
 <p>Sometimes, it is desirable to change the folder name. For example, the GitHub Pages static website engine expects the assets to be found in the <tt class="docutils literal">assets</tt> folder.</p>
 <p>The <tt class="docutils literal">html_assets_strictdoc_dir</tt> allows changing the assets folder name:</p>
-<pre class="code literal-block">[project]
-html_assets_strictdoc_dir = "assets"
+<pre class="code literal-block">
+[project]
+html_assets_strictdoc_dir = &quot;assets&quot;
 </pre>
 </div>
 
@@ -5731,22 +6175,26 @@ html_assets_strictdoc_dir = "assets"
 
 <sdoc-section>
   
-<sdoc-section-title data-level="13.1.3">
+<sdoc-section-title
+  data-level="13.1.3"
+>
   
   <h4>13.1.3.&nbsp;Include/exclude document paths</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>Use <tt class="docutils literal">include_doc_paths</tt> and <tt class="docutils literal">exclude_doc_paths</tt> paths to whitelist/blacklist paths to SDoc documents.</p>
 <p>In the following example, StrictDoc will look for all files in the input project directory, except all documents in the <tt class="docutils literal">tests/</tt> folder.</p>
-<pre class="code yaml literal-block"><span class="punctuation indicator">[</span><span class="name variable">project</span><span class="punctuation indicator">]</span><span class="whitespace">
+<pre class="code yaml literal-block">
+<span class="punctuation indicator">[</span><span class="name variable">project</span><span class="punctuation indicator">]</span><span class="whitespace">
 
 </span><span class="literal scalar plain">include_doc_paths = [</span><span class="whitespace">
-  </span><span class="literal scalar plain">"**"</span><span class="whitespace">
+  </span><span class="literal scalar plain">&quot;**&quot;</span><span class="whitespace">
 </span><span class="literal scalar plain">]</span><span class="whitespace">
 
 </span><span class="literal scalar plain">exclude_doc_paths = [</span><span class="whitespace">
-  </span><span class="literal scalar plain">"tests/**"</span><span class="whitespace">
+  </span><span class="literal scalar plain">&quot;tests/**&quot;</span><span class="whitespace">
 </span><span class="literal scalar plain">]</span>
 </pre>
 <p>The behavior of wildcard symbols <tt class="docutils literal">*</tt> and <tt class="docutils literal">**</tt> is as follows:</p>
@@ -5757,8 +6205,8 @@ html_assets_strictdoc_dir = "assets"
 <table border="1" class="docutils">
 <caption>Examples of possible filter strings</caption>
 <colgroup>
-<col width="20%">
-<col width="80%">
+<col width="20%" />
+<col width="80%" />
 </colgroup>
 <thead valign="bottom">
 <tr><th class="head"><strong>Example</strong></th>
@@ -5785,25 +6233,29 @@ html_assets_strictdoc_dir = "assets"
 
 <sdoc-section>
   
-<sdoc-section-title data-level="13.1.4">
+<sdoc-section-title
+  data-level="13.1.4"
+>
   
   <h4>13.1.4.&nbsp;Include/exclude source files paths</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>Use <tt class="docutils literal">include_source_paths</tt> and <tt class="docutils literal">exclude_source_paths</tt> to whitelist/blacklist paths to source files when the traceability between requirements and source files feature is enabled.</p>
-<pre class="code yaml literal-block"><span class="punctuation indicator">[</span><span class="name variable">project</span><span class="punctuation indicator">]</span><span class="whitespace">
+<pre class="code yaml literal-block">
+<span class="punctuation indicator">[</span><span class="name variable">project</span><span class="punctuation indicator">]</span><span class="whitespace">
 
 </span><span class="literal scalar plain">features = [</span><span class="whitespace">
-  </span><span class="literal scalar plain">"REQUIREMENT_TO_SOURCE_TRACEABILITY"</span><span class="whitespace">
+  </span><span class="literal scalar plain">&quot;REQUIREMENT_TO_SOURCE_TRACEABILITY&quot;</span><span class="whitespace">
 </span><span class="literal scalar plain">]</span><span class="whitespace">
 
 </span><span class="literal scalar plain">include_source_paths = [</span><span class="whitespace">
-  </span><span class="literal scalar plain">"src/**"</span><span class="whitespace">
+  </span><span class="literal scalar plain">&quot;src/**&quot;</span><span class="whitespace">
 </span><span class="literal scalar plain">]</span><span class="whitespace">
 
 </span><span class="literal scalar plain">exclude_source_paths = [</span><span class="whitespace">
-  </span><span class="literal scalar plain">"src/tests/**"</span><span class="whitespace">
+  </span><span class="literal scalar plain">&quot;src/tests/**&quot;</span><span class="whitespace">
 </span><span class="literal scalar plain">]</span>
 </pre>
 <p>The behavior of the wildcards is the same as for the <tt class="docutils literal">include_doc_paths/exclude_doc_paths</tt> options.</p>
@@ -5815,32 +6267,36 @@ html_assets_strictdoc_dir = "assets"
 
 <sdoc-section>
   
-<sdoc-section-title data-level="13.1.5">
+<sdoc-section-title
+  data-level="13.1.5"
+>
   
   <h4>13.1.5.&nbsp;Selecting features</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>StrictDoc has optional features and features that are developed with a lower priority.</p>
 <p>The feature of exporting the SDoc documents to HTML document view is a core feature and is always enabled. The option <tt class="docutils literal">features</tt> allows selecting which additional features should be activated or not.</p>
 <p>The following is an example of the default configuration. The same features are active/inactive when the option <tt class="docutils literal">features</tt> is not specified.</p>
-<pre class="code yaml literal-block"><span class="punctuation indicator">[</span><span class="name variable">project</span><span class="punctuation indicator">]</span><span class="whitespace">
-</span><span class="literal scalar plain">title = "StrictDoc Documentation"</span><span class="whitespace">
+<pre class="code yaml literal-block">
+<span class="punctuation indicator">[</span><span class="name variable">project</span><span class="punctuation indicator">]</span><span class="whitespace">
+</span><span class="literal scalar plain">title = &quot;StrictDoc Documentation&quot;</span><span class="whitespace">
 
 </span><span class="literal scalar plain">features = [</span><span class="whitespace">
   </span><span class="literal scalar plain"># Stable features that are enabled by default.</span><span class="whitespace">
-  </span><span class="literal scalar plain">"TABLE_SCREEN",</span><span class="whitespace">
-  </span><span class="literal scalar plain">"TRACEABILITY_SCREEN",</span><span class="whitespace">
-  </span><span class="literal scalar plain">"DEEP_TRACEABILITY_SCREEN",</span><span class="whitespace">
+  </span><span class="literal scalar plain">&quot;TABLE_SCREEN&quot;,</span><span class="whitespace">
+  </span><span class="literal scalar plain">&quot;TRACEABILITY_SCREEN&quot;,</span><span class="whitespace">
+  </span><span class="literal scalar plain">&quot;DEEP_TRACEABILITY_SCREEN&quot;,</span><span class="whitespace">
 
   </span><span class="literal scalar plain"># Stable features that are disabled by default.</span><span class="whitespace">
-  </span><span class="literal scalar plain"># "MATHJAX",</span><span class="whitespace">
+  </span><span class="literal scalar plain"># &quot;MATHJAX&quot;,</span><span class="whitespace">
 
   </span><span class="literal scalar plain"># Experimental features are disabled by default.</span><span class="whitespace">
-  </span><span class="literal scalar plain"># "REQIF",</span><span class="whitespace">
-  </span><span class="literal scalar plain"># "STANDALONE_DOCUMENT_SCREEN",</span><span class="whitespace">
-  </span><span class="literal scalar plain"># "REQUIREMENTS_COVERAGE_SCREEN",</span><span class="whitespace">
-  </span><span class="literal scalar plain"># "REQUIREMENT_TO_SOURCE_TRACEABILITY"</span><span class="whitespace">
+  </span><span class="literal scalar plain"># &quot;REQIF&quot;,</span><span class="whitespace">
+  </span><span class="literal scalar plain"># &quot;STANDALONE_DOCUMENT_SCREEN&quot;,</span><span class="whitespace">
+  </span><span class="literal scalar plain"># &quot;REQUIREMENTS_COVERAGE_SCREEN&quot;,</span><span class="whitespace">
+  </span><span class="literal scalar plain"># &quot;REQUIREMENT_TO_SOURCE_TRACEABILITY&quot;</span><span class="whitespace">
 </span><span class="literal scalar plain">]</span>
 </pre>
 </div>
@@ -5851,17 +6307,21 @@ html_assets_strictdoc_dir = "assets"
 
 <sdoc-section>
   
-<sdoc-section-title data-level="13.1.5.1">
+<sdoc-section-title
+  data-level="13.1.5.1"
+>
   
   <h5>13.1.5.1.&nbsp;Enable all features</h5>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>To select all available features, stable and experimental, specify <tt class="docutils literal">ALL_FEATURES</tt>.</p>
-<pre class="code literal-block">[project]
+<pre class="code literal-block">
+[project]
 
 features = [
-  "ALL_FEATURES"
+  &quot;ALL_FEATURES&quot;
 ]
 </pre>
 <p>The advantage of this option is that all feature toggles become activated, and all extra screens and buttons are generated and visible.</p>
@@ -5875,14 +6335,18 @@ features = [
 
 <sdoc-section>
   
-<sdoc-section-title data-level="13.1.5.2">
+<sdoc-section-title
+  data-level="13.1.5.2"
+>
   
   <h5>13.1.5.2.&nbsp;Disable all features</h5>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>To disable all features, specify the <tt class="docutils literal">features</tt> option but leave it empty:</p>
-<pre class="code yaml literal-block"><span class="punctuation indicator">[</span><span class="name variable">project</span><span class="punctuation indicator">]</span><span class="whitespace">
+<pre class="code yaml literal-block">
+<span class="punctuation indicator">[</span><span class="name variable">project</span><span class="punctuation indicator">]</span><span class="whitespace">
 
 </span><span class="literal scalar plain">features = [</span><span class="whitespace">
   </span><span class="literal scalar plain"># Nothing specified.</span><span class="whitespace">
@@ -5896,29 +6360,36 @@ features = [
 
 <sdoc-section>
   
-<sdoc-section-title data-level="13.1.6">
+<sdoc-section-title
+  data-level="13.1.6"
+>
   
   <h4>13.1.6.&nbsp;Server configuration</h4>
 </sdoc-section-title>
+  
   
 </sdoc-section>
           
 
 <sdoc-section>
   
-<sdoc-section-title data-level="13.1.6.1">
+<sdoc-section-title
+  data-level="13.1.6.1"
+>
   
   <h5>13.1.6.1.&nbsp;Host and port</h5>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>By default, StrictDoc runs the server on <tt class="docutils literal">127.0.0.1:5111</tt>.</p>
 <p>Use the <tt class="docutils literal">[server]</tt> section to configure the host and port as follows.</p>
-<pre class="code yaml literal-block"><span class="punctuation indicator">[</span><span class="name variable">project</span><span class="punctuation indicator">]</span><span class="whitespace">
-</span><span class="literal scalar plain">title = 'Test project with a host "localhost" and a port 5000'</span><span class="whitespace">
+<pre class="code yaml literal-block">
+<span class="punctuation indicator">[</span><span class="name variable">project</span><span class="punctuation indicator">]</span><span class="whitespace">
+</span><span class="literal scalar plain">title = 'Test project with a host &quot;localhost&quot; and a port 5000'</span><span class="whitespace">
 
 </span><span class="literal scalar plain">[server]</span><span class="whitespace">
-</span><span class="literal scalar plain">host = "localhost"</span><span class="whitespace">
+</span><span class="literal scalar plain">host = &quot;localhost&quot;</span><span class="whitespace">
 </span><span class="literal scalar plain">port = 5000</span>
 </pre>
 </div>
@@ -5929,26 +6400,33 @@ features = [
 
 <sdoc-section>
   
-<sdoc-section-title data-level="13.2">
+<sdoc-section-title
+  data-level="13.2"
+>
   
   <h3>13.2.&nbsp;Command-line interface options</h3>
 </sdoc-section-title>
+  
   
 </sdoc-section>
           
 
 <sdoc-section>
   
-<sdoc-section-title data-level="13.2.1">
+<sdoc-section-title
+  data-level="13.2.1"
+>
   
   <h4>13.2.1.&nbsp;Project title</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>By default, StrictDoc generates a project tree with a project title
-"Untitled Project". To specify the project title use the option
+&quot;Untitled Project&quot;. To specify the project title use the option
 <tt class="docutils literal"><span class="pre">--project-title</span></tt>.</p>
-<pre class="code text literal-block">strictdoc export --project-title "My Project" .
+<pre class="code text literal-block">
+strictdoc export --project-title &quot;My Project&quot; .
 </pre>
 </div>
 
@@ -5958,10 +6436,13 @@ features = [
 
 <sdoc-section>
   
-<sdoc-section-title data-level="13.2.2">
+<sdoc-section-title
+  data-level="13.2.2"
+>
   
   <h4>13.2.2.&nbsp;Parallelization</h4>
 </sdoc-section-title>
+  
   <sdoc-section-text>
     <div class="document">
 <p>To improve performance for the large document trees (1000+ requirements),
@@ -5971,7 +6452,8 @@ process-based parallelization: <tt class="docutils literal">multiprocessing.Pool
 <p>Parallelization improves performance but can also complicate understanding
 behavior of the code if something goes wrong.</p>
 <p>To disable parallelization use the <tt class="docutils literal"><span class="pre">--no-parallelization</span></tt> option:</p>
-<pre class="code text literal-block">strictdoc export --no-parallelization docs/
+<pre class="code text literal-block">
+strictdoc export --no-parallelization docs/
 </pre>
 <p><strong>Note:</strong> Currently, only the generation of HTML documents is parallelized, so
 this option will only have effect on the HTML export. All other export options
@@ -5981,6 +6463,37 @@ all export options and is disabled with this option as well.</p>
 
   </sdoc-section-text>
 </sdoc-section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       </div>
 </div>
