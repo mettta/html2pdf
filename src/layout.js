@@ -5,12 +5,12 @@ const CONSOLE_CSS_LABEL_LAYOUT = 'border:1px solid #8888CC;'
 export default class Layout {
 
   constructor({
-    debugMode,
+    config,
     DOM,
     selector
   }) {
 
-    this.debugMode = debugMode;
+    this.debugMode = config.debugMode;
 
     this.DOM = DOM;
     this.selector = selector;

@@ -11,14 +11,16 @@ const CONSOLE_CSS_LABEL_PAGES = `border:1px solid ${CONSOLE_CSS_COLOR_PAGES};`
 export default class Pages {
 
   constructor({
-    debugMode,
+    config,
     DOM,
     layout,
     referenceWidth,
     referenceHeight
   }) {
 
-    this.debugMode = debugMode;
+    // * From config:
+    this.debugMode = config.debugMode;
+
     this.DOM = DOM;
 
     this.root = layout.root;

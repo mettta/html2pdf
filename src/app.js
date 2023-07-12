@@ -11,10 +11,10 @@ import Preview from './preview';
 export default class HTML2PDF4DOC {
   constructor(params) {
     this.params = params;
-    this.debugMode = this.config().debugMode;
+    this.config = this._config();
   }
 
-  config() {
+  _config() {
     return {
       // Parameters affect the base config,
       ...config(this.params),
@@ -25,19 +25,19 @@ export default class HTML2PDF4DOC {
 
   render() {
 
-    this.debugMode && console.time("printTHIS");
+    this.config.debugMode && console.time("printTHIS");
 
-    const DOM = new DocumentObjectModel({DOM: window.document, debugMode: this.debugMode});
-    DOM.insertStyle(new Style(this.config()).create());
+    const DOM = new DocumentObjectModel({DOM: window.document, debugMode: this.config.debugMode});
+    DOM.insertStyle(new Style(this.config).create());
 
     const layout = new Layout({
-      debugMode: this.debugMode,
+      config: this.config,
       DOM: DOM,
       selector: SELECTOR
     });
 
     const paper = new Paper({
-      debugMode: this.debugMode,
+      config: this.config,
       DOM: DOM,
       selector: SELECTOR
     });
@@ -45,7 +45,7 @@ export default class HTML2PDF4DOC {
     layout.create();
 
     const pages = new Pages({
-      debugMode: this.debugMode,
+      config: this.config,
       DOM,
       layout: layout,
       referenceHeight: paper.bodyHeight,
@@ -53,7 +53,7 @@ export default class HTML2PDF4DOC {
     }).calculate();
 
     new Preview({
-      debugMode: this.debugMode,
+      config: this.config,
       DOM,
       selector: SELECTOR,
       layout: layout,
@@ -61,6 +61,6 @@ export default class HTML2PDF4DOC {
       pages: pages,
     }).create();
 
-    this.debugMode && console.timeEnd("printTHIS");
+    this.config.debugMode && console.timeEnd("printTHIS");
   }
 }

@@ -7,7 +7,7 @@ export default class Preview {
   // TODO SHOW STATS (with close option)
 
   constructor({
-    debugMode,
+    config,
     DOM,
     selector,
 
@@ -16,7 +16,7 @@ export default class Preview {
     paper,
   }) {
 
-    this.debugMode = debugMode;
+    this.debugMode = config.debugMode;
     this.DOM = DOM;
     this.selector = selector;
 
