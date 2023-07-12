@@ -104,9 +104,6 @@ export default class Pages {
     // FIRST ELEMENT: register the beginning of the first page.
     this._registerPageStart(content[0]);
 
-    console.warn(this.DOM.getElementRootedRealTop(content[0], this.root));
-    console.warn(this.DOM.getElementRootedTop(content[0], this.root));
-
     this._parseNodes({
       // don't register the parent here,
       // only on inner nodes that do not split
@@ -140,11 +137,6 @@ export default class Pages {
       // *** and not counted in the calculation of the next page height,
       // *** causing blank unaccounted pages.
 
-      this.debugMode && console.group(
-        `%c_parseNode`, CONSOLE_CSS_PRIMARY_PAGES,
-        `${lastChild ? '★last★' : ''}`
-        );
-
       this._parseNode({
         i,
         previousElement: array[i - 1] || previous,
@@ -154,7 +146,6 @@ export default class Pages {
         // *** for the last child:
         parentBottom: lastChild ? parentBottom : undefined,
       });
-      this.debugMode && console.groupEnd(`%c_parseNode`);
     }
   }
 
@@ -168,11 +159,17 @@ export default class Pages {
     parentBottom,
   }) {
 
-    this.debugMode && console.log('%c parent ', 'color:red;background:yellow', parent);
-    this.debugMode && parentBottom && console.log('%c parentBottom ', 'color:red', parentBottom);
-    this.debugMode && console.log(
-      '%c 3 nodes: ',
-      CONSOLE_CSS_LABEL_PAGES,
+    const parseNodeDebugToggler = false;
+    const consoleMark = ['%c_parseNode\n', 'color:white',]
+
+    this.debugMode && parseNodeDebugToggler && console.group(
+      `%c_parseNode`, CONSOLE_CSS_PRIMARY_PAGES,
+      `${lastChild ? '★last★' : ''}`
+      );
+
+    this.debugMode && parseNodeDebugToggler && console.log(
+      ...consoleMark,
+      '3 nodes: ',
       {
         previousElement,
         currentElement,
@@ -184,33 +181,46 @@ export default class Pages {
     // * which is the first (i == 0) or only child (= has 'parent'),
     // * we want to register its parent as the start of the page.
     const currentPageStart = (i == 0 && parent) ? parent : currentElement;
-    this.debugMode && parentBottom && console.log('%c currentPageStart ', 'color:red;background:yellow', currentPageStart);
+
+    this.debugMode && parseNodeDebugToggler && parentBottom && console.log(
+      ...consoleMark,
+      'parent:', parent,
+      '\n',
+      'parentBottom:', parentBottom,
+      '\n',
+      'currentPageStart:', currentPageStart,
+      '\n'
+    );
 
     // THE END of content flow:
     // if there is no next element, then we are in a case
     // where the [data-content-flow-end] element is current.
     if (!nextElement) {
-      this.debugMode && console.log('🏁 THE END')
+      this.debugMode && parseNodeDebugToggler && console.log(...consoleMark, '🏁 THE END')
       return
     }
 
     // FORCED BREAK
     if (this.DOM.isForcedPageBreak(currentElement)) {
       this._registerPageStart(nextElement)
-      this.debugMode && console.log('🚩 FORCED BREAK');
+      this.debugMode && parseNodeDebugToggler && console.log(...consoleMark, '🚩 FORCED BREAK');
       return
     }
 
-    console.assert( // is filtered in the function _gerChildren()
+    this.debugMode
+      // && parseNodeDebugToggler
+      && console.assert( // is filtered in the function _gerChildren()
       this.DOM.getElementOffsetParent(currentElement),
       'it is expected that the element has an offset parent',
       currentElement);
 
     const newPageBottom = this.pages.at(-1).pageBottom;
-    this.debugMode && console.log('•••', newPageBottom, '•••');
-
     const nextElementTop = this.DOM.getElementRootedTop(nextElement, this.root);
-    this.debugMode && console.log('next Top',nextElementTop);
+    this.debugMode && parseNodeDebugToggler && console.log(...consoleMark,
+      '• newPageBottom', newPageBottom,
+      '\n',
+      '• nextElementTop',nextElementTop,
+      );
 
     // TODO if next elem is SVG it has no offset Top!
     if (nextElementTop > newPageBottom) {
@@ -297,11 +307,8 @@ export default class Pages {
 
       // * Check the possibility of (1) or (2): split or not?
 
-      // TODO check BOTTOMS??? vs MARGINS
-      const currentElementBottom = parentBottom || this.DOM.getElementRootedRealBottom(currentElement, this.root);
-      this.debugMode && console.log('curr RR Bottom', currentElementBottom);
 
-      // FIX parentMargin ?????
+      const currentElementBottom = parentBottom || this.DOM.getElementRootedRealBottom(currentElement, this.root);
 
       // IF currentElement does fit
       // in the remaining space on the page,
@@ -317,13 +324,16 @@ export default class Pages {
 
       if (this.DOM.isNoBreak(currentElement) || this._notSolved(currentElement)) {
         // don't break apart, thus keep an empty children array
-        this.debugMode && console.info('%c isNoBreak ', CONSOLE_CSS_SECONDARY_PAGES);
+        this.debugMode && parseNodeDebugToggler && console.info(...consoleMark,
+          '💚 isNoBreak');
         children = [];
       } else if (this.DOM.isComplexTextBlock(currentElement)) {
-        this.debugMode && console.info('%c ComplexTextBlock ', CONSOLE_CSS_SECONDARY_PAGES);
+        this.debugMode && parseNodeDebugToggler && console.info(...consoleMark,
+          '💚 ComplexTextBlock');
         children = this._splitComplexTextBlock(currentElement) || [];
       } else if (this._isTextNode(currentElement)) {
-        this.debugMode && console.info('%c TextNode ', CONSOLE_CSS_SECONDARY_PAGES);
+        this.debugMode && parseNodeDebugToggler && console.info(...consoleMark,
+          '💚 TextNode');
 
         // TODO: Compare performance of _splitComplexTextBlock and _splitTextNode!
         // temporarily use the less productive function.
@@ -331,10 +341,12 @@ export default class Pages {
         // children = this._splitTextNode(currentElement, newPageBottom) || [];
         children = this._splitComplexTextBlock(currentElement) || [];
       } else if (this._isPRE(currentElement)) {
-        this.debugMode && console.info('%c PRE ', CONSOLE_CSS_SECONDARY_PAGES);
+        this.debugMode && parseNodeDebugToggler && console.info(...consoleMark,
+          '💚 PRE');
         children = this._splitPreNode(currentElement, newPageBottom) || [];
       } else if (this._isTableNode(currentElement)) {
-        this.debugMode && console.info('%c TABLE ', CONSOLE_CSS_SECONDARY_PAGES);
+        this.debugMode && parseNodeDebugToggler && console.info(...consoleMark,
+          '💚 TABLE');
         children = this._splitTableNode(currentElement, newPageBottom) || [];
         // } else if (this._isLiNode(currentElement)) {
         //   // todo
@@ -357,9 +369,9 @@ export default class Pages {
 
       } else {
         children = this._getChildren(currentElement);
-        this.debugMode && console.info(
-          '%c 🚸 get element children ',
-          CONSOLE_CSS_SECONDARY_PAGES,
+        this.debugMode && parseNodeDebugToggler && console.info(
+          ...consoleMark,
+          '🚸 get element children ',
           children
         );
       }
@@ -374,8 +386,10 @@ export default class Pages {
       // * Depending on the number of children:
 
       const childrenNumber = children.length;
-      this.debugMode && console.log('%c childrenNumber ', 'color:red', childrenNumber);
-      this.debugMode && console.log('%c currentElement ', 'color:red', currentElement);
+      this.debugMode && parseNodeDebugToggler && console.log(...consoleMark,
+        'childrenNumber ', childrenNumber);
+      this.debugMode && parseNodeDebugToggler && console.log(...consoleMark,
+        'currentElement ', currentElement);
 
       // TODO #retainedParent
       // ** If it is an only child (it means that the parent node is not split),
@@ -385,7 +399,8 @@ export default class Pages {
       const retainedParent = (childrenNumber <= 1 || i == 0)
                             ? (parent ? parent : currentElement)
                             : undefined;
-      this.debugMode && console.log('%c set retainedParent', 'background:yellow', retainedParent)
+      this.debugMode && parseNodeDebugToggler && console.log(...consoleMark,
+        'set retainedParent', retainedParent)
 
       // * Parse children:
       if (childrenNumber) {
@@ -411,17 +426,17 @@ export default class Pages {
           // TODO #retainedParent
           // this._registerPageStart(currentElement);
           this._registerPageStart(currentPageStart);
-          this.debugMode && console.log('%c +++ register:', 'background:yellow', currentPageStart);
+          this.debugMode && parseNodeDebugToggler && console.log(...consoleMark,
+            '_registerPageStart:', currentPageStart);
         }
       }
-
     }
 
     // * ELSE IF: nextElementTop <= newPageBottom,
     // * then currentElement fits,
     // * then continue.
 
-    // this.debugMode && console.log('🏳️ currentElement fits', currentElement)
+    this.debugMode && parseNodeDebugToggler && console.groupEnd(`%c_parseNode`);
   }
 
   _processInlineChildren(children) {
@@ -447,7 +462,6 @@ export default class Pages {
       }
     })
 
-    // this.debugMode && console.log('🎈', newChildren);
     return newChildren
   }
 
@@ -503,11 +517,13 @@ export default class Pages {
           return result;
         }
 
-        console.assert(
-          true,
-          'newComplexChildrenGroups: An unexpected case of splitting a complex paragraph into lines.',
-          '\nOn the element:',
-          currentElement
+        this.debugMode
+          // && parseNodeDebugToggler
+          && console.assert(
+            true,
+            'newComplexChildrenGroups: An unexpected case of splitting a complex paragraph into lines.',
+            '\nOn the element:',
+            currentElement
         );
       }, []
     );
@@ -597,12 +613,19 @@ export default class Pages {
         return result;
       }, []);
 
-      this.debugMode && console.assert(
-      newLines.length == item.lines,
-      'The number of new lines is not equal to the expected number of lines when splitting.',
-      '\nNew lines:',
-      newLines,
-      item.lines
+    // TODO #hyphen
+    // If a string ends in a hyphen,
+    // it is naturally not split because the word is not space-separated.
+    // Example: examples/test/cases/p_1_hyphen_vs_space.html
+    // In this case, we get an assertion trigger:
+    this.debugMode
+      // && parseNodeDebugToggler
+      && console.assert(
+        newLines.length == item.lines,
+        'The number of new lines is not equal to the expected number of lines when splitting.',
+        '\nNew lines:',
+        newLines,
+        item.lines
     );
     // * and then delete the source element.
     splittedItem.remove();
