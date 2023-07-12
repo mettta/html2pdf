@@ -2931,6 +2931,7 @@
     data-preloader='true'
     data-preloader-target='main.layout_main'
     data-preloader-background='#F2F5F9'
+    data-can-not-be-last-selector='sdoc-section-title'
     src="bundle.js"></script>
 
 </head>
@@ -3025,109 +3026,87 @@
       <div class="main" id="printTHISpreloader">
         <div class="content" id="printTHIS">
 
-          <!-- height:574px - 575px -->
-          <!-- <div filler style="height:590.56px; margin-top:24px;"></div> -->
+          <div filler style="height:940px"></div>
           <!-- HTML2PDF: TEST CONTENT GOES HERE -->
 
+
 <sdoc-section>
-<sdoc-section-text>
-<div class="document">
 
-<p style="margin-top:24px;">The command goes over all requirements in the project tree and assigns missing UIDs automatically. The project tree is mutated in-place.</p>
-<p>By default, the assignment happens based on the requirement mask <tt class="docutils literal">REQ-</tt>, so the requirements will get the UIDs of <tt class="docutils literal"><span class="pre">REQ-001</span></tt>, <tt class="docutils literal"><span class="pre">REQ-002</span></tt>, ...</p>
-<p>If a document-level or a section-level requirement mask is provided, the UIDs will be generated based on that mask.</p>
-<p>A document-level requirement mask:</p>
-<pre class="code literal-block">
-[DOCUMENT]
-TITLE: Hello world doc
-REQ_PREFIX: MYDOC-
-</pre>
-<p>A section-level requirement mask:</p>
-<pre class="code literal-block">
-[SECTION]
-TITLE: Section 2.
-REQ_PREFIX: LEVEL2-REQ-
-</pre>
-</div>
+<sdoc-section-title
+  data-level="2"
+>
 
-</sdoc-section-text>
+  <h2>2.&nbsp;Examples</h2>
+</sdoc-section-title>
+
 </sdoc-section>
 
-<sdoc-section>
+
+<sdoc-section class="class1 class2">
+
 <sdoc-section-title
-  data-level="10"
+  data-level="2.1"
 >
-  <h2>10.&nbsp;Traceability between requirements and source code</h2>
+
+  <h3>2.1.&nbsp;Hello World</h3>
 </sdoc-section-title>
-  <!-- <table class="table_meta">
+  <table class="table_meta">
   <tr>
     <th>
       UID:
     </th>
     <td>
-      SECTION-TRACEABILITY-REQS-TO-SOURCE-CODE
+      SDOC_UG_HELLO_WORLD
     </td>
   </tr>
-  </table> -->
-  <div filler style="height:32.38px;"></div>
+  </table>
   <sdoc-section-text>
     <div class="document">
-<p><strong>Note:</strong> This feature is experimental, the documentation is incomplete.</p>
-<p>StrictDoc allows connecting requirements to source code files. Two types of
-links are supported:</p>
-<p>1) A basic link where a requirement links to a whole file.</p>
+<p>&quot;Hello World&quot; example of the SDoc text language:</p>
 <pre class="code text literal-block">
-[REQUIREMENT]
-UID: REQ-001
-REFS:
-- TYPE: File
-  VALUE: file.py
-TITLE: File reference
-STATEMENT: This requirement references the file.
-</pre>
-<p>2) A range-based link where a requirement links to a file and
-additionally in the file, there is a reverse link that connects a source range
-back to the requirement:</p>
-<p>The requirement declaration contains a reference of the type <tt class="docutils literal">File</tt>:</p>
-<pre class="code text literal-block">
-[REQUIREMENT]
-UID: REQ-001
-REFS:
-- TYPE: File
-  VALUE: file.py
-TITLE: Whole file reference
-STATEMENT: This requirement references the file.py file.
-COMMENT: &gt;&gt;&gt;
-If the file.py contains a source range that is connected back to this
-requirement (REQ-001), the link becomes a link to the source range.
-&lt;&lt;&lt;
-</pre>
-<p>The source file:</p>
-<pre class="code py literal-block">
-<span class="comment single"># [REQ-002]</span><span class="whitespace">
-</span><span class="keyword">def</span> <span class="name function">hello_world</span><span class="punctuation">():</span><span class="whitespace">
-</span>    <span class="name builtin">print</span><span class="punctuation">(</span><span class="literal string double">&quot;hello world&quot;</span><span class="punctuation">)</span><span class="whitespace">
-</span><span class="comment single"># [/REQ-002]</span>
-</pre>
-<p>To activate the traceability to source files, configure the project config with a dedicated feature:</p>
-<pre class="code yaml literal-block">
-<span class="punctuation indicator">[</span><span class="name variable">project</span><span class="punctuation indicator">]</span><span class="whitespace">
+[DOCUMENT]
+TITLE: StrictDoc
 
-</span><span class="literal scalar plain">features = [</span><span class="whitespace">
-  </span><span class="literal scalar plain">&quot;REQUIREMENT_TO_SOURCE_TRACEABILITY&quot;</span><span class="whitespace">
-</span><span class="literal scalar plain">]</span>
+[REQUIREMENT]
+UID: SDOC-HIGH-REQS-MANAGEMENT
+TITLE: Requirements management
+STATEMENT: StrictDoc shall enable requirements management.
 </pre>
-<p>See <a href="#13.1-Project-level-options">🔗&nbsp;Project-level options</a> for more details about the project-level options.</p>
-<p>Currently, StrictDoc looks for source files in a directory from which the <tt class="docutils literal">strictdoc</tt> command is run.</p>
-<p>The
-<a class="reference external" href="https://github.com/strictdoc-project/strictdoc-examples">strictdoc-examples</a>
-repository contains executable examples including the example of
-requirements-to-source-code traceability.</p>
+<p>Create a file called <tt class="docutils literal">hello_world.sdoc</tt> somewhere on your file system and copy the above text to it. <strong>The file must end with a newline character</strong>.</p>
+<p>Once you have <tt class="docutils literal">strictdoc</tt> installed (see <a href="#3-Installing-StrictDoc">🔗&nbsp;Installing StrictDoc</a> below), run StrictDoc as follows:</p>
+<pre class="code text literal-block">
+strictdoc export hello.sdoc
+</pre>
+<p>The expected output:</p>
+<pre class="code text literal-block">
+$ strictdoc export hello.sdoc
+Parallelization: Enabled
+Step 'Collect traceability information' start
+Step 'Find and read SDoc files' start
+Reading SDOC: hello.sdoc .................................... 0.08s
+Step 'Find and read SDoc files' took: 0.09 sec
+Step 'Collect traceability information' start
+Step 'Collect traceability information' took: 0.01 sec
+Step 'Collect traceability information' took: 0.11 sec
+Published: StrictDoc ........................................ 0.24s
+...
+Export completed. Documentation tree can be found at:
+.../output/html
+</pre>
+<p>The HTML output produced so far has been generated statically. Now, start a StrictDoc server from the same directory:</p>
+<pre class="code bash literal-block">
+strictdoc<span class="whitespace"> </span>server<span class="whitespace"> </span>.
+</pre>
+<p>The expected output should contain the following line:</p>
+<pre class="code text literal-block">
+INFO:     Uvicorn running on http://127.0.0.1:5111 (Press CTRL+C to quit)
+</pre>
+<p>Open the URL in the browser and explore the contents of the example.</p>
 </div>
 
   </sdoc-section-text>
 </sdoc-section>
-
+          
 
           <!-- // HTML2PDF: TEST CONTENT GOES HERE -->
         </div>
