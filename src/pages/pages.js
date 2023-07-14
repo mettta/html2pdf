@@ -21,6 +21,7 @@ export default class Pages {
     // * From config:
     this.debugMode = config.debugMode;
     this.debugToggler = {
+      _prepareForcedPageBreak: false,
       _parseNode: false,
       _splitPreNode: false,
       _splitTableNode: false,
@@ -30,6 +31,8 @@ export default class Pages {
 
     // _canNotBeLast params:
     this.canNotBeLastSelector = this._prepareCanNotBeLastSelector(config.canNotBeLastSelector);
+    // forced Page Break params:
+    this.forcedPageBreakSelector = this._prepareForcedPageBreakSelector(config.forcedPageBreakSelector);
 
     // ***:
     this.DOM = DOM;
@@ -72,15 +75,53 @@ export default class Pages {
   }
 
   calculate() {
+    this._prepareForcedPageBreak();
     this._calculate();
     this.debugMode && console.log('%c ✔ Pages.calculate()', CONSOLE_CSS_LABEL_PAGES, this.pages);
 
     return this.pages;
   }
 
+  _prepareForcedPageBreak() {
+    this.debugMode
+    && this.debugToggler._prepareForcedPageBreak
+    && console.group(`_prepareForcedPageBreak`);
+    // * find all relevant elements and insert forced page break markers before them.
+    if (this.forcedPageBreakSelector) {
+      const pageStarters = this.DOM.findAllSelectorsInside(this.contentFlow, this.forcedPageBreakSelector);
+
+      this.debugMode
+        && this.debugToggler._prepareForcedPageBreak
+        && console.log('• step 1', [...pageStarters]);
+
+      // ** If the element is the first child of nested first children of a content flow,
+      // ** we do not process it further for page breaks.
+      // ** This ensures that page breaks are only made where they have not already been made for other reasons.
+      if (this.DOM.isFirstChildOfFirstChild(pageStarters[0], this.contentFlow)) {
+        pageStarters.shift()
+      };
+
+      this.debugMode
+        && this.debugToggler._prepareForcedPageBreak
+        && console.log('• step 2', [...pageStarters]);
+
+      pageStarters.forEach(element => this.DOM.insertForcedPageBreakBefore(element));
+    }
+    console.groupEnd(`_prepareForcedPageBreak`)
+  }
+
   _calculate() {
-    this.debugMode && console.group('%c Pages ', CONSOLE_CSS_LABEL_PAGES);
-    this.debugMode && console.info('isFirefox', this.isFirefox);
+    this.debugMode && console.log('%c ▼▼▼ Pages ▼▼▼ ', CONSOLE_CSS_LABEL_PAGES);
+
+    this.debugMode && console.groupCollapsed('•• init data ••');
+    this.debugMode && console.log(
+      'this.canNotBeLastSelector', this.canNotBeLastSelector,
+      '\n',
+      'this.forcedPageBreakSelector', this.forcedPageBreakSelector,
+      '\n',
+      'isFirefox', this.isFirefox,
+    );
+    this.debugMode && console.groupEnd('•• init data ••');
 
     // IF contentFlow is less than one page,
 
@@ -123,7 +164,6 @@ export default class Pages {
       array: content
     });
 
-    this.debugMode && console.groupEnd('%c Pages ');
   }
 
   _registerPageStart(pageStart) {
@@ -142,13 +182,6 @@ export default class Pages {
   }) {
 
     for (let i = 0; i < array.length; i++) {
-      const lastChild = i === array.length - 1;
-
-      // *** If the parent item has a bottom margin, we must consider it
-      // *** when deciding on the last child.
-      // *** Otherwise, this margin may be lost
-      // *** and not counted in the calculation of the next page height,
-      // *** causing blank unaccounted pages.
 
       this._parseNode({
         i,
@@ -156,8 +189,13 @@ export default class Pages {
         currentElement: array[i],
         nextElement: array[i + 1] || next,
         parent,
-        // *** for the last child:
-        parentBottom: lastChild ? parentBottom : undefined,
+        // *** If the parent item has a bottom margin, we must consider it
+        // *** when deciding on the last child.
+        // *** Otherwise, this margin may be lost
+        // *** and not counted in the calculation of the next page height,
+        // *** causing blank unaccounted pages.
+        // *** So, for the last child:
+        parentBottom: (i === array.length - 1) ? parentBottom : undefined,
       });
     }
   }
@@ -169,13 +207,14 @@ export default class Pages {
     currentElement,
     nextElement,
     parent,
+    // *** for the last child:
     parentBottom,
   }) {
     const consoleMark = ['%c_parseNode\n', 'color:white',]
 
     this.debugMode && this.debugToggler._parseNode && console.group(
       `%c_parseNode`, CONSOLE_CSS_PRIMARY_PAGES,
-      `${lastChild ? '★last★' : ''}`
+      `${parentBottom ? '★last★' : ''}`
       );
 
     this.debugMode && this.debugToggler._parseNode && console.log(
@@ -213,7 +252,8 @@ export default class Pages {
 
     // FORCED BREAK
     if (this.DOM.isForcedPageBreak(currentElement)) {
-      this._registerPageStart(nextElement)
+      // TODO I've replaced the 'next' with the 'current' - need to test it out
+      this._registerPageStart(currentElement)
       this.debugMode && this.debugToggler._parseNode && console.log(...consoleMark, '🚩 FORCED BREAK');
       return
     }
@@ -234,7 +274,20 @@ export default class Pages {
       );
 
     // TODO if next elem is SVG it has no offset Top!
-    if (nextElementTop > newPageBottom) {
+
+    if (nextElementTop <= newPageBottom) {
+      // * IF: nextElementTop <= newPageBottom,
+      // * then currentElement fits.
+
+      // ** Check for page break markers inside.
+      // ** If there are - register new page starts.
+      this.DOM.findAllForcedPageBreakInside(currentElement).forEach(
+        element => this._registerPageStart(element)
+      );
+
+      // * ... then continue.
+    } else {
+      // * ELSE IF: nextElementTop > newPageBottom,
       // * nextElement does not start on the current page.
       // * Possible cases for the currentElement:
       // *** (0) in one piece should be moved to the next page
@@ -443,9 +496,7 @@ export default class Pages {
       }
     }
 
-    // * ELSE IF: nextElementTop <= newPageBottom,
-    // * then currentElement fits,
-    // * then continue.
+
 
     this.debugMode && this.debugToggler._parseNode && console.groupEnd(`%c_parseNode`);
   }
@@ -1418,6 +1469,11 @@ export default class Pages {
     return o
   }
 
+  _prepareForcedPageBreakSelector(string) {
+    // * The settings may pass an empty string, prevent errors here.
+    return string?.length ? string?.split(/\s+/) : [];
+  }
+
   _sortSelectors(string) {
     const selectors = {
       tags : [],
@@ -1494,18 +1550,22 @@ export default class Pages {
   _canNotBeLast(element, context) {
     this.debugMode
       && this.debugToggler._canNotBeLast
-      && console.group('_canNotBeLast ?');
+      && console.group(`_canNotBeLast ?\n[${context}]`);
 
     // TODO
     // if Header is only child of element
 
-    const canItBeLast = this._matchSelectors(
-      element,
-      this.canNotBeLastSelector,
-      `_canNotBeLast ${context}`
-    );
+    // ** False: means that the element
+    // ** does not match the condition
+    // ** or is undefined.
+    const canItBeLast = element ?
+      this._matchSelectors(
+        element,
+        this.canNotBeLastSelector,
+        `_canNotBeLast in ${context}`
+      ) : false;
 
-    console.groupEnd('_canNotBeLast ?');
+    console.groupEnd(`_canNotBeLast ?\n[${context}]`);
     return canItBeLast;
   }
 

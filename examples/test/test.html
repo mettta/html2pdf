@@ -2932,6 +2932,7 @@
     data-preloader-target='main.layout_main'
     data-preloader-background='#F2F5F9'
     data-can-not-be-last-selector='sdoc-section-title'
+    data-forced-page-break-selector='H2'
     src="bundle.js"></script>
 
 </head>
@@ -3026,7 +3027,7 @@
       <div class="main" id="printTHISpreloader">
         <div class="content" id="printTHIS">
 
-          <div filler style="height:940px"></div>
+          <div filler style="height:1020px"></div>
           <!-- HTML2PDF: TEST CONTENT GOES HERE -->
 
 
@@ -3038,7 +3039,7 @@
 
   <h2>2.&nbsp;Examples</h2>
 </sdoc-section-title>
-
+<!-- <div data-neutral="" data-print-forced-page-break=""></div> -->
 </sdoc-section>
 
 
@@ -3072,6 +3073,9 @@ UID: SDOC-HIGH-REQS-MANAGEMENT
 TITLE: Requirements management
 STATEMENT: StrictDoc shall enable requirements management.
 </pre>
+
+<h2>TEST HEADER</h2>
+
 <p>Create a file called <tt class="docutils literal">hello_world.sdoc</tt> somewhere on your file system and copy the above text to it. <strong>The file must end with a newline character</strong>.</p>
 <p>Once you have <tt class="docutils literal">strictdoc</tt> installed (see <a href="#3-Installing-StrictDoc">🔗&nbsp;Installing StrictDoc</a> below), run StrictDoc as follows:</p>
 <pre class="code text literal-block">

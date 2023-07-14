@@ -217,8 +217,46 @@ export default class DocumentObjectModel {
     return element.dataset?.hasOwnProperty('printForcedPageBreak')
   }
 
+  insertForcedPageBreakBefore(element) {
+    const div = this.create();
+    this.setAttribute(div, SELECTOR.neutral);
+    this.setAttribute(div, SELECTOR.printForcedPageBreak);
+    this.insertBefore(element, div);
+    return div;
+  }
+
+  findAllSelectorsInside(element, selectors) {
+    if (typeof selectors === 'string') {
+      selectors = [selectors]
+    };
+    return [...selectors].flatMap(
+      selector => [...element.querySelectorAll(selector)]
+    )
+  }
+
+  isFirstChildOfFirstChild(element, rootElement) {
+    if (!element || !element.parentElement) {
+      return false;
+    }
+
+    let currentElement = element;
+
+    while (currentElement.parentElement && currentElement !== rootElement) {
+      if (currentElement.parentElement.firstElementChild !== currentElement) {
+        return false;
+      }
+
+      currentElement = currentElement.parentElement;
+    }
+
+    // * Making sure we get to the end,
+    // * and don't exit with "false" until the end of the check.
+    return currentElement === rootElement;
+  }
+
   findAllForcedPageBreakInside(element) {
-    return [...element.querySelectorAll('[data-print-forced-page-break]')];
+    // '[data-print-forced-page-break]'
+    return [...element.querySelectorAll(SELECTOR.printForcedPageBreak)];
   }
 
   isNoBreak(element) {

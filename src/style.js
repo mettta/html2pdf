@@ -134,6 +134,11 @@ ${SELECTOR.neutral} span {
   background-color: transparent;
 }
 
+${SELECTOR.printForcedPageBreak} {
+  display: block;
+  visibility: hidden;
+}
+
 @media print {
   ${SELECTOR.root} {
     /* to prevent a blank last page */
