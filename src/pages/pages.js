@@ -1379,6 +1379,11 @@ export default class Pages {
     const consoleMark = ['%c_splitGridNode\n', 'color:white',];
     this.debugMode && this.debugToggler._splitGridNode && console.group('_splitGridNode');
 
+    // this.debugMode && this.debugToggler._splitGridNode && console.log(
+    //   ...consoleMark,
+    //   'node', this.DOM.getComputedStyle(node)
+    // );
+
     // ** Take the node children.
     const children = this._getChildren(node);
     this.debugMode && this.debugToggler._splitGridNode && console.log(
@@ -1391,8 +1396,16 @@ export default class Pages {
       (result, currentElement, currentIndex, array) => {
 
         const currentStyle = this.DOM.getComputedStyle(currentElement);
-        const currentColumnStart = parseInt(currentStyle.getPropertyValue("grid-column-start"));
-        const currentColumnEnd = parseInt(currentStyle.getPropertyValue("grid-column-end"));
+        // this.debugMode && this.debugToggler._splitGridNode && console.log(
+        //   ...consoleMark,
+        //   'currentStyle', currentStyle
+        // );
+
+        // TODO: grid auto flow variants
+        const start = currentStyle.getPropertyValue("grid-column-start");
+        const end = currentStyle.getPropertyValue("grid-column-end");
+        const currentColumnStart = (start === 'auto') ? 'auto' : parseInt(currentStyle.getPropertyValue("grid-column-start"));
+        const currentColumnEnd = (end === 'auto') ? 'auto' : parseInt(currentStyle.getPropertyValue("grid-column-end"));
 
         const newItem = {
           element: currentElement,
@@ -1401,15 +1414,42 @@ export default class Pages {
           top: this.DOM.getElementTop(currentElement)
         };
 
-        if(!result.length || (result.at(-1).at(-1).start >= newItem.start)) {
+        this.debugMode && this.debugToggler._splitGridNode && console.log(
+          ...consoleMark,
+          '{ ???', currentElement, result
+        );
+
+        if(
+          !result.length
+          || (result.at(-1).at(-1).start >= newItem.start)
+          || result.at(-1).at(-1).start === 'auto'
+          || newItem.start === 'auto'
+        ) {
           // * If this is the beginning, or if a new line.
-          // * Add a new group and a new item in it:
-          result.push([newItem]);
+          if (
+            result.at(-1)
+            && this._canNotBeLast(result.at(-1).at(-1).element, 'in _splitGridNode')
+          ) {
+            // ** If the previous last element cannot be the last element,
+            // ** add to the previous group.
+            result.at(-1).push(newItem);
+          } else {
+            // * Add a new group and a new item in it:
+            result.push([newItem]);
+          }
+          this.debugMode && this.debugToggler._splitGridNode && console.log(
+            ...consoleMark,
+            'IF new:', newItem, [...result]
+          );
           return result
         } if(result.length && (result.at(-1).at(-1).start < newItem.start)) {
           // * If the order number is increasing, it is a grid row continuation.
           // * Add a new element to the end of the last group:
           result.at(-1).push(newItem);
+          this.debugMode && this.debugToggler._splitGridNode && console.log(
+            ...consoleMark,
+            'IF new:', newItem, [...result]
+          );
           return result
         }
 
@@ -1440,13 +1480,13 @@ export default class Pages {
 
     // ** We want to know the top point of each row
     // ** to calculate the parts to split.
-    // ** After sorting, we can use the element at(-1) for this.
+    // ** After sorting, we can use [0] as the smallest element for this purpose.
     // [ [top, top, top], [top, top, top], [top, top, top] ] =>
     // [ [top, top, max-top], [top, top, max-top], [top, top, max-top] ] =>
     // [max-top, max-top, max-top]
     const topRowPoints = childrenGroups
       .map(row => row.map(obj => obj.top).sort())
-      .map(arr => arr.at(-1));
+      .map(arr => arr[0]);
     this.debugMode && this.debugToggler._splitGridNode && console.log(
       ...consoleMark,
       'topRowPoints', topRowPoints
