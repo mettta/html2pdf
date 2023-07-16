@@ -25,6 +25,7 @@ export default class Pages {
       _parseNode: false,
       _splitPreNode: false,
       _splitTableNode: false,
+      _splitGridNode: false,
       _matchSelectors: false,
       _canNotBeLast: false,
     }
@@ -57,6 +58,8 @@ export default class Pages {
     this.minPreFirstBlockLines = 3;
     this.minPreLastBlockLines = 3;
     this.minPreBreakableLines = this.minPreFirstBlockLines + this.minPreLastBlockLines;
+    // Grid:
+    this.minBreakableGridRows = 5;
 
     this.imageReductionRatio = 0.8;
 
@@ -412,6 +415,20 @@ export default class Pages {
         this.debugMode && this.debugToggler._parseNode && console.info(...consoleMark,
           '💚 TABLE');
         children = this._splitTableNode(currentElement, newPageBottom) || [];
+
+      } else if (this.DOM.isGridAutoFlowRow(currentElement)) {
+        // ** If it is a grid element.
+        // ????? Process only some modifications of grids!
+        // ***** There's an inline grid check here, too.
+        // ***** But since the check for inline is below and real inline children don't get here,
+        // ***** it is expected that the current element is either block or actually
+        // ***** behaves as a block element in the flow thanks to its content.
+        this.debugMode && this.debugToggler._parseNode && console.info(...consoleMark,
+          '💜 GRID');
+        children = this._splitGridNode(currentElement, newPageBottom) || [];
+
+
+        // TODO LI: если в LI есть UL, маркер может оставаться на прежней странице - см. скрин в телеге.
         // } else if (this._isLiNode(currentElement)) {
         //   // todo
         //   // now make all except UL unbreakable
@@ -1098,6 +1115,9 @@ export default class Pages {
   }
 
   _splitTableNode(node, pageBottom) {
+    // * Split simple tables, without regard to col-span and the like.
+    // TODO test more complex tables
+
     const consoleMark = ['%c_splitTableNode\n', 'color:white',];
 
     this.debugMode && this.debugToggler._splitTableNode && console.time('_splitTableNode')
@@ -1339,6 +1359,207 @@ export default class Pages {
     );
 
     this.debugMode && this.debugToggler._splitTableNode && console.timeEnd('_splitTableNode')
+    return [...splits, lastPart]
+  }
+
+  _splitGridNode(node, pageBottom) {
+    // * Split simple grids,
+    // * consider that templating is used, but there is no content in complex areas.
+    // * If something unclear is encountered - do not split at all.
+    // TODO (shall we scale?).
+
+    const consoleMark = ['%c_splitGridNode\n', 'color:white',];
+    this.debugMode && this.debugToggler._splitGridNode && console.group('_splitGridNode');
+
+    console.log(this.DOM.getComputedStyle(node));
+
+    // ** Take the node children.
+    const children = this._getChildren(node);
+    this.debugMode && this.debugToggler._splitGridNode && console.log(
+      ...consoleMark,
+      'children', children
+    );
+
+    // ** Organize the children into groups by rows.
+    const childrenGroups = children.reduce(
+      (result, currentElement, currentIndex, array) => {
+
+        const currentStyle = this.DOM.getComputedStyle(currentElement);
+        const currentColumnStart = parseInt(currentStyle.getPropertyValue("grid-column-start"));
+        const currentColumnEnd = parseInt(currentStyle.getPropertyValue("grid-column-end"));
+
+        const newItem = {
+          element: currentElement,
+          start: currentColumnStart,
+          end: currentColumnEnd,
+          top: this.DOM.getElementTop(currentElement)
+        };
+
+        if(!result.length || (result.at(-1).at(-1).start >= newItem.start)) {
+          // * If this is the beginning, or if a new line.
+          // * Add a new group and a new item in it:
+          result.push([newItem]);
+          return result
+        } if(result.length && (result.at(-1).at(-1).start < newItem.start)) {
+          // * If the order number is increasing, it is a grid row continuation.
+          // * Add a new element to the end of the last group:
+          result.at(-1).push(newItem);
+          return result
+        }
+
+        this.debugMode
+          && console.assert(
+            true,
+            '_splitGridNode: An unexpected case of splitting a grid.',
+            '\nOn the element:',
+            currentElement
+        );
+      }, []
+    );
+    this.debugMode && this.debugToggler._splitGridNode && console.log(
+      ...consoleMark,
+      'childrenGroups', childrenGroups
+    );
+
+    const nodeRows = childrenGroups.length;
+    const nodeHeight = this.DOM.getElementHeight(node);
+
+    // ** If there are enough rows for the split to be readable,
+    // ** and the node is not too big (because of the content),
+    // ** then we will split it.
+    if (nodeRows < this.minBreakableGridRows && nodeHeight < this.referenceHeight) {
+      // ** Otherwise, we don't split it.
+      return []
+    }
+
+    // ** We want to know the top point of each row
+    // ** to calculate the parts to split.
+    // ** After sorting, we can use the element at(-1) for this.
+    // [ [top, top, top], [top, top, top], [top, top, top] ] =>
+    // [ [top, top, max-top], [top, top, max-top], [top, top, max-top] ] =>
+    // [max-top, max-top, max-top]
+    const topRowPoints = childrenGroups
+      .map(row => row.map(obj => obj.top).sort())
+      .map(arr => arr.at(-1));
+    this.debugMode && this.debugToggler._splitGridNode && console.log(
+      ...consoleMark,
+      'topRowPoints', topRowPoints
+    );
+
+    // ** Calculate the possible parts.
+    // TODO: same as the table
+
+    // ** Prepare node parameters
+    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
+    const nodeWrapperHeight = this.DOM.getEmptyNodeHeight(node);
+    const firstPartHeight = pageBottom
+      - nodeTop
+      // - this.signpostHeight
+      - nodeWrapperHeight;
+    const fullPagePartHeight = this.referenceHeight
+      // - 2 * this.signpostHeight
+      - nodeWrapperHeight;
+
+    console.log('firstPartHeight', firstPartHeight);
+    console.log('fullPagePartHeight', fullPagePartHeight);
+
+    // TODO 1267 -  как в таблице
+
+    // * Calculate Table Splits Ids
+
+    const topsArr = topRowPoints;
+
+    let splitsIds = [];
+    let currentPageBottom = firstPartHeight;
+
+    for (let index = 0; index < topsArr.length; index++) {
+
+      if (topsArr[index] > currentPageBottom) {
+
+        // TODO split long TR
+        // когда много диаграмм, или очень длинный текст
+
+        if (index > this.minLeftRows) {
+          // * avoid < minLeftRows rows on first page
+          // *** If a table row starts in the next part,
+          // *** register the previous one as the beginning of the next part.
+          splitsIds.push(index - 1);
+        }
+
+        currentPageBottom = topsArr[index - 1] + fullPagePartHeight;
+
+        // check if next fits
+
+      }
+    };
+
+    console.log('splitsIds', splitsIds);
+
+    const insertGridSplit = (startId, endId) => {
+      // * The function is called later.
+      // TODO Put it in a separate method: THIS AND TABLE
+
+      this.debugMode && this.debugToggler._splitGridNode && console.log(
+        ...consoleMark, `=> insertGridSplit(${startId}, ${endId})`
+      );
+
+      const nodeWrapper = this.DOM.cloneNodeWrapper(node);
+      nodeWrapper.style.width = `${this.DOM.getElementWidth(node)}px`;
+
+      // const partEntries = nodeEntries.rows.slice(startId, endId);
+      const partEntries = childrenGroups
+        .slice(startId, endId)
+        .flat()
+        .map(obj => obj.element);
+      this.debugMode && this.debugToggler._splitGridNode && console.log(
+        ...consoleMark, `partEntries`, partEntries
+      );
+
+      const part = this.DOM.createPrintNoBreak();
+      node.before(part);
+
+      if (startId) {
+        // if is not first part
+        // this.DOM.insertAtEnd(part, this.DOM.createSignpost('(table continued)', this.signpostHeight));
+      }
+
+      // в таблице другое
+      // this.DOM.insertAtEnd(
+      //   part,
+      //   this.DOM.createTable({
+      //     wrapper: nodeWrapper,
+      //     caption: this.DOM.cloneNode(nodeEntries.caption),
+      //     thead: this.DOM.cloneNode(nodeEntries.thead),
+      //     // tfoot,
+      //     tbody: partEntries,
+      //   }),
+      //   this.DOM.createSignpost('(table continues on the next page)', this.signpostHeight)
+      // );
+      this.DOM.insertAtEnd(part, nodeWrapper);
+      this.DOM.insertAtEnd(nodeWrapper, ...partEntries);
+
+      return part
+    };
+
+
+    const splits = splitsIds.map((value, index, array) => insertGridSplit(array[index - 1] || 0, value))
+
+    this.debugMode && this.debugToggler._splitGridNode && console.log(
+      ...consoleMark,
+      'splits', splits
+    );
+
+    // create LAST PART
+    const lastPart = this.DOM.createPrintNoBreak();
+    node.before(lastPart);
+    this.DOM.insertAtEnd(
+      lastPart,
+      // this.DOM.createSignpost('(table continued)', this.signpostHeight),
+      node
+    );
+
+    this.debugMode && this.debugToggler._splitGridNode && console.groupEnd('_splitGridNode')
+    // return children;
     return [...splits, lastPart]
   }
 

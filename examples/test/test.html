@@ -2932,7 +2932,7 @@
     data-preloader-target='main.layout_main'
     data-preloader-background='#F2F5F9'
     data-can-not-be-last-selector='sdoc-section-title'
-    data-forced-page-break-selector='H2'
+    data-forced-page-break-selector=''
     src="bundle.js"></script>
 
 </head>
@@ -3027,90 +3027,82 @@
       <div class="main" id="printTHISpreloader">
         <div class="content" id="printTHIS">
 
-          <div filler style="height:1020px"></div>
+          <div filler style="height:600px"></div>
           <!-- HTML2PDF: TEST CONTENT GOES HERE -->
 
 
-<sdoc-section>
+<sdoc-requirement requirement-view="table" data-level="1.2" data-testid="requirement-style-table">
 
-<sdoc-section-title
-  data-level="2"
->
+  <sdoc-requirement-title>
+    1.2.&nbsp;Reduce documentation hazards</sdoc-requirement-title>
 
-  <h2>2.&nbsp;Examples</h2>
-</sdoc-section-title>
-<!-- <div data-neutral="" data-print-forced-page-break=""></div> -->
-</sdoc-section>
+  <sdoc-requirement-field-label>UID:</sdoc-requirement-field-label>
+  <sdoc-requirement-field data-field-type="singleline" data-field-label="UID">
+    GOAL-2-REDUCE-DOCUMENTATION-HAZARDS
+  </sdoc-requirement-field>
 
-
-<sdoc-section class="class1 class2">
-
-<sdoc-section-title
-  data-level="2.1"
->
-
-  <h3>2.1.&nbsp;Hello World</h3>
-</sdoc-section-title>
-  <table class="table_meta">
-  <tr>
-    <th>
-      UID:
-    </th>
-    <td>
-      SDOC_UG_HELLO_WORLD
-    </td>
-  </tr>
-  </table>
-  <sdoc-section-text>
+  <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
+  <sdoc-requirement-field data-field-label="statement">
     <div class="document">
-<p>&quot;Hello World&quot; example of the SDoc text language:</p>
-<pre class="code text literal-block">
-[DOCUMENT]
-TITLE: StrictDoc
+      <p>There shall exist no (or less) opportunity for writing incorrect or inconsistent
+        documentation.</p>
+    </div>
+  </sdoc-requirement-field>
 
-[REQUIREMENT]
-UID: SDOC-HIGH-REQS-MANAGEMENT
-TITLE: Requirements management
-STATEMENT: StrictDoc shall enable requirements management.
-</pre>
+<!-- test -->
+  <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
+  <sdoc-requirement-field data-field-label="statement">
+    <div class="document">
+      <p>There shall exist no (or less) opportunity for writing incorrect or inconsistent
+        documentation.</p>
+    </div>
+  </sdoc-requirement-field>
+<!-- //test -->
+<!-- test -->
+  <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
+  <sdoc-requirement-field data-field-label="statement">
+    <div class="document">
+      <p>There shall exist no (or less) opportunity for writing incorrect or inconsistent
+        documentation.</p>
+    </div>
+  </sdoc-requirement-field>
+<!-- //test -->
+<!-- test -->
+  <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
+  <sdoc-requirement-field data-field-label="statement">
+    <div class="document">
+      <p>There shall exist no (or less) opportunity for writing incorrect or inconsistent
+        documentation.</p>
+    </div>
+  </sdoc-requirement-field>
+<!-- //test -->
+<!-- test -->
+  <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
+  <sdoc-requirement-field data-field-label="statement">
+    <div class="document">
+      <p>There shall exist no (or less) opportunity for writing incorrect or inconsistent
+        documentation.</p>
+    </div>
+  </sdoc-requirement-field>
+<!-- //test -->
 
-<h2>TEST HEADER</h2>
+  <sdoc-requirement-field-label>comment:</sdoc-requirement-field-label>
+  <sdoc-requirement-field data-field-label="comment">
+    <div class="document">
+      <p>Every serious engineering activity, such as safety engineering or systems
+        engineering, starts with requirements. The more critical is a product the higher
+        the importance of good documentation.</p>
+      <p>Technical documentation can be and often becomes a source of hazards.
+        It is recognized that many failures stem from inadequate requirements
+        engineering. While it is not possible to fix the problem of inadequate
+        requirements engineering in general, it is definitely possible to improve
+        software that supports engineers in activities such as requirements engineering
+        and writing technical documentation.</p>
+    </div>
 
-<p>Create a file called <tt class="docutils literal">hello_world.sdoc</tt> somewhere on your file system and copy the above text to it. <strong>The file must end with a newline character</strong>.</p>
-<p>Once you have <tt class="docutils literal">strictdoc</tt> installed (see <a href="#3-Installing-StrictDoc">🔗&nbsp;Installing StrictDoc</a> below), run StrictDoc as follows:</p>
-<pre class="code text literal-block">
-strictdoc export hello.sdoc
-</pre>
-<p>The expected output:</p>
-<pre class="code text literal-block">
-$ strictdoc export hello.sdoc
-Parallelization: Enabled
-Step 'Collect traceability information' start
-Step 'Find and read SDoc files' start
-Reading SDOC: hello.sdoc .................................... 0.08s
-Step 'Find and read SDoc files' took: 0.09 sec
-Step 'Collect traceability information' start
-Step 'Collect traceability information' took: 0.01 sec
-Step 'Collect traceability information' took: 0.11 sec
-Published: StrictDoc ........................................ 0.24s
-...
-Export completed. Documentation tree can be found at:
-.../output/html
-</pre>
-<p>The HTML output produced so far has been generated statically. Now, start a StrictDoc server from the same directory:</p>
-<pre class="code bash literal-block">
-strictdoc<span class="whitespace"> </span>server<span class="whitespace"> </span>.
-</pre>
-<p>The expected output should contain the following line:</p>
-<pre class="code text literal-block">
-INFO:     Uvicorn running on http://127.0.0.1:5111 (Press CTRL+C to quit)
-</pre>
-<p>Open the URL in the browser and explore the contents of the example.</p>
-</div>
+  </sdoc-requirement-field>
 
-  </sdoc-section-text>
-</sdoc-section>
-          
+</sdoc-requirement>
 
           <!-- // HTML2PDF: TEST CONTENT GOES HERE -->
         </div>

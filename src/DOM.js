@@ -205,6 +205,22 @@ export default class DocumentObjectModel {
     return res;
   }
 
+  isGrid(element) {
+    const display = this.getComputedStyle(element).display;
+    const res = display === "grid" ||
+                display === "inline-grid";
+    return res;
+  }
+
+  isGridAutoFlowRow(element) {
+    const display = this.getComputedStyle(element).display;
+    const gridAutoFlow = this.getComputedStyle(element).gridAutoFlow;
+    const res1 = display === "grid" ||
+                 display === "inline-grid";
+    const res2 = gridAutoFlow === "row";
+    return res1 && res2;
+  }
+
   // todo {class, id, dataset, value} ?
   isNeutral(element) {
     // SELECTOR.neutral
