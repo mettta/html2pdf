@@ -118,6 +118,8 @@ export default class Pages {
 
     this.debugMode && console.groupCollapsed('•• init data ••');
     this.debugMode && console.log(
+      'this.referenceHeight', this.referenceHeight,
+      '\n',
       'this.canNotBeLastSelector', this.canNotBeLastSelector,
       '\n',
       'this.forcedPageBreakSelector', this.forcedPageBreakSelector,
@@ -1247,7 +1249,10 @@ export default class Pages {
     const topsArr = [
       ...nodeEntries.rows.map(
         (row) => this.DOM.getElementRootedTop(row, node)
-        + (this.isFirefox * this.DOM.getElementHeight(nodeEntries.caption))
+        // *** Convert NULL/Undefined to 0
+        // *** The logical nullish assignment (??=) operator
+        + ((this.DOM.getElementHeight(nodeEntries.caption) ?? 0)
+          * (this.isFirefox ?? 0))
       ),
       this.DOM.getElementRootedTop(nodeEntries.tfoot, node) || nodeHeight
     ];
