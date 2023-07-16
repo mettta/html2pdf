@@ -137,6 +137,8 @@ ${SELECTOR.neutral} span {
 ${SELECTOR.printForcedPageBreak} {
   display: block;
   visibility: hidden;
+  height: 0;
+  overflow: hidden;
 }
 
 @media print {
