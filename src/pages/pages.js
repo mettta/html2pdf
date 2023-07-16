@@ -1432,6 +1432,9 @@ export default class Pages {
           ) {
             // ** If the previous last element cannot be the last element,
             // ** add to the previous group.
+            this.debugMode
+              && this.debugToggler._splitGridNode
+              &&  console.log('%cLAST','color:red')
             result.at(-1).push(newItem);
           } else {
             // * Add a new group and a new item in it:
@@ -1484,9 +1487,16 @@ export default class Pages {
     // [ [top, top, top], [top, top, top], [top, top, top] ] =>
     // [ [top, top, max-top], [top, top, max-top], [top, top, max-top] ] =>
     // [max-top, max-top, max-top]
-    const topRowPoints = childrenGroups
-      .map(row => row.map(obj => obj.top).sort())
-      .map(arr => arr[0]);
+    const topRowPoints = [
+      ...childrenGroups
+        .map(row => row.map(obj => obj.top).sort())
+        .map(arr => arr[0]),
+      nodeHeight
+    ];
+      // ,
+      // this.DOM.getElementRootedTop(nodeEntries.tfoot, node) || nodeHeight
+
+
     this.debugMode && this.debugToggler._splitGridNode && console.log(
       ...consoleMark,
       'topRowPoints', topRowPoints
@@ -1570,6 +1580,10 @@ export default class Pages {
       if (startId) {
         // if is not first part
         // this.DOM.insertAtEnd(part, this.DOM.createSignpost('(table continued)', this.signpostHeight));
+
+        // TODO: insertions between parts will not disturb the original layout & CSS.
+        // Therefore, it is possible to insert an element after and before the parts
+        // and specify that the node is being broken.
       }
 
       // в таблице другое
