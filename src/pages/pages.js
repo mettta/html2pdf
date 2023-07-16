@@ -59,7 +59,7 @@ export default class Pages {
     this.minPreLastBlockLines = 3;
     this.minPreBreakableLines = this.minPreFirstBlockLines + this.minPreLastBlockLines;
     // Grid:
-    this.minBreakableGridRows = 5;
+    this.minBreakableGridRows = 4;
 
     this.imageReductionRatio = 0.8;
 
