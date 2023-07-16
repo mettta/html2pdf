@@ -110,7 +110,9 @@ export default class Pages {
 
       pageStarters.forEach(element => this.DOM.insertForcedPageBreakBefore(element));
     }
-    console.groupEnd(`_prepareForcedPageBreak`)
+    this.debugMode
+    && this.debugToggler._prepareForcedPageBreak
+    && console.groupEnd(`_prepareForcedPageBreak`)
   }
 
   _calculate() {
@@ -332,7 +334,8 @@ export default class Pages {
         // TODO !!! page width overflow for SVG
         if (currentImageHeight < this.referenceWidth) {
           // just leave it on the current page
-          console.warn('%c IMAGE is too wide', 'color: red');
+          this.debugMode && this.debugToggler._parseNode
+          && console.warn('%c IMAGE is too wide', 'color: red');
         }
 
         // if it fits
@@ -1376,8 +1379,6 @@ export default class Pages {
     const consoleMark = ['%c_splitGridNode\n', 'color:white',];
     this.debugMode && this.debugToggler._splitGridNode && console.group('_splitGridNode');
 
-    console.log(this.DOM.getComputedStyle(node));
-
     // ** Take the node children.
     const children = this._getChildren(node);
     this.debugMode && this.debugToggler._splitGridNode && console.log(
@@ -1465,8 +1466,8 @@ export default class Pages {
       // - 2 * this.signpostHeight
       - nodeWrapperHeight;
 
-    console.log('firstPartHeight', firstPartHeight);
-    console.log('fullPagePartHeight', fullPagePartHeight);
+      this.debugMode && this.debugToggler._splitGridNode && console.log('firstPartHeight', firstPartHeight);
+      this.debugMode && this.debugToggler._splitGridNode && console.log('fullPagePartHeight', fullPagePartHeight);
 
     // TODO 1267 -  как в таблице
 
@@ -1498,7 +1499,7 @@ export default class Pages {
       }
     };
 
-    console.log('splitsIds', splitsIds);
+    this.debugMode && this.debugToggler._splitGridNode && console.log('splitsIds', splitsIds);
 
     const insertGridSplit = (startId, endId) => {
       // * The function is called later.
@@ -1769,7 +1770,9 @@ export default class Pages {
         `=> ${canBeLastByTag || canBeLastByClass || canBeLastByAttribute}`
       );
 
-    console.groupEnd('_matchSelectors ?');
+    this.debugMode
+      && this.debugToggler._matchSelectors
+      && console.groupEnd('_matchSelectors ?');
     return canBeLastByTag || canBeLastByClass || canBeLastByAttribute;
   }
 
@@ -1791,7 +1794,9 @@ export default class Pages {
         `_canNotBeLast in ${context}`
       ) : false;
 
-    console.groupEnd(`_canNotBeLast ?\n[${context}]`);
+    this.debugMode
+      && this.debugToggler._canNotBeLast
+      && console.groupEnd(`_canNotBeLast ?\n[${context}]`);
     return canItBeLast;
   }
 
