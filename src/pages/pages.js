@@ -1511,7 +1511,7 @@ export default class Pages {
 
     // TODO 1267 -  как в таблице
 
-    // * Calculate Table Splits Ids
+    // * Calculate grid Splits Ids
 
     const topsArr = topRowPoints;
 
@@ -1549,9 +1549,6 @@ export default class Pages {
         ...consoleMark, `=> insertGridSplit(${startId}, ${endId})`
       );
 
-      const nodeWrapper = this.DOM.cloneNodeWrapper(node);
-      nodeWrapper.style.width = `${this.DOM.getElementWidth(node)}px`;
-
       // const partEntries = nodeEntries.rows.slice(startId, endId);
       const partEntries = childrenGroups
         .slice(startId, endId)
@@ -1561,7 +1558,13 @@ export default class Pages {
         ...consoleMark, `partEntries`, partEntries
       );
 
-      const part = this.DOM.createPrintNoBreak();
+      // const part = this.DOM.createPrintNoBreak();
+      // ! Do not wrap nodes so as not to break styles.
+      // TODO - Check for other uses of createPrintNoBreak to see if the wrapper can be avoided.
+
+      const part = this.DOM.cloneNodeWrapper(node);
+      part.style.width = `${this.DOM.getElementWidth(node)}px`;
+      this.DOM.setPrintNoBreak(part);
       node.before(part);
 
       if (startId) {
@@ -1581,8 +1584,8 @@ export default class Pages {
       //   }),
       //   this.DOM.createSignpost('(table continues on the next page)', this.signpostHeight)
       // );
-      this.DOM.insertAtEnd(part, nodeWrapper);
-      this.DOM.insertAtEnd(nodeWrapper, ...partEntries);
+      // this.DOM.insertAtEnd(part, nodeWrapper);
+      this.DOM.insertAtEnd(part, ...partEntries);
 
       return part
     };
@@ -1596,17 +1599,21 @@ export default class Pages {
     );
 
     // create LAST PART
-    const lastPart = this.DOM.createPrintNoBreak();
-    node.before(lastPart);
-    this.DOM.insertAtEnd(
-      lastPart,
-      // this.DOM.createSignpost('(table continued)', this.signpostHeight),
-      node
-    );
+    // TODO ??? is that really needed?
+    // const lastPart = this.DOM.createPrintNoBreak();
+    // node.before(lastPart);
+    // this.DOM.insertAtEnd(
+    //   lastPart,
+    //   // this.DOM.createSignpost('(table continued)', this.signpostHeight),
+    //   node
+    // );
+
+    // LAST PART handling
+    this.DOM.setPrintNoBreak(node);
 
     this.debugMode && this.debugToggler._splitGridNode && console.groupEnd('_splitGridNode')
     // return children;
-    return [...splits, lastPart]
+    return [...splits, node]
   }
 
   // TODO split text with BR
