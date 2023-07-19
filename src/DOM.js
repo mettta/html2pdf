@@ -504,10 +504,10 @@ export default class DocumentObjectModel {
   }
 
   getElementRootedRealBottom(element, root) {
+    // TODO : performance
     // * Because of the possible bottom margin
     // * of the parent element or nested last children,
     // * the exact check will be through the creation of the test element.
-    // TODO : performance
     // ? However, the performance compared to getElementRootedBottom() decreases:
     // ? 0.001 to 0.3 ms per such operation.
     const test = this.create();
@@ -520,18 +520,15 @@ export default class DocumentObjectModel {
     //    {element, top});
     test.remove();
     return top;
+
+    // const bottomMargin = this.getComputedStyle(element).marginBottom;
+    // return this.getElementRootedBottom(element, root) + bottomMargin;
   }
 
   getElementRootedRealTop(element, root) {
     // TODO : performance
-    const test = this.create();
-    // *** Top margin is permeable to DIV,
-    // *** so it should add some padding to pop up above the margin.
-    test.style.paddingBottom = '0.1px';
-    element && element.before(test);
-    const top = element ? this.getElementRootedTop(test, root) : undefined;
-    test.remove();
-    return top;
+    const topMargin = parseInt(this.getComputedStyle(element).marginTop);
+    return this.getElementRootedTop(element, root) - topMargin;
   }
 
   isLineChanged(current, next) {
