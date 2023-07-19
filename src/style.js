@@ -151,6 +151,11 @@ ${SELECTOR.printForcedPageBreak} {
     padding-bottom: 0;
   }
 
+  ${SELECTOR.contentFlow} {
+    -webkit-mask-image: none !important;
+            mask-image: none !important;
+  }
+
   ${SELECTOR.printIgnore},
   ${SELECTOR.virtualPaper} {
     display: contents;

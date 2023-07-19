@@ -1,3 +1,5 @@
+import addCSSMask from './mask.js';
+
 const CONSOLE_CSS_LABEL_PREVIEW = 'border:1px solid #ee00ee;'
                                 + 'background:#EEEEEE;'
                                 + 'color:#ee00ee;'
@@ -16,6 +18,7 @@ export default class Preview {
     paper,
   }) {
 
+    this.config = config;
     this.debugMode = config.debugMode;
     this.DOM = DOM;
     this.selector = selector;
@@ -24,6 +27,11 @@ export default class Preview {
     this.virtualPaperGapSelector = selector?.virtualPaperGap;
     this.runningSafetySelector = selector?.runningSafety;
     this.printPageBreakSelector = selector?.printPageBreak;
+
+    // selectors used for the mask
+    this.virtualPaper = selector?.virtualPaper;
+    this.virtualPaperTopMargin = selector?.virtualPaperTopMargin;
+    this.paperBody = selector?.paperBody;
 
     // data
     this.pages = pages;
@@ -38,8 +46,36 @@ export default class Preview {
     this.debugMode && console.groupCollapsed('%c Preview ', CONSOLE_CSS_LABEL_PREVIEW);
     this._processFirstPage();
     this._processOtherPages();
+    this._addMask();
     this.debugMode && console.groupEnd('%c Preview ', CONSOLE_CSS_LABEL_PREVIEW);
 
+  }
+
+  _addMask() {
+    // The height of the paper is converted from millimeters to pixels.
+    // The 'height' of the HTML element will be an integer, which is inaccurate.
+    // In fact, it most likely contains a fractional part, and inaccuracy is accumulated.
+    // Therefore, let's calculate the average value on the whole set of pages.
+    const papers = [...this.paperFlow.querySelectorAll(this.virtualPaper)];
+    const maskHeight = this.DOM.getElementTop(papers.at(-1)) / (papers.length - 1);
+
+    // The height of the topMargin is converted from millimeters to pixels.
+    // The 'height' of the HTML element will be an integer, which is inaccurate.
+    // But we use this shift only 1 time, so the error is insignificant.
+    const topMargin = this.DOM.getElementHeight(
+      this.paperFlow.querySelector(this.virtualPaperTopMargin)
+    );
+
+    const bodyHeight = this.DOM.getElementHeight(
+      this.paperFlow.querySelector(this.paperBody)
+    );
+
+    addCSSMask({
+      targetElement: this.contentFlow,
+      maskHeight: maskHeight,
+      maskWindow: bodyHeight,
+      maskTopPosition: topMargin,
+    })
   }
 
   _processFirstPage() {
