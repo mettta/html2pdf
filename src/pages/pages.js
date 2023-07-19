@@ -34,6 +34,8 @@ export default class Pages {
     this.canNotBeLastSelector = this._prepareCanNotBeLastSelector(config.canNotBeLastSelector);
     // forced Page Break params:
     this.forcedPageBreakSelector = this._prepareForcedPageBreakSelector(config.forcedPageBreakSelector);
+    // do not break params:
+    this.noBreakSelector = this._prepareNoBreakSelector(config.noBreakSelector);
 
     // ***:
     this.DOM = DOM;
@@ -78,14 +80,22 @@ export default class Pages {
   }
 
   calculate() {
-    this._prepareForcedPageBreak();
+    this._prepareForcedPageBreakElements();
+    this._prepareNoBreakElements();
     this._calculate();
     this.debugMode && console.log('%c ✔ Pages.calculate()', CONSOLE_CSS_LABEL_PAGES, this.pages);
 
     return this.pages;
   }
 
-  _prepareForcedPageBreak() {
+  _prepareNoBreakElements() {
+    if (this.noBreakSelector) {
+      const elements = this.DOM.findAllSelectorsInside(this.contentFlow, this.noBreakSelector);
+      elements.forEach(element => this.DOM.setPrintNoBreak(element));
+    }
+  }
+
+  _prepareForcedPageBreakElements() {
     this.debugMode
     && this.debugToggler._prepareForcedPageBreak
     && console.group(`_prepareForcedPageBreak`);
@@ -394,10 +404,10 @@ export default class Pages {
       // otherwise try to break it and loop the children:
       let children = [];
 
-      if (this.DOM.isNoBreak(currentElement) || this._notSolved(currentElement)) {
+      if (this._doNotBreak(currentElement) || this._notSolved(currentElement)) {
         // don't break apart, thus keep an empty children array
         this.debugMode && this.debugToggler._parseNode && console.info(...consoleMark,
-          '💚 isNoBreak');
+          '🧡 isNoBreak');
         children = [];
       } else if (this.DOM.isComplexTextBlock(currentElement)) {
         this.debugMode && this.debugToggler._parseNode && console.info(...consoleMark,
@@ -1762,6 +1772,12 @@ export default class Pages {
     return string?.length ? string?.split(/\s+/) : [];
   }
 
+  _prepareNoBreakSelector(string) {
+    // TODO the same as _prepareForcedPageBreakSelector!
+    // * The settings may pass an empty string, prevent errors here.
+    return string?.length ? string?.split(/\s+/) : [];
+  }
+
   _sortSelectors(string) {
     const selectors = {
       tags : [],
@@ -1883,6 +1899,11 @@ export default class Pages {
 
   _isLiNode(element) {
     return this.DOM.getElementTagName(element) === 'LI';
+  }
+
+  _doNotBreak(element) {
+    console.log('🧡 _doNotBreak 🧡')
+    return this.DOM.isNoBreak(element)
   }
 
   _notSolved(element) {

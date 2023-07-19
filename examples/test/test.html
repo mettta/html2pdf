@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <!-- saved from url=(0069)http://127.0.0.1:5111/strictdoc/docs/strictdoc_01_user_guide-PDF.html -->
 <html lang="en">
-
 <head>
-
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta name="keywords"
-    content="strictdoc, documentation, documentation-tool, requirements-management, requirements, documentation-generator, requirement-specifications, requirements-engineering, technical-documentation, requirements-specification">
+  <meta name="keywords" content="strictdoc, documentation, documentation-tool, requirements-management, requirements, documentation-generator, requirement-specifications, requirements-engineering, technical-documentation, requirements-specification">
   <meta name="description" content="strictdoc. Software for technical documentation and requirements management.">
   <!-- <link rel="shortcut icon" href="http://127.0.0.1:5111/assets/favicon.ico" type="image/x-icon"> -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📍</text></svg>">
@@ -47,11 +44,11 @@
       --color-action: var(--color-fg-accent);
       --color-hover: var(--color-fg-contrast);
 
-      --color-border: rgba(0, 0, 0, .1);
-      --color-placeholder: rgba(0, 0, 0, .25);
+      --color-border: rgba(0,0,0,.1);
+      --color-placeholder: rgba(0,0,0,.25);
 
       --scrollbarBG: transparent;
-      --thumbBG: rgba(0, 0, 0, .05);
+      --thumbBG: rgba(0,0,0,.05);
 
       --base-rhythm: 8px;
 
@@ -66,15 +63,14 @@
       --base-gap: calc(var(--base-rhythm)*6);
       --base-padding: calc(var(--base-rhythm)*2);
       --node-padding: calc(var(--base-padding)*2);
-      --base-margin: calc(var(--base-rhythm)*3);
-      /* todo check and delete */
+      --base-margin: calc(var(--base-rhythm)*3); /* todo check and delete */
 
-      --base-elevation-0: 0 0 0 rgba(0, 0, 0, 0);
-      --base-elevation-node: 0 0 16px rgba(0, 0, 0, .1);
-      --base-elevation-modal: 0 0 32px rgba(0, 0, 0, .32);
+      --base-elevation-0: 0 0 0 rgba(0,0,0,0);
+      --base-elevation-node: 0 0 16px rgba(0,0,0,.1);
+      --base-elevation-modal: 0 0 32px rgba(0,0,0,.32);
 
-      --main-elevation-shadow: inset 8px 8px 16px rgba(0, 0, 0, .2);
-      --base-elevation: 0 0 16px rgba(0, 0, 0, .2);
+      --main-elevation-shadow: inset 8px 8px 16px rgba(0,0,0,.2);
+      --base-elevation: 0 0 16px rgba(0,0,0,.2);
 
       --traceability-arrow: 1.25rem;
 
@@ -108,16 +104,13 @@
       background-color: var(--color-bg-main);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     /* scrollbar */
 
     * {
       scrollbar-color: var(--thumbBG) var(--scrollbarBG);
     }
-
     ::-webkit-scrollbar:horizontal,
     ::-webkit-scrollbar:vertical,
     ::-webkit-scrollbar,
@@ -127,17 +120,17 @@
     ::-webkit-scrollbar-corner {
       background-color: var(--scrollbarBG);
     }
-
     ::-webkit-scrollbar-thumb:horizontal,
     ::-webkit-scrollbar-thumb:vertical,
     ::-webkit-scrollbar-thumb {
       background-color: var(--thumbBG)
-        /*
-  background-color: var(--scrollbarBG);
-  border: 3px solid var(--thumbBG);
-  border-radius: 6px;
-  */
+      /*
+      background-color: var(--scrollbarBG);
+      border: 3px solid var(--thumbBG);
+      border-radius: 6px;
+      */
     }
+    
   </style>
 
   <!-- <link rel="stylesheet" href="./User Guide - PDF_files/layout.css"> -->
@@ -148,21 +141,25 @@
       display: grid;
 
       grid-template-columns:
-        fit-content(var(--base-gap)) fit-content(20%) fit-content(20%) 1fr fit-content(20%) auto;
+                    fit-content(var(--base-gap))
+                    fit-content(20%)
+                    fit-content(20%)
+                    1fr
+                    fit-content(20%)
+                    auto;
       grid-template-rows:
-        var(--base-gap) minmax(0, 1fr)
-        /* https://github.com/w3c/csswg-drafts/issues/1777 */
-        calc(var(--base-rhythm)*4);
+                    var(--base-gap)
+                    minmax( 0, 1fr ) /* https://github.com/w3c/csswg-drafts/issues/1777 */
+                    calc(var(--base-rhythm)*4);
       grid-template-areas:
-        "nav  header   header   header   header    aside"
-        "nav  tree     bar_left main     bar_right aside"
-        "nav  footer   footer   footer   footer    aside";
+          "nav  header   header   header   header    aside"
+          "nav  tree     bar_left main     bar_right aside"
+          "nav  footer   footer   footer   footer    aside";
 
       place-items: stretch stretch;
       place-content: stretch stretch;
 
-      overflow: hidden;
-      /* Prevents scrolling before children's styles are triggered */
+      overflow: hidden; /* Prevents scrolling before children's styles are triggered */
     }
 
     .layout_nav {
@@ -179,7 +176,6 @@
     .layout_toc[data-position='left'] {
       grid-area: bar_left;
     }
-
     .layout_toc[data-position='right'] {
       grid-area: bar_right;
     }
@@ -203,15 +199,11 @@
       min-width: 0;
     }
 
-    /*  */
-
     .section-number {
       margin-right: .5rem;
       font-size: 0.85em;
       font-weight: bold;
     }
-
-    /* connection_status */
 
     .connection_status {
       position: fixed;
@@ -219,16 +211,8 @@
       top: 50%;
       left: 2rem;
       right: 2rem;
-      /* left: 1rem; */
-
-      /* background: rgba(255, 255, 255, 0.6);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 8px 24px rgba(0,0,0,.3);
-  backdrop-filter: blur(8px); */
-
-      box-shadow: 0 8px 32px rgba(0, 0, 0, .3);
+      box-shadow: 0 8px 32px rgba(0,0,0,.3);
       background: #fff;
-
       border-radius: 2rem;
       text-align: center;
     }
@@ -236,245 +220,250 @@
     .connection_status:not(:empty) {
       padding: .75rem 2rem;
     }
+
   </style>
 
   <!-- <link rel="stylesheet" href="./User Guide - PDF_files/content.css"> -->
   <style type="text/css">
-    /* .main */
+/* .main */
 
-    .main {
-      padding: var(--base-gap);
-      position: relative;
-      overflow: auto;
-      scroll-behavior: smooth;
-      height: 100%;
-      background-color: var(--color-bg-main);
-    }
+.main {
+  padding: var(--base-gap);
+  position: relative;
+  overflow: auto;
+  scroll-behavior: smooth;
+  height: 100%;
+  background-color: var(--color-bg-main);
+}
 
-    /* redefine main layout grid */
+/* redefine main layout grid */
 
-    [data-viewtype="source-file"] .main {
-      padding: 0;
-      background: white;
-    }
+[data-viewtype="source-file"] .main {
+  padding: 0;
+  background: white;
+}
 
-    /* .content */
+/* .content */
 
-    .content {
-      min-width: calc(var(--card-width) + calc(var(--base-padding)*4));
-    }
+.content {
+  min-width: calc(var(--card-width) + calc(var(--base-padding)*4));
+}
 
-    [data-viewtype="document"] .content {
-      display: block;
-      max-width: 900px;
-      margin-bottom: 300px;
-      margin-left: auto;
-      margin-right: auto;
-    }
+[data-viewtype="document"] .content {
+  display: block;
+  max-width: 900px;
+  margin-bottom: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
 
-    [data-viewtype="traceability"] .content {
-      display: grid;
-      place-items: stretch stretch;
-      grid-template-columns: minmax(min-content, max-content) minmax(var(--card-width), calc(2*var(--card-width))) minmax(min-content, max-content);
-      gap: var(--traceability-arrow) 0;
-      width: -moz-fit-content;
-      width: fit-content;
-      overflow: hidden;
-    }
+[data-viewtype="traceability"] .content {
+  display: grid;
+  place-items: stretch stretch;
+  grid-template-columns:  minmax(min-content, max-content)
+                          minmax(var(--card-width), calc(2*var(--card-width)))
+                          minmax(min-content, max-content);
+  gap: var(--traceability-arrow) 0;
+  width: -moz-fit-content;
+  width: fit-content;
+  overflow: hidden;
+}
 
-    [data-viewtype="requirements-coverage"] .content,
-    [data-viewtype="deep_traceability"] .content {
-      display: grid;
-      place-items: stretch stretch;
-      grid-template-columns: minmax(min-content, max-content) max-content minmax(min-content, max-content);
-      gap: var(--traceability-arrow) 0;
-      width: -moz-fit-content;
-      width: fit-content;
-      overflow: hidden;
-    }
+[data-viewtype="requirements-coverage"] .content,
+[data-viewtype="deep_traceability"] .content {
+  display: grid;
+  place-items: stretch stretch;
+  grid-template-columns:  minmax(min-content, max-content)
+                          max-content
+                          minmax(min-content, max-content);
+  gap: var(--traceability-arrow) 0;
+  width: -moz-fit-content;
+  width: fit-content;
+  overflow: hidden;
+}
 
-    [data-viewtype="table"] .content {
-      background-color: var(--color-bg-contrast);
-      display: block;
-      /* aligns the width of the white box of the content and the table: */
-      width: fit-content;
-    }
+[data-viewtype="table"] .content {
+  background-color: var(--color-bg-contrast);
+  display: block;
+  /* aligns the width of the white box of the content and the table: */
+  width: fit-content;
+}
 
-    /* TODO */
-    /* used in TR, DTR, requirements_coverage: */
-    .content_section {
-      display: contents;
-    }
+/* TODO */
+/* used in TR, DTR, requirements_coverage: */
+.content_section {
+  display: contents;
+}
+/* TODO */
+.content_item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-content: stretch;
+  align-items: stretch;
+}
 
-    /* TODO */
-    .content_item {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      flex-wrap: nowrap;
-      align-content: stretch;
-      align-items: stretch;
-    }
+/* traceability */
 
-    /* traceability */
+.content_item[data-role="parents"] {
+  grid-column: 1 / 2;
+}
 
-    .content_item[data-role="parents"] {
-      grid-column: 1 / 2;
-    }
+.content_item[data-role="current"] {
+  grid-column: 2 / 3;
+}
 
-    .content_item[data-role="current"] {
-      grid-column: 2 / 3;
-    }
+[data-viewtype="deep_traceability"] .content_item[data-role="current"] {
+  /* central column */
+  width: var(--card-width);
+}
 
-    [data-viewtype="deep_traceability"] .content_item[data-role="current"] {
-      /* central column */
-      width: var(--card-width);
-    }
+[data-viewtype="requirements-coverage"] .content_item[data-role="current"] {
+  /* central column */
+  width: calc(var(--card-width)*0.75);
+}
 
-    [data-viewtype="requirements-coverage"] .content_item[data-role="current"] {
-      /* central column */
-      width: calc(var(--card-width)*0.75);
-    }
+.content_item[data-role="children"] {
+  grid-column: 3 / 4;
+}
 
-    .content_item[data-role="children"] {
-      grid-column: 3 / 4;
-    }
+[data-viewtype="deep_traceability"] .content_item[data-role="current"]::before,
+[data-viewtype="traceability"] .content_item[data-role="current"]::before {
+  /* for vertical line in 'current' culumn */
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: calc(var(--traceability-arrow)*(-1));
+  left: 50%;
+  border-left: 1px dotted #000;
+}
 
-    [data-viewtype="deep_traceability"] .content_item[data-role="current"]::before,
-    [data-viewtype="traceability"] .content_item[data-role="current"]::before {
-      /* for vertical line in 'current' culumn */
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: calc(var(--traceability-arrow)*(-1));
-      left: 50%;
-      border-left: 1px dotted #000;
-    }
+/* meta info */
 
-    /* meta info */
+.table_meta {
+  width: auto;
+  border-collapse: collapse;
+  background-color: var(--color-bg-contrast);
+  /* font-size: .85em; */
+  text-align: left;
+}
 
-    .table_meta {
-      width: auto;
-      border-collapse: collapse;
-      background-color: var(--color-bg-contrast);
-      /* font-size: .85em; */
-      text-align: left;
-    }
+.table_meta th,
+.table_meta td {
+  padding: .15rem .5rem;
+  border: 1px solid #666;
+}
 
-    .table_meta th,
-    .table_meta td {
-      padding: .15rem .5rem;
-      border: 1px solid #666;
-    }
+[data-viewtype="table"] sdoc-node .free_text{
+  max-width: 900px;
+}
 
-    [data-viewtype="table"] sdoc-node .free_text {
-      max-width: 900px;
-    }
+/* ultimate table view */
 
-    /* ultimate table view */
+.table_meta {
+  width: auto;
+  border-collapse: collapse;
+  background-color: var(--color-bg-contrast);
+  /* font-size: .85em; */
+  text-align: left;
+}
 
-    .table_meta {
-      width: auto;
-      border-collapse: collapse;
-      background-color: var(--color-bg-contrast);
-      /* font-size: .85em; */
-      text-align: left;
-    }
+.table_meta th,
+.table_meta td {
+  padding: .15rem .5rem;
+  border: 1px solid #666;
+}
 
-    .table_meta th,
-    .table_meta td {
-      padding: .15rem .5rem;
-      border: 1px solid #666;
-    }
+/* ultimate table view */
 
-    /* ultimate table view */
+.content-view-table {
+  border-collapse: collapse;
+  width: 100%;
+  background-color: var(--color-bg-contrast);
+}
 
-    .content-view-table {
-      border-collapse: collapse;
-      width: 100%;
-      background-color: var(--color-bg-contrast);
-    }
-
-    /* .content-view-table td,
+/* .content-view-table td,
 .content-view-table th, */
-    .content-view-th,
-    .content-view-td {
-      padding: .5rem 1rem;
-      border: 1px solid #666;
-      vertical-align: top;
-    }
+.content-view-th,
+.content-view-td {
+  padding: .5rem 1rem;
+  border: 1px solid #666;
+  vertical-align: top;
+}
 
-    .content-view-th {
-      text-align: left;
-      text-transform: uppercase;
-      background-color: var(--color-border);
-      font-size: .85em;
-      font-weight: bold;
-    }
+.content-view-th {
+  text-align: left;
+  text-transform: uppercase;
+  background-color: var(--color-border);
+  font-size: .85em;
+  font-weight: bold;
+}
 
-    .content-view-td-type,
-    .content-view-td-meta {
-      background-color: var(--color-bg-main);
-      font-size: .85em;
-    }
+.content-view-td-type,
+.content-view-td-meta {
+  background-color: var(--color-bg-main);
+  font-size: .85em;
+}
 
-    .content-view-td-type {
-      background-color: var(--color-bg-main);
-      text-align: left;
-      font-weight: normal;
-      text-transform: uppercase;
-    }
+.content-view-td-type {
+  background-color: var(--color-bg-main);
+  text-align: left;
+  font-weight: normal;
+  text-transform: uppercase;
+}
 
-    .content-view-table div.document {
-      display: block;
-      max-width: 900px;
-    }
+.content-view-table div.document {
+  display: block;
+  max-width: 900px;
+}
 
-    .content-view-table p:first-child {
-      margin-top: 0;
-    }
+.content-view-table p:first-child {
+  margin-top: 0;
+}
 
-    .content-view-table p:last-child {
-      margin-bottom: 0;
-    }
+.content-view-table p:last-child {
+  margin-bottom: 0;
+}
 
-    .content-view-td:empty {
-      width: 1%;
-    }
+.content-view-td:empty {
+  width: 1%;
+}
 
-    .content-view-td-content:not(:empty) {
-      min-width: 333px;
-      width: 30%;
-    }
+.content-view-td-content:not(:empty) {
+  min-width: 333px;
+  width: 30%;
+}
 
-    .content-view-td-title:not(:empty) {
-      font-weight: bold;
-      min-width: 264px;
-    }
+.content-view-td-title:not(:empty) {
+  font-weight: bold;
+  min-width: 264px;
+}
 
-    .content-view-td-related:not(:empty) {
-      min-width: 264px;
-    }
+.content-view-td-related:not(:empty) {
+  min-width: 264px;
+}
 
-    .content-view-td-related,
-    .content-view-td-related>ul.requirement__link {
-      font-size: .85rem;
-      margin-top: 0;
-    }
+.content-view-td-related,
+.content-view-td-related > ul.requirement__link {
+  font-size: .85rem;
+  margin-top: 0;
+}
 
-    .content-view-td-related>ul.requirement__link:last-child {
-      margin-bottom: 0;
-    }
+.content-view-td-related > ul.requirement__link:last-child {
+  margin-bottom: 0;
+}
 
-    sdoc-main-placeholder {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      color: var(--color-placeholder);
-      font-weight: 700;
-      font-family: var(--code-font-family);
-    }
+sdoc-main-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-placeholder);
+  font-weight: 700;
+  font-family: var(--code-font-family);
+}
+
   </style>
 
   <!-- <link rel="stylesheet" href="./User Guide - PDF_files/node.css"> -->
@@ -529,7 +518,9 @@
       background-color: var(--color-bg-contrast);
     }
 
-    [data-role='current'] [node-role="requirement"] {}
+    [data-role='current'] [node-role="requirement"] {
+
+    }
 
     [data-role='parents'] sdoc-node[node-style="card"],
     [data-role='children'] sdoc-node[node-style="card"] {
@@ -541,7 +532,7 @@
       background-color: var(--color-highlight);
     }
 
-    [data-viewtype="traceability"] sdoc-node[node-style="card"]+sdoc-node[node-style="card"] {
+    [data-viewtype="traceability"] sdoc-node[node-style="card"] + sdoc-node[node-style="card"] {
       margin-top: var(--base-padding);
     }
 
@@ -584,7 +575,7 @@
       top: -2px;
     }
 
-    sdoc-main-placeholder+sdoc-node-controls {
+    sdoc-main-placeholder + sdoc-node-controls {
       opacity: 1;
     }
 
@@ -599,13 +590,14 @@
     sdoc-node-controls-line {
       display: flex;
     }
+    
   </style>
 
   <!-- <link rel="stylesheet" href="./User Guide - PDF_files/requirement.css"> -->
   <style type="text/css">
     :root {
       --requirement-container-limit: 500px;
-      --requirement-border-color: rgb(191, 191, 191);
+      --requirement-border-color: rgb(191,191,191);
       --requirement-border-width: 1px;
       --requirement-border-radius: 4px;
       --requirement-inner-borders-width: 1px;
@@ -626,12 +618,11 @@
       gap: var(--requirement-inner-borders-width);
 
       position: relative;
-      /* border: */
-      outline:
-        var(--requirement-border-width, 1px) solid var(--requirement-border-color, #bfbfbf);
-      /* min-width: 300px; */
-      /* compensate outline: */
-      min-width: 298px;
+      border:
+        var(--requirement-border-width, 1px)
+        solid
+        var(--requirement-border-color, #bfbfbf);
+      min-width: 300px;
       border-radius: var(--requirement-border-radius);
       overflow: hidden;
 
@@ -674,7 +665,7 @@
 
     sdoc-requirement-field-label {
       display: flex;
-      align-items: flex-start;
+      align-items:flex-start;
 
       padding-left: calc(var(--requirement-base-rhythm)*2);
       padding-right: calc(var(--requirement-base-rhythm)*2);
@@ -717,29 +708,32 @@
       background-color: var(--requirement-border-color);
     }
 
-    sdoc-requirement[requirement-view="table"] sdoc-requirement-title {
-      grid-column: 1 / 3;
-    }
+    sdoc-requirement[requirement-view="table"]
+      sdoc-requirement-title {
+        grid-column: 1 / 3;
+      }
 
-    sdoc-requirement[requirement-view="table"] sdoc-requirement-field-label {
-      grid-column: 1 / 2;
-      background-color: var(--requirement-bg-dark-color);
-    }
+    sdoc-requirement[requirement-view="table"]
+      sdoc-requirement-field-label {
+        grid-column: 1 / 2;
+        background-color: var(--requirement-bg-dark-color);
+      }
 
-    sdoc-requirement[requirement-view="table"] sdoc-requirement-field {
-      grid-column: 2 / 3;
-      background-color: var(--requirement-bg-light-color);
-    }
+    sdoc-requirement[requirement-view="table"]
+      sdoc-requirement-field {
+        grid-column: 2 / 3;
+        background-color: var(--requirement-bg-light-color);
+      }
 
     sdoc-node:not([node-style="card"]) {
       /* Making the node a container for the requirement: */
       container: node / inline-size;
       /*
-  HACK: [sdoc-node outline hack]
-    Buggy behavior for @container CSS feature:
-    after window resize, the 1px vertically space
-    appears randomly between nodes.
-  */
+      HACK: [sdoc-node outline hack]
+        Buggy behavior for @container CSS feature:
+        after window resize, the 1px vertically space
+        appears randomly between nodes.
+      */
       outline: 1px solid #fff;
       margin: 1px 0;
     }
@@ -754,16 +748,18 @@
         background-color: var(--requirement-bg-light-color);
       }
 
-      sdoc-requirement[requirement-view="table"] sdoc-requirement-title,
-      sdoc-requirement[requirement-view="table"] sdoc-requirement-field-label,
-      sdoc-requirement[requirement-view="table"] sdoc-requirement-field {
-        /* removes columns: */
-        grid-column: unset;
-      }
+      sdoc-requirement[requirement-view="table"]
+        sdoc-requirement-title,
+      sdoc-requirement[requirement-view="table"]
+        sdoc-requirement-field-label,
+      sdoc-requirement[requirement-view="table"]
+        sdoc-requirement-field {
+          /* removes columns: */
+          grid-column: unset;
+        }
     }
 
     @supports not (container-type: inline-size) {
-
       /* TODO test 888px */
       @media (max-width: 888px) {
         /* Do the same as if there was a container support */
@@ -775,12 +771,15 @@
           background-color: var(--requirement-bg-light-color);
         }
 
-        sdoc-requirement[requirement-view="table"] sdoc-requirement-title,
-        sdoc-requirement[requirement-view="table"] sdoc-requirement-field-label,
-        sdoc-requirement[requirement-view="table"] sdoc-requirement-field {
-          /* removes columns: */
-          grid-column: unset;
-        }
+        sdoc-requirement[requirement-view="table"]
+          sdoc-requirement-title,
+        sdoc-requirement[requirement-view="table"]
+          sdoc-requirement-field-label,
+        sdoc-requirement[requirement-view="table"]
+          sdoc-requirement-field {
+            /* removes columns: */
+            grid-column: unset;
+          }
       }
     }
 
@@ -790,13 +789,15 @@
       grid-template-columns: 1fr;
     }
 
-    sdoc-requirement[requirement-view="zebra"] sdoc-requirement-field-label {
-      background-color: var(--requirement-bg-dark-color);
-    }
+    sdoc-requirement[requirement-view="zebra"]
+      sdoc-requirement-field-label {
+        background-color: var(--requirement-bg-dark-color);
+      }
 
-    sdoc-requirement[requirement-view="zebra"] sdoc-requirement-field {
-      background-color: var(--requirement-bg-light-color);
-    }
+    sdoc-requirement[requirement-view="zebra"]
+      sdoc-requirement-field {
+        background-color: var(--requirement-bg-light-color);
+      }
 
     /* requirement-view="simple" */
 
@@ -804,7 +805,8 @@
       grid-template-columns: 1fr;
     }
 
-    sdoc-requirement[requirement-view="simple"] sdoc-requirement-field-label {
+    sdoc-requirement[requirement-view="simple"]
+    sdoc-requirement-field-label {
       background-color: #fff;
       padding-bottom: 0;
     }
@@ -824,452 +826,492 @@
 
     sdoc-section-title * {
       margin: 0;
-      display: inline;
+
+      /* This rule, when the element starts the page when printed,
+         creates illegal margins,
+         which breaks the rhythm of HTML2PDF4DOC
+         and generates blank pages:
+      */
+      /* display: inline; */
+    }
+
+    /* meta */
+
+    sdoc-meta {
+      display: inline-grid;
+      grid-template-columns: minmax(min-content, max-content) minmax(min-content, max-content);
+      place-items: stretch stretch;
+      place-content: stretch stretch;
+      position: relative;
+      border:
+        var(--requirement-border-width, 1px)
+        solid
+        var(--requirement-border-color, #bfbfbf);
+      border-radius: var(--requirement-border-radius);
+      overflow: hidden;
+
+      font-size: var(--font-size-sm);
+      margin: var(--requirement-base-rhythm) 0;
+      padding: calc(var(--requirement-base-rhythm)*0.5);
+      row-gap: 2px;
+    }
+
+    sdoc-meta-label,
+    sdoc-meta-field {
+      display: flex;
+      align-items: flex-start;
+      padding: calc(var(--requirement-base-rhythm)*0.25) var(--requirement-base-rhythm);
+      background-color: var(--color-bg-contrast);
+    }
+
+    sdoc-meta-label {
+      grid-column: 1 / 2;
+      font-family: var(--code-font-family);
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--requirement-label-color);
+      background-color: var(--color-bg-secondary);
+    }
+
+    sdoc-meta-field {
+      grid-column: 2 / 3;
     }
 
     /* PDF */
 
-sdoc-section + sdoc-section,
-sdoc-requirement + sdoc-requirement {
-  margin-top: var(--base-margin);
-}
+    sdoc-section + sdoc-section,
+    sdoc-section + sdoc-requirement,
+    sdoc-requirement + sdoc-requirement,
+    sdoc-requirement + sdoc-section {
+      margin-top: var(--base-margin);
+    }
+    
   </style>
 
   <!-- <link rel="stylesheet" href="./User Guide - PDF_files/requirement__temporary.css"> -->
   <style type="text/css">
-    /*  */
 
-    div.document {
-      display: contents;
-      /* hyphens: auto; */
-    }
+/*  */
 
-    div.document p {
-      margin: var(--base-margin) 0;
-    }
+div.document {
+  display: contents;
+  /* hyphens: auto; */
+}
 
-    h1 {
-      font-size: 2em;
-    }
+div.document p {
+  margin: var(--base-margin) 0;
+}
 
-    h2 {
-      font-size: 1.6em;
-    }
+h1 { font-size: 2em; }
+h2 { font-size: 1.6em; }
+h3 { font-size: 1.4em; }
+h4 { font-size: 1.2em; }
+h5 { font-size: 1em; }
+h6 { font-size: 1em; }
 
-    h3 {
-      font-size: 1.4em;
-    }
+/* requirement__title */
 
-    h4 {
-      font-size: 1.2em;
-    }
+.requirement__title {
+  margin: 0;
+  line-height: 1.6;
+  font-weight: bold;
+}
 
-    h5 {
-      font-size: 1em;
-    }
+[data-viewtype="requirements-coverage"] .requirement__title {
+  margin: 0;
+}
 
-    h6 {
-      font-size: 1em;
-    }
+/* blockquote */
 
-    /* requirement__title */
+blockquote {
+  color: #666;
+  padding: .25em 0 0.25em 1rem;
+  border-left: 4px solid #ccc;
+}
 
-    .requirement__title {
-      margin: 0;
-      line-height: 1.6;
-      font-weight: bold;
-    }
+/* pre.code */
 
-    [data-viewtype="requirements-coverage"] .requirement__title {
-      margin: 0;
-    }
+pre.code {
+  font-family: var(--code-font-family);
 
-    /* blockquote */
+  font-size: var(--code-font-size);
+  line-height: 1.8;
+  margin:   var(--code-font-size) 0;
+  padding:  calc(var(--code-font-size)*1.2)
+            calc(var(--code-font-size)*1.2)
+            calc(var(--code-font-size)*1.2)
+            calc(var(--code-font-size)*2);
 
-    blockquote {
-      color: #666;
-      padding: .25em 0 0.25em 1rem;
-      border-left: 4px solid #ccc;
-    }
+  overflow: auto;
+  background-color: var(--color-bg-main);
+  border: 1px solid var(--color-border);
+}
 
-    /* pre.code */
+/* ``some text`` is generated into: <tt class="docutils literal"> by docutils. */
+tt.literal {
+  position: relative;
+  padding: 2px 6px;
+  font-style: normal;
+  font-family: var(--code-font-family);
+  font-size: var(--code-font-size);
+  background-color: var(--color-bg-main);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
 
-    pre.code {
-      font-family: var(--code-font-family);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
 
-      font-size: var(--code-font-size);
-      line-height: 1.8;
-      margin: var(--code-font-size) 0;
-      padding: calc(var(--code-font-size)*1.2) calc(var(--code-font-size)*1.2) calc(var(--code-font-size)*1.2) calc(var(--code-font-size)*2);
+/* ul */
 
-      overflow: auto;
-      background-color: var(--color-bg-main);
-      border: 1px solid var(--color-border);
-    }
+div.document ul,
+div.document ol {
+  padding-left: 1.6em;
+}
 
-    /* ``some text`` is generated into: <tt class="docutils literal"> by docutils. */
-    tt.literal {
-      position: relative;
-      padding: 2px 6px;
-      font-style: normal;
-      font-family: var(--code-font-family);
-      font-size: var(--code-font-size);
-      background-color: var(--color-bg-main);
-      border: 1px solid var(--color-border);
-      border-radius: 4px;
+div.document td ul,
+div.document dt ol {
+  margin: 0;
+  padding-left: 1em;
+}
 
-      overflow-wrap: break-word;
-      word-wrap: break-word;
-      -webkit-box-decoration-break: clone;
-      box-decoration-break: clone;
-    }
+/* object */
 
-    /* ul */
+div.document img,
+div.document object {
+  width: 100%;
+  padding: 1em;
+  background: var(--color-bg-contrast);
+}
 
-    div.document ul,
-    div.document ol {
-      padding-left: 1.6em;
-    }
+/* meta table */
 
-    div.document td ul,
-    div.document dt ol {
-      margin: 0;
-      padding-left: 1em;
-    }
+dl.requirement__meta {
+  display: grid;
+  grid-template-columns: min-content auto;
+  place-items: stretch stretch;
+  gap: 1px 1px;
+  border: 1px solid #ddd;
+  background-color: #ddd;
 
-    /* object */
+  width: fit-content;
+  margin: 0;
+  margin-bottom: 1rem;
+}
 
-    div.document img,
-    div.document object {
-      width: 100%;
-      padding: 1em;
-      background: var(--color-bg-contrast);
-    }
+.requirement__title + dl.requirement__meta {
+  margin-top: 1rem;
+}
 
-    /* meta table */
+.requirement__meta dt,
+.requirement__meta dd {
+  margin: 0;
+  padding: 2px 8px;
+  font-size: .85rem;
+  line-height: 1.4;
+  font-family: 'Courier New', Courier, monospace;
+  background-color: #ffffff;
+  /* background-color: var(--color-bg-main); */
+}
 
-    dl.requirement__meta {
-      display: grid;
-      grid-template-columns: min-content auto;
-      place-items: stretch stretch;
-      gap: 1px 1px;
-      border: 1px solid #ddd;
-      background-color: #ddd;
+.requirement__meta dt i {
+  display: inline-block;
+  /* letter-spacing: -1px; */
+  overflow-wrap: break-word;
+}
 
-      width: fit-content;
-      margin: 0;
-      margin-bottom: 1rem;
-    }
+.requirement__meta dt i::after {
+  content: ':';
+}
 
-    .requirement__title+dl.requirement__meta {
-      margin-top: 1rem;
-    }
+.requirement-tree_node .requirement__meta dt,
+.requirement-tree_node .requirement__meta dd {
+  background-color: var(--color-bg-main);
+}
 
-    .requirement__meta dt,
-    .requirement__meta dd {
-      margin: 0;
-      padding: 2px 8px;
-      font-size: .85rem;
-      line-height: 1.4;
-      font-family: 'Courier New', Courier, monospace;
-      background-color: #ffffff;
-      /* background-color: var(--color-bg-main); */
-    }
+/* meta multiline list (next to comments/rationale) */
 
-    .requirement__meta dt i {
-      display: inline-block;
-      /* letter-spacing: -1px; */
-      overflow-wrap: break-word;
-    }
+.requirement__meta_multiline {
+  font-size: .9em;
+  font-style: italic;
+}
 
-    .requirement__meta dt i::after {
-      content: ':';
-    }
+.requirement__meta_multiline + .requirement__meta_multiline {
+  margin-top: var(--base-margin);
+}
 
-    .requirement-tree_node .requirement__meta dt,
-    .requirement-tree_node .requirement__meta dd {
-      background-color: var(--color-bg-main);
-    }
+.requirement__meta_multiline_label {
+  font-weight: bold;
+}
 
-    /* meta multiline list (next to comments/rationale) */
+/* requirement: parent / child / file */
 
-    .requirement__meta_multiline {
-      font-size: .9em;
-      font-style: italic;
-    }
+ul.requirement__link {
+  font-size: .85em;
+  line-height: 1.4;
+  list-style: none;
+  padding: 0;
+}
 
-    .requirement__meta_multiline+.requirement__meta_multiline {
-      margin-top: var(--base-margin);
-    }
+[data-viewtype="source-file"] ul.requirement__link li {
+  margin-top: 0.5rem;
+}
 
-    .requirement__meta_multiline_label {
-      font-weight: bold;
-    }
+.requirement__link a,
+.requirement__link li > span {
+  display: inline-block;
+  position: relative;
+  margin-left: 1.5rem;
+  width: calc(100% - 1.5rem);
+  overflow-wrap: break-word;
+}
 
-    /* requirement: parent / child / file */
+.requirement__link a::before,
+.requirement__link li > span::before {
+  color: #808080;
+  position: absolute;
+  left: -1.5rem;
+}
 
-    ul.requirement__link {
-      font-size: .85em;
-      line-height: 1.4;
-      list-style: none;
-      padding: 0;
-    }
+.requirement__link a:link,
+.requirement__link a:visited {
+  color: var(--color-fg-contrast);
+  text-decoration: none;
+}
 
-    [data-viewtype="source-file"] ul.requirement__link li {
-      margin-top: 0.5rem;
-    }
+.requirement__link a:hover {
+  /* color: var(--color-fg-accent); */
+  text-decoration: underline;
+}
 
-    .requirement__link a,
-    .requirement__link li>span {
-      display: inline-block;
-      position: relative;
-      margin-left: 1.5rem;
-      width: calc(100% - 1.5rem);
-      overflow-wrap: break-word;
-    }
-
-    .requirement__link a::before,
-    .requirement__link li>span::before {
-      color: #808080;
-      position: absolute;
-      left: -1.5rem;
-    }
-
-    .requirement__link a:link,
-    .requirement__link a:visited {
-      color: var(--color-fg-contrast);
-      text-decoration: none;
-    }
-
-    .requirement__link a:hover {
-      /* color: var(--color-fg-accent); */
-      text-decoration: underline;
-    }
-
-    /* .requirement__link a::before {
+/* .requirement__link a::before {
   content: '\2014';
 } */
 
-    a.requirement__link-file::before,
-    .requirement__link-file::before {
-      content: '</>';
-    }
+a.requirement__link-file::before,
+.requirement__link-file::before {
+  content: '</>';
+}
 
-    a.requirement__link-parent::before {
-      content: '\2190';
-    }
+a.requirement__link-parent::before {
+  content: '\2190';
+}
 
-    a.requirement__link-child::before {
-      content: '\2192';
-    }
+a.requirement__link-child::before {
+  content: '\2192';
+}
 
-    .requirement__link-external::before {
-      content: '\21D6';
-    }
+.requirement__link-external::before {
+  content: '\21D6';
+}
 
-    .requirement__parent-uid,
-    .requirement__child-uid {
-      position: relative;
-      font-weight: bold;
-    }
+.requirement__parent-uid,
+.requirement__child-uid {
+  position: relative;
+  font-weight: bold;
+}
 
-    /* rationale */
+/* rationale */
 
-    .requirement__rationale {
-      font-size: .9em;
-      font-style: italic;
-    }
+.requirement__rationale {
+  font-size: .9em;
+  font-style: italic;
+}
 
-    .requirement__rationale+.requirement__rationale {
-      margin-top: var(--base-margin);
-    }
+.requirement__rationale + .requirement__rationale {
+  margin-top: var(--base-margin);
+}
 
-    .requirement__rationale p:first-child::before {
-      content: "Rationale: ";
-      font-weight: bold;
-    }
+.requirement__rationale p:first-child::before {
+  content: "Rationale: ";
+  font-weight: bold;
+}
 
-    /* comment */
+/* comment */
 
-    .requirement__comment {
-      font-size: .9em;
-      font-style: italic;
-    }
+.requirement__comment {
+  font-size: .9em;
+  font-style: italic;
+}
 
-    .requirement__comment+.requirement__comment {
-      margin-top: var(--base-margin);
-    }
+.requirement__comment + .requirement__comment {
+  margin-top: var(--base-margin);
+}
 
-    .requirement__comment p:first-child::before {
-      content: "Comment: ";
-      font-weight: bold;
-    }
+.requirement__comment p:first-child::before {
+  content: "Comment: ";
+  font-weight: bold;
+}
 
-    /* free-text */
+/* free-text */
 
-    [data-viewtype="requirements-coverage"] .free-text,
-    [data-viewtype="traceability"] .free-text,
-    [data-viewtype="deep_traceability"] .free-text {
-      font-size: .85em;
-    }
+[data-viewtype="requirements-coverage"] .free-text,
+[data-viewtype="traceability"] .free-text,
+[data-viewtype="deep_traceability"] .free-text {
+  font-size: .85em;
+}
 
-    /* table */
+/* table */
 
-    div.document table {
-      border-collapse: collapse;
-      margin: var(--base-margin) 0;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-    }
+div.document table {
+  border-collapse: collapse;
+  margin: var(--base-margin) 0;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+}
 
-    div.document table caption {
-      font-weight: bold;
-      padding-bottom: 1rem;
-    }
+div.document table caption {
+  font-weight: bold;
+  padding-bottom: 1rem;
+}
 
-    div.document table th {
-      background-color: #eee;
-    }
+div.document table th {
+  background-color: #eee;
+}
 
-    div.document table th,
-    div.document table td {
-      padding: calc(var(--base-margin)/2);
-      vertical-align: top;
-      text-align: left;
-      border: 1px solid #ccc;
-    }
+div.document table th,
+div.document table td {
+  padding: calc(var(--base-margin)/2);
+  vertical-align: top;
+  text-align: left;
+  border: 1px solid #ccc;
+}
 
-    /* switch */
+/* switch */
 
-    .std-switch {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
+.std-switch {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 
-      user-select: none;
-      cursor: pointer;
-    }
+  user-select: none;
+  cursor: pointer;
+}
 
-    .std-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-      position: absolute;
-    }
+.std-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
 
-    .std-switch_slider {
+.std-switch_slider {
 
-      position: relative;
-      cursor: pointer;
-      background-color: #ccc;
-      -webkit-transition: .4s;
-      transition: .4s;
+  position: relative;
+  cursor: pointer;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
 
-      display: inline-block;
-      width: 44px;
-      height: 26px;
-      margin-right: 10px;
+  display: inline-block;
+  width: 44px;
+  height: 26px;
+  margin-right: 10px;
 
-      border-radius: 22px;
-    }
+  border-radius: 22px;
+}
 
-    .std-switch_slider::before {
-      position: absolute;
-      content: "";
-      height: 18px;
-      width: 18px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      -webkit-transition: .4s;
-      transition: .4s;
+.std-switch_slider::before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
 
-      border-radius: 50%;
-    }
+  border-radius: 50%;
+}
 
-    input:checked+.std-switch_slider {
-      background-color: rgb(100, 222, 50);
-    }
+input:checked + .std-switch_slider {
+  background-color: rgb(100, 222, 50);
+}
 
-    input:focus+.std-switch_slider {
-      box-shadow: 0 0 1px rgb(100, 222, 50);
-    }
+input:focus + .std-switch_slider {
+  box-shadow: 0 0 1px rgb(100, 222, 50);
+}
 
-    input:checked+.std-switch_slider:before {
-      -webkit-transform: translateX(18px);
-      -ms-transform: translateX(18px);
-      transform: translateX(18px);
-    }
+input:checked + .std-switch_slider:before {
+  -webkit-transform: translateX(18px);
+  -ms-transform: translateX(18px);
+  transform: translateX(18px);
+}
 
-    /* requirements-coverage */
+/* requirements-coverage */
 
-    .requirements-coverage-document-title {
-      font-size: 1.2rem;
-      font-weight: bold;
-      margin: 1rem 0;
-      padding-top: 1rem;
-    }
+.requirements-coverage-document-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 1rem 0;
+  padding-top: 1rem;
+}
 
-    .requirements-coverage-document-title:first-child {
-      margin-top: -1rem;
-    }
+.requirements-coverage-document-title:first-child {
+  margin-top: -1rem;
+}
 
-    /* requirement-table */
+/* requirement-table */
 
-    .requirement-table {
-      border-collapse: collapse;
-      width: 100%;
-    }
+.requirement-table {
+  border-collapse: collapse;
+  width: 100%;
+}
 
-    .requirement-table caption {
-      text-align: left;
-      background-color: var(--color-bg-main);
-      margin-bottom: -1px;
-      font-size: 1.2em;
-      padding: 0;
-    }
+.requirement-table caption {
+  text-align: left;
+  background-color: var(--color-bg-main);
+  margin-bottom: -1px;
+  font-size: 1.2em;
+  padding: 0;
+}
 
-    .requirement-table caption .requirement__title {
-      padding: .5rem 1rem;
-    }
+.requirement-table caption .requirement__title {
+  padding: .5rem 1rem;
+}
 
-    .requirement-table td,
-    .requirement-table th {
-      padding: .5rem 1rem;
-    }
+.requirement-table td,
+.requirement-table th {
+  padding: .5rem 1rem;
+}
 
-    .requirement-table th {
-      background-color: #fff;
-      text-align: left;
-      font-weight: normal;
-      text-transform: uppercase;
-      font-family: 'Courier New', Courier, monospace;
-      width: 20%;
-    }
+.requirement-table th {
+  background-color: #fff;
+  text-align: left;
+  font-weight: normal;
+  text-transform: uppercase;
+  font-family: 'Courier New', Courier, monospace;
+  width: 20%;
+}
 
-    .requirement-table td,
-    .requirement-table th,
-    .requirement-table caption {
-      border: 1px solid #666;
-    }
+.requirement-table td,
+.requirement-table th,
+.requirement-table caption {
+  border: 1px solid #666;
+}
 
-    .requirement-table ul.requirement__link:first-child,
-    .requirement-table p:first-child {
-      margin-top: 0;
-    }
+.requirement-table ul.requirement__link:first-child,
+.requirement-table p:first-child {
+  margin-top: 0;
+}
+.requirement-table ul.requirement__link:last-child,
+.requirement-table p:last-child {
+  margin-bottom: 0;
+}
 
-    .requirement-table ul.requirement__link:last-child,
-    .requirement-table p:last-child {
-      margin-bottom: 0;
-    }
+.requirement-table ul.requirement__link {
+  font-size: 1em;
+}
 
-    .requirement-table ul.requirement__link {
-      font-size: 1em;
-    }
   </style>
 
   <!-- <link rel="stylesheet" href="./User Guide - PDF_files/element.css"> -->
   <style type="text/css">
+
+
     [data-viewtype="source-file"] .requirement__link:hover {
       text-decoration: none;
     }
@@ -1290,8 +1332,7 @@ sdoc-requirement + sdoc-requirement {
 
     a:link,
     a:visited,
-    a[href] {
-      /* or a[href] */
+    a[href] { /* or a[href] */
       /* Enabled link styles */
       text-decoration: none;
       color: var(--color-link);
@@ -1330,7 +1371,7 @@ sdoc-requirement + sdoc-requirement {
     a.action_button,
     a.action_button:link,
     a.action_button:visited {
-      font-size: var(--font-size-xsm);
+      font-size:var(--font-size-xsm);
       font-weight: 600;
       text-align: left;
       text-decoration: none;
@@ -1382,9 +1423,9 @@ sdoc-requirement + sdoc-requirement {
 
     .action_button svg {
       /*
-    action_button 1.5 column-gap
-    is compensated by SVG negative margin
-  */
+        action_button 1.5 column-gap
+        is compensated by SVG negative margin
+      */
       margin-left: calc(var(--base-rhythm)*(-.5));
       margin-right: calc(var(--base-rhythm)*(-.5));
     }
@@ -1426,8 +1467,8 @@ sdoc-requirement + sdoc-requirement {
       appearance: none;
       border: none;
       border-color: transparent;
-      background-color: rgba(0, 0, 0, 0);
-      background: rgba(0, 0, 0, 0);
+      background-color: rgba(0,0,0,0);
+      background: rgba(0,0,0,0);
       box-shadow: none;
       background-clip: padding-box;
 
@@ -1456,20 +1497,20 @@ sdoc-requirement + sdoc-requirement {
     sdoc-anchor {
       /* for Fixed Headers + Section Anchors */
       scroll-snap-margin-top: calc(var(--base-gap) + var(--base-padding));
-      scroll-margin-top: calc(var(--base-gap) + var(--base-padding));
+      scroll-margin-top:      calc(var(--base-gap) + var(--base-padding));
     }
 
-    sdoc-anchor:target+sdoc-requirement sdoc-requirement-title,
-    sdoc-anchor:target+sdoc-section sdoc-section-title,
-    sdoc-anchor:target+.requirement__title {
+    sdoc-anchor:target + sdoc-requirement sdoc-requirement-title,
+    sdoc-anchor:target + sdoc-section sdoc-section-title,
+    sdoc-anchor:target + .requirement__title {
       background-color: var(--color-highlight);
     }
 
     /*
-  This code is triggered when
-  export/html/_static/controllers/anchor_controller.js adds
-  the [visible] attribute to the sdoc-anchor:
-*/
+      This code is triggered when
+      export/html/_static/controllers/anchor_controller.js adds
+      the [visible] attribute to the sdoc-anchor:
+    */
     sdoc-anchor[visible] {
       position: absolute;
       z-index: 2;
@@ -1500,7 +1541,7 @@ sdoc-requirement + sdoc-requirement {
 
     .anchor_button {
       cursor: pointer;
-      font-size: var(--font-size-sm);
+      font-size:var(--font-size-sm);
       font-weight: 600;
       text-align: left;
       white-space: nowrap;
@@ -1542,9 +1583,9 @@ sdoc-requirement + sdoc-requirement {
     .anchor_button svg {
       color: var(--color-fg-secondary);
       /*
-    action_button 1.5 column-gap
-    is compensated by SVG negative margin
-  */
+        action_button 1.5 column-gap
+        is compensated by SVG negative margin
+      */
       margin-left: calc(var(--base-rhythm)*(-.5));
       margin-right: calc(var(--base-rhythm)*(-.5));
     }
@@ -1642,9 +1683,9 @@ sdoc-requirement + sdoc-requirement {
 
     .tag {
       display: inline-flex;
-      align-items: center;
-      background-color: rgba(0, 0, 0, 0.1);
-      border: 2px solid rgba(0, 0, 0, 0.05);
+        align-items: center;
+      background-color: rgba(0,0,0,0.1);
+      border: 2px solid rgba(0,0,0,0.05);
       font-size: 12px;
       line-height: 1;
       vertical-align: middle;
@@ -1655,8 +1696,8 @@ sdoc-requirement + sdoc-requirement {
 
     .tag_badge {
       display: inline-flex;
-      justify-content: center;
-      align-items: center;
+        justify-content: center;
+        align-items: center;
       font-size: var(--font-size-xxsm);
       background-color: rgba(255, 255, 255, 0.75);
       border: 4px solid transparent;
@@ -1678,7 +1719,7 @@ sdoc-requirement + sdoc-requirement {
       border-radius: .5rem;
       background-color: white;
       /* box-shadow: inset 0px 2px 2px 0px #ccc; */
-      border: 1px solid rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0,0,0,0.1);
       position: relative;
       overflow: hidden;
 
@@ -1705,23 +1746,23 @@ sdoc-requirement + sdoc-requirement {
     }
 
     ol.arabic {
-      list-style: decimal;
+        list-style: decimal;
     }
 
     ol.loweralpha {
-      list-style: lower-alpha;
+        list-style: lower-alpha;
     }
 
     ol.upperalpha {
-      list-style: upper-alpha;
+        list-style: upper-alpha;
     }
 
     ol.lowerroman {
-      list-style: lower-roman;
+        list-style: lower-roman;
     }
 
     ol.upperroman {
-      list-style: upper-roman;
+        list-style: upper-roman;
     }
 
     /* svg icon */
@@ -1751,16 +1792,13 @@ sdoc-requirement + sdoc-requirement {
     .svg_icon_hover_visible {
       display: none;
     }
-
     .anchor_button:hover .svg_icon_hover_visible,
     svg:hover .svg_icon_hover_visible {
       display: inline;
     }
-
     .svg_icon_not_hover_visible {
       display: inline;
     }
-
     .anchor_button:hover .svg_icon_not_hover_visible,
     svg:hover .svg_icon_not_hover_visible {
       display: none;
@@ -1837,7 +1875,7 @@ sdoc-requirement + sdoc-requirement {
 
     /* --md-source-version-icon: url(data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M1 7.775V2.75C1 1.784 1.784 1 2.75 1h5.025c.464 0 .91.184 1.238.513l6.25 6.25a1.75 1.75 0 0 1 0 2.474l-5.026 5.026a1.75 1.75 0 0 1-2.474 0l-6.25-6.25A1.752 1.752 0 0 1 1 7.775Zm1.5 0c0 .066.026.13.073.177l6.25 6.25a.25.25 0 0 0 .354 0l5.025-5.025a.25.25 0 0 0 0-.354l-6.25-6.25a.25.25 0 0 0-.177-.073H2.75a.25.25 0 0 0-.25.25ZM6 5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z"/></svg>); */
 
-
+    
     /* pagetype */
 
     .pagetype {
@@ -2064,15 +2102,14 @@ sdoc-requirement + sdoc-requirement {
       font-size: var(--font-size-sm);
       min-width: 0;
       line-height: 1.5;
-      width: 99%;
-      /* To calculate cite overflow  */
+      width: 99%; /* To calculate cite overflow  */
       /* padding-left: calc(var(--base-rhythm) * 2);
-  padding-right: calc(var(--base-rhythm) * 2); */
+      padding-right: calc(var(--base-rhythm) * 2); */
     }
 
     a.tree_item:hover {
       /* color: var(--color-bg-main);
-  fill: var(--color-bg-main); */
+      fill: var(--color-bg-main); */
     }
 
     .tree_item[active] {
@@ -2082,8 +2119,7 @@ sdoc-requirement + sdoc-requirement {
     .document_title {
       font-size: var(--font-size-sm);
       font-weight: 700;
-      width: 99%;
-      /* To calculate cite overflow  */
+      width: 99%; /* To calculate cite overflow  */
     }
 
     .document_title[data-file_name]::after {
@@ -2091,10 +2127,9 @@ sdoc-requirement + sdoc-requirement {
       display: block;
       text-overflow: ellipsis;
       overflow: hidden;
-      width: 99%;
-      /* To calculate cite overflow  */
-      font-weight: 400;
-      opacity: 0.6;
+      width: 99%; /* To calculate cite overflow  */
+      font-weight:400;
+      opacity:0.6;
     }
 
     /* toc */
@@ -2136,7 +2171,6 @@ sdoc-requirement + sdoc-requirement {
       text-decoration: none;
       color: var(--color-fg-secondary);
     }
-
     .toc a:hover {
       /* background-color: var(--color-bg-contrast); */
       color: var(--color-fg-contrast);
@@ -2155,416 +2189,416 @@ sdoc-requirement + sdoc-requirement {
       padding-bottom: var(--base-rhythm);
       padding-right: var(--base-rhythm);
     }
+    
   </style>
 
   <!-- <link rel="stylesheet" href="./User Guide - PDF_files/form.css"> -->
   <style type="text/css">
-    /* form */
+/* form */
 
-    sdoc-backdrop {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: rgba(0, 0, 0, .5);
-      z-index: 99999;
-    }
+sdoc-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0,0,0,.5);
+  z-index: 99999;
+}
 
-    sdoc-modal {
-      display: grid;
-      grid-template-columns: 1fr;
-      grid-template-rows: min-content 1fr min-content;
-      grid-template-areas:
-        "modal-header"
-        "modal-content"
-        "modal-footer";
-      place-items: stretch stretch;
-      place-content: stretch stretch;
+sdoc-modal {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: min-content 1fr min-content;
+  grid-template-areas:
+    "modal-header"
+    "modal-content"
+    "modal-footer";
+  place-items: stretch stretch;
+  place-content: stretch stretch;
 
-      background-color: var(--color-bg-contrast);
-      border-radius: 8px;
-      max-width: 90vw;
-      max-height: 90vh;
-      box-shadow: var(--base-elevation-modal);
+  background-color: var(--color-bg-contrast);
+  border-radius: 8px;
+  max-width: 90vw;
+  max-height: 90vh;
+  box-shadow: var(--base-elevation-modal);
 
-      min-width: 375px;
-      overflow: hidden;
-    }
+  min-width: 375px;
+  overflow: hidden;
+}
 
-    sdoc-modal-container {
-      padding: calc(var(--base-rhythm)*4);
-    }
+sdoc-modal-container {
+  padding: calc(var(--base-rhythm)*4);
+}
 
-    sdoc-modal-header {
-      grid-area: modal-header;
-      padding-top: calc(var(--base-rhythm)*2);
-      padding-bottom: calc(var(--base-rhythm)*2);
-      padding-left: calc(var(--base-rhythm)*4);
-      padding-right: calc(var(--base-rhythm)*4);
-      font-size: 1.25rem;
-      font-weight: 600;
-    }
+sdoc-modal-header {
+  grid-area: modal-header;
+  padding-top: calc(var(--base-rhythm)*2);
+  padding-bottom: calc(var(--base-rhythm)*2);
+  padding-left: calc(var(--base-rhythm)*4);
+  padding-right: calc(var(--base-rhythm)*4);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
 
-    sdoc-modal-content {
-      grid-area: modal-content;
-      border-top: var(--base-border);
-      border-bottom: var(--base-border);
-      padding-top: calc(var(--base-rhythm)*2);
-      padding-bottom: calc(var(--base-rhythm)*2);
-      overflow: auto;
-      scroll-behavior: smooth;
-    }
+sdoc-modal-content {
+  grid-area: modal-content;
+  border-top: var(--base-border);
+  border-bottom: var(--base-border);
+  padding-top: calc(var(--base-rhythm)*2);
+  padding-bottom: calc(var(--base-rhythm)*2);
+  overflow: auto;
+  scroll-behavior: smooth;
+}
 
-    sdoc-modal-message {
-      display: block;
-      padding-left: calc(var(--base-rhythm)*4);
-      padding-right: calc(var(--base-rhythm)*4);
-    }
+sdoc-modal-message {
+  display: block;
+  padding-left: calc(var(--base-rhythm)*4);
+  padding-right: calc(var(--base-rhythm)*4);
+}
 
-    sdoc-modal-footer {
-      grid-area: modal-footer;
-      display: flex;
-      justify-content: flex-end;
-      /* buttons to right */
-      padding-top: calc(var(--base-rhythm)*2);
-      padding-bottom: calc(var(--base-rhythm)*2);
-      padding-left: calc(var(--base-rhythm)*4);
-      padding-right: calc(var(--base-rhythm)*3);
-      /* buttons to right */
-      column-gap: var(--base-rhythm);
-    }
+sdoc-modal-footer {
+  grid-area: modal-footer;
+  display: flex;
+  justify-content: flex-end; /* buttons to right */
+  padding-top: calc(var(--base-rhythm)*2);
+  padding-bottom: calc(var(--base-rhythm)*2);
+  padding-left: calc(var(--base-rhythm)*4);
+  padding-right: calc(var(--base-rhythm)*3); /* buttons to right */
+  column-gap: var(--base-rhythm);
+}
 
-    /* sdoc-form  */
+/* sdoc-form  */
 
-    sdoc-form {
-      display: block;
-      position: relative;
-      padding-top: var(--base-rhythm);
-      padding-bottom: calc(var(--base-rhythm)*2);
-      background-color: var(--color-bg-contrast);
-      border-radius: 4px;
-      z-index: 11;
-      border: 1px solid var(--color-fg-accent);
-    }
+sdoc-form {
+  display: block;
+  position: relative;
+  padding-top: var(--base-rhythm);
+  padding-bottom: calc(var(--base-rhythm)*2);
+  background-color: var(--color-bg-contrast);
+  border-radius: 4px;
+  z-index: 11;
+  border: 1px solid var(--color-fg-accent);
+}
 
-    sdoc-form-header {
-      display: block;
-      padding-top: 0;
-      padding-left: calc(var(--base-rhythm)*4);
-      padding-right: calc(var(--base-rhythm)*4);
-      font-size: 1.25rem;
-      font-weight: 600;
-    }
+sdoc-form-header {
+  display: block;
+  padding-top: 0;
+  padding-left: calc(var(--base-rhythm)*4);
+  padding-right: calc(var(--base-rhythm)*4);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
 
-    sdoc-form-descr {
-      display: block;
-      padding-top: 0;
-      padding-bottom: 0;
-      padding-left: calc(var(--base-rhythm)*4);
-      padding-right: calc(var(--base-rhythm)*4);
-      margin-top: 0;
-      margin-bottom: calc(var(--base-rhythm)*4);
-    }
+sdoc-form-descr {
+  display: block;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: calc(var(--base-rhythm)*4);
+  padding-right: calc(var(--base-rhythm)*4);
+  margin-top: 0;
+  margin-bottom: calc(var(--base-rhythm)*4);
+}
 
-    sdoc-form-footer {
-      display: flex;
-      justify-content: flex-start;
-      /* buttons to left */
-      padding-top: 0;
-      padding-bottom: 0;
-      padding-left: calc(var(--base-rhythm)*3);
-      /* buttons to left */
-      padding-right: calc(var(--base-rhythm)*4);
-      column-gap: var(--base-rhythm);
-    }
+sdoc-form-footer {
+  display: flex;
+  justify-content: flex-start; /* buttons to left */
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: calc(var(--base-rhythm)*3); /* buttons to left */
+  padding-right: calc(var(--base-rhythm)*4);
+  column-gap: var(--base-rhythm);
+}
 
-    sdoc-form-field {
-      display: block;
-      position: relative;
-      padding-top: 0;
-      padding-bottom: 0;
-      padding-left: calc(var(--base-rhythm)*4);
-      padding-right: calc(var(--base-rhythm)*4);
-      margin-top: calc(var(--base-rhythm)*4);
-      margin-bottom: calc(var(--base-rhythm)*4);
-    }
+sdoc-form-field {
+  display: block;
+  position: relative;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: calc(var(--base-rhythm)*4);
+  padding-right: calc(var(--base-rhythm)*4);
+  margin-top: calc(var(--base-rhythm)*4);
+  margin-bottom: calc(var(--base-rhythm)*4);
+}
 
-    sdoc-form-row-main {
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      z-index: 2;
-    }
+sdoc-form-row-main {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 2;
+}
 
-    sdoc-form-row-aside {
-      display: flex;
-      flex-wrap: nowrap;
-      align-items: flex-start;
-      justify-content: flex-end;
-      position: relative;
-    }
+sdoc-form-row-aside {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  justify-content: flex-end;
+  position: relative;
+}
 
-    sdoc-form-row-aside [data-action-type="delete"]:hover,
-    sdoc-form-row-aside [data-action-type="delete"] {
-      color: var(--color-danger);
-    }
+sdoc-form-row-aside [data-action-type="delete"]:hover,
+sdoc-form-row-aside [data-action-type="delete"] {
+  color: var(--color-danger);
+}
 
-    sdoc-form-row-aside [data-action-type="move_up"]:hover,
-    sdoc-form-row-aside [data-action-type="move_up"] {
-      color: var(--color-green);
-    }
+sdoc-form-row-aside [data-action-type="move_up"]:hover,
+sdoc-form-row-aside [data-action-type="move_up"] {
+  color: var(--color-green);
+}
 
-    sdoc-form-row-aside [data-action-type="move_down"]:hover,
-    sdoc-form-row-aside [data-action-type="move_down"] {
-      color: var(--color-blue);
-    }
+sdoc-form-row-aside [data-action-type="move_down"]:hover,
+sdoc-form-row-aside [data-action-type="move_down"] {
+  color: var(--color-blue);
+}
 
-    sdoc-form-error {
-      display: block;
-      color: var(--color-danger);
-      font-size: 12px;
-      /*
+sdoc-form-error {
+  display: block;
+  color: var(--color-danger);
+  font-size: 12px;
+  /*
     set 'order' to be displayed after any other items,
     in the context of <sdoc-form-row-main> using flex:
   */
-      order: 11;
-    }
+  order: 11;
+}
 
-    sdoc-form-error+sdoc-form-error {
-      margin-top: var(--base-rhythm);
-    }
+sdoc-form-error + sdoc-form-error {
+  margin-top: var(--base-rhythm);
+}
 
-    sdoc-form-row [data-action-type="add_field"]:only-child {
-      /*
+sdoc-form-row [data-action-type="add_field"]:only-child {
+  /*
     It is expected to be a button (.action_button)
     to add fields like "comment" or "link"
     to the requirement edit form.
   */
-      justify-content: flex-start;
-      /* color: rgba(0,0,0,0.5) !important; */
-      border: none;
-      top: -40%;
-    }
+  justify-content: flex-start;
+  /* color: rgba(0,0,0,0.5) !important; */
+  border: none;
+  top: -40%;
+}
 
-    /*
+/*
    fields grid:
    inside sdoc-form-grid
 */
 
-    sdoc-form-grid {
-      display: grid;
-      place-items: stretch stretch;
-      place-content: stretch stretch;
-      grid-template-columns: minmax(0, min-content) 1fr minmax(0, min-content);
-      gap:
-        calc(var(--base-rhythm)*4) var(--base-rhythm);
+sdoc-form-grid {
+  display: grid;
+  place-items: stretch stretch;
+  place-content: stretch stretch;
+  grid-template-columns:  minmax(0, min-content)
+                          1fr
+                          minmax(0, min-content);
+  gap:
+          calc(var(--base-rhythm)*4)
+          var(--base-rhythm);
 
-      padding:
-        calc(var(--base-rhythm)*4) calc(var(--base-rhythm)*3);
-      /* (4-1) related to column gap */
-      overflow-x: hidden;
-      /* related to field_action::before */
-    }
+  padding:
+          calc(var(--base-rhythm)*4)
+          calc(var(--base-rhythm)*3); /* (4-1) related to column gap */
+  overflow-x: hidden; /* related to field_action::before */
+}
 
-    sdoc-form-grid sdoc-form-field {
-      padding: 0;
-      margin: 0;
-    }
+sdoc-form-grid
+  sdoc-form-field {
+    padding: 0;
+    margin: 0;
+  }
 
-    sdoc-form-grid sdoc-form-row {
-      display: contents;
-    }
+sdoc-form-grid
+  sdoc-form-row {
+    display: contents;
+  }
 
-    sdoc-form-grid sdoc-form-row-aside:first-of-type {
-      grid-column: 1 / 2;
-      /* left */
-    }
+sdoc-form-grid
+  sdoc-form-row-aside:first-of-type {
+    grid-column: 1 / 2; /* left */
+  }
 
-    sdoc-form-grid sdoc-form-row-main {
-      grid-column: 2 / 3;
-      /* center */
-    }
+sdoc-form-grid
+  sdoc-form-row-main {
+    grid-column: 2 / 3; /* center */
+  }
 
-    sdoc-form-grid sdoc-form-row-aside:last-of-type {
-      grid-column: 3 / 4;
-      /* right */
-    }
+sdoc-form-grid
+  sdoc-form-row-aside:last-of-type {
+    grid-column: 3 / 4; /* right */
+  }
 
-    /**
+/**
  * sdoc-contenteditable
  */
 
-    sdoc-contenteditable {
-      display: block;
-      position: relative;
-    }
+sdoc-contenteditable {
+  display: block;
+  position: relative;
+}
 
-    sdoc-contenteditable[contenteditable="false"] {
-      color: var(--color-fg-secondary);
-    }
+sdoc-contenteditable[contenteditable="false"] {
+  color: var(--color-fg-secondary);
+}
 
-    .monospace {
-      font-family: var(--code-font-family);
-    }
+.monospace {
+  font-family: var(--code-font-family);
+}
 
-    .form__requirement_title {
-      font-size: 1.125em;
-      font-weight: 700;
-    }
+.form__requirement_title {
+  font-size: 1.125em;
+  font-weight: 700;
+}
 
-    /* field name // before */
+/* field name // before */
 
-    sdoc-contenteditable::before {
-      content: attr(data-field-label);
-      position: absolute;
-      font-family: var(--code-font-family);
-      font-size: var(--font-size-xsm);
-      font-weight: 500;
-      color: var(--color-placeholder);
-      text-transform: uppercase;
-      top: calc(var(--base-rhythm)*(-2.25));
-      transition: color .2s ease;
-    }
+sdoc-contenteditable::before {
+  content: attr(data-field-label);
+  position: absolute;
+  font-family: var(--code-font-family);
+  font-size: var(--font-size-xsm);
+  font-weight: 500;
+  color: var(--color-placeholder);
+  text-transform: uppercase;
+  top: calc(var(--base-rhythm)*(-2.25));
+  transition: color .2s ease;
+}
 
-    sdoc-contenteditable:focus::before {
-      color: var(--color-fg-accent);
-    }
+sdoc-contenteditable:focus::before {
+  color: var(--color-fg-accent);
+}
 
-    sdoc-form-error+sdoc-form-field sdoc-contenteditable::before {
-      color: var(--color-danger);
-    }
+sdoc-form-error + sdoc-form-field sdoc-contenteditable::before {
+  color: var(--color-danger);
+}
 
-    /* placeholder // after */
+/* placeholder // after */
 
-    [placeholder]:empty::after {
-      content: attr(placeholder);
-      pointer-events: none;
-      color: var(--color-placeholder);
-      /* For Firefox: */
-      display: block;
-    }
+[placeholder]:empty::after {
+  content: attr(placeholder);
+  pointer-events: none;
+  color: var(--color-placeholder);
+  /* For Firefox: */
+  display: block;
+}
 
-    [placeholder]:empty:focus::after {
-      color: rgba(242, 100, 42, .2);
-    }
+[placeholder]:empty:focus::after {
+  color: rgba(242, 100, 42,.2);
+}
 
-    [contenteditable=true] {
-      white-space: pre-wrap;
-      word-break: break-word;
-      overflow-wrap: anywhere;
-      outline: none;
-      /* Without this hack ( display: inline-block )
+[contenteditable=true] {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  outline: none;
+  /* Without this hack ( display: inline-block )
      Chrome generates duplicated new lines when Enter pressed.
      Add style "display:inline-block;" to contenteditable,
      it will not generate div, p, span automatic in chrome */
-      /* https://stackoverflow.com/a/24689390/598057 */
-      /* Also, the parent element should not be allowed to have a flex display.
+  /* https://stackoverflow.com/a/24689390/598057 */
+  /* Also, the parent element should not be allowed to have a flex display.
      In order to isolate the 'contenteditable,
      the structure "sdoc-form-row-main > sdoc-form-field > contenteditable"
      is implemented.
   */
-      display: inline-block;
-      /* This is to prevent the field from shifting when the second line appears while typing: */
-      vertical-align: top;
-      width: 100%;
-    }
+  display: inline-block;
+  /* This is to prevent the field from shifting when the second line appears while typing: */
+  vertical-align: top;
+  width: 100%;
+}
 
-    [contenteditable=true][data-field-type="multiline"] {
-      font-family: var(--code-font-family);
-    }
+[contenteditable=true][data-field-type="multiline"] {
+  font-family: var(--code-font-family);
+}
 
-    /* field_action */
-    /* TODO: optimize code with .action_icon & .action_button */
+/* field_action */
+/* TODO: optimize code with .action_icon & .action_button */
 
-    .field_action {
-      /* button */
-      position: static;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      -webkit-box-align: center;
-      -webkit-box-pack: center;
-      backface-visibility: hidden;
-      user-select: none;
-      cursor: pointer;
-      appearance: none;
-      border: none;
-      border-color: transparent;
-      background-color: rgba(0, 0, 0, 0);
-      background: rgba(0, 0, 0, 0);
-      box-shadow: none;
-      background-clip: padding-box;
+.field_action {  /* button */
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  backface-visibility: hidden;
+  user-select: none;
+  cursor: pointer;
+  appearance: none;
+  border: none;
+  border-color: transparent;
+  background-color: rgba(0,0,0,0);
+  background: rgba(0,0,0,0);
+  box-shadow: none;
+  background-clip: padding-box;
 
-      color: var(--color-action);
-      transition: 0.2s;
-      padding: calc(var(--base-rhythm)*.5);
-      z-index: 2;
-    }
+  color: var(--color-action);
+  transition: 0.2s;
+  padding: calc(var(--base-rhythm)*.5);
+  z-index: 2;
+}
 
-    .field_action:hover,
-    a.field_action:hover {
-      color: var(--color-hover);
-      z-index: 6;
-    }
+.field_action:hover,
+a.field_action:hover {
+  color: var(--color-hover);
+  z-index: 6;
+}
 
-    .field_action::before {
-      content: '';
-      position: absolute;
-      /* The element is expected to be placed in a context
+.field_action::before {
+  content: '';
+  position: absolute;
+  /* The element is expected to be placed in a context
      that defines the top and bottom boundaries.
 
      The width of the element must be enough
      to cover the entire available context,
      and will be cut off by the parent element via overflow.
   */
-      top: 0;
-      bottom: 0;
-      left: -100vw;
-      right: -100vw;
-      z-index: 0;
-      pointer-events: none;
-      /* Determines the shade of the color through the opacity of the element.
+  top: 0;
+  bottom: 0;
+  left: -100vw;
+  right: -100vw;
+  z-index: 0;
+  pointer-events: none;
+  /* Determines the shade of the color through the opacity of the element.
      The color is passed from the parent.
   */
-      transition: background-color 0.3s;
-      background-color: transparent;
-      opacity: .1;
-      /* Defines the color shade. */
-    }
+  transition: background-color 0.3s;
+  background-color: transparent;
+  opacity: .1; /* Defines the color shade. */
+}
 
-    .field_action:hover::before {
-      background: currentcolor;
-    }
+.field_action:hover::before {
+  background: currentcolor;
+}
+
   </style>
 
   <!-- <link rel="stylesheet" href="./User Guide - PDF_files/tree.css"> -->
   <style type="text/css">
     .std-tree {
-      --tree-font-size: 16px;
-      --tree-line-height: calc(var(--tree-font-size)*1.25);
-      --tree-level-padding: calc(var(--tree-font-size)*1.5);
-      --tree-cell-padding: calc(var(--tree-font-size)*0.5);
+      --tree-font-size:          16px;
+      --tree-line-height:        calc(var(--tree-font-size)*1.25);
+      --tree-level-padding:      calc(var(--tree-font-size)*1.5);
+      --tree-cell-padding:       calc(var(--tree-font-size)*0.5);
 
-      --tree-level-line-width: 1px;
+      --tree-level-line-width:   1px;
 
-      --tree-color-line: #808080;
-      --tree-color-fg: var(--color-fg-main, #444444);
-      --tree-color-bg: var(--color-bg-main, #F2F5F9);
+      --tree-color-line:         #808080;
+      --tree-color-fg:           var(--color-fg-main,     #444444);
+      --tree-color-bg:           var(--color-bg-main,     #F2F5F9);
       --tree-color-row-hover-bg: var(--color-bg-contrast, #FFFFFF);
-      --tree-btn-bg-color: var(--color-bg-contrast, #FFFFFF);
+      --tree-btn-bg-color:       var(--color-bg-contrast, #FFFFFF);
 
-      --tree-half-sell-height: calc(var(--tree-line-height)/2 + var(--tree-cell-padding));
+      --tree-half-sell-height:   calc( var(--tree-line-height)/2 + var(--tree-cell-padding) );
 
       --tree-ico-size: var(--tree-font-size, 1rem);
 
       --tree-max-width: 800px;
     }
 
-
+    
     /* tree */
     .std-tree {
       font-size: var(--tree-font-size, 1rem);
@@ -2589,7 +2623,7 @@ sdoc-requirement + sdoc-requirement {
       padding-left: var(--tree-level-padding);
     }
 
-    .std-tree ul ul>li::before {
+    .std-tree ul ul > li::before {
       content: '';
       position: absolute;
       left: calc(var(--tree-ico-size)*0.5 - var(--tree-level-padding));
@@ -2598,7 +2632,7 @@ sdoc-requirement + sdoc-requirement {
       border-left: 1px solid var(--tree-color-line);
     }
 
-    .std-tree ul>li:last-child::before {
+    .std-tree ul > li:last-child::before {
       height: calc(var(--tree-ico-size) + var(--tree-cell-padding));
     }
 
@@ -2611,324 +2645,300 @@ sdoc-requirement + sdoc-requirement {
       top: calc(var(--tree-cell-padding));
     }
 
-    ul ul .std-tree_ico::before {
-      content: '';
-      position: absolute;
-      left: calc(var(--tree-ico-size)*0.5 - var(--tree-level-padding));
-      right: 100%;
-      border-bottom: 1px solid var(--tree-color-line);
-    }
+      ul ul .std-tree_ico::before {
+        content: '';
+        position: absolute;
+        left: calc(var(--tree-ico-size)*0.5 - var(--tree-level-padding));
+        right: 100%;
+        border-bottom: 1px solid var(--tree-color-line);
+      }
 
-    .std-tree_ico svg {
-      display: inline-block;
-      width: var(--tree-ico-size);
-      height: var(--tree-ico-size);
+      .std-tree_ico svg {
+        display: inline-block;
+        width: var(--tree-ico-size);
+        height: var(--tree-ico-size);
 
-      fill: var(--tree-color-line);
-    }
+        fill: var(--tree-color-line);
+      }
 
-    .std-tree_row {
-      padding-top: var(--tree-cell-padding);
-      padding-bottom: var(--tree-cell-padding);
-      padding-left: var(--tree-cell-padding);
+      .std-tree_row {
+        padding-top: var(--tree-cell-padding);
+        padding-bottom: var(--tree-cell-padding);
+        padding-left: var(--tree-cell-padding);
 
-      display: flex;
-      justify-content: space-between;
-    }
+        display: flex;
+        justify-content: space-between;
+      }
 
-    .std-tree_folder {
-      font-weight: bold;
-      display: flex;
-    }
+      .std-tree_folder {
+        font-weight: bold;
+        display: flex;
+      }
 
-    .std-tree_file {
-      order: 1;
-      flex-grow: 1;
-    }
+      .std-tree_file {
+        order: 1;
+        flex-grow: 1;
+      }
 
-    .std-tree_file__title {
-      font-size: 1.25em;
-      color: #000;
-      transition: color .2s ease;
-    }
+      .std-tree_file__title {
+        font-size: 1.25em;
+        color: #000;
+        transition: color .2s ease;
+      }
 
-    .std-tree_file-link:hover .std-tree_file__title {
-      color: var(--color-fg-accent);
-    }
+      .std-tree_file-link:hover .std-tree_file__title {
+        color: var(--color-fg-accent);
+      }
 
-    .std-tree_file__name {
-      font-size: 0.85rem;
-      line-height: 1.2;
-      color: var(--color-fg-secondary);
-      margin-top: 0.25rem;
-    }
+      .std-tree_file__name {
+        font-size: 0.85rem;
+        line-height: 1.2;
+        color: var(--color-fg-secondary);
+        margin-top: 0.25rem;
+      }
 
-    .std-tree_desc {
-      position: relative;
-      top: -2px;
-      color: #000;
-    }
+      .std-tree_desc {
+        position: relative;
+        top: -2px;
+        color: #000;
+      }
 
-    .std-tree_name {
-      font-size: 0.85rem;
-      line-height: 1.2;
-      color: #666;
-    }
+      .std-tree_name {
+        font-size: 0.85rem;
+        line-height: 1.2;
+        color: #666;
+      }
 
-    .std-tree_aside {
-      width: -moz-fit-content;
-      width: fit-content;
-      padding-left: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      order: 3;
-    }
+      .std-tree_aside {
+        width: -moz-fit-content;
+        width: fit-content;
+        padding-left: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        order: 3;
+      }
 
-    .std-tree_file-link {
-      position: relative;
-      top: -2px;
-    }
+      .std-tree_file-link {
+        position: relative;
+        top: -2px;
+      }
+    
   </style>
 
   <style js-resizable_bar-initial-style="">
-    [js-resizable_bar] {
-      width: 20vw
-    }
-
-    [js-resizable_bar="tree"] {
-      width: 12px
-    }
-
-    [js-resizable_bar="toc"] {
-      width: 12px
-    }
+    [js-resizable_bar]{width:20vw}[js-resizable_bar="tree"]{width:12px}[js-resizable_bar="toc"]{width:12px}
   </style>
   <style js-resizable_bar-initial-preloader-style="">
     aside {
       /* for a pseudo preloader [js-resizable_bar]::after, affects: layout_tree,layout_toc */
       position: relative;
     }
-
     [js-resizable_bar]::after {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      z-index: 2;
-      background-color: var(--color-bg-main, White);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        content: '';
+        position: absolute;
+        left: 0; right: 0; top: 0; bottom: 0;
+        z-index: 2;
+        background-color: var(--color-bg-main, White);
     }
   </style>
   <style js-resizable_bar-style="">
-    [js-resizable_bar] {
-      position: relative;
-      height: 100%;
-      max-width: 20vw;
-    }
+  [js-resizable_bar] {
+    position: relative;
+    height: 100%;
+    max-width: 20vw;
+  }
 
-    [js-resizable_bar]:hover {
-      z-index: 22;
-    }
+  [js-resizable_bar]:hover {
+    z-index: 22;
+  }
 
-    [js-resizable_bar][data-state="open"] {
-      min-width: 77px;
-      pointer-events: auto;
-    }
+  [js-resizable_bar][data-state="open"] {
+    min-width: 77px;
+    pointer-events: auto;
+  }
+  [js-resizable_bar][data-state="closed"] {
+    max-width: 12px;
+    min-width: 12px;
+    pointer-events: none;
+    transition: .5s;
+  }
 
-    [js-resizable_bar][data-state="closed"] {
-      max-width: 12px;
-      min-width: 12px;
-      pointer-events: none;
-      transition: .5s;
-    }
+  [js-resizable_bar][data-position="left"] {
+    border-left: none;
+  }
+  [js-resizable_bar][data-position="right"] {
+    border-right: none;
+  }
 
-    [js-resizable_bar][data-position="left"] {
-      border-left: none;
-    }
+  [js-resizable_bar-handler] {
+    pointer-events: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    width: 8px;
+    color: var(--color-fg-accent, currentColor);
+  }
 
-    [js-resizable_bar][data-position="right"] {
-      border-right: none;
-    }
+  [js-resizable_bar-border] {
+    pointer-events: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 8px;
+    background: transparent;
+    transition: .3s;
+    cursor: col-resize;
+  }
 
-    [js-resizable_bar-handler] {
-      pointer-events: auto;
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 10;
-      width: 8px;
-      color: var(--color-fg-accent, currentColor);
-    }
+  [js-resizable_bar][data-state="closed"] [js-resizable_bar-border] {
+    cursor: e-resize;
+  }
 
-    [js-resizable_bar-border] {
-      pointer-events: auto;
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      width: 8px;
-      background: transparent;
-      transition: .3s;
-      cursor: col-resize;
-    }
+  [js-resizable_bar-border]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 1px;
+    background: var(--color-border, rgba(0,0,0,0.1));
+    transition: .3s;
+  }
 
-    [js-resizable_bar][data-state="closed"] [js-resizable_bar-border] {
-      cursor: e-resize;
-    }
+  [js-resizable_bar-border]::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 4px;
+    background: transparent;
+    transition: .3s;
+  }
 
-    [js-resizable_bar-border]::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      width: 1px;
-      background: var(--color-border, rgba(0, 0, 0, 0.1));
-      transition: .3s;
-    }
+  [js-resizable_bar][data-position="left"] [js-resizable_bar-border]::before {
+    right: 0;
+    left: unset;
+  }
+  [js-resizable_bar][data-position="left"] [js-resizable_bar-border]::after {
+    right: -2px;
+    left: unset;
+  }
 
-    [js-resizable_bar-border]::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      width: 4px;
-      background: transparent;
-      transition: .3s;
-    }
+  [js-resizable_bar][data-position="right"] [js-resizable_bar-border]::before {
+    right: unset;
+    left: 0;
+  }
+  [js-resizable_bar][data-position="right"] [js-resizable_bar-border]::after {
+    right: unset;
+    left: -2px;
+  }
 
-    [js-resizable_bar][data-position="left"] [js-resizable_bar-border]::before {
-      right: 0;
-      left: unset;
-    }
+  [js-resizable_bar-border]:hover::after {
+    background: var(--color-fg-accent, currentColor);
+  }
 
-    [js-resizable_bar][data-position="left"] [js-resizable_bar-border]::after {
-      right: -2px;
-      left: unset;
-    }
+  [js-resizable_bar-button] {
+    cursor: pointer;
+    position: absolute;
+    z-index: 2;
+    left: 0;
+    right: 0;
+    top: -8px;
+    box-sizing: border-box;
+    width: 16px;
+    height: 16px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 50%;
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--color-bg-main, White);
+    background: var(--color-bg-main, White);
+    color: var(--color-fg-accent, currentColor);
+    transition: .3s;
+  }
 
-    [js-resizable_bar][data-position="right"] [js-resizable_bar-border]::before {
-      right: unset;
-      left: 0;
-    }
+  [data-position="right"] [js-resizable_bar-button] {
+    right: 0;
+    left: unset;
+  }
+  [data-position="left"] [js-resizable_bar-button] {
+    left: 0;
+    right: unset;
+  }
 
-    [js-resizable_bar][data-position="right"] [js-resizable_bar-border]::after {
-      right: unset;
-      left: -2px;
-    }
+  [js-resizable_bar-button]:hover {
+    color: var(--color-fg-main, Black);
+    border-color: var(--color-fg-main, Black);
+  }
 
-    [js-resizable_bar-border]:hover::after {
-      background: var(--color-fg-accent, currentColor);
-    }
+  /* ❮❯ */
+  [js-resizable_bar-button]::after {
+    content: '❮';
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    left: 0;
+    right: 0;
+    top: -8px;
+    bottom: -8px;
+  }
+  [js-resizable_bar][data-state="open"] [js-resizable_bar-button]::after,
+  [js-resizable_bar][data-state="open"][data-position="left"] [js-resizable_bar-button]::after,
+  [js-resizable_bar][data-state="closed"][data-position="right"] [js-resizable_bar-button]::after {
+    content: '❮';
+  }
+  [js-resizable_bar][data-state="closed"] [js-resizable_bar-button]::after,
+  [js-resizable_bar][data-state="closed"][data-position="left"] [js-resizable_bar-button]::after,
+  [js-resizable_bar][data-state="open"][data-position="right"] [js-resizable_bar-button]::after {
+    content: '❯';
+  }
 
-    [js-resizable_bar-button] {
-      cursor: pointer;
-      position: absolute;
-      z-index: 2;
-      left: 0;
-      right: 0;
-      top: -8px;
-      box-sizing: border-box;
-      width: 16px;
-      height: 16px;
-      font-size: 12px;
-      font-weight: bold;
-      border-radius: 50%;
-      border-width: 1px;
-      border-style: solid;
-      border-color: var(--color-bg-main, White);
-      background: var(--color-bg-main, White);
-      color: var(--color-fg-accent, currentColor);
-      transition: .3s;
-    }
-
-    [data-position="right"] [js-resizable_bar-button] {
-      right: 0;
-      left: unset;
-    }
-
-    [data-position="left"] [js-resizable_bar-button] {
-      left: 0;
-      right: unset;
-    }
-
-    [js-resizable_bar-button]:hover {
-      color: var(--color-fg-main, Black);
-      border-color: var(--color-fg-main, Black);
-    }
-
-    /* ❮❯ */
-    [js-resizable_bar-button]::after {
-      content: '❮';
-      position: absolute;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      left: 0;
-      right: 0;
-      top: -8px;
-      bottom: -8px;
-    }
-
-    [js-resizable_bar][data-state="open"] [js-resizable_bar-button]::after,
-    [js-resizable_bar][data-state="open"][data-position="left"] [js-resizable_bar-button]::after,
-    [js-resizable_bar][data-state="closed"][data-position="right"] [js-resizable_bar-button]::after {
-      content: '❮';
-    }
-
-    [js-resizable_bar][data-state="closed"] [js-resizable_bar-button]::after,
-    [js-resizable_bar][data-state="closed"][data-position="left"] [js-resizable_bar-button]::after,
-    [js-resizable_bar][data-state="open"][data-position="right"] [js-resizable_bar-button]::after {
-      content: '❯';
-    }
-
-    [js-resizable_bar-scroll] {
-      height: 100%;
-      overflow-x: hidden;
-      overflow-y: scroll;
-      /*padding: calc(var(--base-rhythm, 8px)*2);
+  [js-resizable_bar-scroll] {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    /*padding: calc(var(--base-rhythm, 8px)*2);
     padding-bottom: calc(var(--base-rhythm, 8px)*8);*/
-      scrollbar-color: var(--scrollbarBG, transparent) var(--scrollbarBG, transparent);
-    }
+    scrollbar-color: var(--scrollbarBG, transparent) var(--scrollbarBG, transparent);
+  }
+  [js-resizable_bar-scroll='y'] {
+    overflow-x: hidden;
+    overflow-y: scroll;
+  }
+  [js-resizable_bar-scroll]:hover {
+    scrollbar-color: var(--thumbBG, rgba(0,0,0,.05)) var(--scrollbarBG, transparent);
+  }
+  [js-resizable_bar-scroll]::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbarBG, transparent);
+  }
+  [js-resizable_bar-scroll]:hover::-webkit-scrollbar-thumb {
+    background-color: var(--thumbBG, rgba(0,0,0,.05))
+  }
 
-    [js-resizable_bar-scroll='y'] {
-      overflow-x: hidden;
-      overflow-y: scroll;
-    }
-
-    [js-resizable_bar-scroll]:hover {
-      scrollbar-color: var(--thumbBG, rgba(0, 0, 0, .05)) var(--scrollbarBG, transparent);
-    }
-
-    [js-resizable_bar-scroll]::-webkit-scrollbar-thumb {
-      background-color: var(--scrollbarBG, transparent);
-    }
-
-    [js-resizable_bar-scroll]:hover::-webkit-scrollbar-thumb {
-      background-color: var(--thumbBG, rgba(0, 0, 0, .05))
-    }
-
-    [data-state="closed"] [js-resizable_bar-scroll] {
-      display: none;
-    }
+  [data-state="closed"] [js-resizable_bar-scroll] {
+    display: none;
+  }
   </style>
   <style js-resizable_bar-preloader-style="">
-    [js-resizable_bar]::after {
-      opacity: 0;
-      transition: .3s;
-      pointer-events: none;
-    }
+      [js-resizable_bar]::after {
+        opacity: 0;
+        transition: .3s;
+        pointer-events: none;
+      }
   </style>
 
   <!-- HTML2PDF -->
@@ -2939,7 +2949,8 @@ sdoc-requirement + sdoc-requirement {
     data-preloader-target='main.layout_main'
     data-preloader-background='#F2F5F9'
     data-can-not-be-last-selector='sdoc-section-title sdoc-requirement-field-label'
-    data-forced-page-break-selector=''
+    data-forced-page-break-selector='H2'
+    data-no-break-selector='sdoc-meta'
     src="bundle.js"></script>
 
 </head>
@@ -3034,83 +3045,74 @@ sdoc-requirement + sdoc-requirement {
       <div class="main" id="printTHISpreloader">
         <div class="content" id="printTHIS">
 
-          <div filler style="height:605px"></div>
+          <div filler style="height:800px"></div>
           <!-- HTML2PDF: TEST CONTENT GOES HERE -->
+          <!-- ******************************** -->
+          <!-- ******************************** -->
+          <!-- ******************************** -->
+          <!-- ******************************** -->
+          <!-- ******************************** -->
+          <!-- ******************************** -->
+          <!-- ******************************** -->
+          <!-- ******************************** -->
+          <!-- ******************************** -->
+          <!-- ******************************** -->
+          <!-- ******************************** -->
+          <!-- ******************************** -->
+          <!-- ******************************** -->
+          <!-- ******************************** -->
+          <!-- ******************************** -->
 
 
-<sdoc-requirement requirement-view="simple" data-level="1.2" data-testid="requirement-style-table">
-
-  <sdoc-requirement-title>
-    1.2.&nbsp;Reduce documentation hazards</sdoc-requirement-title>
-
-  <sdoc-requirement-field-label>UID:</sdoc-requirement-field-label>
-  <sdoc-requirement-field data-field-type="singleline" data-field-label="UID">
-    GOAL-2-REDUCE-DOCUMENTATION-HAZARDS
-  </sdoc-requirement-field>
-
-  <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
-  <sdoc-requirement-field data-field-label="statement">
+<sdoc-section>
+  <sdoc-section-title data-level="1.1">
+    <h3 id="1.1-Contact-the-developers">1.1.&nbsp;Contact the developers</h3>
+  </sdoc-section-title>
+  <sdoc-meta>
+    <sdoc-meta-label>UID:</sdoc-meta-label>
+    <sdoc-meta-field>SDOC_UG_CONTACT45645645</sdoc-meta-field>
+    <sdoc-meta-label>UID:</sdoc-meta-label>
+    <sdoc-meta-field>SDOC_UG_CONTACT</sdoc-meta-field>
+    <sdoc-meta-label>UID sfsdfsfsdf:</sdoc-meta-label>
+    <sdoc-meta-field>SDOC_UG_CONTACT456456</sdoc-meta-field>
+    <sdoc-meta-label>UID:</sdoc-meta-label>
+    <sdoc-meta-field>SDOC_UG_CONTACT</sdoc-meta-field>
+    <sdoc-meta-label>UID:</sdoc-meta-label>
+    <sdoc-meta-field>SDOC_UG_CONTACT</sdoc-meta-field>
+    <sdoc-meta-label>UID:</sdoc-meta-label>
+    <sdoc-meta-field>SDOC_UG_CONTACT456546</sdoc-meta-field>
+    <sdoc-meta-label>UID:</sdoc-meta-label>
+    <sdoc-meta-field>SDOC_UG_CONTACT</sdoc-meta-field>
+    <sdoc-meta-label>UID:</sdoc-meta-label>
+    <sdoc-meta-field>SDOC_UG_CONTACT</sdoc-meta-field>
+    <sdoc-meta-label>UID:</sdoc-meta-label>
+    <sdoc-meta-field>SDOC_UG_CONTACT</sdoc-meta-field>
+  </sdoc-meta>
+  <sdoc-section-text>
     <div class="document">
-      <p>There shall exist no (or less) opportunity for writing incorrect or inconsistent
-        documentation.</p>
+    <p>Join us in Discord. Here is the invitation link: <a class="reference external" href="https://discord.gg/4BAAME9MmG">https://discord.gg/4BAAME9MmG</a></p>
+    <p>The author can be also contacted via <a class="reference external" href="mailto:s.pankevich@gmail.com">email</a>.</p>
     </div>
-  </sdoc-requirement-field>
+  </sdoc-section-text>
+</sdoc-section>
 
-<!-- test -->
-  <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
-  <sdoc-requirement-field data-field-label="statement">
-    <div class="document">
-      <p>There shall exist no (or less) opportunity for writing incorrect or inconsistent
-        documentation.</p>
-    </div>
-  </sdoc-requirement-field>
-<!-- //test -->
-<!-- test -->
-  <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
-  <sdoc-requirement-field data-field-label="statement">
-    <div class="document">
-      <p>There shall exist no (or less) opportunity for writing incorrect or inconsistent
-        documentation.</p>
-    </div>
-  </sdoc-requirement-field>
-<!-- //test -->
-<!-- test -->
-  <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
-  <sdoc-requirement-field data-field-label="statement">
-    <div class="document">
-      <p>There shall exist no (or less) opportunity for writing incorrect or inconsistent
-        documentation.</p>
-    </div>
-  </sdoc-requirement-field>
-<!-- //test -->
-<!-- test -->
-  <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
-  <sdoc-requirement-field data-field-label="statement">
-    <div class="document">
-      <p>There shall exist no (or less) opportunity for writing incorrect or inconsistent
-        documentation.</p>
-    </div>
-  </sdoc-requirement-field>
-<!-- //test -->
-
-  <sdoc-requirement-field-label>comment:</sdoc-requirement-field-label>
-  <sdoc-requirement-field data-field-label="comment">
-    <div class="document">
-      <p>Every serious engineering activity, such as safety engineering or systems
-        engineering, starts with requirements. The more critical is a product the higher
-        the importance of good documentation.</p>
-      <p>Technical documentation can be and often becomes a source of hazards.
-        It is recognized that many failures stem from inadequate requirements
-        engineering. While it is not possible to fix the problem of inadequate
-        requirements engineering in general, it is definitely possible to improve
-        software that supports engineers in activities such as requirements engineering
-        and writing technical documentation.</p>
-    </div>
-
-  </sdoc-requirement-field>
-
-</sdoc-requirement>
-
+          <!-- // //////////////////////////////// -->
+          <!-- // //////////////////////////////// -->
+          <!-- // //////////////////////////////// -->
+          <!-- // //////////////////////////////// -->
+          <!-- // //////////////////////////////// -->
+          <!-- // //////////////////////////////// -->
+          <!-- // //////////////////////////////// -->
+          <!-- // //////////////////////////////// -->
+          <!-- // //////////////////////////////// -->
+          <!-- // //////////////////////////////// -->
+          <!-- // //////////////////////////////// -->
+          <!-- // //////////////////////////////// -->
+          <!-- // //////////////////////////////// -->
+          <!-- // //////////////////////////////// -->
+          <!-- // //////////////////////////////// -->
+          <!-- // //////////////////////////////// -->
+          <!-- // //////////////////////////////// -->
           <!-- // HTML2PDF: TEST CONTENT GOES HERE -->
         </div>
       </div>
@@ -3141,5 +3143,4 @@ sdoc-requirement + sdoc-requirement {
 
 
 </body>
-
 </html>
