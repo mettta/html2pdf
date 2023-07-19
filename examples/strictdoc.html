@@ -1,40 +1,16 @@
 <!DOCTYPE html>
 <!-- saved from url=(0069)http://127.0.0.1:5111/strictdoc/docs/strictdoc_01_user_guide-PDF.html -->
 <html lang="en">
-  <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-    <script
-    defer
-    data-debug-mode='true'
-    data-preloader='true'
-    data-preloader-target='main.layout_main'
-    data-preloader-background='#F2F5F9'
-    data-can-not-be-last-selector='sdoc-section-title sdoc-requirement-field-label'
-    data-forced-page-break-selector='H2'
-    src="bundle.js"></script>
-
-<style type="text/css">.turbo-progress-bar {
-  position: fixed;
-  display: block;
-  top: 0;
-  left: 0;
-  height: 3px;
-  background: #0076ff;
-  z-index: 9999;
-  transition:
-    width 300ms ease-out,
-    opacity 150ms 150ms ease-in;
-  transform: translate3d(0, 0, 0);
-}
-</style>
-  
-  
   <meta name="keywords" content="strictdoc, documentation, documentation-tool, requirements-management, requirements, documentation-generator, requirement-specifications, requirements-engineering, technical-documentation, requirements-specification">
   <meta name="description" content="strictdoc. Software for technical documentation and requirements management.">
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📌</text></svg>">
   <!-- <link rel="shortcut icon" href="http://127.0.0.1:5111/assets/favicon.ico" type="image/x-icon"> -->
 
+  <title>User Guide - PDF</title>
 
   <!-- <link rel="stylesheet" href="./User Guide - PDF_files/base.css"> -->
   <style type="text/css">
@@ -877,7 +853,7 @@ sdoc-main-placeholder {
     
     sdoc-meta {
       display: inline-grid;
-      grid-template-columns: min-content 1fr;
+      grid-template-columns: minmax(min-content, max-content) minmax(min-content, max-content);
       place-items: stretch stretch;
       place-content: stretch stretch;
       position: relative;
@@ -2764,7 +2740,9 @@ a.field_action:hover {
     
   </style>
 
-  <style js-resizable_bar-initial-style="">[js-resizable_bar]{width:20vw}[js-resizable_bar="tree"]{width:12px}[js-resizable_bar="toc"]{width:12px}</style>
+  <style js-resizable_bar-initial-style="">
+    [js-resizable_bar]{width:20vw}[js-resizable_bar="tree"]{width:12px}[js-resizable_bar="toc"]{width:12px}
+  </style>
   <style js-resizable_bar-initial-preloader-style="">
     aside {
       /* for a pseudo preloader [js-resizable_bar]::after, affects: layout_tree,layout_toc */
@@ -2780,206 +2758,215 @@ a.field_action:hover {
         z-index: 2;
         background-color: var(--color-bg-main, White);
     }
-    </style>
+  </style>
+  <style js-resizable_bar-style="">
+  [js-resizable_bar] {
+    position: relative;
+    height: 100%;
+    max-width: 20vw;
+  }
 
+  [js-resizable_bar]:hover {
+    z-index: 22;
+  }
 
-  <title>User Guide - PDF</title>
+  [js-resizable_bar][data-state="open"] {
+    min-width: 77px;
+    pointer-events: auto;
+  }
+  [js-resizable_bar][data-state="closed"] {
+    max-width: 12px;
+    min-width: 12px;
+    pointer-events: none;
+    transition: .5s;
+  }
 
+  [js-resizable_bar][data-position="left"] {
+    border-left: none;
+  }
+  [js-resizable_bar][data-position="right"] {
+    border-right: none;
+  }
 
-<style js-resizable_bar-style="">
-[js-resizable_bar] {
-  position: relative;
-  height: 100%;
-  max-width: 20vw;
-}
+  [js-resizable_bar-handler] {
+    pointer-events: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    width: 8px;
+    color: var(--color-fg-accent, currentColor);
+  }
 
-[js-resizable_bar]:hover {
-  z-index: 22;
-}
+  [js-resizable_bar-border] {
+    pointer-events: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 8px;
+    background: transparent;
+    transition: .3s;
+    cursor: col-resize;
+  }
 
-[js-resizable_bar][data-state="open"] {
-  min-width: 77px;
-  pointer-events: auto;
-}
-[js-resizable_bar][data-state="closed"] {
-  max-width: 12px;
-  min-width: 12px;
-  pointer-events: none;
-  transition: .5s;
-}
+  [js-resizable_bar][data-state="closed"] [js-resizable_bar-border] {
+    cursor: e-resize;
+  }
 
-[js-resizable_bar][data-position="left"] {
-  border-left: none;
-}
-[js-resizable_bar][data-position="right"] {
-  border-right: none;
-}
+  [js-resizable_bar-border]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 1px;
+    background: var(--color-border, rgba(0,0,0,0.1));
+    transition: .3s;
+  }
 
-[js-resizable_bar-handler] {
-  pointer-events: auto;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 10;
-  width: 8px;
-  color: var(--color-fg-accent, currentColor);
-}
+  [js-resizable_bar-border]::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 4px;
+    background: transparent;
+    transition: .3s;
+  }
 
-[js-resizable_bar-border] {
-  pointer-events: auto;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 8px;
-  background: transparent;
-  transition: .3s;
-  cursor: col-resize;
-}
+  [js-resizable_bar][data-position="left"] [js-resizable_bar-border]::before {
+    right: 0;
+    left: unset;
+  }
+  [js-resizable_bar][data-position="left"] [js-resizable_bar-border]::after {
+    right: -2px;
+    left: unset;
+  }
 
-[js-resizable_bar][data-state="closed"] [js-resizable_bar-border] {
-  cursor: e-resize;
-}
+  [js-resizable_bar][data-position="right"] [js-resizable_bar-border]::before {
+    right: unset;
+    left: 0;
+  }
+  [js-resizable_bar][data-position="right"] [js-resizable_bar-border]::after {
+    right: unset;
+    left: -2px;
+  }
 
-[js-resizable_bar-border]::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 1px;
-  background: var(--color-border, rgba(0,0,0,0.1));
-  transition: .3s;
-}
+  [js-resizable_bar-border]:hover::after {
+    background: var(--color-fg-accent, currentColor);
+  }
 
-[js-resizable_bar-border]::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 4px;
-  background: transparent;
-  transition: .3s;
-}
+  [js-resizable_bar-button] {
+    cursor: pointer;
+    position: absolute;
+    z-index: 2;
+    left: 0;
+    right: 0;
+    top: -8px;
+    box-sizing: border-box;
+    width: 16px;
+    height: 16px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 50%;
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--color-bg-main, White);
+    background: var(--color-bg-main, White);
+    color: var(--color-fg-accent, currentColor);
+    transition: .3s;
+  }
 
-[js-resizable_bar][data-position="left"] [js-resizable_bar-border]::before {
-  right: 0;
-  left: unset;
-}
-[js-resizable_bar][data-position="left"] [js-resizable_bar-border]::after {
-  right: -2px;
-  left: unset;
-}
+  [data-position="right"] [js-resizable_bar-button] {
+    right: 0;
+    left: unset;
+  }
+  [data-position="left"] [js-resizable_bar-button] {
+    left: 0;
+    right: unset;
+  }
 
-[js-resizable_bar][data-position="right"] [js-resizable_bar-border]::before {
-  right: unset;
-  left: 0;
-}
-[js-resizable_bar][data-position="right"] [js-resizable_bar-border]::after {
-  right: unset;
-  left: -2px;
-}
+  [js-resizable_bar-button]:hover {
+    color: var(--color-fg-main, Black);
+    border-color: var(--color-fg-main, Black);
+  }
 
-[js-resizable_bar-border]:hover::after {
-  background: var(--color-fg-accent, currentColor);
-}
+  /* ❮❯ */
+  [js-resizable_bar-button]::after {
+    content: '❮';
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    left: 0;
+    right: 0;
+    top: -8px;
+    bottom: -8px;
+  }
+  [js-resizable_bar][data-state="open"] [js-resizable_bar-button]::after,
+  [js-resizable_bar][data-state="open"][data-position="left"] [js-resizable_bar-button]::after,
+  [js-resizable_bar][data-state="closed"][data-position="right"] [js-resizable_bar-button]::after {
+    content: '❮';
+  }
+  [js-resizable_bar][data-state="closed"] [js-resizable_bar-button]::after,
+  [js-resizable_bar][data-state="closed"][data-position="left"] [js-resizable_bar-button]::after,
+  [js-resizable_bar][data-state="open"][data-position="right"] [js-resizable_bar-button]::after {
+    content: '❯';
+  }
 
-[js-resizable_bar-button] {
-  cursor: pointer;
-  position: absolute;
-  z-index: 2;
-  left: 0;
-  right: 0;
-  top: -8px;
-  box-sizing: border-box;
-  width: 16px;
-  height: 16px;
-  font-size: 12px;
-  font-weight: bold;
-  border-radius: 50%;
-  border-width: 1px;
-  border-style: solid;
-  border-color: var(--color-bg-main, White);
-  background: var(--color-bg-main, White);
-  color: var(--color-fg-accent, currentColor);
-  transition: .3s;
-}
+  [js-resizable_bar-scroll] {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    /*padding: calc(var(--base-rhythm, 8px)*2);
+    padding-bottom: calc(var(--base-rhythm, 8px)*8);*/
+    scrollbar-color: var(--scrollbarBG, transparent) var(--scrollbarBG, transparent);
+  }
+  [js-resizable_bar-scroll='y'] {
+    overflow-x: hidden;
+    overflow-y: scroll;
+  }
+  [js-resizable_bar-scroll]:hover {
+    scrollbar-color: var(--thumbBG, rgba(0,0,0,.05)) var(--scrollbarBG, transparent);
+  }
+  [js-resizable_bar-scroll]::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbarBG, transparent);
+  }
+  [js-resizable_bar-scroll]:hover::-webkit-scrollbar-thumb {
+    background-color: var(--thumbBG, rgba(0,0,0,.05))
+  }
 
-[data-position="right"] [js-resizable_bar-button] {
-  right: 0;
-  left: unset;
-}
-[data-position="left"] [js-resizable_bar-button] {
-  left: 0;
-  right: unset;
-}
+  [data-state="closed"] [js-resizable_bar-scroll] {
+    display: none;
+  }
+  </style>
+  <style js-resizable_bar-preloader-style="">
+      [js-resizable_bar]::after {
+        opacity: 0;
+        transition: .3s;
+        pointer-events: none;
+      }
+  </style>
 
-[js-resizable_bar-button]:hover {
-  color: var(--color-fg-main, Black);
-  border-color: var(--color-fg-main, Black);
-}
+  <!-- HTML2PDF -->
+  <script
+    defer
+    data-debug-mode='true'
+    data-preloader='true'
+    data-preloader-target='main.layout_main'
+    data-preloader-background='#F2F5F9'
+    data-can-not-be-last-selector='sdoc-section-title sdoc-requirement-field-label'
+    data-forced-page-break-selector='H2'
+    src="bundle.js"></script>
 
-/* ❮❯ */
-[js-resizable_bar-button]::after {
-  content: '❮';
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  left: 0;
-  right: 0;
-  top: -8px;
-  bottom: -8px;
-}
-[js-resizable_bar][data-state="open"] [js-resizable_bar-button]::after,
-[js-resizable_bar][data-state="open"][data-position="left"] [js-resizable_bar-button]::after,
-[js-resizable_bar][data-state="closed"][data-position="right"] [js-resizable_bar-button]::after {
-  content: '❮';
-}
-[js-resizable_bar][data-state="closed"] [js-resizable_bar-button]::after,
-[js-resizable_bar][data-state="closed"][data-position="left"] [js-resizable_bar-button]::after,
-[js-resizable_bar][data-state="open"][data-position="right"] [js-resizable_bar-button]::after {
-  content: '❯';
-}
-
-[js-resizable_bar-scroll] {
-  height: 100%;
-  overflow-x: hidden;
-  overflow-y: scroll;
-  /*padding: calc(var(--base-rhythm, 8px)*2);
-  padding-bottom: calc(var(--base-rhythm, 8px)*8);*/
-  scrollbar-color: var(--scrollbarBG, transparent) var(--scrollbarBG, transparent);
-}
-[js-resizable_bar-scroll='y'] {
-  overflow-x: hidden;
-  overflow-y: scroll;
-}
-[js-resizable_bar-scroll]:hover {
-  scrollbar-color: var(--thumbBG, rgba(0,0,0,.05)) var(--scrollbarBG, transparent);
-}
-[js-resizable_bar-scroll]::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbarBG, transparent);
-}
-[js-resizable_bar-scroll]:hover::-webkit-scrollbar-thumb {
-  background-color: var(--thumbBG, rgba(0,0,0,.05))
-}
-
-[data-state="closed"] [js-resizable_bar-scroll] {
-  display: none;
-}
-</style><style js-resizable_bar-preloader-style="">
-    [js-resizable_bar]::after {
-      opacity: 0;
-      transition: .3s;
-      pointer-events: none;
-    }
-    </style></head>
+</head>
 
 <body data-viewtype="html2pdf" data-turbo="false">
 <div id="connection_status" class="connection_status"></div>
@@ -6329,4 +6316,5 @@ all export options and is disabled with this option as well.</p>
   <div id="confirm"></div>
   
 
-</body></html>
+</body>
+</html>
