@@ -205,10 +205,18 @@ export default class DocumentObjectModel {
     return res;
   }
 
+  isInlineBlock(element) {
+    const display = this.getComputedStyle(element).display;
+    const res = display === "inline-block" ||
+                display === "inline-table" ||
+                display === "inline-flex" ||
+                display === "inline-grid";
+    return res;
+  }
+
   isGrid(element) {
     const display = this.getComputedStyle(element).display;
-    const res = display === "grid" ||
-                display === "inline-grid";
+    const res = display === "grid";
     return res;
   }
 

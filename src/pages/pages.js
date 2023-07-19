@@ -404,7 +404,7 @@ export default class Pages {
       // otherwise try to break it and loop the children:
       let children = [];
 
-      if (this._doNotBreak(currentElement) || this._notSolved(currentElement)) {
+      if (this._doNotBreak(currentElement)) {
         // don't break apart, thus keep an empty children array
         this.debugMode && this.debugToggler._parseNode && console.info(...consoleMark,
           '🧡 isNoBreak');
@@ -1902,8 +1902,9 @@ export default class Pages {
   }
 
   _doNotBreak(element) {
-    console.log('🧡 _doNotBreak 🧡')
     return this.DOM.isNoBreak(element)
+        || this.DOM.isInlineBlock(element)
+        || this._notSolved(element);
   }
 
   _notSolved(element) {
