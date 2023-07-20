@@ -97,7 +97,10 @@ ${SELECTOR.paperFlow} {
 
 ${SELECTOR.runningSafety} {
   display: block;
-  padding: .1px;
+  /* firefox ignores 0.1px size, so it's necessary to make a full-size pixel
+     and take it into account in the calculations
+  */
+  padding-top: 1px;
 }
 
 ${SELECTOR.virtualPaperTopMargin} {

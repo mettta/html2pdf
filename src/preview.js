@@ -200,7 +200,9 @@ export default class Preview {
     // with a calculated height instead of the content.
     // We use margins to compensate for possible opposite margins in the content.
     const balancingHeader = this.DOM.create(this.runningSafetySelector);
-    headerHeight && this.DOM.setStyles(balancingHeader, { marginBottom: headerHeight + 'px' });
+    // * because of firefox, we added 1pixel of padding for runningSafety in style.js,
+    // * and are now subtracting it to compensate (in marginBottom).
+    headerHeight && this.DOM.setStyles(balancingHeader, { marginBottom: headerHeight - 1 + 'px' });
 
     const headerSpacer = this.DOM.createDocumentFragment();
     this.DOM.insertAtEnd(
@@ -223,7 +225,9 @@ export default class Preview {
     // We create it with a basic compensator,
     // which takes into account now only the footerHeight.
     const balancingFooter = this.DOM.create(this.runningSafetySelector);
-    footerHeight && this.DOM.setStyles(balancingFooter, { marginTop: footerHeight + 'px' });
+    // * because of firefox, we added 1pixel of padding for runningSafety in style.js,
+    // * and are now subtracting it to compensate (in marginTop).
+    footerHeight && this.DOM.setStyles(balancingFooter, { marginTop: footerHeight - 1 + 'px' });
 
     // Based on contentSeparator (virtual, not printed element, inserted into contentFlow)
     // and paperSeparator (virtual, not printed element, inserted into paperFlow),
