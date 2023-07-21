@@ -88,19 +88,16 @@ export default class Layout {
   _ignorePrintingEnvironment(root) {
     let parentNode = this.DOM.getParentNode(root);
 
-    // this.DOM.setPrintIgnore(parentNode);
     this.DOM.setAttribute(parentNode, this.printIgnoreElementSelector);
 
     this.DOM.getChildNodes(parentNode)
       .forEach((child) => {
 
         if (child !== root && this.DOM.isElementNode(child)) {
-          // this.DOM.setPrintHide(child);
           this.DOM.setAttribute(child, this.printHideElementSelector);
 
         } else if (this.DOM.isSignificantTextNode(child)) {
           // process text nodes
-          // this.DOM.setPrintHide(this.DOM.wrapTextNode(child));
           this.DOM.setAttribute(this.DOM.wrapTextNode(child), this.printHideElementSelector);
 
         } else {

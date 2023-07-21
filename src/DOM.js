@@ -111,7 +111,6 @@ export default class DocumentObjectModel {
   }
 
   setPrintNoBreak(element) {
-    // element.dataset.printIgnore = '';
     this.setAttribute(element, SELECTOR.printNoBreak)
   }
 

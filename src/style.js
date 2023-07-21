@@ -77,14 +77,57 @@ ${SELECTOR.virtualPaper}::before {
   z-index: -1;
 }
 
+${SELECTOR.paperFooter},
+${SELECTOR.paperHeader} {
+  position: relative;
+}
+
+${SELECTOR.headerContent},
+${SELECTOR.footerContent} {
+  font-size: small;
+}
+
+${SELECTOR.headerContent} p,
+${SELECTOR.footerContent} p {
+  margin: 0;
+}
+
 ${SELECTOR.headerContent} {
   display: block;
   padding-bottom: ${this.config.headerMargin}${this.config.screenUnits};
+  /* padding-top: 1px; */
+  /* Page numbers: */
+  padding-top: 10px;
 }
 
 ${SELECTOR.footerContent} {
   display: block;
   padding-top: ${this.config.footerMargin}${this.config.screenUnits};
+  /* padding-bottom: 1px; */
+  /* Page numbers: */
+  padding-bottom: 10px;
+}
+
+${SELECTOR.pageNumberRoot} {
+  display: flex;
+  column-gap: 2px;
+  position: absolute;
+  /* left: 100%; */
+  right: 0;
+  text-align: right;
+  line-height: 1;
+}
+
+${SELECTOR.headerContent} ${SELECTOR.pageNumberRoot} {
+  top: 0;
+}
+
+${SELECTOR.footerContent} ${SELECTOR.pageNumberRoot} {
+  bottom: 0;
+}
+
+${SELECTOR.pageNumberCurrent} {
+  font-weight: bold;
 }
 
 ${SELECTOR.paperFlow} {
@@ -116,6 +159,10 @@ ${SELECTOR.virtualPaperBottomMargin} {
 ${SELECTOR.virtualPaperGap} {
   display: block;
   padding-top: ${this.config.virtualPagesGap}${this.config.screenUnits};
+}
+
+${SELECTOR.paperBody} {
+  display: block;
 }
 
 ${SELECTOR.frontpageContent} {
