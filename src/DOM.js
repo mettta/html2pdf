@@ -82,8 +82,6 @@ export default class DocumentObjectModel {
     return item.dataset.id;
   }
 
-  // ATTRIBUTES / dataset
-
   setAttribute(element, selector) {
     if (!element || !selector) {
       console.warn && console.warn('setAttribute() must have 2 params');
@@ -228,16 +226,13 @@ export default class DocumentObjectModel {
     return res1 && res2;
   }
 
-  // todo {class, id, dataset, value} ?
   isNeutral(element) {
     // SELECTOR.neutral
     return element.dataset?.hasOwnProperty('neutral')
   }
 
   isForcedPageBreak(element) {
-    // SELECTOR.printForcedPageBreak
-    // todo: add one more attribute like [print-forced-page-break]
-    return element.dataset?.hasOwnProperty('printForcedPageBreak')
+    return element.hasAttribute(SELECTOR.printForcedPageBreak)
   }
 
   insertForcedPageBreakBefore(element) {
@@ -278,13 +273,11 @@ export default class DocumentObjectModel {
   }
 
   findAllForcedPageBreakInside(element) {
-    // '[data-print-forced-page-break]'
     return [...element.querySelectorAll(SELECTOR.printForcedPageBreak)];
   }
 
   isNoBreak(element) {
-    // SELECTOR.printNoBreak
-    return element.dataset?.hasOwnProperty('printNoBreak')
+    return element.hasAttribute(SELECTOR.printNoBreak)
   }
 
   // CHECK

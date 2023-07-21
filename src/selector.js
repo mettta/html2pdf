@@ -52,12 +52,12 @@ const SELECTOR = {
 
   // printed page break
   // ? used in preview
-  printPageBreak: '[data-print-page-break]',
+  printPageBreak: '[html2pdf-print-page-break]',
   // processed page break
   // ? DOM
-  printForcedPageBreak: '[data-print-forced-page-break]',
+  printForcedPageBreak: '[html2pdf-print-forced-page-break]',
   // page break ban
-  printNoBreak: '[data-print-no-break]',
+  printNoBreak: '[html2pdf-print-no-break]',
 
   // service attributes
   // ? DOM
