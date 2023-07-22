@@ -79,11 +79,13 @@ ${SELECTOR.virtualPaper}::before {
 
 ${SELECTOR.paperFooter},
 ${SELECTOR.paperHeader} {
+  display: block;
   position: relative;
 }
 
 ${SELECTOR.headerContent},
 ${SELECTOR.footerContent} {
+  display: block;
   font-size: small;
 }
 
@@ -93,7 +95,6 @@ ${SELECTOR.footerContent} p {
 }
 
 ${SELECTOR.headerContent} {
-  display: block;
   padding-bottom: ${this.config.headerMargin}${this.config.screenUnits};
   /* padding-top: 1px; */
   /* Page numbers: */
@@ -101,7 +102,6 @@ ${SELECTOR.headerContent} {
 }
 
 ${SELECTOR.footerContent} {
-  display: block;
   padding-top: ${this.config.footerMargin}${this.config.screenUnits};
   /* padding-bottom: 1px; */
   /* Page numbers: */
@@ -131,11 +131,16 @@ ${SELECTOR.pageNumberCurrent} {
 }
 
 ${SELECTOR.paperFlow} {
+  display: block;
   position: absolute;
   width: 100%;
   z-index: -1;
   /* affect only screen */
   padding-bottom: 100px;
+}
+
+${SELECTOR.contentFlow} {
+  display: block;
 }
 
 ${SELECTOR.runningSafety} {
@@ -185,6 +190,14 @@ ${SELECTOR.neutral} span {
   background-color: transparent;
 }
 
+${SELECTOR.complexTextBlock} {
+  display: block;
+}
+
+${SELECTOR.printPageBreak} {
+  display: block;
+}
+
 ${SELECTOR.printForcedPageBreak} {
   display: block;
   visibility: hidden;
@@ -212,8 +225,8 @@ ${SELECTOR.printForcedPageBreak} {
     display: contents;
   }
 
-  ${SELECTOR.virtualPaper}::before,
   ${SELECTOR.printHide},
+  ${SELECTOR.virtualPaper}::before,
   ${SELECTOR.virtualPaperTopMargin},
   ${SELECTOR.virtualPaperBottomMargin},
   ${SELECTOR.virtualPaperGap} {
