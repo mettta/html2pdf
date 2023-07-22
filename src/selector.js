@@ -52,7 +52,7 @@ const SELECTOR = {
 
   // printed page break
   // ? used in preview
-  printPageBreak: '[html2pdf-print-page-break]',
+  printPageBreak: 'html2pdf-print-page-break',
   // processed page break
   // ? DOM
   printForcedPageBreak: 'html2pdf-print-forced-page-break',
