@@ -264,9 +264,7 @@ export default class DocumentObjectModel {
   }
 
   insertForcedPageBreakBefore(element) {
-    const div = this.create();
-    this.setAttribute(div, SELECTOR.neutral);
-    this.setAttribute(div, SELECTOR.printForcedPageBreak);
+    const div = this.create(SELECTOR.printForcedPageBreak);
     this.insertBefore(element, div);
     return div;
   }

@@ -55,7 +55,7 @@ const SELECTOR = {
   printPageBreak: '[html2pdf-print-page-break]',
   // processed page break
   // ? DOM
-  printForcedPageBreak: '[html2pdf-print-forced-page-break]',
+  printForcedPageBreak: 'html2pdf-print-forced-page-break',
   // page break ban
   printNoBreak: '[html2pdf-print-no-break]',
 
