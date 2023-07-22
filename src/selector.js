@@ -61,8 +61,9 @@ const SELECTOR = {
 
   // service attributes
   // ? DOM
-  neutral: '[data-neutral]',
+  neutral: 'html2pdf-neutral',
   complexTextBlock: 'html2pdf-complex-text-block',
+  textNode: 'html2pdf-text-node',
 
 };
 

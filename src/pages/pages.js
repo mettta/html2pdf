@@ -1892,7 +1892,7 @@ export default class Pages {
   }
 
   _isTextNode(element) {
-    return this.DOM.isNeutral(element);
+    return this.DOM.isWrappedTextNode(element);
   }
 
   _isTableNode(element) {

@@ -172,6 +172,7 @@ ${SELECTOR.frontpageContent} {
   height: 100%;
 }
 
+${SELECTOR.textNode},
 ${SELECTOR.neutral},
 ${SELECTOR.neutral} span {
   display: inline;
@@ -265,6 +266,10 @@ ${SELECTOR.frontpageContent} {
 
 ${SELECTOR.neutral} {
   background: #00ffee10;
+}
+
+${SELECTOR.textNode} {
+  background: #00ff0010;
 }
 
 [filler] {

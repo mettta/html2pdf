@@ -106,7 +106,7 @@ export default class DocumentObjectModel {
       element.setAttribute(attr, '');
       return
     }
-    console.log(`you're really sure ${selector} is a selector?`)
+    this.debugMode && console.log(`you're really sure ${selector} is a selector?`)
   }
 
   isSelectorMatching(element, selector) {
@@ -135,7 +135,7 @@ export default class DocumentObjectModel {
     } else {
       // Strictly speaking, the tag name is not a selector,
       // but to be on the safe side, let's check that too:
-      return this.getElementTagName(element) === SELECTOR.complexTextBlock.toUpperCase() ;
+      return this.getElementTagName(element) === selector.toUpperCase();
     }
   }
 
@@ -147,16 +147,18 @@ export default class DocumentObjectModel {
     if (!this.isSignificantTextNode(element)) {
       return
     }
-    const wrapper = this.createNeutral();
+    const wrapper = this.create(SELECTOR.textNode);
     element.before(wrapper);
     wrapper.append(element);
     return wrapper;
   }
 
+  isWrappedTextNode(element) {
+    return this.isSelectorMatching(element, SELECTOR.textNode)
+  }
+
   createNeutral() {
-    const neutral = this.DOM.createElement('span');
-    this.setAttribute(neutral, SELECTOR.neutral);
-    return neutral;
+    return this.create(SELECTOR.neutral)
   }
 
   createTestNodeFrom(node) {
@@ -256,7 +258,8 @@ export default class DocumentObjectModel {
   }
 
   isNeutral(element) {
-    return this.isSelectorMatching(element, SELECTOR.neutral)
+    const match = this.isSelectorMatching(element, SELECTOR.neutral);
+    return match
   }
 
   isForcedPageBreak(element) {
