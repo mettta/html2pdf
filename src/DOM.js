@@ -93,19 +93,50 @@ export default class DocumentObjectModel {
     if (first === '.') {
       const cl = selector.substring(1);
       element.classList.add(cl);
-
-    }
-    if (first === '#') {
+      return
+    } else if (first === '#') {
       const id = selector.substring(1);
       element.id = id;
-
-    }
-    if (first === '[') {
+      return
+    } else if (first === '[') {
+      console.assert(
+        selector.at(-1) === ']', `the ${selector} selector is not OK.`
+      );
       const attr = selector.substring(1, selector.length - 1);
       element.setAttribute(attr, '');
+      return
+    }
+    console.log(`you're really sure ${selector} is a selector?`)
+  }
 
+  isSelectorMatching(element, selector) {
+    if (!element || !selector) {
+      console.warn && console.warn('setAttribute() must have 2 params');
+      return;
     }
 
+    const first = selector.charAt(0);
+
+    if (first === '.') {
+      const cl = selector.substring(1);
+      return element.classList.contains(cl);
+
+    } else if (first === '#') {
+      const id = selector.substring(1);
+      return element.id === id;
+
+    } else if (first === '[') {
+      console.assert(
+        selector.at(-1) === ']', `the ${selector} selector is not OK.`
+      );
+      const attr = selector.substring(1, selector.length - 1);
+      return element.hasAttribute(attr);
+
+    } else {
+      // Strictly speaking, the tag name is not a selector,
+      // but to be on the safe side, let's check that too:
+      return this.getElementTagName(element) === SELECTOR.complexTextBlock.toUpperCase() ;
+    }
   }
 
   setPrintNoBreak(element) {
@@ -178,14 +209,12 @@ export default class DocumentObjectModel {
   }
 
   createComplexTextBlock() {
-    const textBlock = this.create();
-    textBlock.className = "complex-text-block";
-    textBlock.setAttribute(SELECTOR.complexTextBlock, '');
+    const textBlock = this.create(SELECTOR.complexTextBlock);
     return textBlock;
   }
 
   isComplexTextBlock(element) {
-    return element.hasAttribute(SELECTOR.complexTextBlock)
+    return this.isSelectorMatching(element, SELECTOR.complexTextBlock)
   }
 
   getComputedStyle(element) {
@@ -227,12 +256,11 @@ export default class DocumentObjectModel {
   }
 
   isNeutral(element) {
-    // SELECTOR.neutral
-    return element.dataset?.hasOwnProperty('neutral')
+    return this.isSelectorMatching(element, SELECTOR.neutral)
   }
 
   isForcedPageBreak(element) {
-    return element.hasAttribute(SELECTOR.printForcedPageBreak)
+    return this.isSelectorMatching(element, SELECTOR.printForcedPageBreak)
   }
 
   insertForcedPageBreakBefore(element) {
@@ -277,7 +305,7 @@ export default class DocumentObjectModel {
   }
 
   isNoBreak(element) {
-    return element.hasAttribute(SELECTOR.printNoBreak)
+    return this.isSelectorMatching(element, SELECTOR.printNoBreak)
   }
 
   // CHECK
