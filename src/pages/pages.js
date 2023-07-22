@@ -169,7 +169,9 @@ export default class Pages {
     // ELSE:
 
     const content = this._getChildren(this.contentFlow);
-    this.debugMode && console.log('%c🚸 children(contentFlow)', CONSOLE_CSS_LABEL_PAGES, content);
+    this.debugMode && console.groupCollapsed('%c🚸 children(contentFlow)', CONSOLE_CSS_LABEL_PAGES);
+    this.debugMode && console.log(content);
+    this.debugMode && console.groupEnd('%c🚸 children(contentFlow)');
 
     // TODO put this into main calculations?
     // FIRST ELEMENT: register the beginning of the first page.
