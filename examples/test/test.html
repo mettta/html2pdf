@@ -2948,7 +2948,7 @@ a.field_action:hover {
     data-preloader='true'
     data-preloader-target='main.layout_main .main'
     data-preloader-background='#F2F5F9'
-    data-can-not-be-last-selector='sdoc-section-title sdoc-requirement-field-label'
+    data-no-hanging-selector='sdoc-section-title sdoc-requirement-field-label'
     data-forced-page-break-selector='H2'
     data-no-break-selector='sdoc-meta'
     src="bundle.js"></script>
@@ -2957,28 +2957,16 @@ a.field_action:hover {
 
 <body data-viewtype="html2pdf" data-turbo="false">
 
-  <template html2pdf-frontpage>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-    <h1>frontpage</h1>
-  </template>
-  <template html2pdf-header>
-    <div html2pdf-page-number>
+  <template html2pdf-frontpage></template>
+<!--  <template html2pdf-header>
+ <div html2pdf-page-number>
       <span html2pdf-page-number-current></span>/<span html2pdf-page-number-total></span>
     </div>
-    <p>header test</p>
-    <p>header test</p>
-  </template>
+</template> -->
   <template html2pdf-footer>
     <div html2pdf-page-number>
       <span html2pdf-page-number-current></span>/<span html2pdf-page-number-total></span>
     </div>
-    <p>footer dfgfdg</p>
   </template>
 
   <div class="layout" id="layout">
@@ -3089,37 +3077,133 @@ a.field_action:hover {
           <!-- ******************************** -->
 
 
+
+<sdoc-requirement requirement-view="simple" data-level="2.5.5" data-testid="requirement-style-simple">
+
+
+  <sdoc-requirement-title id="2.5.5-References">
+        2.5.5.&nbsp;References</sdoc-requirement-title>
+
+
+    <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="statement">
+      <div class="document">
+<p>Requirement item may have one or more references.</p>
+</div>
+
+    </sdoc-requirement-field>
+
+</sdoc-requirement>
+<sdoc-requirement requirement-view="simple" data-level="2.5.6" data-testid="requirement-style-simple">
+
+
+  <sdoc-requirement-title id="2.5.6-Comments">
+        2.5.6.&nbsp;Comments</sdoc-requirement-title>
+
+
+    <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="statement">
+      <div class="document">
+<p>Requirement item may have one or more comments.</p>
+</div>
+
+    </sdoc-requirement-field>
+
+</sdoc-requirement>
+<sdoc-requirement requirement-view="simple" data-level="2.5.7" data-testid="requirement-style-simple">
+
+
+  <sdoc-requirement-title id="2.5.7-Special-fields">
+        2.5.7.&nbsp;Special fields</sdoc-requirement-title>
+
+
+    <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="statement">
+      <div class="document">
+<p>StrictDoc shall support customization of the default Requirement's grammar with special fields.</p>
+</div>
+
+    </sdoc-requirement-field>
+
+    <sdoc-requirement-field-label>comment:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="comment">
+      <div class="document">
+<p>Examples:</p>
+<ul class="simple">
+<li>RAIT compliance fields (Review of design, analysis, inspection, testing)</li>
+<li>Automotive Safety Integrity Level level (ASIL).</li>
+</ul>
+</div>
+
+    </sdoc-requirement-field>
+</sdoc-requirement>
 <sdoc-section>
-  <sdoc-section-title data-level="1.1">
-    <h3 id="1.1-Contact-the-developers">1.1.&nbsp;Contact the developers</h3>
-  </sdoc-section-title>
-  <sdoc-meta>
-    <sdoc-meta-label>UID:</sdoc-meta-label>
-    <sdoc-meta-field>SDOC_UG_CONTACT45645645</sdoc-meta-field>
-    <sdoc-meta-label>UID:</sdoc-meta-label>
-    <sdoc-meta-field>SDOC_UG_CONTACT</sdoc-meta-field>
-    <sdoc-meta-label>UID ahaha:</sdoc-meta-label>
-    <sdoc-meta-field>123123123312</h2></sdoc-meta-field>
-    <sdoc-meta-label>UID:</sdoc-meta-label>
-    <sdoc-meta-field>SDOC_UG_CONTACT</sdoc-meta-field>
-    <sdoc-meta-label>UID:</sdoc-meta-label>
-    <sdoc-meta-field>SDOC_UG_CONTACT</sdoc-meta-field>
-    <sdoc-meta-label>UID:</sdoc-meta-label>
-    <sdoc-meta-field>SDOC_UG_CONTACT456546</sdoc-meta-field>
-    <sdoc-meta-label>UID:</sdoc-meta-label>
-    <sdoc-meta-field>SDOC_UG_CONTACT</sdoc-meta-field>
-    <sdoc-meta-label>UID:</sdoc-meta-label>
-    <sdoc-meta-field>SDOC_UG_CONTACT</sdoc-meta-field>
-    <sdoc-meta-label>UID:</sdoc-meta-label>
-    <sdoc-meta-field>SDOC_UG_CONTACT</sdoc-meta-field>
-  </sdoc-meta>
-  <sdoc-section-text>
-    <div class="document">
-    <p>Join us in Discord. Here is the invitation link: <a class="reference external" href="https://discord.gg/4BAAME9MmG">https://discord.gg/4BAAME9MmG</a></p>
-    <p>The author can be also contacted via <a class="reference external" href="mailto:s.pankevich@gmail.com">email</a>.</p>
-    </div>
-  </sdoc-section-text>
+
+<sdoc-section-title data-level="2.6">
+<h3 id="2.6-Composite-requirement">2.6.&nbsp;Composite requirement</h3>
+</sdoc-section-title>
+
 </sdoc-section>
+<sdoc-requirement requirement-view="simple" data-level="2.6.1" data-testid="requirement-style-simple">
+
+
+  <sdoc-requirement-title id="2.6.1-Composite-requirement-concept">
+        2.6.1.&nbsp;Composite requirement concept</sdoc-requirement-title>
+
+
+    <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="statement">
+      <div class="document">
+<p>StrictDoc Data Model shall support the "Composite requirement" concept.</p>
+</div>
+
+    </sdoc-requirement-field>
+
+</sdoc-requirement>
+<sdoc-section>
+<sdoc-section-title data-level="2.7">
+<h3 id="2.7-Links">2.7.&nbsp;Links</h3>
+</sdoc-section-title>
+</sdoc-section>
+<!-- <p>
+  Lorem ipsum dolor sit amet consectetur, adipisicing elit. Incidunt exercitationem, officia fugiat magni esse voluptatem labore nobis et facere autem aliquid suscipit libero illum tempora delectus possimus debitis deserunt recusandae?
+  Lorem ipsum dolor sit amet consectetur, adipisicing elit. Incidunt exercitationem, officia fugiat magni esse voluptatem labore nobis et facere autem aliquid suscipit libero illum tempora delectus possimus debitis deserunt recusandae?
+</p> -->
+<sdoc-requirement requirement-view="simple" data-level="2.7.1" data-testid="requirement-style-simple">
+
+
+  <sdoc-requirement-title id="2.7.1-Links">
+        2.7.1.&nbsp;Links</sdoc-requirement-title>
+
+
+    <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="statement">
+      <div class="document">
+<p>StrictDoc's data model shall support linking document content nodes to each other.</p>
+</div>
+
+    </sdoc-requirement-field>
+
+</sdoc-requirement>
+<sdoc-requirement requirement-view="simple" data-level="2.7.2" data-testid="requirement-style-simple">
+
+
+  <sdoc-requirement-title id="2.7.2-Parent-links">
+        2.7.2.&nbsp;Parent links</sdoc-requirement-title>
+
+
+    <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="statement">
+      <div class="document">
+<p>StrictDoc's data model shall support linking a requirement to another requirement using PARENT link.</p>
+</div>
+
+    </sdoc-requirement-field>
+
+</sdoc-requirement>
+
+
+
 
           <!-- // //////////////////////////////// -->
           <!-- // //////////////////////////////// -->

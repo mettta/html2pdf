@@ -142,6 +142,9 @@ export default class DocumentObjectModel {
   setFlagNoBreak(element) {
     this.setAttribute(element, SELECTOR.flagNoBreak)
   }
+  setFlagNoHanging(element) {
+    this.setAttribute(element, SELECTOR.flagNoHanging)
+  }
 
   wrapTextNode(element) {
     if (!this.isSignificantTextNode(element)) {
@@ -301,12 +304,34 @@ export default class DocumentObjectModel {
     return currentElement === rootElement;
   }
 
+  findLastChildParent(element, rootElement) {
+    let parent = element.parentElement;
+    let lastSuitableParent = null;
+
+    while (parent && parent !== rootElement) {
+      const lastChild = parent.lastElementChild;
+
+      if (element === lastChild) {
+        lastSuitableParent = parent;
+      }
+
+      element = parent;
+      parent = element.parentElement;
+    }
+
+    return lastSuitableParent;
+  }
+
   findAllForcedPageBreakInside(element) {
     return [...element.querySelectorAll(SELECTOR.printForcedPageBreak)];
   }
 
   isNoBreak(element) {
     return this.isSelectorMatching(element, SELECTOR.flagNoBreak)
+  }
+
+  isNoHanging(element) {
+    return this.isSelectorMatching(element, SELECTOR.flagNoHanging)
   }
 
   // CHECK

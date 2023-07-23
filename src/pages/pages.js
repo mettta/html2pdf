@@ -21,17 +21,14 @@ export default class Pages {
     // * From config:
     this.debugMode = config.debugMode;
     this.debugToggler = {
-      _prepareForcedPageBreak: false,
       _parseNode: false,
       _splitPreNode: false,
       _splitTableNode: false,
       _splitGridNode: false,
-      _matchSelectors: false,
-      _canNotBeLast: false,
     }
 
-    // _canNotBeLast params:
-    this.canNotBeLastSelector = this._prepareCanNotBeLastSelector(config.canNotBeLastSelector);
+    // no hanging params:
+    this.noHangingSelector = this._prepareNoHangingSelector(config.noHangingSelector);
     // forced Page Break params:
     this.forcedPageBreakSelector = this._prepareForcedPageBreakSelector(config.forcedPageBreakSelector);
     // do not break params:
@@ -82,10 +79,24 @@ export default class Pages {
   calculate() {
     this._prepareForcedPageBreakElements();
     this._prepareNoBreakElements();
+    this._prepareNoHangingElements();
     this._calculate();
     this.debugMode && console.log('%c ✔ Pages.calculate()', CONSOLE_CSS_LABEL_PAGES, this.pages);
 
     return this.pages;
+  }
+
+  _prepareNoHangingElements() {
+    if (this.noHangingSelector) {
+      const elements = this.DOM.findAllSelectorsInside(this.contentFlow, this.noHangingSelector);
+      elements.forEach(element => {
+        this.DOM.setFlagNoHanging(element);
+        const lastChildParent = this.DOM.findLastChildParent(element, this.contentFlow)
+        if (lastChildParent) {
+          this.DOM.setFlagNoHanging(lastChildParent);
+        }
+      });
+    }
   }
 
   _prepareNoBreakElements() {
@@ -96,16 +107,9 @@ export default class Pages {
   }
 
   _prepareForcedPageBreakElements() {
-    this.debugMode
-    && this.debugToggler._prepareForcedPageBreak
-    && console.group(`_prepareForcedPageBreak`);
     // * find all relevant elements and insert forced page break markers before them.
     if (this.forcedPageBreakSelector) {
       const pageStarters = this.DOM.findAllSelectorsInside(this.contentFlow, this.forcedPageBreakSelector);
-
-      this.debugMode
-        && this.debugToggler._prepareForcedPageBreak
-        && console.log('• step 1', [...pageStarters]);
 
       // ** If the element is the first child of nested first children of a content flow,
       // ** we do not process it further for page breaks.
@@ -114,15 +118,8 @@ export default class Pages {
         pageStarters.shift()
       };
 
-      this.debugMode
-        && this.debugToggler._prepareForcedPageBreak
-        && console.log('• step 2', [...pageStarters]);
-
       pageStarters.forEach(element => this.DOM.insertForcedPageBreakBefore(element));
     }
-    this.debugMode
-    && this.debugToggler._prepareForcedPageBreak
-    && console.groupEnd(`_prepareForcedPageBreak`)
   }
 
   _calculate() {
@@ -132,7 +129,7 @@ export default class Pages {
     this.debugMode && console.log(
       'this.referenceHeight', this.referenceHeight,
       '\n',
-      'this.canNotBeLastSelector', this.canNotBeLastSelector,
+      'this.noHangingSelector', this.noHangingSelector,
       '\n',
       'this.forcedPageBreakSelector', this.forcedPageBreakSelector,
       '\n',
@@ -251,7 +248,7 @@ export default class Pages {
     // * we want to register its parent as the start of the page.
     const currentPageStart = (i == 0 && parent) ? parent : currentElement;
 
-    this.debugMode && this.debugToggler._parseNode && parentBottom && console.log(
+    this.debugMode && this.debugToggler._parseNode && console.log(
       ...consoleMark,
       'parent:', parent,
       '\n',
@@ -314,7 +311,7 @@ export default class Pages {
       // *** (2) must be split
 
       // * Check the possibility of (0)
-      if (this._canNotBeLast(currentElement, 'current')) {
+      if (this._isNoHanging(currentElement)) {
         // ** if currentElement can't be the last element on the page,
         // ** immediately move it to the next page:
 
@@ -406,7 +403,7 @@ export default class Pages {
       // otherwise try to break it and loop the children:
       let children = [];
 
-      if (this._doNotBreak(currentElement)) {
+      if (this._isNoBreak(currentElement)) {
         // don't break apart, thus keep an empty children array
         this.debugMode && this.debugToggler._parseNode && console.info(...consoleMark,
           '🧡 isNoBreak');
@@ -514,7 +511,7 @@ export default class Pages {
         // * If no children,
         // * move element to the next page.
         // ** But,
-        if (this._canNotBeLast(previousElement, 'previous')) {
+        if (this._isNoHanging(previousElement)) {
           // ** if previousElement can't be the last element on the page,
           // ** move it to the next page.
           // TODO #_canNotBeLast
@@ -1440,7 +1437,7 @@ export default class Pages {
           // * If this is the beginning, or if a new line.
           if (
             result.at(-1)
-            && this._canNotBeLast(result.at(-1).at(-1).element, 'in _splitGridNode')
+            && this._isNoHanging(result.at(-1).at(-1).element)
           ) {
             // ** If the previous last element cannot be the last element,
             // ** add to the previous group.
@@ -1763,10 +1760,9 @@ export default class Pages {
     return (tag !== 'A' && tag !== 'TT' && this.DOM.getElementHeight(child) > 0);
   }
 
-  _prepareCanNotBeLastSelector(string) {
-    const o = this._sortSelectors(string);
-    o.tags.push('H1', 'H2', 'H3', 'H4', 'H5', 'H6');
-    return o
+  _prepareNoHangingSelector(string) {
+    const arr = string?.length ? string?.split(/\s+/) : [];
+    return ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', ...arr]
   }
 
   _prepareForcedPageBreakSelector(string) {
@@ -1778,105 +1774,6 @@ export default class Pages {
     // TODO the same as _prepareForcedPageBreakSelector!
     // * The settings may pass an empty string, prevent errors here.
     return string?.length ? string?.split(/\s+/) : [];
-  }
-
-  _sortSelectors(string) {
-    const selectors = {
-      tags : [],
-      classes : [],
-      attributes : [],
-    };
-    string?.split(/\s+/).forEach(
-      item => {
-        const first = item.charAt(0);
-        if (first === '[') {
-          selectors.attributes.push(item.slice(1, -1))
-        } else if (first === '.') {
-          selectors.classes.push(item.slice(1))
-        } else {
-          selectors.tags.push(item.toUpperCase())
-        }
-      }
-    );
-    return selectors
-  }
-
-  _matchSelectors(element, selectorsObject, context) {
-    const consoleMark = ['%c_matchSelectors\n', 'color:white',]
-    this.debugMode
-      && this.debugToggler._matchSelectors
-      && console.group('_matchSelectors ?');
-
-    this.debugMode
-    && this.debugToggler._matchSelectors
-    && console.log(...consoleMark,
-      element,
-      `\n${context}`,
-      `\nSelectors:`,
-      selectorsObject
-    );
-
-    // * Element:
-    const elementTagName = this.DOM.getElementTagName(element);
-    const elementClassList = [...element.classList];
-
-    this.debugMode
-      && this.debugToggler._matchSelectors
-      && console.log(...consoleMark,
-        'Element:\n',
-        `• tag: ${elementTagName} \n • class: ${elementClassList}`
-      );
-
-    // * Conditions:
-    const canBeLastByTag =
-      selectorsObject.tags.includes(elementTagName);
-    const canBeLastByClass =
-      elementClassList.length &&
-      selectorsObject.classes.some(
-        elementClassName => elementClassList.includes(elementClassName)
-      );
-    const canBeLastByAttribute =
-      selectorsObject.attributes.some(
-        attributeName => element.hasAttribute(attributeName)
-      );
-
-    this.debugMode
-      && this.debugToggler._matchSelectors
-      && console.log(...consoleMark,
-        'Results:\n',
-        `• by tag: ${canBeLastByTag} \n • by class: ${canBeLastByClass} \n • by attr: ${canBeLastByAttribute}`,
-        '\n',
-        `=> ${canBeLastByTag || canBeLastByClass || canBeLastByAttribute}`
-      );
-
-    this.debugMode
-      && this.debugToggler._matchSelectors
-      && console.groupEnd('_matchSelectors ?');
-    return canBeLastByTag || canBeLastByClass || canBeLastByAttribute;
-  }
-
-  _canNotBeLast(element, context) {
-    this.debugMode
-      && this.debugToggler._canNotBeLast
-      && console.group(`_canNotBeLast ?\n[${context}]`);
-
-    // TODO
-    // if Header is only child of element
-
-    // ** False: means that the element
-    // ** does not match the condition
-    // ** or is undefined.
-    const canItBeLast = element ?
-      this._matchSelectors(
-        element,
-        this.canNotBeLastSelector,
-        `_canNotBeLast in ${context}`
-      ) : false;
-
-    this.debugMode
-      && this.debugToggler._canNotBeLast
-      && console.groupEnd(`_canNotBeLast ?\n[${context}]`);
-    return canItBeLast;
   }
 
   _isPRE(element) {
@@ -1903,10 +1800,14 @@ export default class Pages {
     return this.DOM.getElementTagName(element) === 'LI';
   }
 
-  _doNotBreak(element) {
+  _isNoBreak(element) {
     return this.DOM.isNoBreak(element)
         || this.DOM.isInlineBlock(element)
         || this._notSolved(element);
+  }
+
+  _isNoHanging(element) {
+    return this.DOM.isNoHanging(element);
   }
 
   _notSolved(element) {
