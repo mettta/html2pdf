@@ -243,7 +243,7 @@ ${SELECTOR.printForcedPageBreak} {
     /* break-after: page; */
   }
 
-  ${SELECTOR.printNoBreak} {
+  ${SELECTOR.flagNoBreak} {
     /*
     TODO: temporary commented!
     When splitting blocks, printPageBreak falls INTO this element,

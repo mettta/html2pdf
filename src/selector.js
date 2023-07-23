@@ -38,14 +38,16 @@ const SELECTOR = {
   // ** environment
   printIgnore: '[html2pdf-print-ignore]',
   printHide: '[html2pdf-print-hide]',
-  // ** printed content
-  printNoBreak: '[html2pdf-print-no-break]',
 
   // * Service elements (are created in the process):
   neutral: 'html2pdf-neutral',
   textNode: 'html2pdf-text-node',
   complexTextBlock: 'html2pdf-complex-text-block',
   printForcedPageBreak: 'html2pdf-print-forced-page-break',
+
+  // * FLAGS (have no styles):
+  flagNoBreak: '[html2pdf-flag-no-break]',
+  flagNoHanging: '[html2pdf-flag-no-hanging]',
 
 };
 

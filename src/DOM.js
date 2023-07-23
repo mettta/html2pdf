@@ -139,8 +139,8 @@ export default class DocumentObjectModel {
     }
   }
 
-  setPrintNoBreak(element) {
-    this.setAttribute(element, SELECTOR.printNoBreak)
+  setFlagNoBreak(element) {
+    this.setAttribute(element, SELECTOR.flagNoBreak)
   }
 
   wrapTextNode(element) {
@@ -306,7 +306,7 @@ export default class DocumentObjectModel {
   }
 
   isNoBreak(element) {
-    return this.isSelectorMatching(element, SELECTOR.printNoBreak)
+    return this.isSelectorMatching(element, SELECTOR.flagNoBreak)
   }
 
   // CHECK
@@ -423,8 +423,8 @@ export default class DocumentObjectModel {
     return this.create(SELECTOR.printPageBreak);
   }
 
-  createPrintNoBreak(style) {
-    const element = this.create(SELECTOR.printNoBreak);
+  createWithFlagNoBreak(style) {
+    const element = this.create(SELECTOR.flagNoBreak);
     style && (element.style = style);
     return element;
   }
@@ -434,8 +434,8 @@ export default class DocumentObjectModel {
     wrapper.append(node);
   }
 
-  wrapWithPrintNoBreak(element) {
-    const wrapper = this.createPrintNoBreak();
+  wrapWithFlagNoBreak(element) {
+    const wrapper = this.createWithFlagNoBreak();
     element.before(wrapper);
     wrapper.append(element);
     return wrapper;

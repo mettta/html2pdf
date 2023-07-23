@@ -91,7 +91,7 @@ export default class Pages {
   _prepareNoBreakElements() {
     if (this.noBreakSelector) {
       const elements = this.DOM.findAllSelectorsInside(this.contentFlow, this.noBreakSelector);
-      elements.forEach(element => this.DOM.setPrintNoBreak(element));
+      elements.forEach(element => this.DOM.setFlagNoBreak(element));
     }
   }
 
@@ -336,7 +336,7 @@ export default class Pages {
 
         // svg has not offset props
         const currentImage = this._isSVG(currentElement)
-          ? this.DOM.wrapWithPrintNoBreak(currentElement)
+          ? this.DOM.wrapWithFlagNoBreak(currentElement)
           : currentElement;
 
         const availableSpace = newPageBottom - this.DOM.getElementRootedTop(currentImage, this.root);
@@ -645,7 +645,7 @@ export default class Pages {
     const linedChildren = newComplexChildrenGroups.map(
       (arr, index) => {
         // * Create a new line
-        const line = this.DOM.createPrintNoBreak();
+        const line = this.DOM.createWithFlagNoBreak();
         line.dataset.index = index;
         // * Replace the array of elements with a line
         // * that contains all these elements:
@@ -1087,12 +1087,12 @@ export default class Pages {
     // * If there are more parts and the node will be split, continue.
 
     const newPreElementsArray = splitters.map((id, index, splitters) => {
-      // Avoid trying to break this node: createPrintNoBreak()
-      // We can't wrap in createPrintNoBreak()
+      // Avoid trying to break this node: createWithFlagNoBreak()
+      // We can't wrap in createWithFlagNoBreak()
       // because PRE may have margins and that will affect the height of the wrapper.
       // So we will give the PRE itself this property.
       const part = this.DOM.cloneNodeWrapper(node);
-      this.DOM.setPrintNoBreak(part);
+      this.DOM.setFlagNoBreak(part);
 
       const start = splitters[index - 1] || 0;
       const end = id || splitters[splitters.length];
@@ -1339,7 +1339,7 @@ export default class Pages {
 
       const partEntries = nodeEntries.rows.slice(startId, endId);
 
-      const part = this.DOM.createPrintNoBreak();
+      const part = this.DOM.createWithFlagNoBreak();
       node.before(part);
 
       if (startId) {
@@ -1370,7 +1370,7 @@ export default class Pages {
     );
 
     // create LAST PART
-    const lastPart = this.DOM.createPrintNoBreak();
+    const lastPart = this.DOM.createWithFlagNoBreak();
     node.before(lastPart);
     this.DOM.insertAtEnd(
       lastPart,
@@ -1580,13 +1580,13 @@ export default class Pages {
         ...consoleMark, `partEntries`, partEntries
       );
 
-      // const part = this.DOM.createPrintNoBreak();
+      // const part = this.DOM.createWithFlagNoBreak();
       // ! Do not wrap nodes so as not to break styles.
-      // TODO - Check for other uses of createPrintNoBreak to see if the wrapper can be avoided.
+      // TODO - Check for other uses of createWithFlagNoBreak to see if the wrapper can be avoided.
 
       const part = this.DOM.cloneNodeWrapper(node);
       part.style.width = `${this.DOM.getElementWidth(node)}px`;
-      this.DOM.setPrintNoBreak(part);
+      this.DOM.setFlagNoBreak(part);
       node.before(part);
 
       if (startId) {
@@ -1626,7 +1626,7 @@ export default class Pages {
 
     // create LAST PART
     // TODO ??? is that really needed?
-    // const lastPart = this.DOM.createPrintNoBreak();
+    // const lastPart = this.DOM.createWithFlagNoBreak();
     // node.before(lastPart);
     // this.DOM.insertAtEnd(
     //   lastPart,
@@ -1635,7 +1635,7 @@ export default class Pages {
     // );
 
     // LAST PART handling
-    this.DOM.setPrintNoBreak(node);
+    this.DOM.setFlagNoBreak(node);
 
     this.debugMode && this.debugToggler._splitGridNode && console.groupEnd('_splitGridNode')
     // return children;
@@ -1700,8 +1700,8 @@ export default class Pages {
     );
 
     const splitsArr = exactSplitters.map((id, index, exactSplitters) => {
-      // Avoid trying to break this node: createPrintNoBreak()
-      const part = this.DOM.createPrintNoBreak();
+      // Avoid trying to break this node: createWithFlagNoBreak()
+      const part = this.DOM.createWithFlagNoBreak();
 
       const start = exactSplitters[index - 1] || 0;
       const end = id || exactSplitters[exactSplitters.length];
