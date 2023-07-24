@@ -459,6 +459,14 @@ export default class DocumentObjectModel {
     wrapper.append(node);
   }
 
+  wrapNodeChildren(node) {
+    const children = this.getChildren(node);
+    const wrapper = this.create();
+    this.insertAtStart(wrapper, ...children);
+    this.insertAtStart(node, wrapper);
+    return wrapper
+  }
+
   wrapWithFlagNoBreak(element) {
     const wrapper = this.createWithFlagNoBreak();
     element.before(wrapper);
