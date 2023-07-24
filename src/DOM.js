@@ -1,8 +1,15 @@
 import SELECTOR from './selector';
 
+const DOM_DEBAG_TOGGLER = true;
+
+const CONSOLE_CSS_LABEL_DOM = 'border:1px solid #FFBB00;'
+                            + 'background:#EEEEEE;'
+                            + 'color:#FFBB00;'
+
 export default class DocumentObjectModel {
 
-  constructor(DOM) {
+  constructor({DOM, debugMode}) {
+    this.debugMode = debugMode;
     this.DOM = DOM;
     this.body = DOM.body;
   }
@@ -75,11 +82,9 @@ export default class DocumentObjectModel {
     return item.dataset.id;
   }
 
-  // ATTRIBUTES / dataset
-
   setAttribute(element, selector) {
     if (!element || !selector) {
-      console.warn('setAttribute() must have 2 params');
+      console.warn && console.warn('setAttribute() must have 2 params');
       return;
     }
 
@@ -88,59 +93,98 @@ export default class DocumentObjectModel {
     if (first === '.') {
       const cl = selector.substring(1);
       element.classList.add(cl);
-
-    }
-    if (first === '#') {
+      return
+    } else if (first === '#') {
       const id = selector.substring(1);
       element.id = id;
-
-    }
-    if (first === '[') {
+      return
+    } else if (first === '[') {
+      console.assert(
+        selector.at(-1) === ']', `the ${selector} selector is not OK.`
+      );
       const attr = selector.substring(1, selector.length - 1);
       element.setAttribute(attr, '');
-
+      return
     }
-
+    this.debugMode && console.log(`you're really sure ${selector} is a selector?`)
   }
 
-  setPrintNoBreak(element) {
-    // element.dataset.printIgnore = '';
-    this.setAttribute(element, SELECTOR.printNoBreak)
+  isSelectorMatching(element, selector) {
+    if (!element || !selector) {
+      console.warn && console.warn('setAttribute() must have 2 params');
+      return;
+    }
+
+    const first = selector.charAt(0);
+
+    if (first === '.') {
+      const cl = selector.substring(1);
+      return element.classList.contains(cl);
+
+    } else if (first === '#') {
+      const id = selector.substring(1);
+      return element.id === id;
+
+    } else if (first === '[') {
+      console.assert(
+        selector.at(-1) === ']', `the ${selector} selector is not OK.`
+      );
+      const attr = selector.substring(1, selector.length - 1);
+      return element.hasAttribute(attr);
+
+    } else {
+      // Strictly speaking, the tag name is not a selector,
+      // but to be on the safe side, let's check that too:
+      return this.getElementTagName(element) === selector.toUpperCase();
+    }
+  }
+
+  setFlagNoBreak(element) {
+    this.setAttribute(element, SELECTOR.flagNoBreak)
+  }
+  setFlagNoHanging(element) {
+    this.setAttribute(element, SELECTOR.flagNoHanging)
   }
 
   wrapTextNode(element) {
     if (!this.isSignificantTextNode(element)) {
       return
     }
-    const wrapper = this.createNeutral();
+    const wrapper = this.create(SELECTOR.textNode);
     element.before(wrapper);
     wrapper.append(element);
     return wrapper;
   }
 
-  createNeutral() {
-    const neutral = this.DOM.createElement('span');
-    this.setAttribute(neutral, SELECTOR.neutral);
-    return neutral;
+  isWrappedTextNode(element) {
+    return this.isSelectorMatching(element, SELECTOR.textNode)
   }
 
-  createTestNode() {
-    const testNode = this.createNeutral();
-    testNode.classList = 'test-node'
-    testNode.style = "position:absolute; left:-10000px; width:100%; background:rgba(255,255,255,0.2)";
-    return testNode;
+  createNeutral() {
+    return this.create(SELECTOR.neutral)
   }
-  // TODO createTestNodeFrom vs createTestNode
+
   createTestNodeFrom(node) {
     const testNode = node.cloneNode(false);
     testNode.classList = 'test-node'
-    // testNode.style = "position:absolute; left:-10000px; width:100%; background:rgba(255,255,255,0.2)";
     testNode.style.position = 'absolute';
-    // testNode.style.left = '-10000px';
-    testNode.style.width = '100%';
-    // testNode.style.background = 'rgba(255,255,255,0.2)';
     testNode.style.background = 'rgb(255 239 177)';
+    // testNode.style.left = '-10000px';
+    testNode.style.width = this.getMaxWidth(node) + 'px';
     return testNode;
+  }
+
+  getMaxWidth(node) {
+    // * width adjustment for createTestNodeFrom()
+    // ? problem: if the node is inline,
+    // it may not show its maximum width in the parent context.
+    // So we make a block element that shows
+    // the maximum width of the node in the current context:
+    const tempDiv = this.create();
+    node.append(tempDiv);
+    const width = this.getElementWidth(tempDiv);
+    tempDiv.remove();
+    return width;
   }
 
   getLineHeight(node) {
@@ -148,7 +192,10 @@ export default class DocumentObjectModel {
     // if node has padding, this affects so cant be taken bode clone as wrapper // todo comment
     // const testNode = node.cloneNode(false);
     testNode.innerHTML = '!';
-    testNode.style = "position:absolute; left:-10000px; width:100%;";
+    // ! 'absolute' added extra height to the element:
+    // testNode.style.position = 'absolute';
+    // testNode.style.left = '-10000px';
+    // testNode.style.width = '100%';
     node.append(testNode);
     const lineHeight = testNode.offsetHeight;
     testNode.remove();
@@ -156,33 +203,135 @@ export default class DocumentObjectModel {
   }
 
   getEmptyNodeHeight(node) {
-    const wrapper = node.cloneNode(false);
+    const wrapper = this.create();
+    wrapper.style.padding = '0.1px';
+    const clone = node.cloneNode(false);
+    wrapper.append(clone);
     node.before(wrapper);
     const wrapperHeight = wrapper.offsetHeight;
     wrapper.remove();
     return wrapperHeight;
   }
 
-  // todo {class, id, dataset, value} ?
+  createComplexTextBlock() {
+    const textBlock = this.create(SELECTOR.complexTextBlock);
+    return textBlock;
+  }
+
+  isComplexTextBlock(element) {
+    return this.isSelectorMatching(element, SELECTOR.complexTextBlock)
+  }
+
+  getComputedStyle(element) {
+    return window.getComputedStyle(element);
+  }
+
+  isInline(element) {
+    const display = this.getComputedStyle(element).display;
+    const res = display === "inline" ||
+                display === "inline-block" ||
+                display === "inline-table" ||
+                display === "inline-flex" ||
+                display === "inline-grid";
+    return res;
+  }
+
+  isInlineBlock(element) {
+    const display = this.getComputedStyle(element).display;
+    const res = display === "inline-block" ||
+                display === "inline-table" ||
+                display === "inline-flex" ||
+                display === "inline-grid";
+    return res;
+  }
+
+  isGrid(element) {
+    const display = this.getComputedStyle(element).display;
+    const res = display === "grid";
+    return res;
+  }
+
+  isGridAutoFlowRow(element) {
+    const display = this.getComputedStyle(element).display;
+    const gridAutoFlow = this.getComputedStyle(element).gridAutoFlow;
+    const res1 = display === "grid" ||
+                 display === "inline-grid";
+    const res2 = gridAutoFlow === "row";
+    return res1 && res2;
+  }
+
   isNeutral(element) {
-    // SELECTOR.neutral
-    return element.dataset?.hasOwnProperty('neutral')
+    const match = this.isSelectorMatching(element, SELECTOR.neutral);
+    return match
   }
 
   isForcedPageBreak(element) {
-    // SELECTOR.printForcedPageBreak
-    // todo: add one more attribute like [print-forced-page-break]
-    // element.hasAttribute('data-print-forced-page-break') && console.log(element, element.hasAttribute('data-print-forced-page-break'));
-    return element.dataset?.hasOwnProperty('printForcedPageBreak')
+    return this.isSelectorMatching(element, SELECTOR.printForcedPageBreak)
+  }
+
+  insertForcedPageBreakBefore(element) {
+    const div = this.create(SELECTOR.printForcedPageBreak);
+    this.insertBefore(element, div);
+    return div;
+  }
+
+  findAllSelectorsInside(element, selectors) {
+    if (typeof selectors === 'string') {
+      selectors = [selectors]
+    };
+    return [...selectors].flatMap(
+      selector => [...element.querySelectorAll(selector)]
+    )
+  }
+
+  isFirstChildOfFirstChild(element, rootElement) {
+    if (!element || !element.parentElement) {
+      return false;
+    }
+
+    let currentElement = element;
+
+    while (currentElement.parentElement && currentElement !== rootElement) {
+      if (currentElement.parentElement.firstElementChild !== currentElement) {
+        return false;
+      }
+
+      currentElement = currentElement.parentElement;
+    }
+
+    // * Making sure we get to the end,
+    // * and don't exit with "false" until the end of the check.
+    return currentElement === rootElement;
+  }
+
+  findLastChildParent(element, rootElement) {
+    let parent = element.parentElement;
+    let lastSuitableParent = null;
+
+    while (parent && parent !== rootElement) {
+      const lastChild = parent.lastElementChild;
+
+      if (element === lastChild) {
+        lastSuitableParent = parent;
+      }
+
+      element = parent;
+      parent = element.parentElement;
+    }
+
+    return lastSuitableParent;
   }
 
   findAllForcedPageBreakInside(element) {
-    return [...element.querySelectorAll('[data-print-forced-page-break]')];
+    return [...element.querySelectorAll(SELECTOR.printForcedPageBreak)];
   }
 
   isNoBreak(element) {
-    // SELECTOR.printNoBreak
-    return element.dataset?.hasOwnProperty('printNoBreak')
+    return this.isSelectorMatching(element, SELECTOR.flagNoBreak)
+  }
+
+  isNoHanging(element) {
+    return this.isSelectorMatching(element, SELECTOR.flagNoHanging)
   }
 
   // CHECK
@@ -299,14 +448,27 @@ export default class DocumentObjectModel {
     return this.create(SELECTOR.printPageBreak);
   }
 
-  createPrintNoBreak(style) {
-    const element = this.create(SELECTOR.printNoBreak);
+  createWithFlagNoBreak(style) {
+    const element = this.create(SELECTOR.flagNoBreak);
     style && (element.style = style);
     return element;
   }
 
-  wrapWithPrintNoBreak(element) {
-    const wrapper = this.createPrintNoBreak();
+  wrapNode(node, wrapper) {
+    node.before(wrapper);
+    wrapper.append(node);
+  }
+
+  wrapNodeChildren(node) {
+    const children = this.getChildren(node);
+    const wrapper = this.create();
+    this.insertAtStart(wrapper, ...children);
+    this.insertAtStart(node, wrapper);
+    return wrapper
+  }
+
+  wrapWithFlagNoBreak(element) {
+    const wrapper = this.createWithFlagNoBreak();
     element.before(wrapper);
     wrapper.append(element);
     return wrapper;
@@ -315,7 +477,6 @@ export default class DocumentObjectModel {
   // PAGES
 
   fitElementWithinBoundaries({ element, height, width, vspace, hspace }) {
-    console.log(element);
 
     const hRatio = vspace / height;
     const wRatio = hspace / width;
@@ -338,6 +499,14 @@ export default class DocumentObjectModel {
     return element.getBoundingClientRect();
   }
 
+  getElementTop(element) {
+    return element?.offsetTop;
+  }
+
+  getElementLeft(element) {
+    return element?.offsetLeft;
+  }
+
   getElementHeight(element) {
     return element?.offsetHeight;
   }
@@ -353,19 +522,28 @@ export default class DocumentObjectModel {
   getElementRootedTop(element, root, topAcc = 0) {
 
     if (!element) {
-      console.warn('element must be provided', element);
+      this.debugMode && console.warn(
+        'element must be provided, but was received:', element,
+        '\nThe function returned:', undefined
+      );
       return
     }
 
     if (!root) {
-      console.warn('root must be provided', element);
+      this.debugMode && console.warn(
+        'root must be provided, but was received:', element,
+        '\nThe function returned:', undefined
+      );
       return
     }
 
     const offsetParent = element.offsetParent;
 
     if (!offsetParent) {
-      console.warn('element has no offset parent', element);
+      this.debugMode && console.warn(
+        'element has no offset parent', element,
+        '\nThe function returned:', undefined
+      );
       return
     }
 
@@ -374,13 +552,12 @@ export default class DocumentObjectModel {
     if (offsetParent === root) {
       return (currTop + topAcc);
     } else {
-      console.log('%c offsetParent', 'background:yellow', offsetParent);
       return this.getElementRootedTop(offsetParent, root, topAcc + currTop);
     }
   }
 
   getElementRelativeBottom(element) {
-    // BUG ? 
+    // BUG ?
     return element?.offsetTop + element?.offsetHeight || undefined;
   }
 
@@ -388,10 +565,53 @@ export default class DocumentObjectModel {
     return this.getElementRootedTop(element, root) + this.getElementHeight(element);
   }
 
+  getElementRootedRealBottom(element, root) {
+    // TODO : performance
+    // * Because of the possible bottom margin
+    // * of the parent element or nested last children,
+    // * the exact check will be through the creation of the test element.
+    // ? However, the performance compared to getElementRootedBottom() decreases:
+    // ? 0.001 to 0.3 ms per such operation.
+    const test = this.create();
+    // *** The bottom margin pushes the DIV below the margin,
+    // *** so no dummy padding is needed.
+    element && element.after(test);
+    const top = element ? this.getElementRootedTop(test, root) : undefined;
+    // this.debugMode && DOM_DEBAG_TOGGLER && console.log(
+    //   '%c getElementRootedBottom ', CONSOLE_CSS_LABEL_DOM,
+    //    {element, top});
+    test.remove();
+    return top;
+
+    // const bottomMargin = this.getComputedStyle(element).marginBottom;
+    // return this.getElementRootedBottom(element, root) + bottomMargin;
+  }
+
+  getElementRootedRealTop(element, root) {
+    // TODO : performance
+    const topMargin = parseInt(this.getComputedStyle(element).marginTop);
+    return this.getElementRootedTop(element, root) - topMargin;
+  }
+
+  isLineChanged(current, next) {
+    const vert = this.getElementRelativeBottom(current) <= this.getElementRelativeTop(next);
+    // const gor = this.getElementLeft(current) + this.getElementWidth(current) > this.getElementLeft(next);
+    return vert;
+  }
+
+  isLineKept(current, next) {
+    const vert = this.getElementRelativeBottom(current) > this.getElementRelativeTop(next);
+    return vert;
+  }
+
+  splitByWordsGreedy(node) {
+    return node.innerHTML.split(/\s+/)
+  }
+
   // TODO make Obj with offsetTop and use it later
   prepareSplittedNode(node) {
     const splittedNode = node;
-    const nodeWords = node.innerHTML.split(' ');
+    const nodeWords = this.splitByWordsGreedy(node);
 
     const nodeWordItems = nodeWords.map((item) => {
       const span = this.DOM.createElement('span');
@@ -399,7 +619,7 @@ export default class DocumentObjectModel {
       return span;
     })
 
-    const testNode = this.createTestNode();
+    const testNode = this.createTestNodeFrom(node);
     testNode.append(...nodeWordItems)
     node.append(testNode);
 

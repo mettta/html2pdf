@@ -21,33 +21,139 @@
       6 lines: 242 - 108 = 134px -
   -->
   <!-- data-preloader='true' -->
+  <style>
+    .span {
+      background:orange
+    }
+  </style>
   <script
   defer
+  data-debug-mode='true'
   data-print-height='88' // 242px
   data-print-font-size='12pt' // 1:18 2:36 3:54
   src="bundle.js"></script>
 </head>
 <body>
   <p><b>Test for printing:</b>
+    <a href="tags.html">tags</a> /
+    <a href="document.html">document</a> /
     <a href="resizing.html">resizing</a> /
-    <a href="isolated.html">isolated</a> /
-    <a href="strictdoc.html">strictdoc</a>
+    <a href="strictdoc.html">strictdoc</a> /
+    <a href="test.html">📍 SDOC test</a> /
   </p>
 
   <div id="printTHIS">
-
-    <div filler style="height:152px"></div>
-    <div>
-      <!-- <span data-testid="testPoint1">*</span> -->
+    <!--                      138px -->
+    <!--                      190px -->
+    <div filler style="height:190px"></div>
+    <p class="point" style="background:rgba(0, 242, 255, 0.12)">
       Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
       Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
       Proident do duis minim sit officia duis occaecat.
-      Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
-      Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
       Proident do duis minim sit officia duis occaecat.
-      <!-- <span data-testid="testPoint2">*</span> -->
-    </div>
+      Proident do duis minim sit officia duis occaecat.
+    </p>
 
   </div>
 </body>
 </html>
+
+    <!-- 188 -->
+    <!-- <div filler style="height:188px"></div>
+      <p id="parent">
+        <a data-testid="testPoint1" class="span" id="id1" style="dispaly:inline-block">*gergegergregergreg</a>
+        Culpa aliquip cupidatat fugiat sit consequat
+        <span class="span" id="id2">voluptate aliquip pariatur labore eiusmod sunt</span>.
+        Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+        Proident do duis minim sit officia duis occaecat.
+        Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
+        Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+        Proident do duis minim sit officia duis occaecat.
+
+        Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+        Proident do duis minim sit officia duis occaecat.
+        Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
+        Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+        Proident do duis minim sit officia duis occaecat.
+
+        Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+        Proident do duis minim sit officia duis occaecat.
+        Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
+        Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+        Proident do duis minim sit officia duis occaecat.
+
+        Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+        Proident do duis minim sit officia duis occaecat.
+        Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
+        Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+        Proident do duis minim sit officia duis occaecat.
+
+        <span data-testid="testPoint2" class="span">*</span>
+        <span style="display:block">div</span>
+        Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+      </p>
+      <p id="parent">
+        <span data-testid="testPoint1" class="span" id="id1">*gergegergregergreg Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea. Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.</span>
+        Culpa aliquip cupidatat fugiat sit consequat
+        <span class="span" id="id2">voluptate aliquip pariatur labore eiusmod sunt</span>.
+        Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+        Proident do duis minim sit officia duis occaecat.
+      </p> -->
+
+
+
+<!--
+    <div filler style="height:8px"></div>
+    <article class="docsection">
+
+      <header class="docsection-headers">
+        <div data-section="meta"></div>
+        <div data-section="description"></div>
+      </header>
+
+      <section data-section="meta" class="docsection_section">
+        <div data-role="anchor" id="Introduction"></div>
+        <h1 class="section-title printable" data-level="1">
+          Introduction
+        </h1>
+      </section>
+      <section data-section="description" class="docsection_section">
+        <div class="free-text printable">
+          <div class="document">
+            <p>StrictDoc is software for writing technical requirements and specifications.</p>
+            <p>Summary of StrictDoc features:</p>
+            <ul class="simple">
+              <li>The documentation files are stored as human-readable text files.</li>
+              <li>A simple domain-specific language DSL is used for writing the documents. The
+                text format for encoding this language is called SDoc (strict-doc).</li>
+              <li>StrictDoc reads <tt class="docutils literal">*.sdoc</tt> files and builds an in-memory
+                representation of the
+                document tree.</li>
+              <li>From this in-memory representation, StrictDoc can generate the documentation
+                into a number of formats including HTML, RST, PDF, Excel.</li>
+              <li>The focus of the tool is modeling requirements and specifications documents.
+                Such documents consist of multiple statements like "system X shall do Y"
+                called requirements.</li>
+              <li>The requirements can be linked together to form the relationships, such as
+                "parent-child", and from these connections, many useful features, such as
+                <a class="reference external" href="https://en.wikipedia.org/wiki/Requirements_traceability">Requirements Traceability</a>
+                and Documentation Coverage, can be derived.
+              </li>
+              <li>Special fields support. The StrictDoc's grammar can be extended to support
+                arbitrary special fields, such as <tt class="docutils literal">PRIORITY</tt>, <tt class="docutils literal">OWNER</tt>, or even more
+                specialized fields, such as <tt class="docutils literal">Automotive Safety Integrity Level
+                  (ASIL)</tt> or
+                <tt class="docutils literal">ECSS verification method</tt>.
+              </li>
+              <li>Good performance of the <a class="reference external" href="https://github.com/textX/textX">textX</a>
+                parser and parallelized incremental generation of documents: generation of
+                document trees with up to 2000-3000 requirements into HTML pages stays within
+                a few seconds. From the second run, only changed documents are regenerated.
+                Further performance tuning should be possible.</li>
+            </ul>
+            <p><strong>Warning:</strong> The StrictDoc project is still under construction. See the Roadmap
+              section to get an idea of the overall project direction.</p>
+          </div>
+        </div>
+      </section>
+    </article> -->

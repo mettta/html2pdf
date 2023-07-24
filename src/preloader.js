@@ -1,19 +1,31 @@
+const CONSOLE_CSS_LABEL_PRELOADER = 'border:1px dashed #cccccc;'
+                                  + 'background:#ffffff;'
+                                  + 'color:#cccccc;'
+
 export default class Preloader {
 
-  constructor() {
+  constructor(customConfig) {
+    this.debugMode = customConfig.debugMode; // Only enabled via user configuration
     this.preloader;
+    this.preloaderTarget = document.querySelector(customConfig.preloaderTarget) || document.body;
+    this.preloaderBackground = customConfig.preloaderBackground || 'white';
   }
 
   create() {
-    console.log("Preloader created");
+    this.debugMode && console.groupCollapsed('%c Preloader ', CONSOLE_CSS_LABEL_PRELOADER);
+
     this._insertStyle();
 
     this.preloader = document.createElement('div');
     this.preloader.classList.add('lds-dual-ring');
-    document.body.append(this.preloader);
+    this.preloaderTarget.append(this.preloader);
+
+    this.debugMode && console.groupEnd('%c Preloader ', CONSOLE_CSS_LABEL_PRELOADER);
   }
 
   remove() {
+    if (!this.preloader) { return }
+
     let op = 1;  // initial opacity
 
     const fadeTimer = setInterval(() => {
@@ -25,7 +37,7 @@ export default class Preloader {
         op -= op * 0.1;
     }, 50);
 
-    console.log("Preloader removed");
+    this.debugMode && console.log("%c Preloader removed ", CONSOLE_CSS_LABEL_PRELOADER);
   }
 
   _insertStyle() {
@@ -40,10 +52,10 @@ export default class Preloader {
     return `
     /* PRELOADER */
     .lds-dual-ring {
-      position: fixed;
+      position: absolute;
       z-index: 99999;
       top: 0; left: 0; bottom: 0; right: 0;
-      background: #fff;
+      background: ${this.preloaderBackground};
       display: flex;
       justify-content: center;
       align-items: center;

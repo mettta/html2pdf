@@ -1,0 +1,315 @@
+<div class="content" id="printTHIS">
+  <sdoc-section>
+
+    <sdoc-section-title data-level="1">
+
+      <h2>1.&nbsp;Project goals</h2>
+    </sdoc-section-title>
+
+    <sdoc-section-text>
+      <div class="document">
+        <p>StrictDoc is an attempt to create an open source tool for writing
+          technical requirements specifications.</p>
+      </div>
+
+    </sdoc-section-text>
+  </sdoc-section>
+
+
+  <sdoc-requirement requirement-view="table" data-level="1.1" data-testid="requirement-style-table">
+
+    <sdoc-requirement-title>
+      1.1.&nbsp;Software support for writing requirements and specifications documents</sdoc-requirement-title>
+
+    <sdoc-requirement-field-label>UID:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-type="singleline" data-field-label="UID">
+      GOAL-1-TOOL-SUPPORT
+    </sdoc-requirement-field>
+    <sdoc-requirement-field-label>child links:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="child links">
+      <ul class="requirement__link">
+        <li>
+          <a data-turbo="false" class="requirement__link-child"
+            href="../../strictdoc/docs/strictdoc_20_requirements-PDF.html#1.1-SDOC-HIGH-REQS-MANAGEMENT">
+            <span class="requirement__child-uid">SDOC-HIGH-REQS-MANAGEMENT</span>
+            Requirements management
+          </a>
+        </li>
+      </ul>
+    </sdoc-requirement-field>
+    <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="statement">
+      <div class="document">
+        <p>There shall exist free and lightweight yet capable software for writing
+          requirements and specifications documents</p>
+      </div>
+
+    </sdoc-requirement-field>
+    <sdoc-requirement-field-label>comment:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="comment">
+      <div class="document">
+        <p>Technical documentation is hard, it can be an extremely laborious process.
+          Software shall support engineers in their work with documentation.</p>
+      </div>
+
+    </sdoc-requirement-field>
+
+  </sdoc-requirement>
+
+
+  <sdoc-requirement requirement-view="table" data-level="1.2" data-testid="requirement-style-table">
+
+    <sdoc-requirement-title>
+      1.2.&nbsp;Reduce documentation hazards</sdoc-requirement-title>
+
+    <sdoc-requirement-field-label>UID:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-type="singleline" data-field-label="UID">
+      GOAL-2-REDUCE-DOCUMENTATION-HAZARDS
+    </sdoc-requirement-field>
+
+
+    <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="statement">
+      <div class="document">
+        <p>There shall exist no (or less) opportunity for writing incorrect or inconsistent
+          documentation.</p>
+      </div>
+
+    </sdoc-requirement-field>
+    <sdoc-requirement-field-label>comment:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="comment">
+      <div class="document">
+        <p>Every serious engineering activity, such as safety engineering or systems
+          engineering, starts with requirements. The more critical is a product the higher
+          the importance of good documentation.</p>
+        <p>Technical documentation can be and often becomes a source of hazards.
+          It is recognized that many failures stem from inadequate requirements
+          engineering. While it is not possible to fix the problem of inadequate
+          requirements engineering in general, it is definitely possible to improve
+          software that supports engineers in activities such as requirements engineering
+          and writing technical documentation.</p>
+      </div>
+
+    </sdoc-requirement-field>
+
+  </sdoc-requirement>
+
+
+  <sdoc-requirement requirement-view="table" data-level="1.3" data-testid="requirement-style-table">
+
+    <sdoc-requirement-title>
+      1.3.&nbsp;No (or less) run-away documentation</sdoc-requirement-title>
+
+    <sdoc-requirement-field-label>UID:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-type="singleline" data-field-label="UID">
+      GOAL-3-NO-RUNAWAY-DOCUMENTATION
+    </sdoc-requirement-field>
+
+
+    <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="statement">
+      <div class="document">
+        <p>Software shall support engineers in keeping documentation up-to-date.</p>
+      </div>
+
+    </sdoc-requirement-field>
+    <sdoc-requirement-field-label>comment:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="comment">
+      <div class="document">
+        <p>Technical documentation easily becomes outdated. Many existing tools for
+          documentation do not provide any measures for ensuring overall consistency of
+          documents and documentation trees.</p>
+      </div>
+
+    </sdoc-requirement-field>
+
+  </sdoc-requirement>
+
+
+  <sdoc-requirement requirement-view="table" data-level="1.4" data-testid="requirement-style-table">
+
+    <sdoc-requirement-title>
+      1.4.&nbsp;Change management</sdoc-requirement-title>
+
+    <sdoc-requirement-field-label>UID:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-type="singleline" data-field-label="UID">
+      GOAL-4-CHANGE-MANAGEMENT
+    </sdoc-requirement-field>
+
+
+    <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="statement">
+      <div class="document">
+        <p>Software shall provide capabilities for change management and impact assessment.</p>
+      </div>
+
+    </sdoc-requirement-field>
+    <sdoc-requirement-field-label>comment:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="comment">
+      <div class="document">
+        <p>Change management is difficult. The bigger the project is, the harder it is to
+          maintain its documentation. If a change is introduced to a project, it usually
+          requires a full revision of its requirements.</p>
+      </div>
+
+    </sdoc-requirement-field>
+    <sdoc-requirement-field-label>comment:</sdoc-requirement-field-label>
+    <sdoc-requirement-field data-field-label="comment">
+      <div class="document">
+        <p>When the basic capabilities of StrictDoc are in place, it should be possible
+          to do a more advanced analysis of requirements and requirement trees:</p>
+        <ul class="simple">
+          <li>Finding similar or relevant requirements.</li>
+          <li>Enforce invariants that should be hold. Example: mass or power budget.</li>
+        </ul>
+      </div>
+
+    </sdoc-requirement-field>
+  </sdoc-requirement>
+  <sdoc-section>
+
+    <sdoc-section-title data-level="2">
+
+      <h2>2.&nbsp;Project milestones</h2>
+    </sdoc-section-title>
+
+    <sdoc-section-text>
+      <div class="document">
+        <p>As an open-source project, StrictDoc is developed without strict deadlines, however there are certain
+          high-level priorities that influence the development. The work is loosely organized in quarters.</p>
+        <p>See also the Backlog document for a complete list of the planned work items.</p>
+        <table border="1" class="docutils">
+          <colgroup>
+            <col width="15%">
+            <col width="85%">
+          </colgroup>
+          <thead valign="bottom">
+            <tr>
+              <th class="head"><strong>Quarter</strong></th>
+              <th class="head"><strong>Planned / accomplished work</strong></th>
+            </tr>
+          </thead>
+          <tbody valign="top">
+            <tr>
+              <td>2019-Q2</td>
+              <td>Pre-StrictDoc development in a fork of Doorstop.</td>
+            </tr>
+            <tr>
+              <td>2019-Q3</td>
+              <td>StrictDoc, first prototype. Markdown-based C++ program. Custom requirements metadata in YAML.</td>
+            </tr>
+            <tr>
+              <td>2020-Q1</td>
+              <td>The second prototype of StrictDoc based on RST/Sphinx. Using Sphinx extensions to manage meta
+                information. First integration tests.</td>
+            </tr>
+            <tr>
+              <td>2020-Q2</td>
+              <td>StrictDoc created on GitHub. The code still uses RST for parsing requirements meta information and
+                PySide for GUI.</td>
+            </tr>
+            <tr>
+              <td>2020-Q3</td>
+              <td>The RST parsing is replaced with a TextX-based DSL, new StrictDoc grammar is created. The PySide is
+                replaced with a simple export to HTML using Jinja templates. Export to Sphinx HTML/PDF is introduced.
+              </td>
+            </tr>
+            <tr>
+              <td>2020-Q4</td>
+              <td>Improvements in the styles of HTML/PDF exports. First Table, Traceability, and Deep Traceability
+                screens.</td>
+            </tr>
+            <tr>
+              <td>2021-Q1</td>
+              <td>Excel export. The first implementation for forward and reverse traceability between SDoc and source
+                files.</td>
+            </tr>
+            <tr>
+              <td>2021-Q2</td>
+              <td>Further work on the SDoc-source traceability.</td>
+            </tr>
+            <tr>
+              <td>2021-Q3</td>
+              <td>Further work on the SDoc-source traceability. Tree cycles detection, validations. MathJax support.
+              </td>
+            </tr>
+            <tr>
+              <td>2021-Q4</td>
+              <td>Improvements of the traceability index generation and validation. Initial implementation of ReqIF.
+                First support of custom grammars.</td>
+            </tr>
+            <tr>
+              <td>2022-Q1</td>
+              <td>Further work on ReqIF and custom grammars. Document fragments feature.</td>
+            </tr>
+            <tr>
+              <td>2022-Q2</td>
+              <td>Excel conversion improvements. Improvements of how meta information is displayed in HTML export.</td>
+            </tr>
+            <tr>
+              <td>2022-Q3</td>
+              <td>No work in this quarter.</td>
+            </tr>
+            <tr>
+              <td>2022-Q4</td>
+              <td>Installation using PyInstaller. The first prototype of a Web-based interface. First end-to-end Web
+                tests using SeleniumBase. Improvements of the ReqIF support.</td>
+            </tr>
+            <tr>
+              <td>2023-Q1</td>
+              <td>Improvements of the Web-based interface towards first release. Improvements of the ReqIF support.</td>
+            </tr>
+            <tr>
+              <td>2023-Q2</td>
+              <td>Further stabilization of the Web interface. Improvements of the ReqIF interface.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </sdoc-section-text>
+  </sdoc-section>
+  <sdoc-section>
+
+    <sdoc-section-title data-level="3">
+
+      <h2>3.&nbsp;Verification</h2>
+    </sdoc-section-title>
+
+    <sdoc-section-text>
+      <div class="document">
+        <p>StrictDoc has three groups of tests: unit, integration, end-to-end tests.</p>
+        <p>The unit tests are based on Pylint.</p>
+        <p>The integration tests are based on the <a class="reference external"
+            href="https://llvm.org/docs/CommandGuide/lit.html">LLVM Integrated Tester</a> and <a
+            class="reference external"
+            href="https://github.com/mull-project/FileCheck.py/blob/main/pyproject.toml">FileCheck.py</a>. These tools
+          are not very common, refer to <a class="reference external"
+            href="https://stanislaw.github.io/2020-11-20-how-to-test-command-line-programs-with-python.html">How to test
+            command-line programs with Python tools: LIT and FileCheck</a> for a good description.</p>
+        <p>The end-to-end web interface tests are based on SeleniumBase test framework.</p>
+      </div>
+
+    </sdoc-section-text>
+  </sdoc-section>
+  <sdoc-section>
+
+    <sdoc-section-title data-level="4">
+
+      <h2>4.&nbsp;Python baseline</h2>
+    </sdoc-section-title>
+
+    <sdoc-section-text>
+      <div class="document">
+        <p>The supported version of Python is kept to be as low as possible. As of 2023-Q2, the currently supported
+          version is Python 3.7.</p>
+        <p>Ideally, the lowest Python version should only be raised when it is consistently deprecated by the major
+          software platforms like Ubuntu or GitHub Actions.</p>
+        <p>The only other reason for an upgrade of the lowest Python version can be the emerging constraints of the
+          projects that StrictDoc's depends on. Given the current dependency graph, this almost never happens.</p>
+      </div>
+
+    </sdoc-section-text>
+  </sdoc-section>
+
+</div>

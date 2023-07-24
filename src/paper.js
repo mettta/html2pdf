@@ -1,10 +1,12 @@
 export default class Paper {
 
   constructor({
+    config,
     DOM,
     selector
   }) {
 
+    this.debugMode = config.debugMode;
     this.DOM = DOM;
     this.selector = selector;
 

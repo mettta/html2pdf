@@ -8,7 +8,7 @@ export default function findSplitId({ arr, floater, topRef, getElementTop, root 
     // if the current word and the next one are on different lines,
     // and the next one is on the correct line,
     // then it starts the correct line
-    if (currTop < rightTop && rightTop === topRef) {
+    if (currTop < rightTop && rightTop >= topRef) {
       return rightId;
     }
 
@@ -24,7 +24,7 @@ export default function findSplitId({ arr, floater, topRef, getElementTop, root 
     // if the current word and the previous one are on different lines,
     // and the current one is on the correct line,
     // then it starts the correct line
-    if (leftTop < currTop && currTop === topRef) {
+    if (leftTop < currTop && currTop >= topRef) {
       return currId
     }
 

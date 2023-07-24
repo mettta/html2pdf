@@ -1,8 +1,15 @@
+import addCSSMask from './mask.js';
+
+const CONSOLE_CSS_LABEL_PREVIEW = 'border:1px solid #ee00ee;'
+                                + 'background:#EEEEEE;'
+                                + 'color:#ee00ee;'
+
 export default class Preview {
 
   // TODO SHOW STATS (with close option)
 
   constructor({
+    config,
     DOM,
     selector,
 
@@ -11,6 +18,8 @@ export default class Preview {
     paper,
   }) {
 
+    this.config = config;
+    this.debugMode = config.debugMode;
     this.DOM = DOM;
     this.selector = selector;
 
@@ -18,6 +27,11 @@ export default class Preview {
     this.virtualPaperGapSelector = selector?.virtualPaperGap;
     this.runningSafetySelector = selector?.runningSafety;
     this.printPageBreakSelector = selector?.printPageBreak;
+
+    // selectors used for the mask
+    this.virtualPaper = selector?.virtualPaper;
+    this.virtualPaperTopMargin = selector?.virtualPaperTopMargin;
+    this.paperBody = selector?.paperBody;
 
     // data
     this.pages = pages;
@@ -29,10 +43,39 @@ export default class Preview {
   }
 
   create() {
-
+    this.debugMode && console.groupCollapsed('%c Preview ', CONSOLE_CSS_LABEL_PREVIEW);
     this._processFirstPage();
     this._processOtherPages();
+    this._addMask();
+    this.debugMode && console.groupEnd('%c Preview ', CONSOLE_CSS_LABEL_PREVIEW);
 
+  }
+
+  _addMask() {
+    // The height of the paper is converted from millimeters to pixels.
+    // The 'height' of the HTML element will be an integer, which is inaccurate.
+    // In fact, it most likely contains a fractional part, and inaccuracy is accumulated.
+    // Therefore, let's calculate the average value on the whole set of pages.
+    const papers = [...this.paperFlow.querySelectorAll(this.virtualPaper)];
+    const maskHeight = this.DOM.getElementTop(papers.at(-1)) / (papers.length - 1);
+
+    // The height of the topMargin is converted from millimeters to pixels.
+    // The 'height' of the HTML element will be an integer, which is inaccurate.
+    // But we use this shift only 1 time, so the error is insignificant.
+    const topMargin = this.DOM.getElementHeight(
+      this.paperFlow.querySelector(this.virtualPaperTopMargin)
+    );
+
+    const bodyHeight = this.DOM.getElementHeight(
+      this.paperFlow.querySelector(this.paperBody)
+    );
+
+    addCSSMask({
+      targetElement: this.contentFlow,
+      maskHeight: maskHeight,
+      maskWindow: bodyHeight,
+      maskTopPosition: topMargin,
+    })
   }
 
   _processFirstPage() {
@@ -157,7 +200,9 @@ export default class Preview {
     // with a calculated height instead of the content.
     // We use margins to compensate for possible opposite margins in the content.
     const balancingHeader = this.DOM.create(this.runningSafetySelector);
-    headerHeight && this.DOM.setStyles(balancingHeader, { marginBottom: headerHeight + 'px' });
+    // * because of firefox, we added 1pixel of padding for runningSafety in style.js,
+    // * and are now subtracting it to compensate (in marginBottom).
+    headerHeight && this.DOM.setStyles(balancingHeader, { marginBottom: headerHeight - 1 + 'px' });
 
     const headerSpacer = this.DOM.createDocumentFragment();
     this.DOM.insertAtEnd(
@@ -180,7 +225,9 @@ export default class Preview {
     // We create it with a basic compensator,
     // which takes into account now only the footerHeight.
     const balancingFooter = this.DOM.create(this.runningSafetySelector);
-    footerHeight && this.DOM.setStyles(balancingFooter, { marginTop: footerHeight + 'px' });
+    // * because of firefox, we added 1pixel of padding for runningSafety in style.js,
+    // * and are now subtracting it to compensate (in marginTop).
+    footerHeight && this.DOM.setStyles(balancingFooter, { marginTop: footerHeight - 1 + 'px' });
 
     // Based on contentSeparator (virtual, not printed element, inserted into contentFlow)
     // and paperSeparator (virtual, not printed element, inserted into paperFlow),
@@ -206,7 +253,7 @@ export default class Preview {
     this.DOM.setStyles(balancingFooter, { marginBottom: balancer + 'px' });
 
     // TODO check if negative on large documents
-    // console.log(balancer);
+    this.debugMode && console.log('%c balancer ', CONSOLE_CSS_LABEL_PREVIEW, balancer);
   }
 
 }

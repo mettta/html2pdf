@@ -1,67 +1,53 @@
 const SELECTOR = {
-  // root, is taken from DOM
-  // ? used in layout & preview & pages
-  root: '#printTHIS',
+  // * root, is taken from DOM
+  root: '[html2pdf]',
 
-  // TODO move names to config
-  // templates, are taken from DOM
-  // ? used in paper.js
-  footerTemplate: '#printTHISfooter',
-  headerTemplate: '#printTHISheader',
-  // ? used in paper & preview
-  frontpageTemplate: '#printTHISfrontpage',
+  // * TEMPLATES
+  // *** are taken from DOM:
+  footerTemplate: '[html2pdf-footer]',
+  headerTemplate: '[html2pdf-header]',
+  frontpageTemplate: '[html2pdf-frontpage]',
+  // *** elements with content from templates:
+  frontpageContent: 'html2pdf-frontpage',
+  headerContent: 'html2pdf-header',
+  footerContent: 'html2pdf-footer',
+  // *** page numbers:
+  pageNumberRoot: '[html2pdf-page-number]',
+  pageNumberCurrent: '[html2pdf-page-number-current]',
+  pageNumberTotal: '[html2pdf-page-number-total]',
 
-  // content from templates
-  // ? used in paper.js
-  frontpageContent: '.frontpageContent',
-  headerContent: '.headerContent',
-  footerContent: '.footerContent',
+  // * Layout
+  paperFlow: 'html2pdf-paper-flow',
+  contentFlow: 'html2pdf-content-flow',
 
-  // printed parts of paper
-  // ? used in paper.js
-  paperBody: '.paperBody',
-  paperHeader: '.paperHeader',
-  paperFooter: '.paperFooter',
+  // * virtual parts of paper, only for preview
+  virtualPaper: 'html2pdf-virtual-paper',
+  virtualPaperTopMargin: 'html2pdf-virtual-paper-margin-top',
+  virtualPaperBottomMargin: 'html2pdf-virtual-paper-margin-bottom',
+  virtualPaperGap: 'html2pdf-virtual-paper-gap',
 
-  // virtual parts of paper, only for preview
-  // ? used in paper & preview
-  virtualPaper: '.virtualPaper',
-  virtualPaperTopMargin: '.virtualPaperTopMargin',
-  virtualPaperBottomMargin: '.virtualPaperBottomMargin',
-  virtualPaperGap: '.virtualPaperGap',
+  // * printed parts of paper
+  paperBody: 'html2pdf-paper-body',
+  paperHeader: 'html2pdf-paper-header',
+  paperFooter: 'html2pdf-paper-footer',
+  runningSafety: 'html2pdf-print-running',
+  printPageBreak: 'html2pdf-print-page-break',
 
-  // layout
-  // ? used in layout & preview
-  paperFlow: '#paperFlow',
-  contentFlow: '#contentFlow',
+  // * Print attributes
+  // * (are set on existing elements without affecting their appearance)
+  // ** environment
+  printIgnore: '[html2pdf-print-ignore]',
+  printHide: '[html2pdf-print-hide]',
 
-  // safety
-  // ? used in preview
-  runningSafety: '.runningSafety',
+  // * Service elements (are created in the process):
+  neutral: 'html2pdf-neutral',
+  textNode: 'html2pdf-text-node',
+  complexTextBlock: 'html2pdf-complex-text-block',
+  printForcedPageBreak: 'html2pdf-print-forced-page-break',
 
-  // page number
-  // ? used in paper.js
-  pageNumberRoot: '[data-page-number-root]',
-  pageNumberCurrent: '[data-page-number-current]',
-  pageNumberTotal: '[data-page-number-total]',
-
-  // print attributes
-  // ? used in layout
-  printIgnore: '[data-print-ignore]',
-  printHide: '[data-print-hide]',
-  
-  // printed page break
-  // ? used in preview
-  printPageBreak: '[data-print-page-break]',
-  // processed page break
-  // ? DOM
-  printForcedPageBreak: '[data-print-forced-page-break]',
-  // page break ban
-  printNoBreak: '[data-print-no-break]',
-
-  // service attributes
-  // ? DOM
-  neutral: '[data-neutral]',
+  // * FLAGS (have no styles):
+  flagNoBreak: '[html2pdf-flag-no-break]',
+  flagNoHanging: '[html2pdf-flag-no-hanging]',
 
 };
 
