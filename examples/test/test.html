@@ -2948,7 +2948,7 @@ a.field_action:hover {
     data-preloader='true'
     data-preloader-target='main.layout_main .main'
     data-preloader-background='#F2F5F9'
-    data-no-hanging-selector='sdoc-section-title sdoc-requirement-field-label'
+    data-no-hanging-selector='sdoc-section-title sdoc-requirement-title sdoc-requirement-field-label'
     data-forced-page-break-selector='H2'
     data-no-break-selector='sdoc-meta'
     src="bundle.js"></script>
@@ -3076,133 +3076,101 @@ a.field_action:hover {
           <!-- ******************************** -->
           <!-- ******************************** -->
 
+          <p>That is the way</p>
 
-
-<sdoc-requirement requirement-view="simple" data-level="2.5.5" data-testid="requirement-style-simple">
-
-
-  <sdoc-requirement-title id="2.5.5-References">
-        2.5.5.&nbsp;References</sdoc-requirement-title>
-
-
+  <sdoc-requirement requirement-view="simple" data-level="5" data-testid="requirement-style-simple">
+    <sdoc-requirement-title id="5-Document-archetypes">
+      5.&nbsp;Document archetypes</sdoc-requirement-title>
     <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
     <sdoc-requirement-field data-field-label="statement">
       <div class="document">
-<p>Requirement item may have one or more references.</p>
-</div>
+        <p>StrictDoc shall support the following document archetypes: <strong>requirements document</strong>
+          and <strong>specification</strong> document. For both archetypes, StrictDoc shall further
+          support the following options.</p>
+        <table border="1" class="docutils">
+          <caption>Table: Requirements and specification document</caption>
+          <colgroup>
+            <col width="20%">
+            <col width="40%">
+            <col width="40%">
+          </colgroup>
+          <thead valign="bottom">
+            <tr>
+              <th class="head">&nbsp;</th>
+              <th class="head">Requirements document</th>
+              <th class="head">Specification document</th>
+            </tr>
+          </thead>
+          <tbody valign="top">
+            <tr>
+              <td>Examples</td>
+              <td>Most typical: requirements lists split by categories (e.g., Functional
+                Requirements, Interface Requirements, Performance Requirements, etc.)</td>
+              <td>Often: a standard document</td>
+            </tr>
+            <tr>
+              <td>Structure</td>
+              <td>Not nested or not too deeply nested</td>
+              <td>Nested</td>
+            </tr>
+            <tr>
+              <td>Visual presentation</td>
+              <td>Requirements are often presented as table cells. Cells can be standalone
+                or the whole section or document can be a long table with cells.</td>
+              <td>Requirements are rather presented as header + text</td>
+            </tr>
+            <tr>
+              <td>Unique requirement identifiers (UID)</td>
+              <td>Most always</td>
+              <td>
+                <ul class="first last simple">
+                  <li>Present or not</li>
+                  <li><strong>NOT SUPPORTED YET:</strong> Can be missing, the chapter headers are used instead.
+                    The combination "Number + Title" becomes a reference-able identifier.
+                    A possible intermediate solution when modeling such a document is to
+                    make the UIDs map to the section number.</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td>Requirement titles</td>
+              <td>
+                <ul class="first last simple">
+                  <li>Often</li>
+                  <li><strong>NOT SUPPORTED YET:</strong> But maybe absent (ex: NASA cFS SCH). If absent,
+                    the grouping is provided by sections.</li>
+                </ul>
+              </td>
+              <td>Requirement titles are most often section titles</td>
+            </tr>
+            <tr>
+              <td>Real-world examples</td>
+              <td>
+                <ul class="first last simple">
+                  <li>NASA cFE Functional Requirements</li>
+                  <li>MISRA C coding guidelines,</li>
+                  <li>NASA Software Engineering Requirements NPR 7150.2</li>
+                </ul>
+              </td>
+              <td>
+                <ul class="first last simple">
+                  <li>ECSS Software ECSS-E-ST-40C</li>
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
     </sdoc-requirement-field>
-
-</sdoc-requirement>
-<sdoc-requirement requirement-view="simple" data-level="2.5.6" data-testid="requirement-style-simple">
-
-
-  <sdoc-requirement-title id="2.5.6-Comments">
-        2.5.6.&nbsp;Comments</sdoc-requirement-title>
-
-
-    <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
-    <sdoc-requirement-field data-field-label="statement">
-      <div class="document">
-<p>Requirement item may have one or more comments.</p>
-</div>
-
-    </sdoc-requirement-field>
-
-</sdoc-requirement>
-<sdoc-requirement requirement-view="simple" data-level="2.5.7" data-testid="requirement-style-simple">
-
-
-  <sdoc-requirement-title id="2.5.7-Special-fields">
-        2.5.7.&nbsp;Special fields</sdoc-requirement-title>
-
-
-    <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
-    <sdoc-requirement-field data-field-label="statement">
-      <div class="document">
-<p>StrictDoc shall support customization of the default Requirement's grammar with special fields.</p>
-</div>
-
-    </sdoc-requirement-field>
-
     <sdoc-requirement-field-label>comment:</sdoc-requirement-field-label>
     <sdoc-requirement-field data-field-label="comment">
       <div class="document">
-<p>Examples:</p>
-<ul class="simple">
-<li>RAIT compliance fields (Review of design, analysis, inspection, testing)</li>
-<li>Automotive Safety Integrity Level level (ASIL).</li>
-</ul>
-</div>
+        <p>This draft requirement is the first attempt to organize this information.</p>
+      </div>
 
     </sdoc-requirement-field>
-</sdoc-requirement>
-<sdoc-section>
-
-<sdoc-section-title data-level="2.6">
-<h3 id="2.6-Composite-requirement">2.6.&nbsp;Composite requirement</h3>
-</sdoc-section-title>
-
-</sdoc-section>
-<sdoc-requirement requirement-view="simple" data-level="2.6.1" data-testid="requirement-style-simple">
-
-
-  <sdoc-requirement-title id="2.6.1-Composite-requirement-concept">
-        2.6.1.&nbsp;Composite requirement concept</sdoc-requirement-title>
-
-
-    <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
-    <sdoc-requirement-field data-field-label="statement">
-      <div class="document">
-<p>StrictDoc Data Model shall support the "Composite requirement" concept.</p>
-</div>
-
-    </sdoc-requirement-field>
-
-</sdoc-requirement>
-<sdoc-section>
-<sdoc-section-title data-level="2.7">
-<h3 id="2.7-Links">2.7.&nbsp;Links</h3>
-</sdoc-section-title>
-</sdoc-section>
-<!-- <p>
-  Lorem ipsum dolor sit amet consectetur, adipisicing elit. Incidunt exercitationem, officia fugiat magni esse voluptatem labore nobis et facere autem aliquid suscipit libero illum tempora delectus possimus debitis deserunt recusandae?
-  Lorem ipsum dolor sit amet consectetur, adipisicing elit. Incidunt exercitationem, officia fugiat magni esse voluptatem labore nobis et facere autem aliquid suscipit libero illum tempora delectus possimus debitis deserunt recusandae?
-</p> -->
-<sdoc-requirement requirement-view="simple" data-level="2.7.1" data-testid="requirement-style-simple">
-
-
-  <sdoc-requirement-title id="2.7.1-Links">
-        2.7.1.&nbsp;Links</sdoc-requirement-title>
-
-
-    <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
-    <sdoc-requirement-field data-field-label="statement">
-      <div class="document">
-<p>StrictDoc's data model shall support linking document content nodes to each other.</p>
-</div>
-
-    </sdoc-requirement-field>
-
-</sdoc-requirement>
-<sdoc-requirement requirement-view="simple" data-level="2.7.2" data-testid="requirement-style-simple">
-
-
-  <sdoc-requirement-title id="2.7.2-Parent-links">
-        2.7.2.&nbsp;Parent links</sdoc-requirement-title>
-
-
-    <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
-    <sdoc-requirement-field data-field-label="statement">
-      <div class="document">
-<p>StrictDoc's data model shall support linking a requirement to another requirement using PARENT link.</p>
-</div>
-
-    </sdoc-requirement-field>
-
-</sdoc-requirement>
-
-
+  </sdoc-requirement>
 
 
           <!-- // //////////////////////////////// -->
