@@ -1731,17 +1731,26 @@ export default class Pages {
       .reduce(
         (acc, item) => {
 
+          // * filter STYLE, use element.tagName
+          if (this._isSTYLE(item)) {
+            console.log({item})
+            return acc;
+          }
+
+          // * wrap text node, use element.nodeType
           if (this.DOM.isSignificantTextNode(item)) {
             acc.push(this.DOM.wrapTextNode(item));
             return acc;
           }
 
+          // * no offset parent (contains)
           if (!this.DOM.getElementOffsetParent(item)) {
             const ch = this._getChildren(item);
             ch.length > 0 && acc.push(...ch);
             return acc;
           }
 
+          // * normal
           if (this.DOM.isElementNode(item)) {
             acc.push(item);
             return acc;
@@ -1774,6 +1783,10 @@ export default class Pages {
     // TODO the same as _prepareForcedPageBreakSelector!
     // * The settings may pass an empty string, prevent errors here.
     return string?.length ? string?.split(/\s+/) : [];
+  }
+
+  _isSTYLE(element) {
+    return this.DOM.getElementTagName(element) === 'STYLE'
   }
 
   _isPRE(element) {
