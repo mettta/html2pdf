@@ -21,9 +21,9 @@ export default class Pages {
     // * From config:
     this.debugMode = config.debugMode;
     this.debugToggler = {
-      _parseNode: false,
+      _parseNode: true,
       _splitPreNode: false,
-      _splitTableNode: false,
+      _splitTableNode: true,
       _splitGridNode: false,
     }
 
@@ -1240,9 +1240,9 @@ export default class Pages {
       - this.signpostHeight - tableWrapperHeight;
 
     const fullPagePartHeight = this.referenceHeight
-      - (this.DOM.getElementHeight(nodeEntries.thead) || 0)
-      - (this.DOM.getElementHeight(nodeEntries.tfoot) || 0)
-      - (this.DOM.getElementHeight(nodeEntries.caption) || 0)
+      - (this.DOM.getElementHeight(nodeEntries.caption) || 0) // * copied into each part
+      - (this.DOM.getElementHeight(nodeEntries.thead) || 0) // * copied into each part
+      - (this.DOM.getElementHeight(nodeEntries.tfoot) || 0) // * remains in the last part (in the node)
       - 2 * this.signpostHeight - tableWrapperHeight;
 
     this.debugMode && this.debugToggler._splitTableNode && console.log(
@@ -1271,14 +1271,8 @@ export default class Pages {
 
     this.debugMode && this.debugToggler._splitTableNode && console.log(
       ...consoleMark,
-      'firstPartHeight', firstPartHeight
-    );
-    this.debugMode && this.debugToggler._splitTableNode && console.log(
-      ...consoleMark,
-      'fullPagePartHeight', fullPagePartHeight
-    );
-    this.debugMode && this.debugToggler._splitTableNode && console.log(
-      ...consoleMark,
+      'firstPartHeight', firstPartHeight, '\n',
+      'fullPagePartHeight', fullPagePartHeight, '\n',
       '• topsArr', topsArr
     );
 
