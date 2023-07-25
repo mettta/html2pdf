@@ -1322,7 +1322,6 @@ export default class Pages {
       splitsIds[splitsIds.length - 1] = maxSplittingId;
     }
 
-
     const insertTableSplit = (startId, endId) => {
       // * The function is called later.
       // TODO Put it in a separate method
@@ -1332,7 +1331,6 @@ export default class Pages {
       );
 
       const tableWrapper = this.DOM.cloneNodeWrapper(node);
-      tableWrapper.style.width = `${this.DOM.getElementWidth(node)}px`;
 
       const partEntries = nodeEntries.rows.slice(startId, endId);
 
@@ -1358,6 +1356,9 @@ export default class Pages {
 
       return part
     };
+
+    const nodeWidth = this.DOM.getElementWidth(node);
+    node.style.width = `${nodeWidth}px`;
 
     const splits = splitsIds.map((value, index, array) => insertTableSplit(array[index - 1] || 0, value))
 
