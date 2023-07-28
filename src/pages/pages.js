@@ -1133,99 +1133,20 @@ export default class Pages {
     // TODO test more complex tables
 
     const consoleMark = ['%c_splitTableNode\n', 'color:white',];
-
     this.debugMode && this.debugToggler._splitTableNode && console.time('_splitTableNode')
-
     this.debugMode && this.debugToggler._splitTableNode && console.group('%c_splitTableNode', 'background:cyan');
     this.debugMode && this.debugToggler._splitTableNode && console.log(...consoleMark, 'node', node);
-
-    // this.debugMode && this.debugToggler._splitTableNode && console.log(...consoleMark,'pageBottom', pageBottom);
-    // this.debugMode && this.debugToggler._splitTableNode && console.log(...consoleMark,s'nodeBottom', this.DOM.getElementRootedBottom(node, this.root));
 
     // calculate table wrapper (empty table element) height
     // to calculate the available space for table content
     const tableWrapperHeight = this.DOM.getEmptyNodeHeight(node);
 
     // nodeEntries
-
-    const nodeEntries = [...node.children].reduce(function (acc, curr) {
-
-      const tag = curr.tagName;
-
-      if (tag === 'TBODY') {
-        return {
-          ...acc,
-          rows: [
-            ...acc.rows,
-            ...curr.children,
-          ]
-        }
-      }
-
-      if (tag === 'CAPTION') {
-        return {
-          ...acc,
-          caption: curr
-        }
-      }
-
-      if (tag === 'COLGROUP') {
-        return {
-          ...acc,
-          colgroup: curr
-        }
-      }
-
-      if (tag === 'THEAD') {
-        return {
-          ...acc,
-          thead: curr
-        }
-      }
-
-      if (tag === 'TFOOT') {
-        return {
-          ...acc,
-          tfoot: curr
-        }
-      }
-
-      if (tag === 'TR') {
-        return {
-          ...acc,
-          rows: [
-            ...acc.rows,
-            ...curr,
-          ]
-        }
-      }
-
-      return {
-        ...acc,
-        unexpected: [
-          ...acc.unexpected,
-          // BUG: •Uncaught TypeError: t is not iterable at bundle.js:1:19184
-          // curr,
-          ...curr,
-        ]
-      }
-    }, {
-      caption: null,
-      thead: null,
-      tfoot: null,
-      rows: [],
-      unexpected: [],
-    });
+    const nodeEntries = this.DOM.getTableEntries(node);
     this.debugMode && this.debugToggler._splitTableNode && console.log(
       ...consoleMark,
       'nodeEntries', nodeEntries
     );
-
-    if (nodeEntries.unexpected.length > 0) {
-      this.debugMode
-        && this.debugToggler._splitTableNode
-        && console.warn(...consoleMark, 'something unexpected is found in the table');
-    }
 
     if (nodeEntries.rows.length < this.minBreakableRows) {
       return []
