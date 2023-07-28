@@ -1155,15 +1155,21 @@ export default class Pages {
     // Prepare node parameters
     const nodeTop = this.DOM.getElementRootedTop(node, this.root);
     const nodeHeight = this.DOM.getElementHeight(node);
+    const nodeCaptionHeight = this.DOM.getElementHeight(nodeEntries.caption) || 0;
+    const nodeTheadHeight = this.DOM.getElementHeight(nodeEntries.thead) || 0;
+    const nodeTfootHeight = this.DOM.getElementHeight(nodeEntries.tfoot) || 0;
+    // *** Convert NULL/Undefined to 0
+    // *** The logical nullish assignment (??=) operator
+    const captionFirefoxAmendment = (nodeCaptionHeight ?? 0) * (this.isFirefox ?? 0);
 
     const firstPartHeight = pageBottom
       - nodeTop
       - this.signpostHeight - tableWrapperHeight;
 
     const fullPagePartHeight = this.referenceHeight
-      - (this.DOM.getElementHeight(nodeEntries.caption) || 0) // * copied into each part
-      - (this.DOM.getElementHeight(nodeEntries.thead) || 0) // * copied into each part
-      - (this.DOM.getElementHeight(nodeEntries.tfoot) || 0) // * remains in the last part (in the node)
+      - nodeCaptionHeight // * copied into each part
+      - nodeTheadHeight // * copied into each part
+      - nodeTfootHeight // * remains in the last part (in the node)
       - 2 * this.signpostHeight - tableWrapperHeight;
 
     this.debugMode && this.debugToggler._splitTableNode && console.log(
@@ -1178,22 +1184,34 @@ export default class Pages {
       '\n',
       '= firstPartHeight', firstPartHeight,
     );
+    this.debugMode && this.debugToggler._splitTableNode && console.log(
+      ...consoleMark,
+      'this.referenceHeight', this.referenceHeight,
+      '\n',
+      '- nodeCaptionHeight', nodeCaptionHeight,
+      '\n',
+      '- nodeTheadHeight', nodeTheadHeight,
+      '\n',
+      '- nodeTfootHeight', nodeTfootHeight,
+      '\n',
+      '- 2 * this.signpostHeight', (2 * this.signpostHeight),
+      '\n',
+      '- tableWrapperHeight', tableWrapperHeight,
+      '\n',
+      '= fullPagePartHeight', fullPagePartHeight,
+    );
+
 
     const topsArr = [
       ...nodeEntries.rows.map(
         (row) => this.DOM.getElementRootedTop(row, node)
-        // *** Convert NULL/Undefined to 0
-        // *** The logical nullish assignment (??=) operator
-        + ((this.DOM.getElementHeight(nodeEntries.caption) ?? 0)
-          * (this.isFirefox ?? 0))
+        + captionFirefoxAmendment
       ),
       this.DOM.getElementRootedTop(nodeEntries.tfoot, node) || nodeHeight
     ];
 
     this.debugMode && this.debugToggler._splitTableNode && console.log(
       ...consoleMark,
-      'firstPartHeight', firstPartHeight, '\n',
-      'fullPagePartHeight', fullPagePartHeight, '\n',
       '• topsArr', topsArr
     );
 
