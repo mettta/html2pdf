@@ -467,6 +467,7 @@ export default class DocumentObjectModel {
     return wrapper
   }
 
+  // TODO replace with setFlag... and remove wrapper function
   wrapWithFlagNoBreak(element) {
     const wrapper = this.createWithFlagNoBreak();
     element.before(wrapper);

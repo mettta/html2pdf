@@ -334,6 +334,8 @@ export default class Pages {
 
         // svg has not offset props
         const currentImage = this._isSVG(currentElement)
+        // TODO replace with setFlag... and remove wrapper function
+        // TODO process at the beginning, find all SVG and set Flag
           ? this.DOM.wrapWithFlagNoBreak(currentElement)
           : currentElement;
 
