@@ -22,6 +22,7 @@ export default class Pages {
     this.debugMode = config.debugMode;
     this.debugToggler = {
       _parseNode: true,
+      _trySplitNode: true,
       _splitPreNode: false,
       _splitTableNode: true,
       _splitGridNode: false,
@@ -401,80 +402,7 @@ export default class Pages {
       }
 
       // otherwise try to break it and loop the children:
-      let children = [];
-
-      if (this._isNoBreak(currentElement)) {
-        // don't break apart, thus keep an empty children array
-        this.debugMode && this.debugToggler._parseNode && console.info(...consoleMark,
-          '🧡 isNoBreak');
-        children = [];
-      } else if (this.DOM.isComplexTextBlock(currentElement)) {
-        this.debugMode && this.debugToggler._parseNode && console.info(...consoleMark,
-          '💚 ComplexTextBlock');
-        children = this._splitComplexTextBlock(currentElement) || [];
-      } else if (this._isTextNode(currentElement)) {
-        this.debugMode && this.debugToggler._parseNode && console.info(...consoleMark,
-          '💚 TextNode');
-
-        // TODO: Compare performance of _splitComplexTextBlock and _splitTextNode!
-        // temporarily use the less productive function.
-
-        // children = this._splitTextNode(currentElement, newPageBottom) || [];
-        children = this._splitComplexTextBlock(currentElement) || [];
-      } else if (this._isPRE(currentElement)) {
-        this.debugMode && this.debugToggler._parseNode && console.info(...consoleMark,
-          '💚 PRE');
-        children = this._splitPreNode(currentElement, newPageBottom) || [];
-      } else if (this._isTableNode(currentElement)) {
-        this.debugMode && this.debugToggler._parseNode && console.info(...consoleMark,
-          '💚 TABLE');
-        children = this._splitTableNode(currentElement, newPageBottom) || [];
-
-      } else if (this.DOM.isGridAutoFlowRow(currentElement)) {
-        // ** If it is a grid element.
-        // ????? Process only some modifications of grids!
-        // ***** There's an inline grid check here, too.
-        // ***** But since the check for inline is below and real inline children don't get here,
-        // ***** it is expected that the current element is either block or actually
-        // ***** behaves as a block element in the flow thanks to its content.
-        this.debugMode && this.debugToggler._parseNode && console.info(...consoleMark,
-          '💜 GRID');
-        children = this._splitGridNode(currentElement, newPageBottom) || [];
-
-
-        // TODO LI: если в LI есть UL, маркер может оставаться на прежней странице - см. скрин в телеге.
-        // } else if (this._isLiNode(currentElement)) {
-        //   // todo
-        //   // now make all except UL unbreakable
-        //   const liChildren = this._getChildren(currentElement)
-        //     .reduce((acc, child) => {
-        //       if (this.DOM.getElementTagName(child) === 'UL') {
-        //         acc.push(child);
-        //       } else {
-        //         // TODO сразу собирать в нейтральный объект
-        //         // и проверить display contents!! чтобы брать положение, но отключать стили и влияние на другие
-        //         if (acc[acc.length - 1]?.length) {
-        //           acc[acc.length - 1].push(child);
-        //         } else {
-        //           acc.push([child]);
-        //         }
-        //       }
-        //       return acc
-        //     }, []);
-
-      } else {
-        children = this._getChildren(currentElement);
-        this.debugMode && this.debugToggler._parseNode && console.info(
-          ...consoleMark,
-          '🚸 get element children ',
-          children
-        );
-      }
-
-      if (this._isVerticalFlowDisrupted(children)) {
-        // * If the vertical flow is disturbed and the elements are side by side:
-        children = this._processInlineChildren(children);
-      }
+      const children = this._trySplitNode(currentElement, newPageBottom, this.referenceHeight);
 
       // **
       // * The children are processed.
@@ -530,6 +458,87 @@ export default class Pages {
 
 
     this.debugMode && this.debugToggler._parseNode && console.groupEnd(`%c_parseNode`);
+  }
+
+  _trySplitNode(node, firstPageBottom, fullPageHeight) {
+    const consoleMark = ['%c_trySplitNode\n', 'color:white',]
+
+    let children = [];
+
+    if (this._isNoBreak(node)) {
+      // don't break apart, thus keep an empty children array
+      this.debugMode && this.debugToggler._trySplitNode && console.info(...consoleMark,
+        '🧡 isNoBreak');
+      children = [];
+    } else if (this.DOM.isComplexTextBlock(node)) {
+      this.debugMode && this.debugToggler._trySplitNode && console.info(...consoleMark,
+        '💚 ComplexTextBlock');
+      children = this._splitComplexTextBlock(node) || [];
+    } else if (this._isTextNode(node)) {
+      this.debugMode && this.debugToggler._trySplitNode && console.info(...consoleMark,
+        '💚 TextNode');
+
+      // TODO: Compare performance of _splitComplexTextBlock and _splitTextNode!
+      // temporarily use the less productive function.
+
+      // children = this._splitTextNode(node, firstPageBottom, fullPageHeight) || [];
+      children = this._splitComplexTextBlock(node) || [];
+    } else if (this._isPRE(node)) {
+      this.debugMode && this.debugToggler._trySplitNode && console.info(...consoleMark,
+        '💚 PRE');
+      children = this._splitPreNode(node, firstPageBottom, fullPageHeight) || [];
+    } else if (this._isTableNode(node)) {
+      this.debugMode && this.debugToggler._trySplitNode && console.info(...consoleMark,
+        '💚 TABLE');
+      children = this._splitTableNode(node, firstPageBottom, fullPageHeight) || [];
+
+    } else if (this.DOM.isGridAutoFlowRow(node)) {
+      // ** If it is a grid element.
+      // ????? Process only some modifications of grids!
+      // ***** There's an inline grid check here, too.
+      // ***** But since the check for inline is below and real inline children don't get here,
+      // ***** it is expected that the current element is either block or actually
+      // ***** behaves as a block element in the flow thanks to its content.
+      this.debugMode && this.debugToggler._trySplitNode && console.info(...consoleMark,
+        '💜 GRID');
+      children = this._splitGridNode(node, firstPageBottom, fullPageHeight) || [];
+
+
+      // TODO LI: если в LI есть UL, маркер может оставаться на прежней странице - см. скрин в телеге.
+      // } else if (this._isLiNode(node)) {
+      //   // todo
+      //   // now make all except UL unbreakable
+      //   const liChildren = this._getChildren(node)
+      //     .reduce((acc, child) => {
+      //       if (this.DOM.getElementTagName(child) === 'UL') {
+      //         acc.push(child);
+      //       } else {
+      //         // TODO сразу собирать в нейтральный объект
+      //         // и проверить display contents!! чтобы брать положение, но отключать стили и влияние на другие
+      //         if (acc[acc.length - 1]?.length) {
+      //           acc[acc.length - 1].push(child);
+      //         } else {
+      //           acc.push([child]);
+      //         }
+      //       }
+      //       return acc
+      //     }, []);
+
+    } else {
+      children = this._getChildren(node);
+      this.debugMode && this.debugToggler._trySplitNode && console.info(
+        ...consoleMark,
+        '🚸 get element children ',
+        children
+      );
+    }
+
+    if (this._isVerticalFlowDisrupted(children)) {
+      // * If the vertical flow is disturbed and the elements are side by side:
+      children = this._processInlineChildren(children);
+    }
+
+    return children
   }
 
   _processInlineChildren(children) {
@@ -749,7 +758,7 @@ export default class Pages {
 
   // HELPERS
 
-  _splitPreNode(node, pageBottom) {
+  _splitPreNode(node, pageBottom, fullPageHeight) {
     const consoleMark = ['%c_splitPreNode\n', 'color:white',]
 
     this.debugMode && this.debugToggler._splitPreNode && console.group('%c_splitPreNode', 'background:cyan');
@@ -841,7 +850,7 @@ export default class Pages {
     // * Prepare parameters for splitters calculation
     // TODO : availableSpace considers the upper margin, but does not consider the lower margin
     let availableSpace = pageBottom - nodeTop - preWrapperHeight;
-    const pageSpace = this.referenceHeight - preWrapperHeight;
+    const pageSpace = fullPageHeight - preWrapperHeight;
 
     this.debugMode && this.debugToggler._splitPreNode && console.log(
       ...consoleMark,
@@ -855,9 +864,9 @@ export default class Pages {
     if (firstPartLines < this.minPreFirstBlockLines) {
       this.debugMode && this.debugToggler._splitPreNode && console.log(
         ...consoleMark,
-        'availableSpace is too small \n (availableSpace = this.referenceHeight)'
+        'availableSpace is too small \n (availableSpace = fullPageHeight)'
       );
-      availableSpace = this.referenceHeight;
+      availableSpace = fullPageHeight;
       firstPartLines = linesPerPage;
     }
 
@@ -1128,7 +1137,7 @@ export default class Pages {
 
   }
 
-  _splitTableNode(node, pageBottom) {
+  _splitTableNode(node, pageBottom, fullPageHeight) {
     // * Split simple tables, without regard to col-span and the like.
     // TODO test more complex tables
 
@@ -1166,7 +1175,7 @@ export default class Pages {
       - nodeTop
       - this.signpostHeight - tableWrapperHeight;
 
-    const fullPagePartHeight = this.referenceHeight
+    const fullPagePartHeight = fullPageHeight
       - nodeCaptionHeight // * copied into each part
       - nodeTheadHeight // * copied into each part
       - nodeTfootHeight // * remains in the last part (in the node)
@@ -1186,7 +1195,7 @@ export default class Pages {
     );
     this.debugMode && this.debugToggler._splitTableNode && console.log(
       ...consoleMark,
-      'this.referenceHeight', this.referenceHeight,
+      'fullPageHeight', fullPageHeight,
       '\n',
       '- nodeCaptionHeight', nodeCaptionHeight,
       '\n',
@@ -1313,7 +1322,7 @@ export default class Pages {
     return [...splits, lastPart]
   }
 
-  _splitGridNode(node, pageBottom) {
+  _splitGridNode(node, pageBottom, fullPageHeight) {
     // * Split simple grids,
     // * consider that templating is used, but there is no content in complex areas.
     // * If something unclear is encountered - do not split at all.
@@ -1419,7 +1428,7 @@ export default class Pages {
     // ** If there are enough rows for the split to be readable,
     // ** and the node is not too big (because of the content),
     // ** then we will split it.
-    if (nodeRows < this.minBreakableGridRows && nodeHeight < this.referenceHeight) {
+    if (nodeRows < this.minBreakableGridRows && nodeHeight < fullPageHeight) {
       // ** Otherwise, we don't split it.
       return []
     }
@@ -1455,7 +1464,7 @@ export default class Pages {
       - nodeTop
       // - this.signpostHeight
       - nodeWrapperHeight;
-    const fullPagePartHeight = this.referenceHeight
+    const fullPagePartHeight = fullPageHeight
       // - 2 * this.signpostHeight
       - nodeWrapperHeight;
 
@@ -1576,7 +1585,7 @@ export default class Pages {
   // TODO split text with BR
   // TODO split text with A (long, splitted) etc.
 
-  _splitTextNode(node, pageBottom) {
+  _splitTextNode(node, pageBottom, fullPageHeight) {
 
     // Prepare node parameters
     const nodeTop = this.DOM.getElementRootedTop(node, this.root);
@@ -1587,7 +1596,7 @@ export default class Pages {
     const availableSpace = pageBottom - nodeTop;
 
     const nodeLines = ~~(nodeHeight / nodeLineHeight);
-    const pageLines = ~~(this.referenceHeight / nodeLineHeight);
+    const pageLines = ~~(fullPageHeight / nodeLineHeight);
     const firstPartLines = ~~(availableSpace / nodeLineHeight);
 
     // calculate approximate splitters
