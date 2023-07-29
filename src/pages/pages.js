@@ -1301,8 +1301,7 @@ export default class Pages {
       return part
     };
 
-    const nodeWidth = this.DOM.getElementWidth(node);
-    node.style.width = `${nodeWidth}px`;
+    this.DOM.copyNodeWidth(node, node);
 
     const splits = splitsIds.map((value, index, array) => insertTableSplit(array[index - 1] || 0, value))
 
@@ -1527,7 +1526,7 @@ export default class Pages {
       // TODO - Check for other uses of createWithFlagNoBreak to see if the wrapper can be avoided.
 
       const part = this.DOM.cloneNodeWrapper(node);
-      part.style.width = `${this.DOM.getElementWidth(node)}px`;
+      this.DOM.copyNodeWidth(part, node);
       this.DOM.setFlagNoBreak(part);
       node.before(part);
 

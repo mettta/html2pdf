@@ -744,4 +744,10 @@ export default class DocumentObjectModel {
     return nodeEntries
   }
 
+  copyNodeWidth(clone, node) {
+    // TODO check the fix:
+    // * (-1): Browser rounding fix (when converting mm to pixels).
+    clone.style.width = `${this.getElementWidth(node) - 1}px`;
+  }
+
 }
