@@ -1139,6 +1139,37 @@ export default class Pages {
 
   }
 
+  _insertTableSplit({ startId, endId, node, nodeEntries }) {
+
+    this.debugMode && console.log(`=> _insertTableSplit(${startId}, ${endId})`);
+
+    const tableWrapper = this.DOM.cloneNodeWrapper(node);
+
+    const partEntries = nodeEntries.rows.slice(startId, endId);
+
+    const part = this.DOM.createWithFlagNoBreak();
+    node.before(part);
+
+    if (startId) {
+      // if is not first part
+      this.DOM.insertAtEnd(part, this.DOM.createSignpost('(table continued)', this.signpostHeight));
+    }
+
+    this.DOM.insertAtEnd(
+      part,
+      this.DOM.createTable({
+        wrapper: tableWrapper,
+        caption: this.DOM.cloneNode(nodeEntries.caption),
+        thead: this.DOM.cloneNode(nodeEntries.thead),
+        // tfoot,
+        tbody: partEntries,
+      }),
+      this.DOM.createSignpost('(table continues on the next page)', this.signpostHeight)
+    );
+
+    return part
+  };
+
   _splitTableNode(node, pageBottom, fullPageHeight) {
     // * Split simple tables, without regard to col-span and the like.
     // TODO test more complex tables
@@ -1266,44 +1297,15 @@ export default class Pages {
       splitsIds[splitsIds.length - 1] = maxSplittingId;
     }
 
-    const insertTableSplit = (startId, endId) => {
-      // * The function is called later.
-      // TODO Put it in a separate method
-
-      this.debugMode && this.debugToggler._splitTableNode && console.log(
-        ...consoleMark, `=> insertTableSplit(${startId}, ${endId})`
-      );
-
-      const tableWrapper = this.DOM.cloneNodeWrapper(node);
-
-      const partEntries = nodeEntries.rows.slice(startId, endId);
-
-      const part = this.DOM.createWithFlagNoBreak();
-      node.before(part);
-
-      if (startId) {
-        // if is not first part
-        this.DOM.insertAtEnd(part, this.DOM.createSignpost('(table continued)', this.signpostHeight));
-      }
-
-      this.DOM.insertAtEnd(
-        part,
-        this.DOM.createTable({
-          wrapper: tableWrapper,
-          caption: this.DOM.cloneNode(nodeEntries.caption),
-          thead: this.DOM.cloneNode(nodeEntries.thead),
-          // tfoot,
-          tbody: partEntries,
-        }),
-        this.DOM.createSignpost('(table continues on the next page)', this.signpostHeight)
-      );
-
-      return part
-    };
 
     this.DOM.copyNodeWidth(node, node);
 
-    const splits = splitsIds.map((value, index, array) => insertTableSplit(array[index - 1] || 0, value))
+    const splits = splitsIds.map((value, index, array) => this._insertTableSplit({
+      startId: array[index - 1] || 0,
+      endId: value,
+      node,
+      nodeEntries,
+    }))
 
     this.debugMode && this.debugToggler._splitTableNode && console.log(
       ...consoleMark,
