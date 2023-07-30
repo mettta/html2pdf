@@ -213,6 +213,19 @@ export default class DocumentObjectModel {
     return wrapperHeight;
   }
 
+  getEmptyTableRowHeight(tr) {
+    // Create an empty row by cloning the TR, insert it into the table,
+    // and detect its actual height through the delta
+    // of the tops of the TR following it.
+    const initialTop = tr.offsetTop;
+    const clone = tr.cloneNode(true);
+    [...clone.children].forEach(td => td.innerHTML = '');
+    tr.before(clone);
+    const endTop = tr.offsetTop;
+    clone.remove();
+    return endTop - initialTop;
+  }
+
   createComplexTextBlock() {
     const textBlock = this.create(SELECTOR.complexTextBlock);
     return textBlock;
