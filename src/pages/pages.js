@@ -22,7 +22,7 @@ export default class Pages {
     this.debugMode = config.debugMode;
     this.debugToggler = {
       _parseNode: true,
-      _trySplitNode: true,
+      _getProcessedChildren: true,
       _splitPreNode: false,
       _splitTableNode: true,
       _splitGridNode: false,
@@ -276,7 +276,6 @@ export default class Pages {
     }
 
     this.debugMode
-      // && this.debugToggler._parseNode
       && console.assert( // is filtered in the function _gerChildren()
       this.DOM.getElementOffsetParent(currentElement),
       'it is expected that the element has an offset parent',
@@ -404,7 +403,7 @@ export default class Pages {
       }
 
       // otherwise try to break it and loop the children:
-      const children = this._trySplitNode(currentElement, newPageBottom, this.referenceHeight);
+      const children = this._getProcessedChildren(currentElement, newPageBottom, this.referenceHeight);
 
       // **
       // * The children are processed.
@@ -462,22 +461,22 @@ export default class Pages {
     this.debugMode && this.debugToggler._parseNode && console.groupEnd(`%c_parseNode`);
   }
 
-  _trySplitNode(node, firstPageBottom, fullPageHeight) {
-    const consoleMark = ['%c_trySplitNode\n', 'color:white',]
+  _getProcessedChildren(node, firstPageBottom, fullPageHeight) {
+    const consoleMark = ['%c_getProcessedChildren\n', 'color:white',]
 
     let children = [];
 
     if (this._isNoBreak(node)) {
       // don't break apart, thus keep an empty children array
-      this.debugMode && this.debugToggler._trySplitNode && console.info(...consoleMark,
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '🧡 isNoBreak');
       children = [];
     } else if (this.DOM.isComplexTextBlock(node)) {
-      this.debugMode && this.debugToggler._trySplitNode && console.info(...consoleMark,
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 ComplexTextBlock');
       children = this._splitComplexTextBlock(node) || [];
     } else if (this._isTextNode(node)) {
-      this.debugMode && this.debugToggler._trySplitNode && console.info(...consoleMark,
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TextNode');
 
       // TODO: Compare performance of _splitComplexTextBlock and _splitTextNode!
@@ -486,11 +485,11 @@ export default class Pages {
       // children = this._splitTextNode(node, firstPageBottom, fullPageHeight) || [];
       children = this._splitComplexTextBlock(node) || [];
     } else if (this._isPRE(node)) {
-      this.debugMode && this.debugToggler._trySplitNode && console.info(...consoleMark,
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 PRE');
       children = this._splitPreNode(node, firstPageBottom, fullPageHeight) || [];
     } else if (this._isTableNode(node)) {
-      this.debugMode && this.debugToggler._trySplitNode && console.info(...consoleMark,
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TABLE');
       children = this._splitTableNode(node, firstPageBottom, fullPageHeight) || [];
 
@@ -501,7 +500,7 @@ export default class Pages {
       // ***** But since the check for inline is below and real inline children don't get here,
       // ***** it is expected that the current element is either block or actually
       // ***** behaves as a block element in the flow thanks to its content.
-      this.debugMode && this.debugToggler._trySplitNode && console.info(...consoleMark,
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💜 GRID');
       children = this._splitGridNode(node, firstPageBottom, fullPageHeight) || [];
 
@@ -528,7 +527,7 @@ export default class Pages {
 
     } else {
       children = this._getChildren(node);
-      this.debugMode && this.debugToggler._trySplitNode && console.info(
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(
         ...consoleMark,
         '🚸 get element children ',
         children
