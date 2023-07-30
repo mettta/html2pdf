@@ -1244,7 +1244,7 @@ export default class Pages {
     );
 
 
-    const topsArr = [
+    const rowTopsArr = [
       ...nodeEntries.rows.map(
         (row) => this.DOM.getElementRootedTop(row, node)
         + captionFirefoxAmendment
@@ -1254,7 +1254,7 @@ export default class Pages {
 
     this.debugMode && this.debugToggler._splitTableNode && console.log(
       ...consoleMark,
-      '• topsArr', topsArr
+      '• rowTopsArr', rowTopsArr
     );
 
     // * Calculate Table Splits Ids
@@ -1262,7 +1262,7 @@ export default class Pages {
     let splitsIds = [];
     let currentPageBottom = firstPartHeight;
 
-    for (let index = 0; index < topsArr.length; index++) {
+    for (let index = 0; index < rowTopsArr.length; index++) {
 
       if (topsArr[index] > currentPageBottom) {
 
@@ -1273,9 +1273,9 @@ export default class Pages {
           // *** If a table row starts in the next part,
           // *** register the previous one as the beginning of the next part.
           splitsIds.push(index - 1);
+          currentPageBottom = rowTopsArr[index - 1] + fullPagePartHeight;
         }
 
-        currentPageBottom = topsArr[index - 1] + fullPagePartHeight;
 
         // check if next fits
 
@@ -1292,7 +1292,7 @@ export default class Pages {
     }
 
     // * avoid < minDanglingRows rows on last page
-    const maxSplittingId = (topsArr.length - 1) - this.minDanglingRows;
+    const maxSplittingId = (rowTopsArr.length - 1) - this.minDanglingRows;
     if (splitsIds[splitsIds.length - 1] > maxSplittingId) {
       splitsIds[splitsIds.length - 1] = maxSplittingId;
     }
