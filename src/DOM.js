@@ -757,6 +757,13 @@ export default class DocumentObjectModel {
     return nodeEntries
   }
 
+  lockTableWidths(table) {
+    this.copyNodeWidth(table, table);
+    table.querySelectorAll('td').forEach(
+      td => this.copyNodeWidth(td, td)
+    )
+  }
+
   copyNodeWidth(clone, node) {
     // TODO check the fix:
     // * (-1): Browser rounding fix (when converting mm to pixels).

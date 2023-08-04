@@ -1173,6 +1173,8 @@ export default class Pages {
     // * Split simple tables, without regard to col-span and the like.
     // TODO test more complex tables
 
+    this.DOM.lockTableWidths(table);
+
     const consoleMark = ['%c_splitTableNode\n', 'color:white',];
     this.debugMode && this.debugToggler._splitTableNode && console.time('_splitTableNode')
     this.debugMode && this.debugToggler._splitTableNode && console.group('%c_splitTableNode', 'background:cyan');
@@ -1295,9 +1297,6 @@ export default class Pages {
     if (splitsIds[splitsIds.length - 1] > maxSplittingId) {
       splitsIds[splitsIds.length - 1] = maxSplittingId;
     }
-
-
-    this.DOM.copyNodeWidth(node, node);
 
     const splits = splitsIds.map((value, index, array) => this._insertTableSplit({
       startId: array[index - 1] || 0,
