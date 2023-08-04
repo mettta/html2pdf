@@ -1138,16 +1138,16 @@ export default class Pages {
 
   }
 
-  _insertTableSplit({ startId, endId, node, nodeEntries }) {
+  _insertTableSplit({ startId, endId, table, tableEntries }) {
 
     this.debugMode && console.log(`=> _insertTableSplit(${startId}, ${endId})`);
 
-    const tableWrapper = this.DOM.cloneNodeWrapper(node);
+    const tableWrapper = this.DOM.cloneNodeWrapper(table);
 
-    const partEntries = nodeEntries.rows.slice(startId, endId);
+    const partEntries = tableEntries.rows.slice(startId, endId);
 
     const part = this.DOM.createWithFlagNoBreak();
-    node.before(part);
+    table.before(part);
 
     if (startId) {
       // if is not first part
@@ -1158,8 +1158,8 @@ export default class Pages {
       part,
       this.DOM.createTable({
         wrapper: tableWrapper,
-        caption: this.DOM.cloneNode(nodeEntries.caption),
-        thead: this.DOM.cloneNode(nodeEntries.thead),
+        caption: this.DOM.cloneNode(tableEntries.caption),
+        thead: this.DOM.cloneNode(tableEntries.thead),
         // tfoot,
         tbody: partEntries,
       }),
@@ -1169,55 +1169,55 @@ export default class Pages {
     return part
   };
 
-  _splitTableNode(node, pageBottom, fullPageHeight) {
+  _splitTableNode(table, pageBottom, fullPageHeight) {
     // * Split simple tables, without regard to col-span and the like.
     // TODO test more complex tables
 
     const consoleMark = ['%c_splitTableNode\n', 'color:white',];
     this.debugMode && this.debugToggler._splitTableNode && console.time('_splitTableNode')
     this.debugMode && this.debugToggler._splitTableNode && console.group('%c_splitTableNode', 'background:cyan');
-    this.debugMode && this.debugToggler._splitTableNode && console.log(...consoleMark, 'node', node);
+    this.debugMode && this.debugToggler._splitTableNode && console.log(...consoleMark, 'table', table);
 
     // calculate table wrapper (empty table element) height
     // to calculate the available space for table content
-    const tableWrapperHeight = this.DOM.getEmptyNodeHeight(node);
+    const tableWrapperHeight = this.DOM.getEmptyNodeHeight(table);
 
-    // nodeEntries
-    const nodeEntries = this.DOM.getTableEntries(node);
+    // tableEntries
+    const tableEntries = this.DOM.getTableEntries(table);
     this.debugMode && this.debugToggler._splitTableNode && console.log(
       ...consoleMark,
-      'nodeEntries', nodeEntries
+      'tableEntries', tableEntries
     );
 
-    if (nodeEntries.rows.length < this.minBreakableRows) {
+    if (tableEntries.rows.length < this.minBreakableRows) {
       return []
     }
 
     // Prepare node parameters
-    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
-    const nodeHeight = this.DOM.getElementHeight(node);
-    const nodeCaptionHeight = this.DOM.getElementHeight(nodeEntries.caption) || 0;
-    const nodeTheadHeight = this.DOM.getElementHeight(nodeEntries.thead) || 0;
-    const nodeTfootHeight = this.DOM.getElementHeight(nodeEntries.tfoot) || 0;
+    const tableTop = this.DOM.getElementRootedTop(table, this.root);
+    const tableHeight = this.DOM.getElementHeight(table);
+    const tableCaptionHeight = this.DOM.getElementHeight(tableEntries.caption) || 0;
+    const tableTheadHeight = this.DOM.getElementHeight(tableEntries.thead) || 0;
+    const tableTfootHeight = this.DOM.getElementHeight(tableEntries.tfoot) || 0;
     // *** Convert NULL/Undefined to 0
     // *** The logical nullish assignment (??=) operator
-    const captionFirefoxAmendment = (nodeCaptionHeight ?? 0) * (this.isFirefox ?? 0);
+    const captionFirefoxAmendment = (tableCaptionHeight ?? 0) * (this.isFirefox ?? 0);
 
     const firstPartHeight = pageBottom
-      - nodeTop
+      - tableTop
       - this.signpostHeight - tableWrapperHeight;
 
     const fullPagePartHeight = fullPageHeight
-      - nodeCaptionHeight // * copied into each part
-      - nodeTheadHeight // * copied into each part
-      - nodeTfootHeight // * remains in the last part (in the node)
+      - tableCaptionHeight // * copied into each part
+      - tableTheadHeight // * copied into each part
+      - tableTfootHeight // * remains in the last part (in the table)
       - 2 * this.signpostHeight - tableWrapperHeight;
 
     this.debugMode && this.debugToggler._splitTableNode && console.log(
       ...consoleMark,
       'pageBottom', pageBottom,
       '\n',
-      '- nodeTop', nodeTop,
+      '- tableTop', tableTop,
       '\n',
       '- tableWrapperHeight', tableWrapperHeight,
       '\n',
@@ -1229,11 +1229,11 @@ export default class Pages {
       ...consoleMark,
       'fullPageHeight', fullPageHeight,
       '\n',
-      '- nodeCaptionHeight', nodeCaptionHeight,
+      '- tableCaptionHeight', tableCaptionHeight,
       '\n',
-      '- nodeTheadHeight', nodeTheadHeight,
+      '- tableTheadHeight', tableTheadHeight,
       '\n',
-      '- nodeTfootHeight', nodeTfootHeight,
+      '- tableTfootHeight', tableTfootHeight,
       '\n',
       '- 2 * this.signpostHeight', (2 * this.signpostHeight),
       '\n',
@@ -1244,11 +1244,11 @@ export default class Pages {
 
 
     const rowTopsArr = [
-      ...nodeEntries.rows.map(
-        (row) => this.DOM.getElementRootedTop(row, node)
+      ...tableEntries.rows.map(
+        (row) => this.DOM.getElementRootedTop(row, table)
         + captionFirefoxAmendment
       ),
-      this.DOM.getElementRootedTop(nodeEntries.tfoot, node) || nodeHeight
+      this.DOM.getElementRootedTop(tableEntries.tfoot, table) || tableHeight
     ];
 
     this.debugMode && this.debugToggler._splitTableNode && console.log(
@@ -1302,8 +1302,8 @@ export default class Pages {
     const splits = splitsIds.map((value, index, array) => this._insertTableSplit({
       startId: array[index - 1] || 0,
       endId: value,
-      node,
-      nodeEntries,
+      table,
+      tableEntries,
     }))
 
     this.debugMode && this.debugToggler._splitTableNode && console.log(
@@ -1313,11 +1313,11 @@ export default class Pages {
 
     // create LAST PART
     const lastPart = this.DOM.createWithFlagNoBreak();
-    node.before(lastPart);
+    table.before(lastPart);
     this.DOM.insertAtEnd(
       lastPart,
       this.DOM.createSignpost('(table continued)', this.signpostHeight),
-      node
+      table
     );
 
     this.debugMode && this.debugToggler._splitTableNode && console.timeEnd('_splitTableNode')
