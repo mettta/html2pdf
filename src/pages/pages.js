@@ -534,11 +534,6 @@ export default class Pages {
       );
     }
 
-    if (this._isVerticalFlowDisrupted(children)) {
-      // * If the vertical flow is disturbed and the elements are side by side:
-      children = this._processInlineChildren(children);
-    }
-
     return children
   }
 
@@ -1671,13 +1666,12 @@ export default class Pages {
     // fon display:none / contents
     // this.DOM.getElementOffsetParent(currentElement)
 
-    const childrenArr = [...this.DOM.getChildNodes(element)]
+    let childrenArr = [...this.DOM.getChildNodes(element)]
       .reduce(
         (acc, item) => {
 
           // * filter STYLE, use element.tagName
           if (this._isSTYLE(item)) {
-            console.log({item})
             return acc;
           }
 
@@ -1701,6 +1695,11 @@ export default class Pages {
           };
 
         }, [])
+
+        if (this._isVerticalFlowDisrupted(childrenArr)) {
+          // * If the vertical flow is disturbed and the elements are side by side:
+          childrenArr = this._processInlineChildren(childrenArr);
+        }
 
     return childrenArr;
   }
