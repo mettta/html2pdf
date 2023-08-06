@@ -608,13 +608,19 @@ export default class DocumentObjectModel {
   }
 
   isLineChanged(current, next) {
-    const vert = this.getElementRelativeBottom(current) <= this.getElementRelativeTop(next);
+     // * (-1): Browser rounding fix (when converting mm to pixels).
+    const delta = this.getElementRelativeBottom(current)
+                - this.getElementRelativeTop(next);
+    const vert = delta > (-1);
     // const gor = this.getElementLeft(current) + this.getElementWidth(current) > this.getElementLeft(next);
     return vert;
   }
 
   isLineKept(current, next) {
-    const vert = this.getElementRelativeBottom(current) > this.getElementRelativeTop(next);
+    // * (-1): Browser rounding fix (when converting mm to pixels).
+    const delta = this.getElementRelativeBottom(current)
+                - this.getElementRelativeTop(next);
+    const vert = delta <= (-1);
     return vert;
   }
 
