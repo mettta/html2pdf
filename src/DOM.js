@@ -111,7 +111,9 @@ export default class DocumentObjectModel {
 
   isSelectorMatching(element, selector) {
     if (!element || !selector) {
-      console.warn && console.warn('setAttribute() must have 2 params');
+      console.warn && console.warn('isSelectorMatching() must have 2 params',
+      '\n element: ', element,
+      '\n selector: ', selector);
       return;
     }
 
