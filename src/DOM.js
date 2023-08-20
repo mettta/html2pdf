@@ -780,4 +780,12 @@ export default class DocumentObjectModel {
     clone.style.width = `${this.getElementWidth(node) - 1}px`;
   }
 
+  findDeepestChild(element) {
+    let currentElement = element;
+    while (currentElement.firstElementChild) {
+        currentElement = currentElement.firstElementChild;
+    }
+    return currentElement;
+  }
+
 }
