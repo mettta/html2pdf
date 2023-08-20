@@ -1484,12 +1484,35 @@ export default class Pages {
     //👿
 
     const slices = [];
+    let wrappers = []; // Реальные элементы, нужно клонировать массив для нового
     let currentTargetInSlice = null;
-    const wrapper = null;
+
+    const createWrapperFromArray = (array) => {
+      if (array.length === 0) {
+        return null;
+      }
+
+      const wrapper = array[0];
+      let currentWrapper = wrapper;
+
+      for (let i = 1; i < array.length; i++) {
+        const child = array[i];
+        this.DOM.insertAtEnd(currentWrapper, child);
+        currentWrapper = child;
+      }
+
+      return wrapper;
+    }
 
     const processChildren = (children) => {
       for (let i = 0; i < children.length; i++) {
-        processObj(children[i])
+        processObj(children[i]);
+
+        if (i == children.length - 1) {
+console.log('👿 👿 👿 👿 👿 👿', [...wrappers]);
+const a = wrappers.pop();
+console.log('👿 👿 👿 👿', [...wrappers], a);
+        }
       }
     }
 
@@ -1503,12 +1526,17 @@ export default class Pages {
 
       if(hasSplitFlag) {
         // start new object
-        const currentWrapper = slices.at(-1);
-        const nextWrapper = this.DOM.cloneNode(currentWrapper);
-        nextWrapper.innerHTML = ''; // TODO это работает только для глубины 2 типа параграфа?
+        // const currentWrapper = slices.at(-1);
+        // const nextWrapper = this.DOM.cloneNode(currentWrapper);
+
+        wrappers = wrappers.map(wrapper => this.DOM.cloneNodeWrapper(wrapper));
+        const nextWrapper = createWrapperFromArray(wrappers);
+
+        // nextWrapper.innerHTML = ''; // TODO это работает только для глубины 2 типа параграфа?
         slices.push(nextWrapper);
         // find container in new object
-        currentTargetInSlice = this.DOM.findDeepestChild(nextWrapper);
+        // currentTargetInSlice = this.DOM.findDeepestChild(nextWrapper);
+        currentTargetInSlice = wrappers.at(-1);
         console.log('👿👿👿', 'container (new)', currentTargetInSlice,
         currentTargetInSlice.children)
       }
@@ -1516,6 +1544,8 @@ export default class Pages {
       if(hasChildren) {
         // make new wrapper
         const currentWrapper = this.DOM.cloneNodeWrapper(currentElement);
+        // add currentWrapper to wrappers
+        wrappers.push(currentElement);
         // add currentWrapper to slice
         if(currentTargetInSlice) {
           // add to existing as a child
