@@ -22,7 +22,7 @@ export default class Pages {
     // * From config:
     this.debugMode = config.debugMode;
     this.debugToggler = {
-      _parseNode: false,
+      _parseNode: true,
       _getProcessedChildren: false,
       _splitPreNode: false,
       _splitTableNode: true,
@@ -198,7 +198,7 @@ export default class Pages {
     parent,
     parentBottom,
   }) {
-
+console.log('array', [...array])
     for (let i = 0; i < array.length; i++) {
 
       this._parseNode({
@@ -432,13 +432,16 @@ export default class Pages {
 
       // * Parse children:
       if (childrenNumber) {
+        // * In a fully split node, children replace it,
+        // * so we don't take into account the last child bottom margins (parentBottom).
+        const isFullySPlittedParent = this._isFullySPlitted(currentElement);
         // * Process children if exist:
         this._parseNodes({
           array: children,
           previous: previousElement,
           next: nextElement,
           parent: retainedParent,
-          parentBottom: currentElementBottom,
+          parentBottom: isFullySPlittedParent ? undefined : currentElementBottom,
         })
       } else {
         // * If no children,
@@ -463,6 +466,14 @@ export default class Pages {
 
 
     this.debugMode && this.debugToggler._parseNode && console.groupEnd(`%c_parseNode`);
+  }
+
+  _isFullySPlitted(node) {
+    return (
+      this._isPRE(node) ||
+      this._isTableNode(node) ||
+      this.DOM.isGridAutoFlowRow(node)
+    );
   }
 
   _getProcessedChildren(node, firstPageBottom, fullPageHeight) {
@@ -1260,7 +1271,6 @@ export default class Pages {
 
     for (let index = 0; index < distributedRows.length; index++) {
       const currentRow = distributedRows[index];
-      console.log('🎃', index, '<', distributedRows.length, currentRow);
 
       const currTop = this.DOM.getElementRootedTop(currentRow, table) + captionFirefoxAmendment;
 
@@ -1482,32 +1492,15 @@ export default class Pages {
     //   children: [],
     //   split: true | false,
     // }
-    console.group('%c_createSlicesBySplitFlag', 'background:#00FF00')
-    console.log(' inputArray:\n', inputArray);
-
-    const isInDOM = (element, context = 'element') => {
-      const res = element?.parentNode;
-      // console.info(`🔮 is ${context} in DOM?`, res)
-      return res
-    }
 
     const sliceWrapper = this.DOM.createWithFlagNoBreak();
     sliceWrapper.classList.add("🧰");
-    // sliceWrapper.display = 'contents';
+    sliceWrapper.display = 'contents';
 
-    // ! удаляем ВСЕ первоначальные ноды из DOM
-    // !!! НЕ КЛАСТЬ ЭТО В ДОМ ПОСЛЕ ОБРАБОТКИ
-    inputArray.forEach(item => {
-      item.element.remove()
-      isInDOM(item.element, 'item.element');
-      item.element.classList.add("🌚");
-      console.log(item.element)
-    });
-
-    // sliceWrapper - вставляем первую обертку и указатель на нее
-    const slices = [];
-    let wrappers = []; // Реальные элементы, нужно клонировать массив для нового
-    let currentTargetInSlice = null; // TODO для первого элемента ??????? 
+    // *** иниццируем для первого элемента оболочку sliceWrapper
+    const slices = [sliceWrapper];
+    let wrappers = [sliceWrapper]; // Реальные элементы, нужно клонировать массив для нового
+    let currentTargetInSlice = sliceWrapper;
 
     const createWrapperFromArray = (array) => {
       if (array.length === 0) {
@@ -1533,16 +1526,6 @@ export default class Pages {
 
       for (let i = 0; i < children.length; i++) {
         processObj(children[i]);
-
-        // if (i == children.length - 1) {
-        //   console.log('processChildren: LAST CHILD', children[i])
-        //   console.log('processChildren: wrappers now:', [...wrappers]);
-        //   const a = wrappers.pop();
-        //   console.log('processChildren: wrappers.pop()', a,
-        //     [...wrappers]);
-        //   console.log('processChildren: parent', parent)
-        //   parent && this.DOM.removeNode(parent);
-        // }
       }
 
       console.log('- wrappers BEFORE pop:', [...wrappers]);
@@ -1551,17 +1534,10 @@ export default class Pages {
       console.log('- parent', parent);
       console.log('- wrappers AFTER pop:', [...wrappers]);
 
-      isInDOM(parent, 'parent') && this.DOM.removeNode(parent);
-
-      // !!! перенести указатель!
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       currentTargetInSlice = wrappers.at(-1);
       // TODO сделать функцию
-      console.log('🎯🎯🎯🎯🎯🎯 currentTargetInSlice', currentTargetInSlice)
+      console.log('🎯🎯 currentTargetInSlice', currentTargetInSlice)
       console.log('🎯 wrappers.at(-1)', wrappers.at(-1))
-
       console.log('*END* children', children)
       console.groupEnd('processChildren');
     }
@@ -1604,9 +1580,6 @@ export default class Pages {
         console.log('••• hasChildren');
         // make new wrapper
         const cloneCurrentElementWrapper = this.DOM.cloneNodeWrapper(currentElement);
-        cloneCurrentElementWrapper.classList.add("👸children");
-        // TODO TEST
-        isInDOM(currentElement, 'current') && this.DOM.removeNode(currentElement);
 
         // add cloneCurrentElementWrapper to wrappers
         wrappers.push(cloneCurrentElementWrapper); // ???????????
@@ -1646,6 +1619,8 @@ export default class Pages {
       console.groupEnd(`processObj # ${id}`);
     }
 
+    console.log('#######  currentTargetInSlice (=):', currentTargetInSlice);
+
     processChildren(inputArray);
 
     console.log(slices)
@@ -1674,7 +1649,8 @@ export default class Pages {
       trail[id].split = true;
     }
 
-    console.groupCollapsed('_getInternalSplitters');
+    console.group('_getInternalSplitters'); // Collapsed
+    console.log('result', result)
 
     console.log(
     `\n💟 rootNode:`, rootNode,
@@ -1714,15 +1690,12 @@ export default class Pages {
 
       if (nextElementTop <= floater) {
         // --
+      } else if (this._isNoHanging(currentElement)) {
+        console.log('currentElement _isNoHanging')
+        registerResult(currentElement, i, children);
+        // go to next index
       } else {
         // текущий имеет смысл рассмотреть поближе
-
-        if (this._isNoHanging(currentElement)) {
-          console.log('currentElement _isNoHanging')
-          registerResult(currentElement, i, children);
-          console.groupEnd('_getInternalSplitters')
-          return
-        }
 
         if (this._isSVG(currentElement) || this._isIMG(currentElement)) {
           // TODO needs testing
@@ -1735,16 +1708,18 @@ export default class Pages {
         // В данном случае отступ родителя не играет роли.
 
         const currentElementBottom = this.DOM.getElementRootedRealBottom(currentElement, rootNode);
-        console.log('💟 curr', currentElement, currentElementBottom)
+        console.log('💟 curr', currentElement, currentElementBottom, floater)
         // IF currentElement does fit
         // in the remaining space on the page,
         if (currentElementBottom <= floater) {
           // we need <= because splitted elements often get equal height // todo comment
           console.log('currentElementBottom <= floater')
           // ** add nextElement check (undefined as end)
+          console.log(nextElement)
+          console.log(result)
           nextElement && registerResult(nextElement, i + 1, children);
           console.groupEnd('_getInternalSplitters')
-          return
+          return {result, trail}
         }
 
         const currentElementChildren = this._getProcessedChildren(currentElement, pageBottom, fullPageHeight);
