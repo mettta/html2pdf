@@ -1192,6 +1192,7 @@ export default class Pages {
     );
 
     if (tableEntries.rows.length < this.minBreakableRows) {
+      this.debugMode && this.debugToggler._splitTableNode && console.groupEnd('%c_splitTableNode', 'background:cyan');
       return []
     }
 
@@ -1327,14 +1328,12 @@ export default class Pages {
             // console.log('💝💝💝 newSplittedArrays', newSplittedArrays);
 
             if (internalSplitters.result.length) {
-              console.log('👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪');
-
 
               const newTdContentElements = this._createSlicesBySplitFlag(internalSplitters.trail);
-              console.log('👪👪👪 newTdContentElements', newTdContentElements);
+              console.log('••• newTdContentElements', newTdContentElements);
 
-
-              this.DOM.insertAtEnd(tryTd, ...newTdContentElements)
+              // ! не надо класть это в DOM, все равно потом собираем новые строки
+              // this.DOM.insertAtEnd(tryTd, ...newTdContentElements)
 
               // делаем новые строки
               // добавляем их в массив
@@ -1437,6 +1436,7 @@ export default class Pages {
     );
 
     if (!splitsIds.length) {
+      this.debugMode && this.debugToggler._splitTableNode && console.groupEnd('%c_splitTableNode', 'background:cyan');
       return []
     }
 
@@ -1468,7 +1468,9 @@ export default class Pages {
       table
     );
 
-    this.debugMode && this.debugToggler._splitTableNode && console.timeEnd('_splitTableNode')
+    this.debugMode && this.debugToggler._splitTableNode && console.timeEnd('_splitTableNode');
+    this.debugMode && this.debugToggler._splitTableNode && console.groupEnd('%c_splitTableNode', 'background:cyan');
+
     return [...splits, lastPart]
   }
 
@@ -1480,12 +1482,32 @@ export default class Pages {
     //   children: [],
     //   split: true | false,
     // }
+    console.group('%c_createSlicesBySplitFlag', 'background:#00FF00')
+    console.log(' inputArray:\n', inputArray);
 
-    //👿
+    const isInDOM = (element, context = 'element') => {
+      const res = element?.parentNode;
+      // console.info(`🔮 is ${context} in DOM?`, res)
+      return res
+    }
 
+    const sliceWrapper = this.DOM.createWithFlagNoBreak();
+    sliceWrapper.classList.add("🧰");
+    // sliceWrapper.display = 'contents';
+
+    // ! удаляем ВСЕ первоначальные ноды из DOM
+    // !!! НЕ КЛАСТЬ ЭТО В ДОМ ПОСЛЕ ОБРАБОТКИ
+    inputArray.forEach(item => {
+      item.element.remove()
+      isInDOM(item.element, 'item.element');
+      item.element.classList.add("🌚");
+      console.log(item.element)
+    });
+
+    // sliceWrapper - вставляем первую обертку и указатель на нее
     const slices = [];
     let wrappers = []; // Реальные элементы, нужно клонировать массив для нового
-    let currentTargetInSlice = null;
+    let currentTargetInSlice = null; // TODO для первого элемента ??????? 
 
     const createWrapperFromArray = (array) => {
       if (array.length === 0) {
@@ -1501,74 +1523,134 @@ export default class Pages {
         currentWrapper = child;
       }
 
+      console.log(' createWrapperFromArray:', wrapper);
       return wrapper;
     }
 
-    const processChildren = (children) => {
+    const processChildren = (children, parent = null) => {
+      console.group('processChildren');
+      console.log('*start* children', children)
+
       for (let i = 0; i < children.length; i++) {
         processObj(children[i]);
 
-        if (i == children.length - 1) {
-console.log('👿 👿 👿 👿 👿 👿', [...wrappers]);
-const a = wrappers.pop();
-console.log('👿 👿 👿 👿', [...wrappers], a);
-        }
+        // if (i == children.length - 1) {
+        //   console.log('processChildren: LAST CHILD', children[i])
+        //   console.log('processChildren: wrappers now:', [...wrappers]);
+        //   const a = wrappers.pop();
+        //   console.log('processChildren: wrappers.pop()', a,
+        //     [...wrappers]);
+        //   console.log('processChildren: parent', parent)
+        //   parent && this.DOM.removeNode(parent);
+        // }
       }
+
+      console.log('- wrappers BEFORE pop:', [...wrappers]);
+      const a = wrappers.pop();
+      console.log('- wrappers.pop()', a);
+      console.log('- parent', parent);
+      console.log('- wrappers AFTER pop:', [...wrappers]);
+
+      isInDOM(parent, 'parent') && this.DOM.removeNode(parent);
+
+      // !!! перенести указатель!
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      currentTargetInSlice = wrappers.at(-1);
+      // TODO сделать функцию
+      console.log('🎯🎯🎯🎯🎯🎯 currentTargetInSlice', currentTargetInSlice)
+      console.log('🎯 wrappers.at(-1)', wrappers.at(-1))
+
+      console.log('*END* children', children)
+      console.groupEnd('processChildren');
     }
 
     const processObj = (obj) => {
+
       const hasChildren = obj.children?.length > 0;
       const hasSplitFlag = obj.split;
       const currentElement = obj.element;
       const id = obj.id;
 
-      // console.log('👿', 'obj', obj)
+      console.group(`processObj # ${id}`); // Collapsed
+      console.log('currentElement', currentElement);
+      this.DOM.removeNode(currentElement);
 
       if(hasSplitFlag) {
+        console.log('••• hasSplitFlag');
         // start new object
         // const currentWrapper = slices.at(-1);
         // const nextWrapper = this.DOM.cloneNode(currentWrapper);
-
-        wrappers = wrappers.map(wrapper => this.DOM.cloneNodeWrapper(wrapper));
+        wrappers = wrappers.map(wrapper => {
+          const clone = this.DOM.cloneNodeWrapper(wrapper); // ???? может делать клоны не тут а при создании?
+          clone.classList.add("🚩");
+          return clone
+        });
+        console.log('• hasSplitFlag: NEW wrappers.map:', [...wrappers]);
         const nextWrapper = createWrapperFromArray(wrappers);
 
-        // nextWrapper.innerHTML = ''; // TODO это работает только для глубины 2 типа параграфа?
         slices.push(nextWrapper);
+        console.log('• hasSplitFlag: slices.push(nextWrapper):', [...slices]);
         // find container in new object
         // currentTargetInSlice = this.DOM.findDeepestChild(nextWrapper);
         currentTargetInSlice = wrappers.at(-1);
-        console.log('👿👿👿', 'container (new)', currentTargetInSlice,
-        currentTargetInSlice.children)
+        console.log('• hasSplitFlag: currentTargetInSlice:', currentTargetInSlice);
       }
+
+      // TODO проверить, когда есть оба флага
 
       if(hasChildren) {
+        console.log('••• hasChildren');
         // make new wrapper
-        const currentWrapper = this.DOM.cloneNodeWrapper(currentElement);
-        // add currentWrapper to wrappers
-        wrappers.push(currentElement);
-        // add currentWrapper to slice
+        const cloneCurrentElementWrapper = this.DOM.cloneNodeWrapper(currentElement);
+        cloneCurrentElementWrapper.classList.add("👸children");
+        // TODO TEST
+        isInDOM(currentElement, 'current') && this.DOM.removeNode(currentElement);
+
+        // add cloneCurrentElementWrapper to wrappers
+        wrappers.push(cloneCurrentElementWrapper); // ???????????
+
+        console.log('• hasChildren: wrappers.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...wrappers]);
+        // add cloneCurrentElementWrapper to slice
+        console.log('• hasChildren: currentTargetInSlice (check):', currentTargetInSlice);
+
         if(currentTargetInSlice) {
+          console.log('• hasChildren: currentTargetInSlice', 'TRUE, add to existing', cloneCurrentElementWrapper);
           // add to existing as a child
-          this.DOM.insertAtEnd(currentTargetInSlice, currentWrapper)
+          this.DOM.insertAtEnd(currentTargetInSlice, cloneCurrentElementWrapper);
         } else {
+          console.log('• hasChildren: currentTargetInSlice', 'FALSE, init the first', cloneCurrentElementWrapper);
           // init the first
-          currentWrapper.className = 'asd' + id;
-          currentWrapper.style.background = 'yellow';
-          slices.push(currentWrapper)
+          cloneCurrentElementWrapper.classList.add('🏁first');
+          cloneCurrentElementWrapper.style.background = 'yellow';
+          slices.push(cloneCurrentElementWrapper);
+          console.log('• hasChildren: slices.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...slices]);
         }
         // update wrapper bookmark
-        currentTargetInSlice = currentWrapper;
-        console.log('👿👿', 'container (ch)', currentTargetInSlice)
-        processChildren(obj.children);
+        currentTargetInSlice = wrappers.at(-1) // = cloneCurrentElementWrapper
+        console.log('• hasChildren:  currentTargetInSlice (=):', currentTargetInSlice);
+
+
+        processChildren(obj.children, currentElement);
+
+      } else { // !!! внесли под ELSE
+
+        // insert current Element
+        currentTargetInSlice = wrappers.at(-1);
+        console.log('insert currentElement', currentElement, 'to target', currentTargetInSlice);
+        this.DOM.insertAtEnd(currentTargetInSlice, currentElement);
       }
 
-      // insert current Element
-      console.log('👿', 'insert', currentElement)
-      this.DOM.insertAtEnd(currentTargetInSlice, currentElement)
+
+      console.groupEnd(`processObj # ${id}`);
     }
 
     processChildren(inputArray);
 
+    console.log(slices)
+
+    console.groupEnd('%c_createSlicesBySplitFlag')
     return slices
   }
 
@@ -1638,6 +1720,7 @@ console.log('👿 👿 👿 👿', [...wrappers], a);
         if (this._isNoHanging(currentElement)) {
           console.log('currentElement _isNoHanging')
           registerResult(currentElement, i, children);
+          console.groupEnd('_getInternalSplitters')
           return
         }
 
@@ -1660,6 +1743,7 @@ console.log('👿 👿 👿 👿', [...wrappers], a);
           console.log('currentElementBottom <= floater')
           // ** add nextElement check (undefined as end)
           nextElement && registerResult(nextElement, i + 1, children);
+          console.groupEnd('_getInternalSplitters')
           return
         }
 
