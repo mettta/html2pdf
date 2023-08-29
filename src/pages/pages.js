@@ -1643,10 +1643,7 @@ console.log('array', [...array])
     function registerResult(element, id) {
       console.assert((id >= 0), `registerResult: ID mast be provided`, element);
       result.push(element);
-      console.log('🐈‍⬛🐈‍⬛🐈‍⬛🐈‍⬛🐈‍⬛🐈‍⬛🐈‍⬛🐈‍⬛🐈‍⬛🐈‍⬛🐈‍⬛🐈‍⬛🐈‍⬛🐈‍⬛🐈‍⬛🐈‍⬛🐈‍⬛🐈‍⬛🐈‍⬛\n',
-       trail, id, trail[id]
-      )
-      trail[id].split = true;
+      id && (trail[id].split = true);
     }
 
     console.group('_getInternalSplitters'); // Collapsed
@@ -1672,12 +1669,12 @@ console.log('array', [...array])
         //split: !i, // = true for [0]
       })
 
+      const resultLength = result.length;
+      const floater = firstPartHeight + fullPageHeight * resultLength;
+
       const previousElement = children[i - 1];
       const currentElement = children[i];
       const nextElement = children[i + 1];
-
-      const resultLength = result.length;
-      const floater = firstPartHeight + fullPageHeight * resultLength;
       const nextElementTop = this.DOM.getElementRootedTop(nextElement, rootNode);
 
       // if (!nextElement) { return }
@@ -1719,7 +1716,7 @@ console.log('array', [...array])
           console.log(result)
           nextElement && registerResult(nextElement, i + 1, children);
           console.groupEnd('_getInternalSplitters')
-          return {result, trail}
+          return {result, trail} // !!!!!  ELSE
         }
 
         const currentElementChildren = this._getProcessedChildren(currentElement, pageBottom, fullPageHeight);
