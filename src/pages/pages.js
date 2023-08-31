@@ -22,11 +22,14 @@ export default class Pages {
     // * From config:
     this.debugMode = config.debugMode;
     this.debugToggler = {
-      _parseNode: true,
+      _parseNode: false,
+      _parseNodes: true,
       _getProcessedChildren: false,
       _splitPreNode: false,
-      _splitTableNode: true,
+      _splitTableNode: false,
       _splitGridNode: false,
+      _createSlicesBySplitFlag: false,
+      _getInternalSplitters: true,
     }
 
     // no hanging params:
@@ -198,7 +201,7 @@ export default class Pages {
     parent,
     parentBottom,
   }) {
-console.log('array', [...array])
+    this.debugMode && this.debugToggler._parseNodes && console.log('🔵 _parseNodes', '\narray:', [...array], '\nretainedParent:', parent)
     for (let i = 0; i < array.length; i++) {
 
       this._parseNode({
@@ -1151,7 +1154,7 @@ console.log('array', [...array])
 
   _insertTableSplit({ startId, endId, table, tableEntries }) {
 
-    this.debugMode && console.log(`=> _insertTableSplit(${startId}, ${endId})`);
+    // this.debugMode && console.log(`=> _insertTableSplit(${startId}, ${endId})`);
 
     const tableWrapper = this.DOM.cloneNodeWrapper(table);
 
@@ -1309,7 +1312,7 @@ console.log('array', [...array])
             // ПРЕДСТОИТ СДЕЛАТЬ ДЛЯ ВСЕХ СТОЛБЦОВ
             // ДЕЛАЕМ ДЛЯ ОДНОГО СТОЛБЦА
             const tryTd = splittingRowTds[1];
-            console.log('♡♡♡♡♡♡♡♡♡♡♡♡♡♡\n♡♡♡♡♡♡♡♡♡♡♡♡♡♡\n tryTd', tryTd);
+            this.debugMode && this.debugToggler._splitTableNode && console.log('♡♡♡♡♡♡♡♡♡♡♡♡♡♡\n♡♡♡♡♡♡♡♡♡♡♡♡♡♡\n tryTd', tryTd);
 
             const allPreviousRowsHeight = distributedRows
               .slice(0, index - 1)
@@ -1330,7 +1333,7 @@ console.log('array', [...array])
               firstPartHeight: firstPartHeight - splittingEmptyRowHeight - splittingRowTop, // TODO
               fullPageHeight: fullPagePartHeight - splittingEmptyRowHeight,
             })
-            console.log('💔💔💔 internalSplitters from', internalSplitters);
+            this.debugMode && this.debugToggler._splitTableNode && console.log('💔💔💔 internalSplitters from', internalSplitters);
 
             // TODO: то же самое что linedChildren - объединить в функцию
 
@@ -1340,7 +1343,7 @@ console.log('array', [...array])
             if (internalSplitters.result.length) {
 
               const newTdContentElements = this._createSlicesBySplitFlag(internalSplitters.trail);
-              console.log('••• newTdContentElements', newTdContentElements);
+              this.debugMode && this.debugToggler._splitTableNode && console.log('••• newTdContentElements', newTdContentElements);
 
               // ! не надо класть это в DOM, все равно потом собираем новые строки
               // this.DOM.insertAtEnd(tryTd, ...newTdContentElements)
@@ -1370,14 +1373,11 @@ console.log('array', [...array])
                   return rowWrapper
                 }
               );
-              console.log(newRows)
 
               // добавляем строки в массив и в таблицу
 
               splittingRow.className = 'splittingRow' // for test
-              // this.DOM.insertAfter(splittingRow, ...newRows)
-              // this.DOM.removeNode(splittingRow);
-              console.log(splittingRow)
+              this.debugMode && this.debugToggler._splitTableNode && console.log(splittingRow)
               this.DOM.insertInsteadOf(splittingRow, ...newRows)
 
 
@@ -1392,14 +1392,13 @@ console.log('array', [...array])
               // ? Мы можем не добавлять NULL если разбиение возвращает 2 и больше строк.
               // ? Тогда нужно делать проверку выше и в виде функции,
               // ? чтобы можено было делать ретерн.
-              console.log('****splice ******', index);
+              this.debugMode && this.debugToggler._splitTableNode && console.log('****splice ******', index);
 
               // меняем исходный массив строк таблицы!
               tableEntries.rows.splice(splittingRowIndex, 1, ...newRows);
               // и обновляем рабочий массив включающий футер
               distributedRows = getDistributedRows(tableEntries);
 
-              console.log('МЕНЯЕМ index', index, '->', index-1)
               index = index - 1;
               // При этом шаг цикла возвращается на 1 назад;
               // и мы проверяем 2 разбитых куска (i & i-1),
@@ -1426,11 +1425,6 @@ console.log('array', [...array])
             ) + captionFirefoxAmendment
             + fullPagePartHeight;
           }
-
-          console.log('*** Мы внутри цикла со строками, после попытки разбиения, на шаге', index, 'а это копия с distributedRows:', [...distributedRows])
-
-          // TODO:
-          // console.log('distributedRows[index - 1]:', distributedRows[index - 1]) // NULL
 
         } //? END OF trying to split long TR
 
@@ -1516,30 +1510,30 @@ console.log('array', [...array])
         currentWrapper = child;
       }
 
-      console.log(' createWrapperFromArray:', wrapper);
+      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log(' createWrapperFromArray:', wrapper);
       return wrapper;
     }
 
     const processChildren = (children, parent = null) => {
-      console.group('processChildren');
-      console.log('*start* children', children)
+      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.group('processChildren');
+      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('*start* children', children)
 
       for (let i = 0; i < children.length; i++) {
         processObj(children[i]);
       }
 
-      console.log('- wrappers BEFORE pop:', [...wrappers]);
+      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('- wrappers BEFORE pop:', [...wrappers]);
       const a = wrappers.pop();
-      console.log('- wrappers.pop()', a);
-      console.log('- parent', parent);
-      console.log('- wrappers AFTER pop:', [...wrappers]);
+      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('- wrappers.pop()', a);
+      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('- parent', parent);
+      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('- wrappers AFTER pop:', [...wrappers]);
 
       currentTargetInSlice = wrappers.at(-1);
       // TODO сделать функцию
-      console.log('🎯🎯 currentTargetInSlice', currentTargetInSlice)
-      console.log('🎯 wrappers.at(-1)', wrappers.at(-1))
-      console.log('*END* children', children)
-      console.groupEnd('processChildren');
+      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('🎯🎯 currentTargetInSlice', currentTargetInSlice)
+      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('🎯 wrappers.at(-1)', wrappers.at(-1))
+      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('*END* children', children)
+      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.groupEnd('processChildren');
     }
 
     const processObj = (obj) => {
@@ -1549,12 +1543,12 @@ console.log('array', [...array])
       const currentElement = obj.element;
       const id = obj.id;
 
-      console.group(`processObj # ${id}`); // Collapsed
-      console.log('currentElement', currentElement);
+      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.group(`processObj # ${id}`); // Collapsed
+      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('currentElement', currentElement);
       this.DOM.removeNode(currentElement);
 
       if(hasSplitFlag) {
-        console.log('••• hasSplitFlag');
+        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('••• hasSplitFlag');
         // start new object
         // const currentWrapper = slices.at(-1);
         // const nextWrapper = this.DOM.cloneNode(currentWrapper);
@@ -1563,46 +1557,46 @@ console.log('array', [...array])
           clone.classList.add("🚩");
           return clone
         });
-        console.log('• hasSplitFlag: NEW wrappers.map:', [...wrappers]);
+        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasSplitFlag: NEW wrappers.map:', [...wrappers]);
         const nextWrapper = createWrapperFromArray(wrappers);
 
         slices.push(nextWrapper);
-        console.log('• hasSplitFlag: slices.push(nextWrapper):', [...slices]);
+        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasSplitFlag: slices.push(nextWrapper):', [...slices]);
         // find container in new object
         // currentTargetInSlice = this.DOM.findDeepestChild(nextWrapper);
         currentTargetInSlice = wrappers.at(-1);
-        console.log('• hasSplitFlag: currentTargetInSlice:', currentTargetInSlice);
+        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasSplitFlag: currentTargetInSlice:', currentTargetInSlice);
       }
 
       // TODO проверить, когда есть оба флага
 
       if(hasChildren) {
-        console.log('••• hasChildren');
+        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('••• hasChildren');
         // make new wrapper
         const cloneCurrentElementWrapper = this.DOM.cloneNodeWrapper(currentElement);
 
         // add cloneCurrentElementWrapper to wrappers
         wrappers.push(cloneCurrentElementWrapper); // ???????????
 
-        console.log('• hasChildren: wrappers.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...wrappers]);
+        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: wrappers.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...wrappers]);
         // add cloneCurrentElementWrapper to slice
-        console.log('• hasChildren: currentTargetInSlice (check):', currentTargetInSlice);
+        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: currentTargetInSlice (check):', currentTargetInSlice);
 
         if(currentTargetInSlice) {
-          console.log('• hasChildren: currentTargetInSlice', 'TRUE, add to existing', cloneCurrentElementWrapper);
+          this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: currentTargetInSlice', 'TRUE, add to existing', cloneCurrentElementWrapper);
           // add to existing as a child
           this.DOM.insertAtEnd(currentTargetInSlice, cloneCurrentElementWrapper);
         } else {
-          console.log('• hasChildren: currentTargetInSlice', 'FALSE, init the first', cloneCurrentElementWrapper);
+          this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: currentTargetInSlice', 'FALSE, init the first', cloneCurrentElementWrapper);
           // init the first
           cloneCurrentElementWrapper.classList.add('🏁first');
           cloneCurrentElementWrapper.style.background = 'yellow';
           slices.push(cloneCurrentElementWrapper);
-          console.log('• hasChildren: slices.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...slices]);
+          this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: slices.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...slices]);
         }
         // update wrapper bookmark
         currentTargetInSlice = wrappers.at(-1) // = cloneCurrentElementWrapper
-        console.log('• hasChildren:  currentTargetInSlice (=):', currentTargetInSlice);
+        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasChildren:  currentTargetInSlice (=):', currentTargetInSlice);
 
 
         processChildren(obj.children, currentElement);
@@ -1611,21 +1605,21 @@ console.log('array', [...array])
 
         // insert current Element
         currentTargetInSlice = wrappers.at(-1);
-        console.log('insert currentElement', currentElement, 'to target', currentTargetInSlice);
+        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('insert currentElement', currentElement, 'to target', currentTargetInSlice);
         this.DOM.insertAtEnd(currentTargetInSlice, currentElement);
       }
 
 
-      console.groupEnd(`processObj # ${id}`);
+      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.groupEnd(`processObj # ${id}`);
     }
 
-    console.log('#######  currentTargetInSlice (=):', currentTargetInSlice);
+    this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('#######  currentTargetInSlice (=):', currentTargetInSlice);
 
     processChildren(inputArray);
 
-    console.log(slices)
+    this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log(slices)
 
-    console.groupEnd('%c_createSlicesBySplitFlag')
+    this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.groupEnd('%c_createSlicesBySplitFlag')
     return slices
   }
 
@@ -1637,17 +1631,20 @@ console.log('array', [...array])
     fullPageHeight,
     result = [],
     trail = [],
+    indexTracker = [],
   }) {
 
     const registerResult = (element, id) => {
-      console.assert((id >= 0), `registerResult: ID mast be provided`, element);
+      this.debugMode && this.debugToggler._getInternalSplitters && console.assert((id >= 0), `registerResult: ID mast be provided`, element);
 
       if (id == 0) {
         // если первый ребенок,
         // ищем самую внешнюю оболочку, которая тоже первый ребенок первого ребенка...
         element = this.DOM.findFirstChildParent(element, rootNode);
       }
-      console.log('💚💚💚💚💚💚💚', element)
+      this.debugMode && this.debugToggler._getInternalSplitters && console.log('💚💚💚💚💚💚💚', element);
+      this.debugMode && this.debugToggler._getInternalSplitters && console.log('🧡🧡🧡🧡🧡🧡🧡', [...indexTracker]);
+
       result.push(element);
       trail[id] && (trail[id].split = true); // TODO check: id , trail[id]
 
@@ -1664,10 +1661,10 @@ console.log('array', [...array])
       // а не после по результату.
     }
 
-    console.group('_getInternalSplitters'); // Collapsed
-    console.log('result', result)
+    this.debugMode && this.debugToggler._getInternalSplitters && console.group('_getInternalSplitters'); // Collapsed
+    this.debugMode && this.debugToggler._getInternalSplitters && console.log('result', result)
 
-    console.log(
+    this.debugMode && this.debugToggler._getInternalSplitters && console.log(
     `\n💟 rootNode:`, rootNode,
     `\n💟 children:`, children,
     `\n💟 pageBottom: ${pageBottom}`,
@@ -1675,7 +1672,7 @@ console.log('array', [...array])
     `\n💟 fullPageHeight: ${fullPageHeight}`,
     );
 
-    console.log('💔', children, firstPartHeight, fullPageHeight)
+    this.debugMode && this.debugToggler._getInternalSplitters && console.log('💔', children, firstPartHeight, fullPageHeight)
 
     for (let i = 0; i < children.length; i++) {
 
@@ -1709,7 +1706,7 @@ console.log('array', [...array])
 
         if (this._isNoHanging(currentElement)) {
           // -- current fits but it can't be the last
-          console.log('currentElement _isNoHanging')
+          this.debugMode && this.debugToggler._getInternalSplitters && console.log('currentElement _isNoHanging')
           registerResult(currentElement, i);
         }
         // go to next index
@@ -1718,21 +1715,21 @@ console.log('array', [...array])
 
         if (this._isSVG(currentElement) || this._isIMG(currentElement)) {
           // TODO needs testing
-          console.log('%cIMAGE', 'color:red;text-weight:bold')
+          this.debugMode && this.debugToggler._getInternalSplitters && console.log('%cIMAGE', 'color:red;text-weight:bold')
         }
 
         const currentElementBottom = this.DOM.getElementRootedRealBottom(currentElement, rootNode);
-        console.log('💟 curr', currentElement, currentElementBottom, floater)
+        this.debugMode && this.debugToggler._getInternalSplitters && console.log('💟 curr', currentElement, currentElementBottom, floater)
         // IF currentElement does fit
         // in the remaining space on the page,
         if (currentElementBottom <= floater) {
           // we need <= because splitted elements often get equal height // todo comment
-          console.log('currentElementBottom <= floater')
+          this.debugMode && this.debugToggler._getInternalSplitters && console.log('currentElementBottom <= floater')
           // ** add nextElement check (undefined as end)
-          console.log(nextElement)
-          console.log(result)
+          this.debugMode && this.debugToggler._getInternalSplitters && console.log(nextElement)
+          this.debugMode && this.debugToggler._getInternalSplitters && console.log(result)
           nextElement && registerResult(nextElement, i + 1);
-          console.groupEnd('_getInternalSplitters')
+          this.debugMode && this.debugToggler._getInternalSplitters && console.groupEnd('_getInternalSplitters')
           return {result, trail} // !!!!!  ELSE
         }
 
@@ -1751,7 +1748,7 @@ console.log('array', [...array])
             result,
             trail: trail[i].children = [],
           })
-          console.log('💓 back from _getInternalSplitters;\n trail[i]', trail[i]);
+          this.debugMode && this.debugToggler._getInternalSplitters && console.log('💓 back from _getInternalSplitters;\n trail[i]', trail[i]);
         } else {
           // * If no children,
           // * move element to the next page.
@@ -1762,20 +1759,20 @@ console.log('array', [...array])
             // TODO #_canNotBeLast
             // а если там подряд несколько заголовков, и перед previousElement есть еще заголовки, которые мы не проверяли еслтенствнно, и они будут висеть
             // this._registerPageStart(previousElement)
-            console.log('previousElement _isNoHanging')
+            this.debugMode && this.debugToggler._getInternalSplitters && console.log('previousElement _isNoHanging')
             registerResult(previousElement, i - 1);
           } else {
             // TODO #retainedParent
             // this._registerPageStart(currentElement);
             // this._registerPageStart(currentPageStart);
-            console.log(currentElement, 'currentElement has no children')
+            this.debugMode && this.debugToggler._getInternalSplitters && console.log(currentElement, 'currentElement has no children')
             registerResult(currentElement, i);
           }
         }
       }
     }
 
-    console.groupEnd('_getInternalSplitters')
+    this.debugMode && this.debugToggler._getInternalSplitters && console.groupEnd('_getInternalSplitters')
     return {result, trail}
   }
 
