@@ -1637,13 +1637,31 @@ console.log('array', [...array])
     fullPageHeight,
     result = [],
     trail = [],
-    // rowHeight
   }) {
 
-    function registerResult(element, id) {
+    const registerResult = (element, id) => {
       console.assert((id >= 0), `registerResult: ID mast be provided`, element);
+
+      if (id == 0) {
+        // если первый ребенок,
+        // ищем самую внешнюю оболочку, которая тоже первый ребенок первого ребенка...
+        element = this.DOM.findFirstChildParent(element, rootNode);
+      }
+      console.log('💚💚💚💚💚💚💚', element)
       result.push(element);
-      id && (trail[id].split = true);
+      trail[id] && (trail[id].split = true); // TODO check: id , trail[id]
+
+      // *** trail[id]:
+      // теперь добавляются ПЕРВЫЕ ДЕТИ.
+      // Но теперь самый первый вложенный ребенок может быть добавлен как разрыв,
+      // в случае если он длинный и должен попасть НЕ в первый (а во второй) кусок.
+      // И тогда в первый кусок могут быть добавлены пустые обертки этого ребенка.
+      // В таком случае нужно
+      // 1) пересчитать без первого куска? добавть NULL на первое место?
+      // 2) перенести разрыв !!!!!!! и пересчитать.. потому что теперь все сдвинется..
+      // Значит, нужно пересчитчывать СРАЗУ как только обнаружили такой случай,
+      // а значит нужно опеределять этот случай ВО ВРЕМЯ ВЫПОЛНЕНИЯ
+      // а не после по результату.
     }
 
     console.group('_getInternalSplitters'); // Collapsed
@@ -1667,10 +1685,11 @@ console.log('array', [...array])
         // * set 'true' for the first child
         // * as the beginning of the first slide:
         //split: !i, // = true for [0]
-      })
+      });
 
-      const resultLength = result.length;
-      const floater = firstPartHeight + fullPageHeight * resultLength;
+      const floater = result.at(-1)
+      ? (this.DOM.getElementRootedTop(result.at(-1), rootNode) + fullPageHeight)
+      : firstPartHeight;
 
       const previousElement = children[i - 1];
       const currentElement = children[i];
@@ -1686,23 +1705,21 @@ console.log('array', [...array])
       }
 
       if (nextElementTop <= floater) {
-        // --
-      } else if (this._isNoHanging(currentElement)) {
-        console.log('currentElement _isNoHanging')
-        registerResult(currentElement, i, children);
+        // -- current fits
+
+        if (this._isNoHanging(currentElement)) {
+          // -- current fits but it can't be the last
+          console.log('currentElement _isNoHanging')
+          registerResult(currentElement, i);
+        }
         // go to next index
-      } else {
-        // текущий имеет смысл рассмотреть поближе
+      } else { // nextElementTop > floater
+              // currentElement ?
 
         if (this._isSVG(currentElement) || this._isIMG(currentElement)) {
           // TODO needs testing
           console.log('%cIMAGE', 'color:red;text-weight:bold')
         }
-
-        // const currentElementBottom = parentBottom || this.DOM.getElementRootedRealBottom(currentElement, this.root);
-        // parentBottom используется в базовой функции, если это последний элемент
-        // и мы хотели бы учесть нижний отступ родителя в потоке.
-        // В данном случае отступ родителя не играет роли.
 
         const currentElementBottom = this.DOM.getElementRootedRealBottom(currentElement, rootNode);
         console.log('💟 curr', currentElement, currentElementBottom, floater)
@@ -1714,7 +1731,7 @@ console.log('array', [...array])
           // ** add nextElement check (undefined as end)
           console.log(nextElement)
           console.log(result)
-          nextElement && registerResult(nextElement, i + 1, children);
+          nextElement && registerResult(nextElement, i + 1);
           console.groupEnd('_getInternalSplitters')
           return {result, trail} // !!!!!  ELSE
         }
@@ -1733,7 +1750,6 @@ console.log('array', [...array])
             fullPageHeight,
             result,
             trail: trail[i].children = [],
-            // rowHeight
           })
           console.log('💓 back from _getInternalSplitters;\n trail[i]', trail[i]);
         } else {
@@ -1747,13 +1763,13 @@ console.log('array', [...array])
             // а если там подряд несколько заголовков, и перед previousElement есть еще заголовки, которые мы не проверяли еслтенствнно, и они будут висеть
             // this._registerPageStart(previousElement)
             console.log('previousElement _isNoHanging')
-            registerResult(previousElement, i - 1, children);
+            registerResult(previousElement, i - 1);
           } else {
             // TODO #retainedParent
             // this._registerPageStart(currentElement);
             // this._registerPageStart(currentPageStart);
-            console.log('currentElement has no children')
-            registerResult(currentElement, i, children);
+            console.log(currentElement, 'currentElement has no children')
+            registerResult(currentElement, i);
           }
         }
       }

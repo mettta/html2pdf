@@ -321,6 +321,24 @@ export default class DocumentObjectModel {
     return currentElement === rootElement;
   }
 
+  findFirstChildParent(element, rootElement) {
+    let parent = element.parentElement;
+    let firstSuitableParent = null;
+
+    while (parent && parent !== rootElement) {
+      const firstChild = parent.firstElementChild;
+
+      if (element === firstChild) {
+        firstSuitableParent = parent;
+      }
+
+      element = parent;
+      parent = element.parentElement;
+    }
+
+    return firstSuitableParent;
+  }
+
   findLastChildParent(element, rootElement) {
     let parent = element.parentElement;
     let lastSuitableParent = null;
