@@ -1631,16 +1631,31 @@ export default class Pages {
     fullPageHeight,
     result = [],
     trail = [],
+    currentTrail = [],
     indexTracker = [],
   }) {
+
+    const updateIndexTracker = i => {
+      if(i >= 0) {
+        indexTracker.push(i);
+        // indexTracker.push({
+        //   index: i,
+        //   element: children[i]
+        // });
+      } else {
+        indexTracker.pop()
+      }
+    }
 
     const registerResult = (element, id) => {
       this.debugMode && this.debugToggler._getInternalSplitters && console.assert((id >= 0), `registerResult: ID mast be provided`, element);
 
+      // const hasNonZero = myArray.some(element => element !== 0);
+
       if (id == 0) {
         // если первый ребенок,
         // ищем самую внешнюю оболочку, которая тоже первый ребенок первого ребенка...
-        element = this.DOM.findFirstChildParent(element, rootNode);
+        // element = this.DOM.findFirstChildParent(element, rootNode);
       }
       this.debugMode && this.debugToggler._getInternalSplitters && console.log('💚💚💚💚💚💚💚', element);
       this.debugMode && this.debugToggler._getInternalSplitters && console.log('🧡🧡🧡🧡🧡🧡🧡', [...indexTracker]);
@@ -1729,48 +1744,60 @@ export default class Pages {
           this.debugMode && this.debugToggler._getInternalSplitters && console.log(nextElement)
           this.debugMode && this.debugToggler._getInternalSplitters && console.log(result)
           nextElement && registerResult(nextElement, i + 1);
-          this.debugMode && this.debugToggler._getInternalSplitters && console.groupEnd('_getInternalSplitters')
-          return {result, trail} // !!!!!  ELSE
-        }
+          this.debugMode && this.debugToggler._getInternalSplitters && console.groupEnd('_getInternalSplitters');
 
-        const currentElementChildren = this._getProcessedChildren(currentElement, pageBottom, fullPageHeight);
-        const childrenNumber = currentElementChildren.length;
-
-        // * Parse children:
-        if (childrenNumber) {
-          // * Process children if exist:
-          this._getInternalSplitters({
-            rootNode,
-            children: currentElementChildren,
-            pageBottom,
-            firstPartHeight,
-            fullPageHeight,
-            result,
-            trail: trail[i].children = [],
-          })
-          this.debugMode && this.debugToggler._getInternalSplitters && console.log('💓 back from _getInternalSplitters;\n trail[i]', trail[i]);
         } else {
-          // * If no children,
-          // * move element to the next page.
-          // ** But,
-          if (previousElement && this._isNoHanging(previousElement)) {
-            // ** if previousElement can't be the last element on the page,
-            // ** move it to the next page.
-            // TODO #_canNotBeLast
-            // а если там подряд несколько заголовков, и перед previousElement есть еще заголовки, которые мы не проверяли еслтенствнно, и они будут висеть
-            // this._registerPageStart(previousElement)
-            this.debugMode && this.debugToggler._getInternalSplitters && console.log('previousElement _isNoHanging')
-            registerResult(previousElement, i - 1);
+          // currentElementBottom > floater
+          // try to split
+
+          const currentElementChildren = this._getProcessedChildren(currentElement, pageBottom, fullPageHeight);
+          const childrenNumber = currentElementChildren.length;
+
+          // * Parse children:
+          if (childrenNumber) {
+
+            // *** add wrapper ID
+            updateIndexTracker(i);
+
+            // * Process children if exist:
+            this._getInternalSplitters({
+              rootNode,
+              children: currentElementChildren,
+              pageBottom,
+              firstPartHeight,
+              fullPageHeight,
+              result,
+              trail: trail[i].children = [],
+              indexTracker,
+            })
+            this.debugMode && this.debugToggler._getInternalSplitters && console.log('💓 back from _getInternalSplitters;\n trail[i]', trail[i]);
           } else {
-            // TODO #retainedParent
-            // this._registerPageStart(currentElement);
-            // this._registerPageStart(currentPageStart);
-            this.debugMode && this.debugToggler._getInternalSplitters && console.log(currentElement, 'currentElement has no children')
-            registerResult(currentElement, i);
+            // * If no children,
+            // * move element to the next page.
+            // ** But,
+            if (previousElement && this._isNoHanging(previousElement)) {
+              // ** if previousElement can't be the last element on the page,
+              // ** move it to the next page.
+              // TODO #_canNotBeLast
+              // а если там подряд несколько заголовков, и перед previousElement есть еще заголовки, которые мы не проверяли еслтенствнно, и они будут висеть
+              // this._registerPageStart(previousElement)
+              this.debugMode && this.debugToggler._getInternalSplitters && console.log('previousElement _isNoHanging')
+              registerResult(previousElement, i - 1);
+            } else {
+              // TODO #retainedParent
+              // this._registerPageStart(currentElement);
+              // this._registerPageStart(currentPageStart);
+              this.debugMode && this.debugToggler._getInternalSplitters && console.log(currentElement, 'currentElement has no children')
+              registerResult(currentElement, i);
+            }
           }
         }
+
       }
     }
+
+    // *** remove last wrapper ID after children processing is complete
+    updateIndexTracker();
 
     this.debugMode && this.debugToggler._getInternalSplitters && console.groupEnd('_getInternalSplitters')
     return {result, trail}
