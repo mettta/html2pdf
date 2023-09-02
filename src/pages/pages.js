@@ -1657,11 +1657,14 @@ export default class Pages {
         // ищем самую внешнюю оболочку, которая тоже первый ребенок первого ребенка...
         // element = this.DOM.findFirstChildParent(element, rootNode);
       }
-      this.debugMode && this.debugToggler._getInternalSplitters && console.log('💚💚💚💚💚💚💚', element);
-      this.debugMode && this.debugToggler._getInternalSplitters && console.log('🧡🧡🧡🧡🧡🧡🧡', [...indexTracker]);
+      this.debugMode && this.debugToggler._getInternalSplitters && console.log('💚 registerResult(element, id)', element, id);
+      this.debugMode && this.debugToggler._getInternalSplitters && console.log('🧡 registerResult: [...indexTracker]', [...indexTracker]);
 
       result.push(element);
+      this.debugMode && this.debugToggler._getInternalSplitters && console.log('💙 registerResult: [...result]', [...result]);
+
       trail[id] && (trail[id].split = true); // TODO check: id , trail[id]
+      this.debugMode && this.debugToggler._getInternalSplitters && console.log('💜 registerResult: [...trail]', [...trail]);
 
       // *** trail[id]:
       // теперь добавляются ПЕРВЫЕ ДЕТИ.
