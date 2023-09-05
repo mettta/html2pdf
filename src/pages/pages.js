@@ -1333,7 +1333,9 @@ export default class Pages {
               firstPartHeight: firstPartHeight - splittingEmptyRowHeight - splittingRowTop, // TODO
               fullPageHeight: fullPagePartHeight - splittingEmptyRowHeight,
             })
-            this.debugMode && this.debugToggler._splitTableNode && console.log('💔💔💔 internalSplitters from', internalSplitters);
+            this.debugMode
+              && this.debugToggler._splitTableNode
+              && console.log('💔💔💔 internalSplitters from', internalSplitters);
 
             // TODO: то же самое что linedChildren - объединить в функцию
 
@@ -1343,7 +1345,9 @@ export default class Pages {
             if (internalSplitters.result.length) {
 
               const newTdContentElements = this._createSlicesBySplitFlag(internalSplitters.trail);
-              this.debugMode && this.debugToggler._splitTableNode && console.log('••• newTdContentElements', newTdContentElements);
+              this.debugMode
+                // && this.debugToggler._splitTableNode
+                && console.log('••• newTdContentElements', newTdContentElements);
 
               // ! не надо класть это в DOM, все равно потом собираем новые строки
               // this.DOM.insertAtEnd(tryTd, ...newTdContentElements)
@@ -1619,6 +1623,8 @@ export default class Pages {
 
     this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log(slices)
 
+    slices.forEach(slice => console.log(slice))
+
     this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.groupEnd('%c_createSlicesBySplitFlag')
     return slices
   }
@@ -1631,9 +1637,25 @@ export default class Pages {
     fullPageHeight,
     result = [],
     trail = [],
-    currentTrail = [],
     indexTracker = [],
+    stack = [],
   }) {
+
+    console.log('🟦🟦🟦🟦🟦🟦🟦', [...stack])
+
+    const findFirstNullIDInContinuousChain = (array) => {
+      let item = null;
+      let index;
+      for (let i = array.length - 1; i >= 0; i--) {
+        if (array[i].id === 0) {
+          item = array[i];
+          index = i;
+        } else {
+          return {item, index}
+        }
+      }
+      return {item, index}
+    }
 
     const updateIndexTracker = i => {
       if(i >= 0) {
@@ -1652,18 +1674,38 @@ export default class Pages {
 
       // const hasNonZero = myArray.some(element => element !== 0);
 
+      let theElementObject = trail[id]; // * contender without special cases
+      let theElementIndexInStack; // ***
+      console.log('🟩', theElementObject, theElementIndexInStack)
+
       if (id == 0) {
         // если первый ребенок,
         // ищем самую внешнюю оболочку, которая тоже первый ребенок первого ребенка...
-        // element = this.DOM.findFirstChildParent(element, rootNode);
+
+        console.log('🟩🟩🟩🟩🟩', [...stack]);
+
+        const topParentElementFromStack = findFirstNullIDInContinuousChain(stack);
+        theElementObject = topParentElementFromStack.item;
+        theElementIndexInStack = topParentElementFromStack.index;
+
+        console.log('🟩🟩🟩', theElementObject, theElementIndexInStack);
       }
+      console.log('🟩', theElementObject, theElementIndexInStack)
+
       this.debugMode && this.debugToggler._getInternalSplitters && console.log('💚 registerResult(element, id)', element, id);
       this.debugMode && this.debugToggler._getInternalSplitters && console.log('🧡 registerResult: [...indexTracker]', [...indexTracker]);
 
-      result.push(element);
-      this.debugMode && this.debugToggler._getInternalSplitters && console.log('💙 registerResult: [...result]', [...result]);
+      result.push(theElementObject.element); // * it is used to calculate the height of a piece
+      if(theElementIndexInStack !== 0) {
+        // * If this is the first wrapper registered for the first slice, we do not register the result,
+        // * since it will be the beginning of the first slice.
+        // * Otherwise we will generate an empty table row.
+        // * Because the first row of the table starts filling automatically,
+        // * and the first flag means the beginning of the SECOND slice.
+        theElementObject && (theElementObject.split = true);
+      }
 
-      trail[id] && (trail[id].split = true); // TODO check: id , trail[id]
+      this.debugMode && this.debugToggler._getInternalSplitters && console.log('💙 registerResult: [...result]', [...result]);
       this.debugMode && this.debugToggler._getInternalSplitters && console.log('💜 registerResult: [...trail]', [...trail]);
 
       // *** trail[id]:
@@ -1694,13 +1736,15 @@ export default class Pages {
 
     for (let i = 0; i < children.length; i++) {
 
-      trail.push({
+      const newObject = {
         id: i,
         element: children[i],
         // * set 'true' for the first child
         // * as the beginning of the first slide:
         //split: !i, // = true for [0]
-      });
+      }
+
+      trail.push(newObject);
 
       const floater = result.at(-1)
       ? (this.DOM.getElementRootedTop(result.at(-1), rootNode) + fullPageHeight)
@@ -1762,6 +1806,8 @@ export default class Pages {
             // *** add wrapper ID
             updateIndexTracker(i);
 
+            stack.push(newObject)
+
             // * Process children if exist:
             this._getInternalSplitters({
               rootNode,
@@ -1772,7 +1818,11 @@ export default class Pages {
               result,
               trail: trail[i].children = [],
               indexTracker,
-            })
+              stack,
+            });
+
+            stack.pop();
+
             this.debugMode && this.debugToggler._getInternalSplitters && console.log('💓 back from _getInternalSplitters;\n trail[i]', trail[i]);
           } else {
             // * If no children,
