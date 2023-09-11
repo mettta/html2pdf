@@ -631,8 +631,8 @@ export default class DocumentObjectModel {
 
   isLineChanged(current, next) {
      // * (-1): Browser rounding fix (when converting mm to pixels).
-    const delta = this.getElementRelativeBottom(current)
-                - this.getElementRelativeTop(next);
+    const delta = this.getElementRelativeTop(next)
+                - this.getElementRelativeBottom(current);
     const vert = delta > (-1);
     // const gor = this.getElementLeft(current) + this.getElementWidth(current) > this.getElementLeft(next);
     return vert;
@@ -640,8 +640,8 @@ export default class DocumentObjectModel {
 
   isLineKept(current, next) {
     // * (-1): Browser rounding fix (when converting mm to pixels).
-    const delta = this.getElementRelativeBottom(current)
-                - this.getElementRelativeTop(next);
+    const delta = this.getElementRelativeTop(next)
+                - this.getElementRelativeBottom(current);
     const vert = delta <= (-1);
     return vert;
   }
