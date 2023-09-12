@@ -27,6 +27,7 @@ export default class Pages {
       _getProcessedChildren: true,
       _splitPreNode: false,
       _splitTableNode: false,
+      _splitTableRow: true,
       _splitGridNode: false,
       _createSlicesBySplitFlag: false,
       _getInternalSplitters: true,
@@ -1330,6 +1331,10 @@ export default class Pages {
           if (makesSenseToSplitTheRow) {
             // * Let's split table row [index - 1]
 
+            this.debugMode
+              && this.debugToggler._splitTableRow
+              && console.group(`🟣🟣🟣 Split The Row ${index - 1}`);
+
             const rowFirstPartHeight = firstPartHeight - splittingEmptyRowHeight - splittingRowTop; // TODO
             const rowFullPageHeight = fullPagePartHeight - splittingEmptyRowHeight;
 
@@ -1348,13 +1353,22 @@ export default class Pages {
               });
               return tdInternalSplitters
             });
-            console.log('🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤', theRowContentSlicesByTD);
+
+            this.debugMode
+              && this.debugToggler._splitTableRow
+              && console.log('🟣 \ntheRowContentSlicesByTD', theRowContentSlicesByTD);
 
             const shouldFirstPartBeSkipped = theRowContentSlicesByTD.some(obj => {
-              console.log('🖤🖤🖤🖤🖤', obj.result.length, obj.result[0]);
+              this.debugMode
+                && this.debugToggler._splitTableRow
+                && console.log('🟣', '\nobj.result.length', obj.result.length, '\nobj.result[0]', obj.result[0]);
               return (obj.result.length && obj.result[0] === null)
             });
-            console.log('🖤🖤🖤🖤🖤', shouldFirstPartBeSkipped);
+
+            this.debugMode
+              && this.debugToggler._splitTableRow
+              && console.log('🟣', '\nshouldFirstPartBeSkipped', shouldFirstPartBeSkipped);
+
             if(shouldFirstPartBeSkipped) {
               theRowContentSlicesByTD = [...splittingRowTDs].map(td => {
                 const tdChildren = this._getChildren(td);
@@ -1369,14 +1383,16 @@ export default class Pages {
               });
             }
 
-            // TODO - element: undefined при создании trail где нет разделителя!
-
-            console.log('🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤', theRowContentSlicesByTD);
+            this.debugMode
+              && this.debugToggler._splitTableRow
+              && console.log('🟣', '\n theRowContentSlicesByTD', theRowContentSlicesByTD);
 
             const ifThereIsSplit = theRowContentSlicesByTD.some(obj => {
               return obj.result.length
             });
-            console.log('🖤🖤🖤🖤 ifThereIsSplit', ifThereIsSplit);
+            this.debugMode
+              && this.debugToggler._splitTableRow
+              && console.log('🟣 ifThereIsSplit', ifThereIsSplit);
 
             // !
             if (ifThereIsSplit) {
@@ -1388,7 +1404,7 @@ export default class Pages {
                   // * el.result === 0
                   // один раз полностью копируем весь контент из столбца
                   const sliceWrapper = this.DOM.createWithFlagNoBreak();
-                  sliceWrapper.classList.add("🧰🧰🧰");
+                  sliceWrapper.classList.add("🟣");
                   sliceWrapper.display = 'contents';
 
                   const contentElements = el.trail.map(item => item.element);
@@ -1398,10 +1414,14 @@ export default class Pages {
                 }
               });
 
-              console.log('🖤🖤🖤🖤🖤 🖤', theTdContentElements);
+              this.debugMode
+                && this.debugToggler._splitTableRow
+                && console.log('🟣 theTdContentElements', theTdContentElements);
 
               const theNewTrCount = Math.max(...theTdContentElements.map(arr => arr.length));
-              console.log('🖤🖤🖤 theNewTrCount', theNewTrCount);
+              this.debugMode
+                && this.debugToggler._splitTableRow
+                && console.log('🟣 theNewTrCount', theNewTrCount);
 
               const theNewRows = [];
               for (let i = 0; i < theNewTrCount; i++) {
@@ -1420,12 +1440,16 @@ export default class Pages {
                 theNewRows.push(rowWrapper);
               }
 
-              console.log('🖤🖤🖤 theNewRows', theNewRows);
+              this.debugMode
+                && this.debugToggler._splitTableRow
+                && console.log('🟣', '\n theNewRows', theNewRows);
 
               // добавляем строки в массив и в таблицу
 
               splittingRow.className = 'splittingRow' // for test
-              this.debugMode && this.debugToggler._splitTableNode && console.log(splittingRow)
+              this.debugMode
+                && this.debugToggler._splitTableRow
+                && console.log('🟣 splittingRow', splittingRow);
               this.DOM.insertInsteadOf(splittingRow, ...theNewRows)
 
               // меняем исходный массив строк таблицы!
@@ -1439,6 +1463,11 @@ export default class Pages {
               // но они с флагом "не разбивать"
 
             } //? END OF ifThereIsSplit
+
+            this.debugMode
+              && this.debugToggler._splitTableRow
+              && console.groupEnd(`🟣🟣🟣 Split The Row ${index - 1}`);
+
           } //? END OF 'if makesSenseToSplitTheRow'
           else {
             // TODO проверять это ТОЛЬКО если мы не можем разбить
@@ -1669,7 +1698,9 @@ export default class Pages {
     stack = [],
   }) {
 
-    console.log('🟦🟦🟦🟦🟦🟦🟦', [...stack])
+    this.debugMode
+      && this.debugToggler._getInternalSplitters
+      && console.group('💟 _getInternalSplitters'); // Collapsed
 
     const findFirstNullIDInContinuousChain = (array) => {
       let item = null;
@@ -1688,10 +1719,6 @@ export default class Pages {
     const updateIndexTracker = i => {
       if(i >= 0) {
         indexTracker.push(i);
-        // indexTracker.push({
-        //   index: i,
-        //   element: children[i]
-        // });
       } else {
         indexTracker.pop()
       }
@@ -1700,39 +1727,48 @@ export default class Pages {
     const registerResult = (element, id) => {
       this.debugMode && this.debugToggler._getInternalSplitters && console.assert((id >= 0), `registerResult: ID mast be provided`, element);
 
-      console.log('💚💚💚 element', element)
-
-      // const hasNonZero = myArray.some(element => element !== 0);
-
       let theElementObject = trail[id]; // * contender without special cases
-      console.log('🤎 ', theElementObject);
       let theElementIndexInStack; // ***
-      console.log('🟩', theElementObject, theElementIndexInStack)
+
+      this.debugMode && this.debugToggler._getInternalSplitters && console.groupCollapsed('💜💜💜 registerResult(element, id)');
+
+      this.debugMode
+        && this.debugToggler._getInternalSplitters
+        && console.log(
+          '\n element', element,
+          '\n id', id,
+          '\n theElementObject (trail[id])', theElementObject,
+          '\n theElementIndexInStack', theElementIndexInStack,
+      );
 
       if (id == 0) {
         // если первый ребенок,
         // ищем самую внешнюю оболочку, которая тоже первый ребенок первого ребенка...
 
-        console.log('🟩🟩🟩🟩🟩', [...stack]);
-
         const topParentElementFromStack = findFirstNullIDInContinuousChain(stack);
-        console.log('🟫🟫🟫', topParentElementFromStack);
+
+        this.debugMode
+          && this.debugToggler._getInternalSplitters
+          && console.log(
+            '💜💜 id == 0',
+            '\n💜 [...stack]', [...stack],
+            '\n💜 topParentElementFromStack', topParentElementFromStack,
+          );
 
         if(topParentElementFromStack.item) {
           theElementObject = topParentElementFromStack.item;
           theElementIndexInStack = topParentElementFromStack.index;
         }
 
-        console.log('🟩🟩🟩', theElementObject, theElementIndexInStack);
       }
-      console.log('🟩', theElementObject, theElementIndexInStack);
 
       this.debugMode
         && this.debugToggler._getInternalSplitters
-        && console.log('💚 registerResult(element, id)', element, id);
-      this.debugMode
-        && this.debugToggler._getInternalSplitters
-        && console.log('🧡 registerResult: [...indexTracker]', [...indexTracker]);
+        && console.log('💜',
+        '\n theElementObject', theElementObject,
+        '\n theElementIndexInStack', theElementIndexInStack,
+        '\n [...indexTracker]', [...indexTracker],
+      );
 
       if(theElementIndexInStack === 0) {
         // * If this is the first wrapper registered for the first slice, we do not register the result,
@@ -1740,43 +1776,45 @@ export default class Pages {
         // * Otherwise we will generate an empty table row.
         // * Because the first row of the table starts filling automatically,
         // * and the first flag 'split' means the beginning of the SECOND slice.
-        console.log('🖤🖤🖤 result.push(null)')
+
         result.push(null); // * it is used to calculate the height of a piece
+
+        this.debugMode
+          && this.debugToggler._getInternalSplitters
+          && console.log(
+            'result.push(null)',
+            '\n\n💜💜💜',
+          );
       } else {
-        console.log('🤎🤎🤎1 ',theElementObject);
-        console.log('🤎🤎🤎2 ',theElementObject.element);
         result.push(theElementObject.element); // * it is used to calculate the height of a piece
         theElementObject && (theElementObject.split = true);
+
+        this.debugMode
+          && this.debugToggler._getInternalSplitters
+          && console.log(
+            '\n theElementObject', theElementObject,
+            '\n theElementObject.element', theElementObject.element,
+            '\n result.push(theElementObject.element)',
+            '\n\n💜💜💜 ',
+          );
       }
 
-      this.debugMode && this.debugToggler._getInternalSplitters && console.log('💙 registerResult: [...result]', [...result]);
-      this.debugMode && this.debugToggler._getInternalSplitters && console.log('💜 registerResult: [...trail]', [...trail]);
-
-      // *** trail[id]:
-      // теперь добавляются ПЕРВЫЕ ДЕТИ.
-      // Но теперь самый первый вложенный ребенок может быть добавлен как разрыв,
-      // в случае если он длинный и должен попасть НЕ в первый (а во второй) кусок.
-      // И тогда в первый кусок могут быть добавлены пустые обертки этого ребенка.
-      // В таком случае нужно
-      // 1) пересчитать без первого куска? добавть NULL на первое место?
-      // 2) перенести разрыв !!!!!!! и пересчитать.. потому что теперь все сдвинется..
-      // Значит, нужно пересчитчывать СРАЗУ как только обнаружили такой случай,
-      // а значит нужно опеределять этот случай ВО ВРЕМЯ ВЫПОЛНЕНИЯ
-      // а не после по результату.
+      this.debugMode && this.debugToggler._getInternalSplitters && console.groupEnd('💜💜💜 registerResult(element, id)');
     }
 
-    this.debugMode && this.debugToggler._getInternalSplitters && console.group('_getInternalSplitters'); // Collapsed
-    this.debugMode && this.debugToggler._getInternalSplitters && console.log('result', result)
-
-    this.debugMode && this.debugToggler._getInternalSplitters && console.log(
-    `\n💟 rootNode:`, rootNode,
-    `\n💟 children:`, children,
-    `\n💟 pageBottom: ${pageBottom}`,
-    `\n💟 firstPartHeight: ${firstPartHeight}`,
-    `\n💟 fullPageHeight: ${fullPageHeight}`,
-    );
-
-    this.debugMode && this.debugToggler._getInternalSplitters && console.log('💔', children, firstPartHeight, fullPageHeight)
+    this.debugMode
+      && this.debugToggler._getInternalSplitters
+      && console.log(
+        '💟 result 💟', result,
+        '\n\n',
+        `\n rootNode:`, rootNode,
+        `\n children:`, children,
+        `\n pageBottom:`, pageBottom,
+        `\n firstPartHeight:`, firstPartHeight,
+        `\n fullPageHeight:`, fullPageHeight,
+        `\n\n\n`,
+        '💟 stack', [...stack],
+      );
 
     for (let i = 0; i < children.length; i++) {
 
@@ -1795,9 +1833,11 @@ export default class Pages {
         element: children[i + 1], // * depend on nextElement
       }
 
-      console.log('💠💠💠💠💠💠💠💠💠💠💠💠💠💠💠', i, 'from', (children.length-1),
-      '\n newObject', newObject, '\n newObjectFromNext', newObjectFromNext
-      )
+      this.debugMode
+        && this.debugToggler._getInternalSplitters
+        && console.log('💟', i, 'from', (children.length-1), '💟',
+        // '\n newObject', newObject, '\n newObjectFromNext', newObjectFromNext
+        );
 
       // * Проверяем, не добавлен ли этот элемент,
       // * это возможно через registerResult(nextElement, i + 1).
@@ -1812,73 +1852,95 @@ export default class Pages {
           : fullPageHeight + this.DOM.getElementRootedTop(result.at(-1), rootNode)
         );
 
-      // if (!nextElement) { return }
-      // это нельзя использовать, потому что в контент мы вставляли
-      // начальный и последний элементы,
-      // а тут не вставляем!
       if (this.DOM.isForcedPageBreak(currentElement)) {
         //register
+
+        // TODO #ForcedPageBreak
+        this.debugMode
+          && this.debugToggler._getInternalSplitters
+          && console.warn(
+            currentElement, '💟 is isForcedPageBreak'
+          );
       }
 
       if (nextElementTop <= floater) {
         // -- current fits
 
+        // this.debugMode
+        //     && this.debugToggler._getInternalSplitters
+        //     && console.log('💟💟 nextElementTop <= floater // current fits');
+
         if (this._isNoHanging(currentElement)) {
           // -- current fits but it can't be the last
-          this.debugMode && this.debugToggler._getInternalSplitters && console.log('currentElement _isNoHanging')
+
+          this.debugMode
+            && this.debugToggler._getInternalSplitters
+            && console.log('💟💟 currentElement _isNoHanging');
+
           registerResult(currentElement, i);
         }
         // go to next index
       } else { // nextElementTop > floater
               // currentElement ?
 
+        this.debugMode
+          && this.debugToggler._getInternalSplitters
+          && console.log('💟💟 nextElementTop > floater',);
+
         if (this._isSVG(currentElement) || this._isIMG(currentElement)) {
           // TODO needs testing
-          this.debugMode && this.debugToggler._getInternalSplitters && console.log('%cIMAGE', 'color:red;text-weight:bold')
+          this.debugMode
+            && this.debugToggler._getInternalSplitters
+            && console.log('%cIMAGE 💟💟', 'color:red;text-weight:bold')
         }
 
         const currentElementBottom = this.DOM.getElementRootedRealBottom(currentElement, rootNode);
+
         this.debugMode
           && this.debugToggler._getInternalSplitters
-          && console.log('💟 curr', currentElement, currentElementBottom, floater);
-
+          && console.log('💟💟 current ???',
+          '\n currentElement', currentElement,
+          '\n currentElementBottom', currentElementBottom,
+          '\n floater', floater
+        );
 
         // IF currentElement does fit
         // in the remaining space on the page,
         if (currentElementBottom <= floater) {
-          // we need <= because splitted elements often get equal height // todo comment
-          this.debugMode && this.debugToggler._getInternalSplitters && console.log('currentElementBottom <= floater')
-          // ** add nextElement check (undefined as end)
-          this.debugMode && this.debugToggler._getInternalSplitters && console.log('nextElement', nextElement);
-          this.debugMode && this.debugToggler._getInternalSplitters && console.log('result', result);
 
+          this.debugMode
+            && this.debugToggler._getInternalSplitters
+            && console.log('💟💟💟 currentElementBottom <= floater');
+
+          // ** add nextElement check (undefined as end)
           if(nextElement) {
+            this.debugMode
+            && this.debugToggler._getInternalSplitters
+            && console.log('💟💟💟💟 register nextElement');
             trail.push(newObjectFromNext);
             registerResult(nextElement, i + 1);
           } // else - this is the end of element list
 
-          this.debugMode && this.debugToggler._getInternalSplitters && console.groupEnd('_getInternalSplitters');
+          this.debugMode
+            && this.debugToggler._getInternalSplitters
+            && console.groupEnd('💟 _getInternalSplitters');
 
         } else {
           // currentElementBottom > floater
           // try to split
           this.debugMode
             && this.debugToggler._getInternalSplitters
-            && console.log('try to split', currentElement);
+            && console.log('💟💟💟 currentElementBottom > floater, \ntry to split', currentElement);
 
-
-          // TODO в прследнем столбце ДЕТИ обработанного (дважды?) параграфа не возвращаются
           const currentElementChildren = this._getProcessedChildren(currentElement, pageBottom, fullPageHeight);
-          const childrenNumber = currentElementChildren.length;
 
-          console.log('🟧🟧🟧 TODO 🟧🟧🟧', currentElementChildren)
           // * Parse children:
-          if (childrenNumber) {
+          if (currentElementChildren.length) {
 
             // *** add wrapper ID
             updateIndexTracker(i);
 
-            stack.push(newObject)
+            stack.push(newObject);
 
             // * Process children if exist:
             this._getInternalSplitters({
@@ -1895,7 +1957,11 @@ export default class Pages {
 
             stack.pop();
 
-            this.debugMode && this.debugToggler._getInternalSplitters && console.log('💓 back from _getInternalSplitters;\n trail[i]', trail[i]);
+            this.debugMode
+              && this.debugToggler._getInternalSplitters
+              && console.log('🟪 back from _getInternalSplitters;\n trail[i]', trail[i]);
+            // *** END of 'has children'
+
           } else {
             // * If no children,
             // * move element to the next page.
@@ -1917,8 +1983,8 @@ export default class Pages {
                 && console.log(currentElement, 'currentElement has no children')
               registerResult(currentElement, i);
             }
-          }
-        }
+          } // *** END of 'no children'
+        } // *** END of 'currentElementBottom > floater'
 
       }
     }
@@ -1926,7 +1992,9 @@ export default class Pages {
     // *** remove last wrapper ID after children processing is complete
     updateIndexTracker();
 
-    this.debugMode && this.debugToggler._getInternalSplitters && console.groupEnd('_getInternalSplitters')
+    this.debugMode
+      && this.debugToggler._getInternalSplitters
+      && console.groupEnd('💟 _getInternalSplitters');
     return {result, trail}
   }
 
@@ -1994,7 +2062,7 @@ export default class Pages {
             // ** add to the previous group.
             this.debugMode
               && this.debugToggler._splitGridNode
-              &&  console.log('%cLAST','color:red')
+              && console.log('%cLAST','color:red')
             result.at(-1).push(newItem);
           } else {
             // * Add a new group and a new item in it:

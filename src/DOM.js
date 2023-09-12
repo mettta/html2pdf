@@ -647,7 +647,10 @@ export default class DocumentObjectModel {
   }
 
   splitByWordsGreedy(node) {
-    return node.innerHTML.split(/\s+/)
+    // const arr = node.innerHTML.split(/(?<=\s|-)/);
+    const arr = node.innerHTML.split(/\s+/);
+    console.log('🔴🔴🔴🔴🔴🔴', node.innerHTML, arr)
+    return arr
   }
 
   // TODO make Obj with offsetTop and use it later
