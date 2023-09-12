@@ -1336,7 +1336,9 @@ export default class Pages {
 
             const splittingRowTDs = this.DOM.getChildren(splittingRow);
 
-            const theRowContentSlicesByTD = [...splittingRowTDs].map(td => {
+            let theRowContentSlicesByTD;
+
+            theRowContentSlicesByTD = [...splittingRowTDs].map(td => {
               const tdChildren = this._getChildren(td);
               const tdInternalSplitters = this._getInternalSplitters({
                 rootNode: td,
@@ -1347,93 +1349,88 @@ export default class Pages {
               });
               return tdInternalSplitters
             });
-            console.log('🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤', theRowContentSlicesByTD)
+            console.log('🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤', theRowContentSlicesByTD);
 
+            const shouldFirstPartBeSkipped = theRowContentSlicesByTD.some(obj => {
+              console.log('🖤🖤🖤🖤🖤', obj.result.length, obj.result[0]);
+              return (obj.result.length && obj.result[0] === null)
+            });
+            console.log('🖤🖤🖤🖤🖤', shouldFirstPartBeSkipped);
+            if(shouldFirstPartBeSkipped) {
+              theRowContentSlicesByTD = [...splittingRowTDs].map(td => {
+                const tdChildren = this._getChildren(td);
+                const tdInternalSplitters = this._getInternalSplitters({
+                  rootNode: td,
+                  children: tdChildren,
+                  pageBottom: pageBottom,
+                  firstPartHeight: rowFullPageHeight,
+                  fullPageHeight: rowFullPageHeight,
+                });
+                return tdInternalSplitters
+              });
+            }
 
+            // TODO - element: undefined при создании trail где нет разделителя!
 
-            // ТЕСТОВОЕ TD
-            // ПРЕДСТОИТ СДЕЛАТЬ ДЛЯ ВСЕХ СТОЛБЦОВ
-            // ДЕЛАЕМ ДЛЯ ОДНОГО СТОЛБЦА
-            const tryTd = splittingRowTDs[1];
-            this.debugMode && this.debugToggler._splitTableNode && console.log('♡♡♡♡♡♡♡♡♡♡♡♡♡♡\n♡♡♡♡♡♡♡♡♡♡♡♡♡♡\n tryTd', tryTd);
+            console.log('🖤🖤🖤🖤🖤🖤🖤🖤🖤🖤', theRowContentSlicesByTD);
 
-            const tdChildren = this._getChildren(tryTd);
+            const ifThereIsSplit = theRowContentSlicesByTD.some(obj => {
+              return obj.result.length
+            });
+            console.log('🖤🖤🖤🖤 ifThereIsSplit', ifThereIsSplit);
 
-            // {result, trail}
-            const internalSplitters = this._getInternalSplitters({
-              rootNode: tryTd,
-              children: tdChildren,
-              pageBottom: pageBottom,
-              firstPartHeight: firstPartHeight - splittingEmptyRowHeight - splittingRowTop, // TODO
-              fullPageHeight: fullPagePartHeight - splittingEmptyRowHeight,
-            })
-            this.debugMode
-              // && this.debugToggler._splitTableNode
-              && console.log('💔💔💔 internalSplitters from', internalSplitters);
+            // !
+            if (ifThereIsSplit) {
 
-            // TODO: то же самое что linedChildren - объединить в функцию
+              const theTdContentElements = theRowContentSlicesByTD.map(el => {
+                if(el.result.length) {
+                  return this._createSlicesBySplitFlag(el.trail)
+                } else {
+                  // * el.result === 0
+                  // один раз полностью копируем весь контент из столбца
+                  const sliceWrapper = this.DOM.createWithFlagNoBreak();
+                  sliceWrapper.classList.add("🧰🧰🧰");
+                  sliceWrapper.display = 'contents';
 
-            // const newSplittedArrays = splitArrayBySplitFlag(internalSplitters.trail);
-            // console.log('💝💝💝 newSplittedArrays', newSplittedArrays);
+                  const contentElements = el.trail.map(item => item.element);
+                  this.DOM.insertAtEnd(sliceWrapper, ...contentElements);
 
-            if (internalSplitters.result.length) {
-
-              const newTdContentElements = this._createSlicesBySplitFlag(internalSplitters.trail);
-              this.debugMode
-                // && this.debugToggler._splitTableNode
-                && console.log('••• newTdContentElements', newTdContentElements);
-
-              // ! не надо класть это в DOM, все равно потом собираем новые строки
-              // this.DOM.insertAtEnd(tryTd, ...newTdContentElements)
-
-              // делаем новые строки
-              // добавляем их в массив
-              // текущую строку делаем NULL поскольку мы ее уже прошли
-              // и надо потом проверку на этот NULL добавлять!!!
-
-              // TODO для всех столбцов!
-              // splittingRow
-              // splittingRowTDs
-              const newRows = newTdContentElements.map(
-                contentElement => {
-                  const rowWrapper = this.DOM.cloneNodeWrapper(splittingRow);
-                  this.DOM.setFlagNoBreak(rowWrapper);
-                  [...splittingRowTDs].forEach(
-                    (td, tdID) => {
-                      const tdWrapper = this.DOM.cloneNodeWrapper(td);
-                      if(tdID == 1) { // TODO для всех столбцов!
-                        // tdWrapper.style.background = 'red';
-                        this.DOM.insertAtEnd(tdWrapper, contentElement);
-                      }
-                      this.DOM.insertAtEnd(rowWrapper, tdWrapper);
-                    }
-                  );
-                  return rowWrapper
+                  return [sliceWrapper]
                 }
-              );
+              });
+
+              console.log('🖤🖤🖤🖤🖤 🖤', theTdContentElements);
+
+              const theNewTrCount = Math.max(...theTdContentElements.map(arr => arr.length));
+              console.log('🖤🖤🖤 theNewTrCount', theNewTrCount);
+
+              const theNewRows = [];
+              for (let i = 0; i < theNewTrCount; i++) {
+                const rowWrapper = this.DOM.cloneNodeWrapper(splittingRow);
+                this.DOM.setFlagNoBreak(rowWrapper);
+
+                [...splittingRowTDs].forEach(
+                  (td, tdID) => {
+                    const tdWrapper = this.DOM.cloneNodeWrapper(td);
+                    const content = theTdContentElements[tdID][i];
+                    content && this.DOM.insertAtEnd(tdWrapper, theTdContentElements[tdID][i]);
+                    this.DOM.insertAtEnd(rowWrapper, tdWrapper);
+                  }
+                );
+
+                theNewRows.push(rowWrapper);
+              }
+
+              console.log('🖤🖤🖤 theNewRows', theNewRows);
 
               // добавляем строки в массив и в таблицу
 
               splittingRow.className = 'splittingRow' // for test
               this.debugMode && this.debugToggler._splitTableNode && console.log(splittingRow)
-              this.DOM.insertInsteadOf(splittingRow, ...newRows)
-
-
-              // Мы разбивали ПРЕДЫДУЩУЮ строку! Но рассматривали строку на [index]
-              // Потому нужно вставить новые строки ПЕРЕД [index].
-              // ЧТобы [index] был рассммотрен позже снова в новой ситуации.
-              // -- нужно пропустить [index] чтобы новые добавленные строки
-              // были рассмотрены на следующем шаге.
-
-              // ! Мы должны добавить NULL потому что теоретически
-              // ! разбиение может вернуть 1 неразбитую строку?
-              // ? Мы можем не добавлять NULL если разбиение возвращает 2 и больше строк.
-              // ? Тогда нужно делать проверку выше и в виде функции,
-              // ? чтобы можено было делать ретерн.
-              this.debugMode && this.debugToggler._splitTableNode && console.log('****splice ******', index);
+              this.DOM.insertInsteadOf(splittingRow, ...theNewRows)
 
               // меняем исходный массив строк таблицы!
-              tableEntries.rows.splice(splittingRowIndex, 1, ...newRows);
+              tableEntries.rows.splice(splittingRowIndex, 1, ...theNewRows);
               // и обновляем рабочий массив включающий футер
               distributedRows = getDistributedRows(tableEntries);
 
@@ -1442,9 +1439,7 @@ export default class Pages {
               // и мы проверяем 2 разбитых куска (i & i-1),
               // но они с флагом "не разбивать"
 
-
-            }  //? END OF internalSplitters.result.length
-
+            } //? END OF ifThereIsSplit
           } //? END OF 'if makesSenseToSplitTheRow'
           else {
             // TODO проверять это ТОЛЬКО если мы не можем разбить
@@ -1854,7 +1849,8 @@ export default class Pages {
           this.debugMode && this.debugToggler._getInternalSplitters && console.log(nextElement);
           this.debugMode && this.debugToggler._getInternalSplitters && console.log(result);
 
-          trail.push(newObjectFromNext);
+          // newObjectFromNext бывает undefined если кусок не разбивается:
+          newObjectFromNext.element && trail.push(newObjectFromNext);
           nextElement && registerResult(nextElement, i + 1);
           this.debugMode && this.debugToggler._getInternalSplitters && console.groupEnd('_getInternalSplitters');
 
