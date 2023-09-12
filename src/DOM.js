@@ -633,16 +633,16 @@ export default class DocumentObjectModel {
      // * (-1): Browser rounding fix (when converting mm to pixels).
     const delta = this.getElementRelativeTop(next)
                 - this.getElementRelativeBottom(current);
-    const vert = delta > (-1);
+    const vert = delta > (-2);
     // const gor = this.getElementLeft(current) + this.getElementWidth(current) > this.getElementLeft(next);
     return vert;
   }
-
+  // TODO: isLineChanged vs isLineKept: можно сделать else? они противоположны
   isLineKept(current, next) {
     // * (-1): Browser rounding fix (when converting mm to pixels).
     const delta = this.getElementRelativeTop(next)
                 - this.getElementRelativeBottom(current);
-    const vert = delta <= (-1);
+    const vert = delta <= (-2);
     return vert;
   }
 

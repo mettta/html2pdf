@@ -1303,6 +1303,7 @@ export default class Pages {
       const currTop = this.DOM.getElementRootedTop(currentRow, table) + captionFirefoxAmendment;
 
       if (currTop > currentPageBottom) {
+        // * If the beginning of the line is on the second page
 
         if (index === 0) {
           // * If the beginning of the first line is immediately on the second page
@@ -1310,13 +1311,11 @@ export default class Pages {
           // * Go immediately to the second page.
           currentPageBottom = fullPagePartHeight;
         } else {
+          // * If the beginning of the line is on the second page
+          // * and it is a row (not [0] element) -
+          // * TRY TO SPLIT PREVIEW ROW
 
-
-          // TODO проверить что низ точно влез в страницу!
-          // а иначе - пробуем разбить
-
-          // TODO split long TR
-          // * Trying to split table [index - 1]
+          // * Trying to split table row [index - 1]
           const splittingRowIndex = index - 1;
           const splittingRow = tableEntries.rows[splittingRowIndex];
           const splittingRowHeight = this.DOM.getElementHeight(splittingRow);
@@ -1329,7 +1328,7 @@ export default class Pages {
 
 
           if (makesSenseToSplitTheRow) {
-            // РАЗБИВАЕМ
+            // * Let's split table row [index - 1]
 
             const rowFirstPartHeight = firstPartHeight - splittingEmptyRowHeight - splittingRowTop; // TODO
             const rowFullPageHeight = fullPagePartHeight - splittingEmptyRowHeight;
@@ -1781,6 +1780,11 @@ export default class Pages {
 
     for (let i = 0; i < children.length; i++) {
 
+      const previousElement = children[i - 1];
+      const currentElement = children[i];
+      const nextElement = children[i + 1];
+      const nextElementTop = this.DOM.getElementRootedTop(nextElement, rootNode);
+
       const newObject = {
         id: i,
         element: children[i],
@@ -1788,10 +1792,12 @@ export default class Pages {
 
       const newObjectFromNext = {
         id: i + 1,
-        element: children[i + 1],
+        element: children[i + 1], // * depend on nextElement
       }
 
-      console.log(i, 'from', (children.length-1), '💠💠💠💠💠💠💠💠💠💠💠💠💠💠💠', newObject, newObjectFromNext)
+      console.log('💠💠💠💠💠💠💠💠💠💠💠💠💠💠💠', i, 'from', (children.length-1),
+      '\n newObject', newObject, '\n newObjectFromNext', newObjectFromNext
+      )
 
       // * Проверяем, не добавлен ли этот элемент,
       // * это возможно через registerResult(nextElement, i + 1).
@@ -1805,11 +1811,6 @@ export default class Pages {
           ? fullPageHeight
           : fullPageHeight + this.DOM.getElementRootedTop(result.at(-1), rootNode)
         );
-
-      const previousElement = children[i - 1];
-      const currentElement = children[i];
-      const nextElement = children[i + 1];
-      const nextElementTop = this.DOM.getElementRootedTop(nextElement, rootNode);
 
       // if (!nextElement) { return }
       // это нельзя использовать, потому что в контент мы вставляли
@@ -1839,19 +1840,23 @@ export default class Pages {
         const currentElementBottom = this.DOM.getElementRootedRealBottom(currentElement, rootNode);
         this.debugMode
           && this.debugToggler._getInternalSplitters
-          && console.log('💟 curr', currentElement, currentElementBottom, floater)
+          && console.log('💟 curr', currentElement, currentElementBottom, floater);
+
+
         // IF currentElement does fit
         // in the remaining space on the page,
         if (currentElementBottom <= floater) {
           // we need <= because splitted elements often get equal height // todo comment
           this.debugMode && this.debugToggler._getInternalSplitters && console.log('currentElementBottom <= floater')
           // ** add nextElement check (undefined as end)
-          this.debugMode && this.debugToggler._getInternalSplitters && console.log(nextElement);
-          this.debugMode && this.debugToggler._getInternalSplitters && console.log(result);
+          this.debugMode && this.debugToggler._getInternalSplitters && console.log('nextElement', nextElement);
+          this.debugMode && this.debugToggler._getInternalSplitters && console.log('result', result);
 
-          // newObjectFromNext бывает undefined если кусок не разбивается:
-          newObjectFromNext.element && trail.push(newObjectFromNext);
-          nextElement && registerResult(nextElement, i + 1);
+          if(nextElement) {
+            trail.push(newObjectFromNext);
+            registerResult(nextElement, i + 1);
+          } // else - this is the end of element list
+
           this.debugMode && this.debugToggler._getInternalSplitters && console.groupEnd('_getInternalSplitters');
 
         } else {
