@@ -649,7 +649,6 @@ export default class DocumentObjectModel {
   splitByWordsGreedy(node) {
     // const arr = node.innerHTML.split(/(?<=\s|-)/);
     const arr = node.innerHTML.split(/\s+/);
-    console.log('🔴🔴🔴🔴🔴🔴', node.innerHTML, arr)
     return arr
   }
 

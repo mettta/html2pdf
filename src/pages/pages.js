@@ -23,15 +23,15 @@ export default class Pages {
     this.debugMode = config.debugMode;
     this.debugToggler = {
       _parseNode: false,
-      _parseNodes: true,
-      _getProcessedChildren: true,
+      _parseNodes: false,
+      _getProcessedChildren: false,
       _splitPreNode: false,
       _splitTableNode: false,
-      _splitTableRow: true,
+      _splitTableRow: false,
       _splitGridNode: false,
       _createSlicesBySplitFlag: false,
-      _getInternalSplitters: true,
-      _splitComplexTextBlock: true,
+      _getInternalSplitters: false,
+      _splitComplexTextBlock: false,
     }
 
     // no hanging params:
@@ -1678,9 +1678,8 @@ export default class Pages {
 
     processChildren(inputArray);
 
-    this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log(slices)
-
-    slices.forEach(slice => console.log(slice))
+    this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('slices:', slices)
+    this.debugMode && this.debugToggler._createSlicesBySplitFlag && slices.forEach(slice => console.log('slice:', slice))
 
     this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.groupEnd('%c_createSlicesBySplitFlag')
     return slices
@@ -1821,7 +1820,7 @@ export default class Pages {
       const previousElement = children[i - 1];
       const currentElement = children[i];
       const nextElement = children[i + 1];
-      const nextElementTop = this.DOM.getElementRootedTop(nextElement, rootNode);
+      const nextElementTop = nextElement ? this.DOM.getElementRootedTop(nextElement, rootNode): undefined;
 
       const newObject = {
         id: i,
