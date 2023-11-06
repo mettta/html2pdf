@@ -647,8 +647,10 @@ export default class DocumentObjectModel {
   }
 
   splitByWordsGreedy(node) {
-    // const arr = node.innerHTML.split(/(?<=\s|-)/);
-    const arr = node.innerHTML.split(/\s+/);
+    // SEE Pages: const WORD_JOINER
+    const arr = node.innerHTML.split(/(?<=\s|-)/); // WORD_JOINER = '';
+    // const arr = node.innerHTML.split(/\s+/); // WORD_JOINER = ' ';
+    console.log('🔴', arr)
     return arr
   }
 

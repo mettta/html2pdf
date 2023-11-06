@@ -9,6 +9,9 @@ const CONSOLE_CSS_LABEL_PAGES = `border:1px solid ${CONSOLE_CSS_COLOR_PAGES};`
                               + `background:#EEEEEE;`
                               + `color:${CONSOLE_CSS_COLOR_PAGES};`
 
+// SEE splitByWordsGreedy(node) in DOM
+const WORD_JOINER = '';
+
 export default class Pages {
 
   constructor({
@@ -562,6 +565,8 @@ export default class Pages {
     let complexTextBlock = null;
     const newChildren = [];
 
+    console.log('🟠 _processInlineChildren', children);
+
     children.forEach(child => {
       if (this.DOM.isInline(child)) {
         if (!complexTextBlock) {
@@ -617,7 +622,8 @@ export default class Pages {
 
     // !!!
     // ? break it all down into lines
-
+    console.log('🟦🟦🟦', node);
+    console.log('🟦🟦', complexChildren)
     // * Process the children of the block:
     const newComplexChildren = complexChildren.flatMap((item) => {
       // * Break it down as needed:
@@ -632,6 +638,8 @@ export default class Pages {
     // * that fit into the same row:
     const newComplexChildrenGroups = newComplexChildren.reduce(
       (result, currentElement, currentIndex, array) => {
+        console.log('🟡', currentElement);
+        currentElement.setAttribute('currentIndex', currentIndex+'🟡');
         // * If this is the beginning, or if a new line:
         if(!result.length || this.DOM.isLineChanged(result.at(-1).at(-1), currentElement)) {
           result.push([currentElement]);
@@ -677,19 +685,22 @@ export default class Pages {
       return []
     }
 
-    const firstUnbreakablePart = newComplexChildrenGroups.slice(0, this.minLeftLines).flat();
-    const lastUnbreakablePart = newComplexChildrenGroups.slice(-this.minDanglingLines).flat();
+    // TODO
+    // const firstUnbreakablePart = newComplexChildrenGroups.slice(0, this.minLeftLines).flat();
+    // const lastUnbreakablePart = newComplexChildrenGroups.slice(-this.minDanglingLines).flat();
+    // newComplexChildrenGroups.splice(0, this.minLeftLines, firstUnbreakablePart);
+    // newComplexChildrenGroups.splice(-this.minDanglingLines, this.minDanglingLines, lastUnbreakablePart);
 
-    newComplexChildrenGroups.splice(0, this.minLeftLines, firstUnbreakablePart);
-    newComplexChildrenGroups.splice(-this.minDanglingLines, this.minDanglingLines, lastUnbreakablePart);
-
+    console.log('🟪 newComplexChildrenGroups', newComplexChildrenGroups);
     // * Then collect the resulting children into rows
     // * which are not to be split further.
     const linedChildren = newComplexChildrenGroups.map(
       (arr, index) => {
+        console.log('🟪🟪🟪🟪🟪', arr);
         // * Create a new line
         const line = this.DOM.createWithFlagNoBreak();
         line.dataset.index = index;
+        line.setAttribute('role', 'group');
         // * Replace the array of elements with a line
         // * that contains all these elements:
         this.DOM.insertBefore(arr[0], line);
@@ -698,6 +709,8 @@ export default class Pages {
         return line;
       }
     );
+
+    console.log('🟪 linedChildren', linedChildren);
 
     this.debugMode
       && this.debugToggler._splitComplexTextBlock
@@ -710,14 +723,21 @@ export default class Pages {
     // Take the element:
     const splittedItem = item.element;
 
+    console.log('🔴 _breakItIntoLines', splittedItem)
+
+
+
+
+
+
     // Split the splittedItem into spans.
     // * array with words:
     const itemWords = this.DOM.splitByWordsGreedy(splittedItem);
-    // * array with words wrapped with the inline tag 'html2pdf-s':
+    // * array with words wrapped with the inline tag 'html2pdf-word':
     const itemWrappedWords = itemWords.map((item, index) => {
-      const span = this.DOM.create('html2pdf-s');
+      const span = this.DOM.create('html2pdf-word');
       span.dataset.index = index;
-      span.innerHTML = item + ' ';
+      span.innerHTML = item + WORD_JOINER;
       return span;
     });
 
@@ -745,7 +765,7 @@ export default class Pages {
         const line = this.DOM.cloneNodeWrapper(splittedItem);
         const start = beginnerNumbers[currentIndex];
         const end = beginnerNumbers[currentIndex + 1];
-        const text = itemWords.slice(start, end).join(' ') + ' ';
+        const text = itemWords.slice(start, end).join(WORD_JOINER) + WORD_JOINER;
         this.DOM.setInnerHTML(line, text);
         this.DOM.insertBefore(splittedItem, line);
         // Keep the ID only on the first clone
@@ -2321,7 +2341,7 @@ export default class Pages {
       const start = exactSplitters[index - 1] || 0;
       const end = id || exactSplitters[exactSplitters.length];
 
-      this.DOM.setInnerHTML(part, nodeWords.slice(start, end).join(' ') + ' ');
+      this.DOM.setInnerHTML(part, nodeWords.slice(start, end).join(WORD_JOINER) + WORD_JOINER);
 
       return part;
     });
