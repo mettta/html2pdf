@@ -654,6 +654,17 @@ export default class DocumentObjectModel {
     return arr
   }
 
+  splitByWordsGreedyWithSpacesFilter(node) {
+    // SEE Pages: const WORD_JOINER
+    // ** 1 ** add trim() for trailing spaces
+    const arr = node.innerHTML.trim().split(/(?<=\s|-)/); // WORD_JOINER = '';
+    // ** 2 ** filter arr and remove unnecessary spaces (' ') inside text block.
+    // ** A meaningful space character has been added to an array element.
+    const filteredArr = arr.filter(item => item != ' ');
+    console.log('🔴', filteredArr)
+    return filteredArr
+  }
+
   // TODO make Obj with offsetTop and use it later
   prepareSplittedNode(node) {
     const splittedNode = node;

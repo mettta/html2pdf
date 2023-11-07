@@ -9,7 +9,7 @@ const CONSOLE_CSS_LABEL_PAGES = `border:1px solid ${CONSOLE_CSS_COLOR_PAGES};`
                               + `background:#EEEEEE;`
                               + `color:${CONSOLE_CSS_COLOR_PAGES};`
 
-// SEE splitByWordsGreedy(node) in DOM
+// SEE splitByWordsGreedyWithSpacesFilter(node) in DOM
 const WORD_JOINER = '';
 
 export default class Pages {
@@ -697,6 +697,8 @@ export default class Pages {
     }
 
     // TODO
+    console.log('🟡🟡🟡 newComplexChildrenGroups', newComplexChildrenGroups);
+
     // const firstUnbreakablePart = newComplexChildrenGroups.slice(0, this.minLeftLines).flat();
     // const lastUnbreakablePart = newComplexChildrenGroups.slice(-this.minDanglingLines).flat();
     // newComplexChildrenGroups.splice(0, this.minLeftLines, firstUnbreakablePart);
@@ -743,7 +745,7 @@ export default class Pages {
 
     // Split the splittedItem into spans.
     // * array with words:
-    const itemWords = this.DOM.splitByWordsGreedy(splittedItem);
+    const itemWords = this.DOM.splitByWordsGreedyWithSpacesFilter(splittedItem);
     // * array with words wrapped with the inline tag 'html2pdf-word':
     const itemWrappedWords = itemWords.map((item, index) => {
       const span = this.DOM.create('html2pdf-word');
