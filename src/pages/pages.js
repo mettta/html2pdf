@@ -34,7 +34,7 @@ export default class Pages {
       _splitGridNode: false,
       _createSlicesBySplitFlag: false,
       _getInternalSplitters: false,
-      _splitComplexTextBlock: false,
+      _splitComplexTextBlockIntoLines: false,
     }
 
     // no hanging params:
@@ -497,16 +497,16 @@ export default class Pages {
     } else if (this.DOM.isComplexTextBlock(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 ComplexTextBlock');
-      children = this._splitComplexTextBlock(node) || [];
+      children = this._splitComplexTextBlockIntoLines(node) || [];
     } else if (this._isTextNode(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TextNode');
 
-      // TODO: Compare performance of _splitComplexTextBlock and _splitTextNode!
+      // TODO: Compare performance of _splitComplexTextBlockIntoLines and _splitTextNode!
       // temporarily use the less productive function.
 
       // children = this._splitTextNode(node, firstPageBottom, fullPageHeight) || [];
-      children = this._splitComplexTextBlock(node) || [];
+      children = this._splitComplexTextBlockIntoLines(node) || [];
     } else if (this._isPRE(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 PRE');
@@ -588,25 +588,35 @@ export default class Pages {
     return newChildren
   }
 
-  _splitComplexTextBlock(node) {
+  _splitComplexTextBlockIntoLines(node) {
     // TODO "complexTextBlock"
 
     this.debugMode
-      && this.debugToggler._splitComplexTextBlock
-      && console.group('_splitComplexTextBlock');
+      && this.debugToggler._splitComplexTextBlockIntoLines
+      && console.group('_splitComplexTextBlockIntoLines');
     this.debugMode
-      && this.debugToggler._splitComplexTextBlock
-      && console.log('_splitComplexTextBlock(node)', node);
+      && this.debugToggler._splitComplexTextBlockIntoLines
+      && console.log('_splitComplexTextBlockIntoLines(node)', node);
 
     // GET CHILDREN
 
-    const complexChildren = this._getChildren(node).map(
+    console.log('🆘 NODE ', node);
+    node.setAttribute('_splitComplexTextBlockIntoLines', '🛐');
+
+    // Она уже обработана - можно просто взять детей
+    const nodeChildren = [...this.DOM.getChildren(node)];
+    console.log('🆘🆘 nodeChildren', nodeChildren);
+
+    // 🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘
+
+    const complexChildren = nodeChildren.map(
       element => {
         const lineHeight = this.DOM.getLineHeight(element);
         const height = this.DOM.getElementHeight(element);
         const left = this.DOM.getElementLeft(element);
         const top = this.DOM.getElementTop(element);
         const lines = ~~(height / lineHeight);
+        const text = element.innerHTML;
 
         return {
           element,
@@ -614,6 +624,7 @@ export default class Pages {
           top,
           lineHeight,
           lines,
+          text
         }
       }
     );
@@ -622,12 +633,12 @@ export default class Pages {
 
     // !!!
     // ? break it all down into lines
-    console.log('🟦🟦🟦', node);
-    console.log('🟦🟦', complexChildren)
+    console.log('🆘🆘🆘 complexChildren', complexChildren)
     // * Process the children of the block:
     const newComplexChildren = complexChildren.flatMap((item) => {
       // * Break it down as needed:
       if (item.lines > 1) {
+        item.element.setAttribute('newComplexChildren', '🅱️');
         return this._breakItIntoLines(item); // array
       }
       // this.debugMode && console.log('%c no break ', 'color:red', item);
@@ -638,7 +649,7 @@ export default class Pages {
     // * that fit into the same row:
     const newComplexChildrenGroups = newComplexChildren.reduce(
       (result, currentElement, currentIndex, array) => {
-        console.log('🟡', currentElement);
+        // console.log('🟡', currentElement);
         currentElement.setAttribute('currentIndex', currentIndex+'🟡');
         // * If this is the beginning, or if a new line:
         if(!result.length || this.DOM.isLineChanged(result.at(-1).at(-1), currentElement)) {
@@ -668,19 +679,19 @@ export default class Pages {
     // * this.minDanglingLines
 
     this.debugMode
-        && this.debugToggler._splitComplexTextBlock
-        && console.log('newComplexChildrenGroups', newComplexChildrenGroups);
+        && this.debugToggler._splitComplexTextBlockIntoLines
+        && console.log('🟡🟡🟡 newComplexChildrenGroups', newComplexChildrenGroups);
 
     if (newComplexChildrenGroups.length < this.minBreakableLines) {
       this.debugMode
-        && this.debugToggler._splitComplexTextBlock
+        && this.debugToggler._splitComplexTextBlockIntoLines
         && console.log(
           'newComplexChildrenGroups.length < this.minBreakableLines',
           newComplexChildrenGroups.length, '<', this.minBreakableLines
         );
       this.debugMode
-        && this.debugToggler._splitComplexTextBlock
-        && console.groupEnd('_splitComplexTextBlock');
+        && this.debugToggler._splitComplexTextBlockIntoLines
+        && console.groupEnd('_splitComplexTextBlockIntoLines');
       // Not to break it up
       return []
     }
@@ -696,7 +707,7 @@ export default class Pages {
     // * which are not to be split further.
     const linedChildren = newComplexChildrenGroups.map(
       (arr, index) => {
-        console.log('🟪🟪🟪🟪🟪', arr);
+        // console.log('🟪🟪🟪🟪🟪', arr);
         // * Create a new line
         const line = this.DOM.createWithFlagNoBreak();
         line.dataset.index = index;
@@ -713,8 +724,8 @@ export default class Pages {
     console.log('🟪 linedChildren', linedChildren);
 
     this.debugMode
-      && this.debugToggler._splitComplexTextBlock
-      && console.groupEnd('_splitComplexTextBlock');
+      && this.debugToggler._splitComplexTextBlockIntoLines
+      && console.groupEnd('_splitComplexTextBlockIntoLines');
     return linedChildren
   }
 
