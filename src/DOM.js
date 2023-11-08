@@ -362,7 +362,9 @@ export default class DocumentObjectModel {
   }
 
   isNoBreak(element) {
-    return this.isSelectorMatching(element, SELECTOR.flagNoBreak)
+    const t = this.isSelectorMatching(element, SELECTOR.flagNoBreak);
+    t && element.classList.add('📛')
+    return t
   }
 
   isNoHanging(element) {
@@ -650,7 +652,7 @@ export default class DocumentObjectModel {
     // SEE Pages: const WORD_JOINER
     const arr = node.innerHTML.split(/(?<=\s|-)/); // WORD_JOINER = '';
     // const arr = node.innerHTML.split(/\s+/); // WORD_JOINER = ' ';
-    console.log('🔴', arr)
+    // console.log('🔴', arr)
     return arr
   }
 
@@ -661,7 +663,7 @@ export default class DocumentObjectModel {
     // ** 2 ** filter arr and remove unnecessary spaces (' ') inside text block.
     // ** A meaningful space character has been added to an array element.
     const filteredArr = arr.filter(item => item != ' ');
-    console.log('🔴', filteredArr)
+    // console.log('🔴 filtered word Arr', filteredArr)
     return filteredArr
   }
 

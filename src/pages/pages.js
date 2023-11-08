@@ -485,7 +485,12 @@ export default class Pages {
   }
 
   _getProcessedChildren(node, firstPageBottom, fullPageHeight) {
-    const consoleMark = ['%c_getProcessedChildren\n', 'color:white',]
+    const consoleMark = ['%c_getProcessedChildren\n', 'color:white',];
+
+//     if(node.hasAttribute('role')) {
+// console.log("🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚",
+// node)
+//     }
 
     let children = [];
 
@@ -498,15 +503,19 @@ export default class Pages {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 ComplexTextBlock');
       children = this._splitComplexTextBlockIntoLines(node) || [];
+      console.log('🈯🈯 Complex 🈯🈯🈯🈯🈯🈯🈯🈯🈯🈯🈯🈯🈯🈯', [...children]);
+      console.log('🈯', [...children][0].innerHTML);
+      console.log('🈯', [...children][0]);
+      console.log('🈯', [...children].at(-1));
     } else if (this._isTextNode(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TextNode');
-
       // TODO: Compare performance of _splitComplexTextBlockIntoLines and _splitTextNode!
       // temporarily use the less productive function.
 
       // children = this._splitTextNode(node, firstPageBottom, fullPageHeight) || [];
       children = this._splitComplexTextBlockIntoLines(node) || [];
+      console.log('🈳 _isTextNode 🈳🈳🈳🈳🈳🈳🈳🈳🈳🈳🈳🈳🈳🈳', [...children])
     } else if (this._isPRE(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 PRE');
@@ -600,7 +609,10 @@ export default class Pages {
 
     // GET CHILDREN
 
-    console.log('🆘 NODE ', node);
+    console.log(
+      '🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘 NODE ',
+      node
+    );
     node.setAttribute('_splitComplexTextBlockIntoLines', '🛐');
 
     // Она уже обработана - можно просто взять детей
@@ -620,10 +632,10 @@ export default class Pages {
 
         return {
           element,
+          lines,
           left,
           top,
           lineHeight,
-          lines,
           text
         }
       }
@@ -633,18 +645,20 @@ export default class Pages {
 
     // !!!
     // ? break it all down into lines
-    console.log('🆘🆘🆘 complexChildren', complexChildren)
+    // console.log('🆘🆘🆘 complexChildren', complexChildren)
     // * Process the children of the block:
     const newComplexChildren = complexChildren.flatMap((item) => {
       // * Break it down as needed:
       if (item.lines > 1) {
-        item.element.setAttribute('newComplexChildren', '🅱️');
+        item.element.classList.add('newComplexChildren🅱️');
         return this._breakItIntoLines(item); // array
       }
       // this.debugMode && console.log('%c no break ', 'color:red', item);
       // * otherwise keep the original element:
       return item.element;
     });
+
+    // console.log('🛄🛄🛄 newComplexChildren', [...newComplexChildren])
     // * Prepare an array of arrays containing references to elements
     // * that fit into the same row:
     const newComplexChildrenGroups = newComplexChildren.reduce(
@@ -699,26 +713,31 @@ export default class Pages {
     // TODO
     console.log('🟡🟡🟡 newComplexChildrenGroups', newComplexChildrenGroups);
 
-    // const firstUnbreakablePart = newComplexChildrenGroups.slice(0, this.minLeftLines).flat();
-    // const lastUnbreakablePart = newComplexChildrenGroups.slice(-this.minDanglingLines).flat();
-    // newComplexChildrenGroups.splice(0, this.minLeftLines, firstUnbreakablePart);
-    // newComplexChildrenGroups.splice(-this.minDanglingLines, this.minDanglingLines, lastUnbreakablePart);
+    const firstUnbreakablePart = newComplexChildrenGroups.slice(0, this.minLeftLines).flat();
+    console.log('◀️◀️◀️ firstUnbreakablePart', firstUnbreakablePart);
+    const lastUnbreakablePart = newComplexChildrenGroups.slice(-this.minDanglingLines).flat();
+    console.log('▶️▶️▶️ lastUnbreakablePart', lastUnbreakablePart);
+    newComplexChildrenGroups.splice(0, this.minLeftLines, firstUnbreakablePart);
+    newComplexChildrenGroups.splice(-this.minDanglingLines, this.minDanglingLines, lastUnbreakablePart);
 
     console.log('🟪 newComplexChildrenGroups', newComplexChildrenGroups);
     // * Then collect the resulting children into rows
     // * which are not to be split further.
     const linedChildren = newComplexChildrenGroups.map(
       (arr, index) => {
-        // console.log('🟪🟪🟪🟪🟪', arr);
+        !index && console.log('🟣🟪🟣🟪🟣', index, arr);
         // * Create a new line
         const line = this.DOM.createWithFlagNoBreak();
         line.dataset.index = index;
         line.setAttribute('role', 'group');
+        line.setAttribute('comment', '〰️〰️〰️〰️〰️〰️');
         // * Replace the array of elements with a line
         // * that contains all these elements:
         this.DOM.insertBefore(arr[0], line);
         this.DOM.insertAtEnd(line, ...arr);
         // * Return a new unbreakable line.
+        !index && console.log('🟪🟪🟪', line, line.innerHTML);
+        // тут еще все хорошо, полные строки
         return line;
       }
     );
@@ -728,6 +747,7 @@ export default class Pages {
     this.debugMode
       && this.debugToggler._splitComplexTextBlockIntoLines
       && console.groupEnd('_splitComplexTextBlockIntoLines');
+
     return linedChildren
   }
 
@@ -736,7 +756,7 @@ export default class Pages {
     // Take the element:
     const splittedItem = item.element;
 
-    console.log('🔴 _breakItIntoLines', splittedItem)
+    // console.log('🔴 _breakItIntoLines(splittedItem)', splittedItem)
 
 
 
@@ -776,6 +796,7 @@ export default class Pages {
     const newLines = beginnerNumbers.reduce(
       (result, currentElement, currentIndex) => {
         const line = this.DOM.cloneNodeWrapper(splittedItem);
+        line.classList.add('cloned🅱️');
         const start = beginnerNumbers[currentIndex];
         const end = beginnerNumbers[currentIndex + 1];
         const text = itemWords.slice(start, end).join(WORD_JOINER) + WORD_JOINER;
@@ -805,6 +826,8 @@ export default class Pages {
     // );
     // * and then delete the source element.
     splittedItem.remove();
+
+    // console.log('🔴 newLines of Block', newLines)
 
     return newLines;
   }
