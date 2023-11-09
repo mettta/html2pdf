@@ -596,13 +596,23 @@ export default class Pages {
     // TODO "complexTextBlock"
 
     // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
+    // ?????????????? кто вызывает это второй раз???????
+
+    node.classList.add(`s_${Math.random()}💠`);
+
+    // TODO [html2pdf-splitted] SELECTOR
+    if (this.DOM.isSelectorMatching(node, '[html2pdf-splitted]')) {
+      return this._getChildren(node);
+    }
+
+    this.DOM.setAttribute(node, '[html2pdf-splitted]');
 
     this.debugMode
       && this.debugToggler._splitComplexTextBlockIntoLines
       && console.group('_splitComplexTextBlockIntoLines');
     this.debugMode
       && this.debugToggler._splitComplexTextBlockIntoLines
-      && console.log('_splitComplexTextBlockIntoLines(node)', node);
+      && console.log('_splitComplexTextBlockIntoLines (node)', node);
 
     // GET CHILDREN
 
@@ -725,13 +735,28 @@ export default class Pages {
     // * Then collect the resulting children into rows
     // * which are not to be split further.
     const linedChildren = newComplexChildrenGroups.map(
+      // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
+      // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
+      // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
+      // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
+      // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
+      // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
       (arr, index) => {
         !index && console.log('🟣🟪🟣🟪🟣', index, arr);
         // * Create a new line
         const line = this.DOM.createWithFlagNoBreak();
         (arr.length > 1) && line.classList.add('group🛗');
-        line.dataset.index = index;
         line.setAttribute('role', 'group〰️');
+
+        if (arr.length == 0) {
+          line.setAttribute('role', '🚫');
+          console.assert(arr.length == 0, 'The string cannot be empty (_splitComplexTextBlockIntoLines)')
+        } else if (arr.length == 1) {
+          line.setAttribute('role', 'line');
+        } else {
+          line.setAttribute('role', 'group');
+        }
+        line.dataset.index = index;
         // * Replace the array of elements with a line
         // * that contains all these elements:
         this.DOM.insertBefore(arr[0], line);
@@ -748,6 +773,8 @@ export default class Pages {
     this.debugMode
       && this.debugToggler._splitComplexTextBlockIntoLines
       && console.groupEnd('_splitComplexTextBlockIntoLines');
+
+    node.setAttribute('splitted', '💠');
 
     return linedChildren
   }
@@ -797,7 +824,8 @@ export default class Pages {
         line.classList.add('cloned🅱️');
         const start = beginnerNumbers[currentIndex];
         const end = beginnerNumbers[currentIndex + 1];
-        const text = itemWords.slice(start, end).join(WORD_JOINER) + WORD_JOINER;
+        // need to add safety spaces at both ends of the line:
+        const text = ' ' + itemWords.slice(start, end).join(WORD_JOINER) + WORD_JOINER + ' ';
         this.DOM.setInnerHTML(line, text);
         this.DOM.insertBefore(splittedItem, line);
         // Keep the ID only on the first clone
