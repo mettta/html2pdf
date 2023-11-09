@@ -1,7 +1,6 @@
 import calculateSplitters from './calculateSplitters';
 import findSplitId from './findSplitId';
 // import splitArrayBySplitFlag from './splitArrayBySplitFlag';
-import splitArrayBySplitFlag from './splitArrayBySplitFlag';
 
 const CONSOLE_CSS_COLOR_PAGES = '#66CC00';
 const CONSOLE_CSS_PRIMARY_PAGES = `color: ${CONSOLE_CSS_COLOR_PAGES};font-weight:bold`;
@@ -415,6 +414,7 @@ export default class Pages {
       }
 
       // otherwise try to break it and loop the children:
+      console.log('❓ _parseNode', currentElement)
       const children = this._getProcessedChildren(currentElement, newPageBottom, this.referenceHeight);
 
       // **
@@ -487,11 +487,6 @@ export default class Pages {
   _getProcessedChildren(node, firstPageBottom, fullPageHeight) {
     const consoleMark = ['%c_getProcessedChildren\n', 'color:white',];
 
-//     if(node.hasAttribute('role')) {
-// console.log("🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚🧡💛💚",
-// node)
-//     }
-
     let children = [];
 
     if (this._isNoBreak(node)) {
@@ -503,10 +498,10 @@ export default class Pages {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 ComplexTextBlock');
       children = this._splitComplexTextBlockIntoLines(node) || [];
-      console.log('🈯🈯 Complex 🈯🈯🈯🈯🈯🈯🈯🈯🈯🈯🈯🈯🈯🈯', [...children]);
-      console.log('🈯', [...children][0].innerHTML);
-      console.log('🈯', [...children][0]);
-      console.log('🈯', [...children].at(-1));
+      console.log('🈯_getProcessedChildren: Complex \n children AFTER _splitComplexTextBlockIntoLines: \n', [...children]);
+      // console.log('🈯 [0]', [...children][0].innerHTML);
+      // console.log('🈯 [0]', [...children][0]);
+      // console.log('🈯 (-1)', [...children].at(-1));
     } else if (this._isTextNode(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TextNode');
@@ -600,6 +595,8 @@ export default class Pages {
   _splitComplexTextBlockIntoLines(node) {
     // TODO "complexTextBlock"
 
+    // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
+
     this.debugMode
       && this.debugToggler._splitComplexTextBlockIntoLines
       && console.group('_splitComplexTextBlockIntoLines');
@@ -610,14 +607,17 @@ export default class Pages {
     // GET CHILDREN
 
     console.log(
-      '🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘 NODE ',
+      '_splitComplexTextBlockIntoLines\n',
+      '〰️〰️〰️〰️〰️〰️〰️\n',
+      '〰️〰️〰️〰️〰️〰️〰️ NODE \n',
       node
     );
     node.setAttribute('_splitComplexTextBlockIntoLines', '🛐');
 
-    // Она уже обработана - можно просто взять детей
+    // const nodeChildren = this._getChildren(node);
+    // Она уже обработана - можно просто взять детей ?? -- так разбивается только первая строка
     const nodeChildren = [...this.DOM.getChildren(node)];
-    console.log('🆘🆘 nodeChildren', nodeChildren);
+    console.log('NODE Children:', nodeChildren);
 
     // 🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘
 
@@ -645,13 +645,14 @@ export default class Pages {
 
     // !!!
     // ? break it all down into lines
-    // console.log('🆘🆘🆘 complexChildren', complexChildren)
+
     // * Process the children of the block:
     const newComplexChildren = complexChildren.flatMap((item) => {
       // * Break it down as needed:
-      if (item.lines > 1) {
+      if ((item.lines > 1) && !this._isNoBreak(item.element)) {
+        // TODO: add GROUP to no-break elements?
         item.element.classList.add('newComplexChildren🅱️');
-        return this._breakItIntoLines(item); // array
+        return this._breakItIntoLines(item.element); // array
       }
       // this.debugMode && console.log('%c no break ', 'color:red', item);
       // * otherwise keep the original element:
@@ -728,9 +729,9 @@ export default class Pages {
         !index && console.log('🟣🟪🟣🟪🟣', index, arr);
         // * Create a new line
         const line = this.DOM.createWithFlagNoBreak();
+        (arr.length > 1) && line.classList.add('group🛗');
         line.dataset.index = index;
-        line.setAttribute('role', 'group');
-        line.setAttribute('comment', '〰️〰️〰️〰️〰️〰️');
+        line.setAttribute('role', 'group〰️');
         // * Replace the array of elements with a line
         // * that contains all these elements:
         this.DOM.insertBefore(arr[0], line);
@@ -751,17 +752,14 @@ export default class Pages {
     return linedChildren
   }
 
-  _breakItIntoLines(item) {
+  _breakItIntoLines(splittedItem) {
+
+    if (this._isNoBreak(splittedItem)) {
+      return splittedItem
+    }
 
     // Take the element:
-    const splittedItem = item.element;
-
-    // console.log('🔴 _breakItIntoLines(splittedItem)', splittedItem)
-
-
-
-
-
+    // const splittedItem = item.element;
 
     // Split the splittedItem into spans.
     // * array with words:
@@ -809,25 +807,9 @@ export default class Pages {
         return result;
       }, []);
 
-    // TODO #hyphen
-    // If a string ends in a hyphen,
-    // it is naturally not split because the word is not space-separated.
-    // Example: examples/test/cases/p_1_hyphen_vs_space.html
-    // In this case, we get an assertion trigger:
-    // ? это часто падает - нужно проверить разные кейсы. 
-    // this.debugMode
-    //   // && this.debugToggler._parseNode
-    //   && console.assert(
-    //     newLines.length == item.lines,
-    //     'The number of new lines is not equal to the expected number of lines when splitting.',
-    //     '\nNew lines:',
-    //     newLines,
-    //     item.lines
-    // );
+
     // * and then delete the source element.
     splittedItem.remove();
-
-    // console.log('🔴 newLines of Block', newLines)
 
     return newLines;
   }
@@ -1987,6 +1969,7 @@ export default class Pages {
             && this.debugToggler._getInternalSplitters
             && console.log('💟💟💟 currentElementBottom > floater, \ntry to split', currentElement);
 
+          console.log('❓❓❓❓_getInternalSplitters❓❓❓❓', currentElement)
           const currentElementChildren = this._getProcessedChildren(currentElement, pageBottom, fullPageHeight);
 
           // * Parse children:
