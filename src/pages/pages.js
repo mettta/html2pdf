@@ -192,10 +192,15 @@ export default class Pages {
   }
 
   _registerPageStart(pageStart) {
+    const pageBottom = this.DOM.getElementRootedRealTop(pageStart, this.root) + this.referenceHeight;
     this.pages.push({
       pageStart: pageStart,
-      pageBottom: this.DOM.getElementRootedRealTop(pageStart, this.root) + this.referenceHeight,
+      pageBottom: pageBottom,
     })
+    this.debugMode && console.log(
+      `📍 %c register page ${this.pages.length} \n`, "background:yellow; color:red",
+      pageBottom, pageStart,
+    )
   }
 
   _parseNodes({
@@ -463,9 +468,12 @@ export default class Pages {
         } else {
           // TODO #retainedParent
           // this._registerPageStart(currentElement);
+          this.debugMode && this.debugToggler._parseNode && console.log(
+            ...consoleMark,
+            '_registerPageStart (from _parseNode): \n',
+            currentPageStart
+          );
           this._registerPageStart(currentPageStart);
-          this.debugMode && this.debugToggler._parseNode && console.log(...consoleMark,
-            '_registerPageStart:', currentPageStart);
         }
       }
     }
