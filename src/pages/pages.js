@@ -414,7 +414,6 @@ export default class Pages {
       }
 
       // otherwise try to break it and loop the children:
-      console.log('❓ _parseNode', currentElement)
       const children = this._getProcessedChildren(currentElement, newPageBottom, this.referenceHeight);
 
       // **
@@ -498,10 +497,6 @@ export default class Pages {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 ComplexTextBlock');
       children = this._splitComplexTextBlockIntoLines(node) || [];
-      console.log('🈯_getProcessedChildren: Complex \n children AFTER _splitComplexTextBlockIntoLines: \n', [...children]);
-      // console.log('🈯 [0]', [...children][0].innerHTML);
-      // console.log('🈯 [0]', [...children][0]);
-      // console.log('🈯 (-1)', [...children].at(-1));
     } else if (this._isTextNode(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TextNode');
@@ -510,7 +505,6 @@ export default class Pages {
 
       // children = this._splitTextNode(node, firstPageBottom, fullPageHeight) || [];
       children = this._splitComplexTextBlockIntoLines(node) || [];
-      console.log('🈳 _isTextNode 🈳🈳🈳🈳🈳🈳🈳🈳🈳🈳🈳🈳🈳🈳', [...children])
     } else if (this._isPRE(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 PRE');
@@ -569,8 +563,6 @@ export default class Pages {
     let complexTextBlock = null;
     const newChildren = [];
 
-    console.log('🟠 _processInlineChildren', children);
-
     children.forEach(child => {
       if (this.DOM.isInline(child)) {
         if (!complexTextBlock) {
@@ -616,12 +608,6 @@ export default class Pages {
 
     // GET CHILDREN
 
-    console.log(
-      '_splitComplexTextBlockIntoLines\n',
-      '〰️〰️〰️〰️〰️〰️〰️\n',
-      '〰️〰️〰️〰️〰️〰️〰️ NODE \n',
-      node
-    );
     node.setAttribute('_splitComplexTextBlockIntoLines', '🛐');
 
     // 🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘
@@ -629,7 +615,6 @@ export default class Pages {
     // Она уже обработана - можно просто взять детей ?? -- так разбивается только первая строка
     // TODO (вложенные не работают - теряется внутренний 2й как минимум)
     const nodeChildren = [...this.DOM.getChildren(node)];
-    console.log('NODE Children:', nodeChildren);
 
     const complexChildren = nodeChildren.map(
       element => {
@@ -721,28 +706,15 @@ export default class Pages {
       return []
     }
 
-    // TODO
-    console.log('🟡🟡🟡 newComplexChildrenGroups', newComplexChildrenGroups);
-
     const firstUnbreakablePart = newComplexChildrenGroups.slice(0, this.minLeftLines).flat();
-    console.log('◀️◀️◀️ firstUnbreakablePart', firstUnbreakablePart);
     const lastUnbreakablePart = newComplexChildrenGroups.slice(-this.minDanglingLines).flat();
-    console.log('▶️▶️▶️ lastUnbreakablePart', lastUnbreakablePart);
     newComplexChildrenGroups.splice(0, this.minLeftLines, firstUnbreakablePart);
     newComplexChildrenGroups.splice(-this.minDanglingLines, this.minDanglingLines, lastUnbreakablePart);
 
-    console.log('🟪 newComplexChildrenGroups', newComplexChildrenGroups);
     // * Then collect the resulting children into rows
     // * which are not to be split further.
     const linedChildren = newComplexChildrenGroups.map(
-      // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
-      // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
-      // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
-      // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
-      // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
-      // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
       (arr, index) => {
-        !index && console.log('🟣🟪🟣🟪🟣', index, arr);
         // * Create a new line
         const line = this.DOM.createWithFlagNoBreak();
         (arr.length > 1) && line.classList.add('group🛗');
@@ -762,13 +734,9 @@ export default class Pages {
         this.DOM.insertBefore(arr[0], line);
         this.DOM.insertAtEnd(line, ...arr);
         // * Return a new unbreakable line.
-        !index && console.log('🟪🟪🟪', line, line.innerHTML);
-        // тут еще все хорошо, полные строки
         return line;
       }
     );
-
-    console.log('🟪 linedChildren', linedChildren);
 
     this.debugMode
       && this.debugToggler._splitComplexTextBlockIntoLines
@@ -784,9 +752,6 @@ export default class Pages {
     if (this._isNoBreak(splittedItem)) {
       return splittedItem
     }
-
-    // Take the element:
-    // const splittedItem = item.element;
 
     // Split the splittedItem into spans.
     // * array with words:
@@ -1997,7 +1962,6 @@ export default class Pages {
             && this.debugToggler._getInternalSplitters
             && console.log('💟💟💟 currentElementBottom > floater, \ntry to split', currentElement);
 
-          console.log('❓❓❓❓_getInternalSplitters❓❓❓❓', currentElement)
           const currentElementChildren = this._getProcessedChildren(currentElement, pageBottom, fullPageHeight);
 
           // * Parse children:
