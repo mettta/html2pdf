@@ -24,16 +24,16 @@ export default class Pages {
     // * From config:
     this.debugMode = config.debugMode;
     this.debugToggler = {
-      _parseNode: false,
-      _parseNodes: false,
-      _getProcessedChildren: false,
-      _splitPreNode: false,
-      _splitTableNode: false,
-      _splitTableRow: false,
-      _splitGridNode: false,
-      _createSlicesBySplitFlag: false,
-      _getInternalSplitters: false,
-      _splitComplexTextBlockIntoLines: false,
+      _parseNode: true,
+      _parseNodes: true,
+      _getProcessedChildren: true,
+      _splitPreNode: true,
+      _splitTableNode: true,
+      _splitTableRow: true,
+      _splitGridNode: true,
+      _createSlicesBySplitFlag: true,
+      _getInternalSplitters: true,
+      _splitComplexTextBlockIntoLines: true,
     }
 
     // no hanging params:
@@ -260,7 +260,7 @@ export default class Pages {
     // * If we want to start a new page from the current node,
     // * which is the first (i == 0) or only child (= has 'parent'),
     // * we want to register its parent as the start of the page.
-    const currentPageStart = (i == 0 && parent) ? parent : currentElement;
+    const currentOrParentElement = (i == 0 && parent) ? parent : currentElement;
 
     this.debugMode && this.debugToggler._parseNode && console.log(
       ...consoleMark,
@@ -268,7 +268,7 @@ export default class Pages {
       '\n',
       'parentBottom:', parentBottom,
       '\n',
-      'currentPageStart:', currentPageStart,
+      'currentOrParentElement:', currentOrParentElement,
       '\n'
     );
 
@@ -334,7 +334,7 @@ export default class Pages {
         // TODO #retainedParent
         // this._registerPageStart(currentElement);
         // ** And if it's the first child, move the parent node to the next page.
-        this._registerPageStart(currentPageStart);
+        this._registerPageStart(currentOrParentElement);
         return
       }
 
@@ -471,9 +471,9 @@ export default class Pages {
           this.debugMode && this.debugToggler._parseNode && console.log(
             ...consoleMark,
             '_registerPageStart (from _parseNode): \n',
-            currentPageStart
+            currentOrParentElement
           );
-          this._registerPageStart(currentPageStart);
+          this._registerPageStart(currentOrParentElement);
         }
       }
     }
@@ -593,19 +593,8 @@ export default class Pages {
   }
 
   _splitComplexTextBlockIntoLines(node) {
+
     // TODO "complexTextBlock"
-
-    // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
-    // ?????????????? кто вызывает это второй раз???????
-
-    node.classList.add(`s_${Math.random()}💠`);
-
-    // TODO [html2pdf-splitted] SELECTOR
-    if (this.DOM.isSelectorMatching(node, '[html2pdf-splitted]')) {
-      return this._getChildren(node);
-    }
-
-    this.DOM.setAttribute(node, '[html2pdf-splitted]');
 
     this.debugMode
       && this.debugToggler._splitComplexTextBlockIntoLines
@@ -614,15 +603,27 @@ export default class Pages {
       && this.debugToggler._splitComplexTextBlockIntoLines
       && console.log('_splitComplexTextBlockIntoLines (node)', node);
 
+    // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
+    // ?????????????? кто вызывает это второй раз???????
+
+    console.log("🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘")
+    node.classList.add(`s_${Math.random()}💠`);
+
+    // TODO [html2pdf-splitted] SELECTOR
+    if (this.DOM.isSelectorMatching(node, '[html2pdf-splitted]')) {
+      return this._getChildren(node);
+    }
+
     // GET CHILDREN
 
-    node.setAttribute('_splitComplexTextBlockIntoLines', '🛐');
+    node.setAttribute('_splitComplexTextBlockIntoLines', '🛐_start!');
 
-    // 🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘
     // const nodeChildren = this._getChildren(node);
     // Она уже обработана - можно просто взять детей ?? -- так разбивается только первая строка
     // TODO (вложенные не работают - теряется внутренний 2й как минимум)
     const nodeChildren = [...this.DOM.getChildren(node)];
+
+    console.log(nodeChildren)
 
     const complexChildren = nodeChildren.map(
       element => {
@@ -644,7 +645,8 @@ export default class Pages {
       }
     );
 
-    // this.debugMode && console.log('%c ⛱️ complexTextBlock ⛱️ ', 'color:red;background:yellow', complexChildren);
+    console.log(complexChildren)
+
 
     // !!!
     // ? break it all down into lines
@@ -661,6 +663,8 @@ export default class Pages {
       // * otherwise keep the original element:
       return item.element;
     });
+
+    console.log(newComplexChildren)
 
     // console.log('🛄🛄🛄 newComplexChildren', [...newComplexChildren])
     // * Prepare an array of arrays containing references to elements
@@ -700,6 +704,8 @@ export default class Pages {
         );
       }, []
     );
+
+    console.log(newComplexChildrenGroups)
 
     // Consider the paragraph partitioning settings:
     // * this.minBreakableLines
@@ -760,7 +766,7 @@ export default class Pages {
       && this.debugToggler._splitComplexTextBlockIntoLines
       && console.groupEnd('_splitComplexTextBlockIntoLines');
 
-    node.setAttribute('splitted', '💠');
+    this.DOM.setAttribute(node, '[html2pdf-splitted]');
 
     return linedChildren
   }
@@ -2025,7 +2031,7 @@ export default class Pages {
             } else {
               // TODO #retainedParent
               // this._registerPageStart(currentElement);
-              // this._registerPageStart(currentPageStart);
+              // this._registerPageStart(currentOrParentElement);
               this.debugMode
                 && this.debugToggler._getInternalSplitters
                 && console.log(currentElement, 'currentElement has no children')
