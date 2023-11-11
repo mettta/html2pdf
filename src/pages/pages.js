@@ -667,15 +667,25 @@ export default class Pages {
     // * that fit into the same row:
     const newComplexChildrenGroups = newComplexChildren.reduce(
       (result, currentElement, currentIndex, array) => {
-        // console.log('🟡', currentElement);
-        currentElement.setAttribute('currentIndex', currentIndex+'🟡');
+
+        // * If BR is encountered, we start a new empty line:
+        if(this.DOM.getElementTagName(currentElement) === 'BR' ) {
+          result.at(-1).push(currentElement);
+          result.push([]); // => will be: result.at(-1).length === 0;
+          return result;
+        }
+
         // * If this is the beginning, or if a new line:
         if(!result.length || this.DOM.isLineChanged(result.at(-1).at(-1), currentElement)) {
           result.push([currentElement]);
           return result;
         }
+
         // TODO: isLineChanged vs isLineKept: можно сделать else? они противоположны
-        if(result.length && this.DOM.isLineKept(result.at(-1).at(-1), currentElement)) {
+        if(
+          result.at(-1).length === 0 // the last element was BR
+          || (result.length && this.DOM.isLineKept(result.at(-1).at(-1), currentElement))
+        ) {
           result.at(-1).push(currentElement);
           return result;
         }
