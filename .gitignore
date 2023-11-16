@@ -17,6 +17,7 @@ node_modules/
 
 #
 temp/
+__*
 
 # OS generated files
 .DS_Store
