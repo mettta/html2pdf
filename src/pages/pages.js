@@ -214,10 +214,10 @@ export default class Pages {
     for (let i = 0; i < array.length; i++) {
 
       this._parseNode({
-        i,
         previousElement: array[i - 1] || previous,
         currentElement: array[i],
         nextElement: array[i + 1] || next,
+        isCurrentFirst: (i == 0 && !array[i - 1]),
         parent,
         // *** If the parent item has a bottom margin, we must consider it
         // *** when deciding on the last child.
@@ -232,7 +232,7 @@ export default class Pages {
 
   // 📍
   _parseNode({
-    i,
+    isCurrentFirst,
     previousElement,
     currentElement,
     nextElement,
@@ -254,13 +254,19 @@ export default class Pages {
         previousElement,
         currentElement,
         nextElement,
-      });
+      },
+      '\n',
+      '\ncurrent: ', currentElement,
+      '\nparent: ', parent,
+      '\nisCurrentFirst: ', isCurrentFirst,
+      );
 
     // TODO #retainedParent
     // * If we want to start a new page from the current node,
     // * which is the first (i == 0) or only child (= has 'parent'),
     // * we want to register its parent as the start of the page.
-    const currentOrParentElement = (i == 0 && parent) ? parent : currentElement;
+    const currentOrParentElement = (isCurrentFirst && parent) ? parent : currentElement;
+    // const currentOrParentElement = currentElement;
 
     this.debugMode && this.debugToggler._parseNode && console.log(
       ...consoleMark,
@@ -436,7 +442,11 @@ export default class Pages {
       // ** as well as if the first child is being registered,
       // ** -- we want to use the past parent (=wrapper of the current node)
       // ** as the start of the page.
-      const retainedParent = (childrenNumber <= 1 || i == 0)
+
+      const retainedParent = (
+        isCurrentFirst
+        // childrenNumber <= 1 || // !!! - P PRE и тп с 1 ребенком вносят ошибки
+        )
                             ? (parent ? parent : currentElement)
                             : undefined;
       this.debugMode && this.debugToggler._parseNode && console.log(...consoleMark,
@@ -604,10 +614,6 @@ export default class Pages {
       && console.log('_splitComplexTextBlockIntoLines (node)', node);
 
     // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
-    // ?????????????? кто вызывает это второй раз???????
-
-    console.log("🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘🆘")
-    node.classList.add(`s_${Math.random()}💠`);
 
     // TODO [html2pdf-splitted] SELECTOR
     if (this.DOM.isSelectorMatching(node, '[html2pdf-splitted]')) {
@@ -622,8 +628,6 @@ export default class Pages {
     // Она уже обработана - можно просто взять детей ?? -- так разбивается только первая строка
     // TODO (вложенные не работают - теряется внутренний 2й как минимум)
     const nodeChildren = [...this.DOM.getChildren(node)];
-
-    console.log(nodeChildren)
 
     const complexChildren = nodeChildren.map(
       element => {
@@ -645,9 +649,6 @@ export default class Pages {
       }
     );
 
-    console.log(complexChildren)
-
-
     // !!!
     // ? break it all down into lines
 
@@ -664,9 +665,6 @@ export default class Pages {
       return item.element;
     });
 
-    console.log(newComplexChildren)
-
-    // console.log('🛄🛄🛄 newComplexChildren', [...newComplexChildren])
     // * Prepare an array of arrays containing references to elements
     // * that fit into the same row:
     const newComplexChildrenGroups = newComplexChildren.reduce(
@@ -704,8 +702,6 @@ export default class Pages {
         );
       }, []
     );
-
-    console.log(newComplexChildrenGroups)
 
     // Consider the paragraph partitioning settings:
     // * this.minBreakableLines
