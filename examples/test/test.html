@@ -8,7 +8,7 @@
   <!-- <link rel="shortcut icon" href="http://127.0.0.1:5111/assets/favicon.ico" type="image/x-icon"> -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📍</text></svg>">
 
-  <title>User Guide - PDF</title>
+  <title>TEST - PDF</title>
 
   <!-- <link rel="stylesheet" href="./User Guide - PDF_files/base.css"> -->
   <style type="text/css">
@@ -3057,7 +3057,7 @@ a.field_action:hover {
       <div class="main">
         <div class="content" html2pdf>
 
-          <!-- <div filler style="height:800px"></div> -->
+          <div filler style="height:400px"></div>
 
           <!-- HTML2PDF: TEST CONTENT GOES HERE -->
           <!-- ******************************** -->
@@ -3076,101 +3076,130 @@ a.field_action:hover {
           <!-- ******************************** -->
           <!-- ******************************** -->
 
-          <p>That is the way</p>
+          <style>
+            table, th, td {
+              border:1px solid black;
+              vertical-align: top;
+            }
+            </style>
 
-  <sdoc-requirement requirement-view="simple" data-level="5" data-testid="requirement-style-simple">
-    <sdoc-requirement-title id="5-Document-archetypes">
-      5.&nbsp;Document archetypes</sdoc-requirement-title>
-    <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
-    <sdoc-requirement-field data-field-label="statement">
-      <div class="document">
-        <p>StrictDoc shall support the following document archetypes: <strong>requirements document</strong>
-          and <strong>specification</strong> document. For both archetypes, StrictDoc shall further
-          support the following options.</p>
-        <table border="1" class="docutils">
-          <caption>Table: Requirements and specification document</caption>
-          <colgroup>
-            <col width="20%">
-            <col width="40%">
-            <col width="40%">
-          </colgroup>
-          <thead valign="bottom">
-            <tr>
-              <th class="head">&nbsp;</th>
-              <th class="head">Requirements document</th>
-              <th class="head">Specification document</th>
-            </tr>
-          </thead>
-          <tbody valign="top">
-            <tr>
-              <td>Examples</td>
-              <td>Most typical: requirements lists split by categories (e.g., Functional
-                Requirements, Interface Requirements, Performance Requirements, etc.)</td>
-              <td>Often: a standard document</td>
-            </tr>
-            <tr>
-              <td>Structure</td>
-              <td>Not nested or not too deeply nested</td>
-              <td>Nested</td>
-            </tr>
-            <tr>
-              <td>Visual presentation</td>
-              <td>Requirements are often presented as table cells. Cells can be standalone
-                or the whole section or document can be a long table with cells.</td>
-              <td>Requirements are rather presented as header + text</td>
-            </tr>
-            <tr>
-              <td>Unique requirement identifiers (UID)</td>
-              <td>Most always</td>
-              <td>
-                <ul class="first last simple">
-                  <li>Present or not</li>
-                  <li><strong>NOT SUPPORTED YET:</strong> Can be missing, the chapter headers are used instead.
-                    The combination "Number + Title" becomes a reference-able identifier.
-                    A possible intermediate solution when modeling such a document is to
-                    make the UIDs map to the section number.</li>
-                </ul>
-              </td>
-            </tr>
-            <tr>
-              <td>Requirement titles</td>
-              <td>
-                <ul class="first last simple">
-                  <li>Often</li>
-                  <li><strong>NOT SUPPORTED YET:</strong> But maybe absent (ex: NASA cFS SCH). If absent,
-                    the grouping is provided by sections.</li>
-                </ul>
-              </td>
-              <td>Requirement titles are most often section titles</td>
-            </tr>
-            <tr>
-              <td>Real-world examples</td>
-              <td>
-                <ul class="first last simple">
-                  <li>NASA cFE Functional Requirements</li>
-                  <li>MISRA C coding guidelines,</li>
-                  <li>NASA Software Engineering Requirements NPR 7150.2</li>
-                </ul>
-              </td>
-              <td>
-                <ul class="first last simple">
-                  <li>ECSS Software ECSS-E-ST-40C</li>
-                </ul>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+          <table>
+            <caption>Caption</caption>
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Savings</th>
+                <th>Savings</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="row0">
+                <td>ROW 0</td>
+                <td>$80</td>
+                <td>$80</td>
+              </tr>
+              <tr class="row1">
+                <td>ROW 1</td>
+                <td>$80</td>
+                <td>$80</td>
+              </tr>
+              <tr class="row2">
+                <td>ROW 2</td>
+                <td>
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda, laboriosam tempore, commodi possimus, esse officiis hic quis deleniti praesentium nisi blanditiis excepturi deserunt sed sit ullam nemo iure sunt voluptas?
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda, laboriosam tempore, commodi possimus, esse officiis hic quis deleniti praesentium nisi blanditiis excepturi deserunt sed sit ullam nemo iure sunt voluptas?
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda, laboriosam tempore, commodi possimus, esse officiis hic quis deleniti praesentium nisi blanditiis excepturi deserunt sed sit ullam nemo iure sunt voluptas?
+                  <!-- Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda, laboriosam tempore, commodi possimus, esse officiis hic quis deleniti praesentium nisi  -->
+                </td>
+                <td>
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                </td>
+              </tr>
+              <tr class="row3">
+                <td>
+                  <p>ROW 3</p>
+                  <p>ROW 3</p>
+                </td>
+                <td>
+<div style="border:3px solid orange" class="i0">
+                    <p class="i00">
+                    <span filler style="display:block;height:200px; width:100%"></span>
+                      00Quaerat expedita, ratione molestias culpa voluptatum quasi sunt est.
+                    </p>
+                  </div>
 
-    </sdoc-requirement-field>
-    <sdoc-requirement-field-label>comment:</sdoc-requirement-field-label>
-    <sdoc-requirement-field data-field-label="comment">
-      <div class="document">
-        <p>This draft requirement is the first attempt to organize this information.</p>
-      </div>
+<div style="border:1px solid red" class="i1">
+                  1Aliquid accusamus <span style="color:red">praesentium</span> illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                  2Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                  3Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis.
+                  4Aliquid accusamus <span style="color:red">praesentium</span> illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+<div style="border:1px solid green" class="i11">
+                5Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                6Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                7Aliquid accusamus <span class="in7" style="color:red"><b>praesentium illum, a amet eos illo in provident veniam</b></span> quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                8Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                9Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                10Aliquid accusamus <span class="in10" style="color:red">praesentium</span> illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                (10-1) Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                (10-1) Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                (10-1) Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                (10-1)Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                (10-1)Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                (10-1)Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                (10-1)Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                (101)Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                (10-1)Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
 
-    </sdoc-requirement-field>
-  </sdoc-requirement>
+                </div>
+</div>
+
+                  11Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                  12Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                  13Aliquid accusamus <span style="color:red">praesentium</span> illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                  14Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                  15Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                  16Aliquid accusamus <span style="color:red">praesentium</span> illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                  17Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+                  18Aliquid accusamus praesentium illum, a amet eos illo in provident veniam quasi commodi aspernatur perspiciatis, at nostrum ipsum assumenda.
+
+                </td>
+                <td>
+                  <p>
+                    0Quaerat expedita, ratione molestias culpa voluptatum quasi sunt est, sed id, ipsam maxime rem fuga eius dignissimos?
+                  </p>
+                  <p>
+                    1Quaerat expedita, ratione molestias culpa voluptatum quasi sunt est, sed id, ipsam maxime rem fuga eius dignissimos?
+                    2Quaerat expedita, ratione molestias culpa voluptatum quasi sunt est, sed id, ipsam maxime rem fuga eius dignissimos?
+                    3Quaerat expedita, ratione molestias culpa voluptatum quasi sunt est, sed id, ipsam maxime rem fuga eius dignissimos?
+                    4Quaerat expedita, ratione molestias culpa voluptatum quasi sunt est, sed id, ipsam maxime rem fuga eius dignissimos?
+                  </p>
+                </td>
+              </tr>
+              <tr class="row4">
+                <td>ROW 4</td>
+                <td>$80</td>
+                <td>$80</td>
+              </tr>
+              <tr class="row5">
+                <td>ROW 5</td>
+                <td>$80</td>
+                <td>$80</td>
+              </tr>
+              <tr class="row6">
+                <td>ROW 6</td>
+                <td>$80</td>
+                <td>$80</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td>tfoot</td>
+                <td>tfoot</td>
+                <td>tfoot</td>
+              </tr>
+            </tfoot>
+          </table>
+
 
 
           <!-- // //////////////////////////////// -->

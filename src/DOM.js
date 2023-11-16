@@ -111,7 +111,9 @@ export default class DocumentObjectModel {
 
   isSelectorMatching(element, selector) {
     if (!element || !selector) {
-      console.warn && console.warn('setAttribute() must have 2 params');
+      console.warn && console.warn('isSelectorMatching() must have 2 params',
+      '\n element: ', element,
+      '\n selector: ', selector);
       return;
     }
 
@@ -213,6 +215,21 @@ export default class DocumentObjectModel {
     return wrapperHeight;
   }
 
+  getTableRowHeight(tr, num = 0) {
+    // Create an empty row by cloning the TR, insert it into the table,
+    // * add the specified number of lines to it (num),
+    // and detect its actual height through the delta
+    // of the tops of the TR following it.
+    const initialTop = tr.offsetTop;
+    const clone = tr.cloneNode(true);
+    const text = '!<br />'.repeat(num);
+    [...clone.children].forEach(td => td.innerHTML = text);
+    tr.before(clone);
+    const endTop = tr.offsetTop;
+    clone.remove();
+    return endTop - initialTop;
+  }
+
   createComplexTextBlock() {
     const textBlock = this.create(SELECTOR.complexTextBlock);
     return textBlock;
@@ -304,6 +321,24 @@ export default class DocumentObjectModel {
     return currentElement === rootElement;
   }
 
+  findFirstChildParent(element, rootElement) {
+    let parent = element.parentElement;
+    let firstSuitableParent = null;
+
+    while (parent && parent !== rootElement) {
+      const firstChild = parent.firstElementChild;
+
+      if (element === firstChild) {
+        firstSuitableParent = parent;
+      }
+
+      element = parent;
+      parent = element.parentElement;
+    }
+
+    return firstSuitableParent;
+  }
+
   findLastChildParent(element, rootElement) {
     let parent = element.parentElement;
     let lastSuitableParent = null;
@@ -327,7 +362,9 @@ export default class DocumentObjectModel {
   }
 
   isNoBreak(element) {
-    return this.isSelectorMatching(element, SELECTOR.flagNoBreak)
+    const t = this.isSelectorMatching(element, SELECTOR.flagNoBreak);
+    t && element.classList.add('📛')
+    return t
   }
 
   isNoHanging(element) {
@@ -467,6 +504,7 @@ export default class DocumentObjectModel {
     return wrapper
   }
 
+  // TODO replace with setFlag... and remove wrapper function
   wrapWithFlagNoBreak(element) {
     const wrapper = this.createWithFlagNoBreak();
     element.before(wrapper);
@@ -594,18 +632,39 @@ export default class DocumentObjectModel {
   }
 
   isLineChanged(current, next) {
-    const vert = this.getElementRelativeBottom(current) <= this.getElementRelativeTop(next);
+     // * (-1): Browser rounding fix (when converting mm to pixels).
+    const delta = this.getElementRelativeTop(next)
+                - this.getElementRelativeBottom(current);
+    const vert = delta > (-2);
     // const gor = this.getElementLeft(current) + this.getElementWidth(current) > this.getElementLeft(next);
     return vert;
   }
-
+  // TODO: isLineChanged vs isLineKept: можно сделать else? они противоположны
   isLineKept(current, next) {
-    const vert = this.getElementRelativeBottom(current) > this.getElementRelativeTop(next);
+    // * (-1): Browser rounding fix (when converting mm to pixels).
+    const delta = this.getElementRelativeTop(next)
+                - this.getElementRelativeBottom(current);
+    const vert = delta <= (-2);
     return vert;
   }
 
   splitByWordsGreedy(node) {
-    return node.innerHTML.split(/\s+/)
+    // SEE Pages: const WORD_JOINER
+    const arr = node.innerHTML.split(/(?<=\s|-)/); // WORD_JOINER = '';
+    // const arr = node.innerHTML.split(/\s+/); // WORD_JOINER = ' ';
+    // console.log('🔴', arr)
+    return arr
+  }
+
+  splitByWordsGreedyWithSpacesFilter(node) {
+    // SEE Pages: const WORD_JOINER
+    // ** 1 ** add trim() for trailing spaces
+    const arr = node.innerHTML.trim().split(/(?<=\s|-)/); // WORD_JOINER = '';
+    // ** 2 ** filter arr and remove unnecessary spaces (' ') inside text block.
+    // ** A meaningful space character has been added to an array element.
+    const filteredArr = arr.filter(item => item != ' ');
+    // console.log('🔴 filtered word Arr', filteredArr)
+    return filteredArr
   }
 
   // TODO make Obj with offsetTop and use it later
@@ -662,6 +721,106 @@ export default class DocumentObjectModel {
     table.append(tableBody);
     tfoot && table.append(tfoot);
     return table;
+  }
+
+  getTableEntries(node) {
+
+    const nodeEntries = [...node.children].reduce(function (acc, curr) {
+
+      const tag = curr.tagName;
+
+      if (tag === 'TBODY') {
+        return {
+          ...acc,
+          rows: [
+            ...acc.rows,
+            ...curr.children,
+          ]
+        }
+      }
+
+      if (tag === 'CAPTION') {
+        return {
+          ...acc,
+          caption: curr
+        }
+      }
+
+      if (tag === 'COLGROUP') {
+        return {
+          ...acc,
+          colgroup: curr
+        }
+      }
+
+      if (tag === 'THEAD') {
+        return {
+          ...acc,
+          thead: curr
+        }
+      }
+
+      if (tag === 'TFOOT') {
+        return {
+          ...acc,
+          tfoot: curr
+        }
+      }
+
+      if (tag === 'TR') {
+        return {
+          ...acc,
+          rows: [
+            ...acc.rows,
+            ...curr,
+          ]
+        }
+      }
+
+      return {
+        ...acc,
+        unexpected: [
+          ...acc.unexpected,
+          // BUG: •Uncaught TypeError: t is not iterable at bundle.js:1:19184
+          // curr,
+          ...curr,
+        ]
+      }
+    }, {
+      caption: null,
+      thead: null,
+      tfoot: null,
+      rows: [],
+      unexpected: [],
+    });
+
+    if (nodeEntries.unexpected.length > 0) {
+      this.debugMode
+        && console.warn(`something unexpected is found in the table ${node}`);
+    }
+
+    return nodeEntries
+  }
+
+  lockTableWidths(table) {
+    this.copyNodeWidth(table, table);
+    table.querySelectorAll('td').forEach(
+      td => this.copyNodeWidth(td, td)
+    )
+  }
+
+  copyNodeWidth(clone, node) {
+    // TODO check the fix:
+    // * (-1): Browser rounding fix (when converting mm to pixels).
+    clone.style.width = `${this.getElementWidth(node) - 1}px`;
+  }
+
+  findDeepestChild(element) {
+    let currentElement = element;
+    while (currentElement.firstElementChild) {
+        currentElement = currentElement.firstElementChild;
+    }
+    return currentElement;
   }
 
 }

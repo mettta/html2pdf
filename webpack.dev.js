@@ -1,6 +1,7 @@
 const { merge } = require('webpack-merge');
 const common = require('./webpack.common.js');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = merge(common, {
   mode: 'development',
@@ -48,6 +49,11 @@ module.exports = merge(common, {
       appMountId: 'app',
       filename: 'tags.html',
       template: './examples/tags.html',
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: './examples/css', to: 'css' },
+      ],
     }),
   ],
 });
