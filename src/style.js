@@ -233,6 +233,10 @@ ${SELECTOR.printForcedPageBreak} {
     display: none;
   }
 
+  ${SELECTOR.paperBody} {
+    page-break-inside: avoid;
+  }
+
   ${SELECTOR.printPageBreak} {
     break-after: page;
     padding: .1px;

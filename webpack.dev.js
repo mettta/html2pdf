@@ -10,6 +10,7 @@ module.exports = merge(common, {
     static: './dist',
   },
   plugins: [
+    // Index
     new HtmlWebpackPlugin({
       appMountId: 'app',
       filename: 'index.html',
@@ -20,39 +21,39 @@ module.exports = merge(common, {
       //   dataConfig: 'test',
       // },
     }),
+
+    // Test cases
     new HtmlWebpackPlugin({
       appMountId: 'app',
-      filename: 'test.html',
-      template: './examples/test/test.html',
-      title: '📍 SDOC test',
-      inject: false,
+      filename: 'resizing.html',
+      template: './examples/test/resizing.html',
     }),
     new HtmlWebpackPlugin({
       appMountId: 'app',
+      filename: 'tags.html',
+      template: './examples/test/tags.html',
+    }),
+
+    // Strictdoc
+    new HtmlWebpackPlugin({
+      appMountId: 'app',
       filename: 'strictdoc.html',
-      template: './examples/strictdoc.html',
+      template: './examples/strictdoc/index.html',
       title: '🌲 strictdoc',
       inject: false,
     }),
     new HtmlWebpackPlugin({
       appMountId: 'app',
-      filename: 'document.html',
-      template: './examples/strictdoc/document.html',
-      // inject: false,
+      filename: 'test.html',
+      template: './examples/strictdoc/test.html',
+      title: '📍 test',
+      inject: false,
     }),
-    new HtmlWebpackPlugin({
-      appMountId: 'app',
-      filename: 'resizing.html',
-      template: './examples/resizing.html',
-    }),
-    new HtmlWebpackPlugin({
-      appMountId: 'app',
-      filename: 'tags.html',
-      template: './examples/tags.html',
-    }),
+
+    // CSS
     new CopyWebpackPlugin({
       patterns: [
-        { from: './examples/css', to: 'css' },
+        { from: './examples/strictdoc/css', to: 'css' },
       ],
     }),
   ],
