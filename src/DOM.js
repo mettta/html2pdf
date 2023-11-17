@@ -410,10 +410,14 @@ export default class DocumentObjectModel {
   }
 
   getChildNodes(element) {
+    // childNodes returns child nodes
+    // (element nodes, text nodes, and comment nodes)
     return element.childNodes;
   }
 
   getChildren(element) {
+    // children returns child elements
+    // (not text and comment nodes)
     return element.children;
   }
 
