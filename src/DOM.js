@@ -86,7 +86,7 @@ export default class DocumentObjectModel {
 
   setAttribute(element, selector) {
     if (!element || !selector) {
-      console.warn && console.warn('setAttribute() must have 2 params');
+      this.debugMode && this.debugToggler._DOM && console.warn('setAttribute() must have 2 params');
       return;
     }
 
@@ -101,7 +101,7 @@ export default class DocumentObjectModel {
       element.id = id;
       return
     } else if (first === '[') {
-      console.assert(
+      this.debugMode && this.debugToggler._DOM && console.assert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);
@@ -113,7 +113,7 @@ export default class DocumentObjectModel {
 
   isSelectorMatching(element, selector) {
     if (!element || !selector) {
-      console.warn && console.warn('isSelectorMatching() must have 2 params',
+      this.debugMode && this.debugToggler._DOM && console.warn('isSelectorMatching() must have 2 params',
       '\n element: ', element,
       '\n selector: ', selector);
       return;
@@ -130,7 +130,7 @@ export default class DocumentObjectModel {
       return element.id === id;
 
     } else if (first === '[') {
-      console.assert(
+      this.debugMode && this.debugToggler._DOM && console.assert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);
@@ -364,9 +364,7 @@ export default class DocumentObjectModel {
   }
 
   isNoBreak(element) {
-    const t = this.isSelectorMatching(element, SELECTOR.flagNoBreak);
-    t && element.classList.add('📛')
-    return t
+    return this.isSelectorMatching(element, SELECTOR.flagNoBreak)
   }
 
   isNoHanging(element) {
