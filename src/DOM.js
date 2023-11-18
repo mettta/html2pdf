@@ -1,7 +1,5 @@
 import SELECTOR from './selector';
 
-const DOM_DEBAG_TOGGLER = true;
-
 const CONSOLE_CSS_LABEL_DOM = 'border:1px solid #FFBB00;'
                             + 'background:#EEEEEE;'
                             + 'color:#FFBB00;'
@@ -12,6 +10,10 @@ export default class DocumentObjectModel {
     this.debugMode = debugMode;
     this.DOM = DOM;
     this.body = DOM.body;
+
+    this.debugToggler = {
+      _DOM: false,
+    }
   }
 
   // STYLES
@@ -106,7 +108,7 @@ export default class DocumentObjectModel {
       element.setAttribute(attr, '');
       return
     }
-    this.debugMode && console.log(`you're really sure ${selector} is a selector?`)
+    this.debugMode && this.debugToggler._DOM && console.log(`you're really sure ${selector} is a selector?`)
   }
 
   isSelectorMatching(element, selector) {
@@ -564,7 +566,7 @@ export default class DocumentObjectModel {
   getElementRootedTop(element, root, topAcc = 0) {
 
     if (!element) {
-      this.debugMode && console.warn(
+      this.debugMode && this.debugToggler._DOM && console.warn(
         'element must be provided, but was received:', element,
         '\nThe function returned:', undefined
       );
@@ -572,7 +574,7 @@ export default class DocumentObjectModel {
     }
 
     if (!root) {
-      this.debugMode && console.warn(
+      this.debugMode && this.debugToggler._DOM && console.warn(
         'root must be provided, but was received:', element,
         '\nThe function returned:', undefined
       );
@@ -582,7 +584,7 @@ export default class DocumentObjectModel {
     const offsetParent = element.offsetParent;
 
     if (!offsetParent) {
-      this.debugMode && console.warn(
+      this.debugMode && this.debugToggler._DOM && console.warn(
         'element has no offset parent', element,
         '\nThe function returned:', undefined
       );
@@ -619,7 +621,7 @@ export default class DocumentObjectModel {
     // *** so no dummy padding is needed.
     element && element.after(test);
     const top = element ? this.getElementRootedTop(test, root) : undefined;
-    // this.debugMode && DOM_DEBAG_TOGGLER && console.log(
+    // this.debugMode && this.debugToggler._DOM && console.log(
     //   '%c getElementRootedBottom ', CONSOLE_CSS_LABEL_DOM,
     //    {element, top});
     test.remove();
@@ -799,7 +801,7 @@ export default class DocumentObjectModel {
     });
 
     if (nodeEntries.unexpected.length > 0) {
-      this.debugMode
+      this.debugMode && this.debugToggler._DOM
         && console.warn(`something unexpected is found in the table ${node}`);
     }
 

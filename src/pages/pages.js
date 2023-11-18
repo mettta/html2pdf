@@ -24,16 +24,17 @@ export default class Pages {
     // * From config:
     this.debugMode = config.debugMode;
     this.debugToggler = {
-      _parseNode: true,
-      _parseNodes: true,
-      _getProcessedChildren: true,
-      _splitPreNode: true,
-      _splitTableNode: true,
-      _splitTableRow: true,
-      _splitGridNode: true,
-      _createSlicesBySplitFlag: true,
-      _getInternalSplitters: true,
-      _splitComplexTextBlockIntoLines: true,
+      _parseNode: false,
+      _parseNodes: false,
+      _registerPageStart: false,
+      _getProcessedChildren: false,
+      _splitPreNode: false,
+      _splitTableNode: false,
+      _splitTableRow: false,
+      _splitGridNode: false,
+      _createSlicesBySplitFlag: false,
+      _getInternalSplitters: false,
+      _splitComplexTextBlockIntoLines: false,
     }
 
     // no hanging params:
@@ -197,7 +198,7 @@ export default class Pages {
       pageStart: pageStart,
       pageBottom: pageBottom,
     })
-    this.debugMode && console.log(
+    this.debugMode && this.debugToggler._registerPageStart && console.log(
       `📍 %c register page ${this.pages.length} \n`, "background:yellow; color:red",
       pageBottom, pageStart,
     )
@@ -282,7 +283,7 @@ export default class Pages {
     // if there is no next element, then we are in a case
     // where the [data-content-flow-end] element is current.
     if (!nextElement) {
-      this.debugMode && this.debugToggler._parseNode && console.log(...consoleMark, '🏁 THE END')
+      this.debugMode && this.debugToggler._parseNode && console.groupEnd(...consoleMark, '🏁 THE END')
       return
     }
 
@@ -290,7 +291,7 @@ export default class Pages {
     if (this.DOM.isForcedPageBreak(currentElement)) {
       // TODO I've replaced the 'next' with the 'current' - need to test it out
       this._registerPageStart(currentElement)
-      this.debugMode && this.debugToggler._parseNode && console.log(...consoleMark, '🚩 FORCED BREAK');
+      this.debugMode && this.debugToggler._parseNode && console.groupEnd(...consoleMark, '🚩 FORCED BREAK');
       return
     }
 
@@ -341,6 +342,7 @@ export default class Pages {
         // this._registerPageStart(currentElement);
         // ** And if it's the first child, move the parent node to the next page.
         this._registerPageStart(currentOrParentElement);
+        this.debugMode && this.debugToggler._parseNode && console.groupEnd(...consoleMark, '_isNoHanging(current)');
         return
       }
 
@@ -375,6 +377,7 @@ export default class Pages {
         if (currentImageHeight < availableSpace) {
           // just leave it on the current page
           this._registerPageStart(nextElement);
+          this.debugMode && this.debugToggler._parseNode && console.groupEnd(...consoleMark, 'register next');
           return
         }
 
@@ -392,6 +395,7 @@ export default class Pages {
             vspace: availableSpace,
             hspace: this.referenceWidth
           });
+          this.debugMode && this.debugToggler._parseNode && console.groupEnd(...consoleMark, 'register Next, reduce current element a bit');
           return
         }
 
@@ -407,6 +411,7 @@ export default class Pages {
             hspace: this.referenceWidth
           });
         }
+        this.debugMode && this.debugToggler._parseNode && console.groupEnd(...consoleMark, 'register and fit current Image');
         return
       }
 
@@ -421,6 +426,7 @@ export default class Pages {
         // we need <= because splitted elements often get equal height // todo comment
 
         this._registerPageStart(nextElement);
+        this.debugMode && this.debugToggler._parseNode && console.groupEnd(...consoleMark, 'register Next');
         return
       }
 
@@ -617,36 +623,40 @@ export default class Pages {
 
     // TODO [html2pdf-splitted] SELECTOR
     if (this.DOM.isSelectorMatching(node, '[html2pdf-splitted]')) {
+
+      this.debugMode
+      && this.debugToggler._splitComplexTextBlockIntoLines
+      && console.groupEnd('_splitComplexTextBlockIntoLines', [html2pdf-splitted]);
       return this._getChildren(node);
     }
 
     // GET CHILDREN
 
-    console.log('\n\n\n\n\n\n');
-    const o = node.cloneNode(true);
-    console.log('before', o);
+    // console.log('\n\n\n\n\n\n');
+    // const o = node.cloneNode(true);
+    // console.log('before', o);
 
-    console.log('\n\nAAAAAAA');
-    const a = node.cloneNode(true);
-    const nodeChildrenA = this._getChildren(a).map(
-      item => {return [
-        item,
-        item.innerHTML
-      ]}
-    );
-    console.log(a, 'nodeChildrenA', nodeChildrenA);
+    // console.log('\n\nAAAAAAA');
+    // const a = node.cloneNode(true);
+    // const nodeChildrenA = this._getChildren(a).map(
+    //   item => {return [
+    //     item,
+    //     item.innerHTML
+    //   ]}
+    // );
+    // console.log(a, 'nodeChildrenA', nodeChildrenA);
 
-    console.log('\n\nBBBBBBBBB');
-    const b = node.cloneNode(true);
-    const nodeChildrenB = [...this.DOM.getChildren(b)].map(
-      item => {return [
-        item,
-        item.innerHTML
-      ]}
-    );
-    console.log(b, 'nodeChildrenB', nodeChildrenB);
+    // console.log('\n\nBBBBBBBBB');
+    // const b = node.cloneNode(true);
+    // const nodeChildrenB = [...this.DOM.getChildren(b)].map(
+    //   item => {return [
+    //     item,
+    //     item.innerHTML
+    //   ]}
+    // );
+    // console.log(b, 'nodeChildrenB', nodeChildrenB);
 
-    console.log('\n\n\n\n\n\n');
+    // console.log('\n\n\n\n\n\n');
 
     // Она уже обработана - можно просто взять детей ?? -- так разбивается только первая строка
     // TODO (вложенные не работают - теряется внутренний 2й как минимум)
@@ -2461,7 +2471,6 @@ export default class Pages {
           }, [])
 
           if (this._isVerticalFlowDisrupted(childrenArr)) {
-            console.log('_isVerticalFlowDisrupted', [...childrenArr]);
             // * If the vertical flow is disturbed and the elements are side by side:
             childrenArr = this._processInlineChildren(childrenArr);
           }
