@@ -7,6 +7,7 @@ import Layout from './layout';
 import Pages from './pages';
 import Paper from './paper';
 import Preview from './preview';
+import Toc from './toc';
 
 export default class HTML2PDF4DOC {
   constructor(params) {
@@ -55,6 +56,13 @@ export default class HTML2PDF4DOC {
       referenceHeight: paper.bodyHeight,
       referenceWidth: paper.bodyWidth,
     }).calculate();
+
+    new Toc({
+      config: this.config,
+      DOM: DOM,
+      selector: SELECTOR,
+      pages: pages,
+    }).render();
 
     new Preview({
       config: this.config,

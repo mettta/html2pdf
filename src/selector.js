@@ -16,6 +16,9 @@ const SELECTOR = {
   pageNumberCurrent: '[html2pdf-page-number-current]',
   pageNumberTotal: '[html2pdf-page-number-total]',
 
+  // *** TOC page numbers:
+  tocPage: '[html2pdf-toc-page]',
+
   // * Layout
   paperFlow: 'html2pdf-paper-flow',
   contentFlow: 'html2pdf-content-flow',
