@@ -27,6 +27,10 @@ export default class HTML2PDF4DOC {
 
     this.config.debugMode && console.time("printTHIS");
 
+    // TODO
+    // this.config.debugMode && 
+    console.info(this.config);
+
     const DOM = new DocumentObjectModel({DOM: window.document, debugMode: this.config.debugMode});
     DOM.insertStyle(new Style(this.config).create());
 
