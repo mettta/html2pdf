@@ -1912,6 +1912,13 @@ export default class Pages {
       const nextElement = children[i + 1];
       const nextElementTop = nextElement ? this.DOM.getElementRootedTop(nextElement, rootNode): undefined;
 
+      // nextElement && console.log(
+      //   'ddddd',
+      //   this.DOM.getElementRootedTop(nextElement, rootNode),
+      //   nextElement,
+      //   rootNode
+      // )
+
       const newObject = {
         id: i,
         element: children[i],
@@ -1946,6 +1953,10 @@ export default class Pages {
           );
       }
 
+      // TODO:
+      // nextElementTop?
+      // nextElement?
+
       if (nextElementTop <= floater) {
         // -- current fits
 
@@ -1968,7 +1979,7 @@ export default class Pages {
 
         this.debugMode
           && this.debugToggler._getInternalSplitters
-          && console.log('💟💟 nextElementTop > floater',);
+          && console.log('💟💟', `nextElementTop > floater \n ${nextElementTop} > ${floater} `,);
 
         if (this._isSVG(currentElement) || this._isIMG(currentElement)) {
           // TODO needs testing

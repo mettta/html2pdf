@@ -599,8 +599,8 @@ export default class DocumentObjectModel {
     }
 
     if (!root) {
-      this.debugMode && this.debugToggler._DOM && console.warn(
-        'root must be provided, but was received:', element,
+      this.debugMode && console.warn(
+        'root must be provided, but was received:', root,
         '\nThe function returned:', undefined
       );
       return
@@ -608,6 +608,7 @@ export default class DocumentObjectModel {
 
     const offsetParent = element.offsetParent;
 
+    // TODO element == document.body
     if (!offsetParent) {
       this.debugMode && this.debugToggler._DOM && console.warn(
         'element has no offset parent', element,
