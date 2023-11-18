@@ -112,6 +112,10 @@ sdoc-requirement-field {
   overflow-wrap: break-word;
 }
 
+[data-viewtype="html2pdf"] sdoc-requirement-field-label {
+  word-break: normal;
+}
+
 /* for relations in requirement */
 sdoc-requirement-field > ol:first-child,
 sdoc-requirement-field > ul:first-child {
@@ -287,6 +291,7 @@ sdoc-meta {
   overflow-x: auto;
 }
 
+sdoc-meta-section,
 sdoc-meta-label,
 sdoc-meta-field {
   display: flex;
@@ -306,6 +311,10 @@ sdoc-meta-label {
 
 sdoc-meta-field {
   grid-column: 2 / 3;
+}
+
+sdoc-meta-section {
+  grid-column: 1 / -1;
 }
 
 /* PDF */
