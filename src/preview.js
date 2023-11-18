@@ -46,7 +46,7 @@ export default class Preview {
     this.debugMode && console.groupCollapsed('%c Preview ', CONSOLE_CSS_LABEL_PREVIEW);
     this._processFirstPage();
     this._processOtherPages();
-    this._addMask();
+    (this.config.mask === 'true') && this._addMask();
     this.debugMode && console.groupEnd('%c Preview ', CONSOLE_CSS_LABEL_PREVIEW);
 
   }

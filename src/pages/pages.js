@@ -513,11 +513,11 @@ export default class Pages {
       children = [];
     } else if (this.DOM.isComplexTextBlock(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
-        '💚 ComplexTextBlock');
+        '💚 ComplexTextBlock', node);
       children = this._splitComplexTextBlockIntoLines(node) || [];
     } else if (this._isTextNode(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
-        '💚 TextNode');
+        '💚 TextNode', node);
       // TODO: Compare performance of _splitComplexTextBlockIntoLines and _splitTextNode!
       // temporarily use the less productive function.
 
@@ -622,12 +622,39 @@ export default class Pages {
 
     // GET CHILDREN
 
-    node.setAttribute('_splitComplexTextBlockIntoLines', '🛐_start!');
+    console.log('\n\n\n\n\n\n');
+    const o = node.cloneNode(true);
+    console.log('before', o);
 
-    // const nodeChildren = this._getChildren(node);
+    console.log('\n\nAAAAAAA');
+    const a = node.cloneNode(true);
+    const nodeChildrenA = this._getChildren(a).map(
+      item => {return [
+        item,
+        item.innerHTML
+      ]}
+    );
+    console.log(a, 'nodeChildrenA', nodeChildrenA);
+
+    console.log('\n\nBBBBBBBBB');
+    const b = node.cloneNode(true);
+    const nodeChildrenB = [...this.DOM.getChildren(b)].map(
+      item => {return [
+        item,
+        item.innerHTML
+      ]}
+    );
+    console.log(b, 'nodeChildrenB', nodeChildrenB);
+
+    console.log('\n\n\n\n\n\n');
+
     // Она уже обработана - можно просто взять детей ?? -- так разбивается только первая строка
     // TODO (вложенные не работают - теряется внутренний 2й как минимум)
-    const nodeChildren = [...this.DOM.getChildren(node)];
+    // const nodeChildren = [...this.DOM.getChildren(node)]; // а так не считывается текстовая нода
+    // const nodeChildren = this._getChildren(node); // а так дважды обрабатывается _processInlineChildren
+    // ? FIX was made in _getChildren(element)
+
+    const nodeChildren = this._getChildren(node);
 
     const complexChildren = nodeChildren.map(
       element => {
@@ -806,6 +833,8 @@ export default class Pages {
     const newLines = beginnerNumbers.reduce(
       (result, currentElement, currentIndex) => {
         const line = this.DOM.cloneNodeWrapper(splittedItem);
+        this.DOM.setFlagNoBreak(line); // TODO ? 
+        line.setAttribute('role', 'line-simplest');
         line.classList.add('cloned🅱️');
         const start = beginnerNumbers[currentIndex];
         const end = beginnerNumbers[currentIndex + 1];
@@ -1883,12 +1912,6 @@ export default class Pages {
         element: children[i + 1], // * depend on nextElement
       }
 
-      this.debugMode
-        && this.debugToggler._getInternalSplitters
-        && console.log('💟', i, 'from', (children.length-1), '💟',
-        // '\n newObject', newObject, '\n newObjectFromNext', newObjectFromNext
-        );
-
       // * Проверяем, не добавлен ли этот элемент,
       // * это возможно через registerResult(nextElement, i + 1).
       const lastTrailElementID = trail.length ? trail.at(-1).id : undefined;
@@ -2396,42 +2419,55 @@ export default class Pages {
     // fon display:none / contents
     // this.DOM.getElementOffsetParent(currentElement)
 
-    let childrenArr = [...this.DOM.getChildNodes(element)]
-      .reduce(
-        (acc, item) => {
+    // TODO: to do this check more elegant
+    // SEE the context here:
+    // _splitComplexTextBlockIntoLines(node)
+    // ...
+    // const nodeChildren = this._getChildren(node);
+    // * _processInlineChildren (makes ComplexTextBlock) is running extra on complex nodes
+    if (this.DOM.isComplexTextBlock(element)) {
+      return [...this.DOM.getChildren(element)]
 
-          // * filter STYLE, use element.tagName
-          if (this._isSTYLE(item)) {
-            return acc;
+    } else {
+
+      let childrenArr = [...this.DOM.getChildNodes(element)]
+        .reduce(
+          (acc, item) => {
+
+            // * filter STYLE, use element.tagName
+            if (this._isSTYLE(item)) {
+              return acc;
+            }
+
+            // * wrap text node, use element.nodeType
+            if (this.DOM.isSignificantTextNode(item)) {
+              acc.push(this.DOM.wrapTextNode(item));
+              return acc;
+            }
+
+            // * no offset parent (contains)
+            if (!this.DOM.getElementOffsetParent(item)) {
+              const ch = this._getChildren(item);
+              ch.length > 0 && acc.push(...ch);
+              return acc;
+            }
+
+            // * normal
+            if (this.DOM.isElementNode(item)) {
+              acc.push(item);
+              return acc;
+            };
+
+          }, [])
+
+          if (this._isVerticalFlowDisrupted(childrenArr)) {
+            console.log('_isVerticalFlowDisrupted', [...childrenArr]);
+            // * If the vertical flow is disturbed and the elements are side by side:
+            childrenArr = this._processInlineChildren(childrenArr);
           }
 
-          // * wrap text node, use element.nodeType
-          if (this.DOM.isSignificantTextNode(item)) {
-            acc.push(this.DOM.wrapTextNode(item));
-            return acc;
-          }
-
-          // * no offset parent (contains)
-          if (!this.DOM.getElementOffsetParent(item)) {
-            const ch = this._getChildren(item);
-            ch.length > 0 && acc.push(...ch);
-            return acc;
-          }
-
-          // * normal
-          if (this.DOM.isElementNode(item)) {
-            acc.push(item);
-            return acc;
-          };
-
-        }, [])
-
-        if (this._isVerticalFlowDisrupted(childrenArr)) {
-          // * If the vertical flow is disturbed and the elements are side by side:
-          childrenArr = this._processInlineChildren(childrenArr);
-        }
-
-    return childrenArr;
+      return childrenArr;
+    }
   }
 
   _isSignificantChild(child) {
