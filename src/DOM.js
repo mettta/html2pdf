@@ -1,7 +1,5 @@
 import SELECTOR from './selector';
 
-const DOM_DEBAG_TOGGLER = true;
-
 const CONSOLE_CSS_LABEL_DOM = 'border:1px solid #FFBB00;'
                             + 'background:#EEEEEE;'
                             + 'color:#FFBB00;'
@@ -12,6 +10,10 @@ export default class DocumentObjectModel {
     this.debugMode = debugMode;
     this.DOM = DOM;
     this.body = DOM.body;
+
+    this.debugToggler = {
+      _DOM: false,
+    }
   }
 
   // STYLES
@@ -32,6 +34,10 @@ export default class DocumentObjectModel {
 
   getElement(selector, target = this.DOM) {
     return target.querySelector(selector);
+  }
+
+  getElementById(id, target = this.DOM) {
+    return target.getElementById(id);
   }
 
   removeNode(element) {
@@ -82,9 +88,32 @@ export default class DocumentObjectModel {
     return item.dataset.id;
   }
 
-  setAttribute(element, selector) {
+  getAttribute(element, selector) {
     if (!element || !selector) {
-      console.warn && console.warn('setAttribute() must have 2 params');
+      this.debugMode && this.debugToggler._DOM && console.warn('setAttribute() must have 2 params');
+      return;
+    }
+
+    const first = selector.charAt(0);
+
+    if (first === '.' || first === '#') {
+      this.debugMode && this.debugToggler._DOM && console.log(`you're really sure ${selector} is attribute selector?`)
+    }
+
+    if (first === '[') {
+      this.debugMode && this.debugToggler._DOM && console.assert(
+        selector.at(-1) === ']', `the ${selector} selector is not OK.`
+      );
+      const attr = selector.substring(1, selector.length - 1);
+      return element.getAttribute(attr);
+    }
+
+    element.getAttribute(selector);
+  }
+
+  setAttribute(element, selector, value) {
+    if (!element || !selector) {
+      this.debugMode && this.debugToggler._DOM && console.warn('setAttribute() must have 2 params');
       return;
     }
 
@@ -99,19 +128,19 @@ export default class DocumentObjectModel {
       element.id = id;
       return
     } else if (first === '[') {
-      console.assert(
+      this.debugMode && this.debugToggler._DOM && console.assert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);
-      element.setAttribute(attr, '');
+      element.setAttribute(attr, (value ? value : ''));
       return
     }
-    this.debugMode && console.log(`you're really sure ${selector} is a selector?`)
+    this.debugMode && this.debugToggler._DOM && console.log(`you're really sure ${selector} is a selector?`)
   }
 
   isSelectorMatching(element, selector) {
     if (!element || !selector) {
-      console.warn && console.warn('isSelectorMatching() must have 2 params',
+      this.debugMode && this.debugToggler._DOM && console.warn('isSelectorMatching() must have 2 params',
       '\n element: ', element,
       '\n selector: ', selector);
       return;
@@ -128,7 +157,7 @@ export default class DocumentObjectModel {
       return element.id === id;
 
     } else if (first === '[') {
-      console.assert(
+      this.debugMode && this.debugToggler._DOM && console.assert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);
@@ -362,9 +391,7 @@ export default class DocumentObjectModel {
   }
 
   isNoBreak(element) {
-    const t = this.isSelectorMatching(element, SELECTOR.flagNoBreak);
-    t && element.classList.add('📛')
-    return t
+    return this.isSelectorMatching(element, SELECTOR.flagNoBreak)
   }
 
   isNoHanging(element) {
@@ -564,7 +591,7 @@ export default class DocumentObjectModel {
   getElementRootedTop(element, root, topAcc = 0) {
 
     if (!element) {
-      this.debugMode && console.warn(
+      this.debugMode && this.debugToggler._DOM && console.warn(
         'element must be provided, but was received:', element,
         '\nThe function returned:', undefined
       );
@@ -572,7 +599,7 @@ export default class DocumentObjectModel {
     }
 
     if (!root) {
-      this.debugMode && console.warn(
+      this.debugMode && this.debugToggler._DOM && console.warn(
         'root must be provided, but was received:', element,
         '\nThe function returned:', undefined
       );
@@ -582,7 +609,7 @@ export default class DocumentObjectModel {
     const offsetParent = element.offsetParent;
 
     if (!offsetParent) {
-      this.debugMode && console.warn(
+      this.debugMode && this.debugToggler._DOM && console.warn(
         'element has no offset parent', element,
         '\nThe function returned:', undefined
       );
@@ -619,7 +646,7 @@ export default class DocumentObjectModel {
     // *** so no dummy padding is needed.
     element && element.after(test);
     const top = element ? this.getElementRootedTop(test, root) : undefined;
-    // this.debugMode && DOM_DEBAG_TOGGLER && console.log(
+    // this.debugMode && this.debugToggler._DOM && console.log(
     //   '%c getElementRootedBottom ', CONSOLE_CSS_LABEL_DOM,
     //    {element, top});
     test.remove();
@@ -799,7 +826,7 @@ export default class DocumentObjectModel {
     });
 
     if (nodeEntries.unexpected.length > 0) {
-      this.debugMode
+      this.debugMode && this.debugToggler._DOM
         && console.warn(`something unexpected is found in the table ${node}`);
     }
 

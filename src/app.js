@@ -7,6 +7,7 @@ import Layout from './layout';
 import Pages from './pages';
 import Paper from './paper';
 import Preview from './preview';
+import Toc from './toc';
 
 export default class HTML2PDF4DOC {
   constructor(params) {
@@ -64,6 +65,13 @@ export default class HTML2PDF4DOC {
       paper: paper,
       pages: pages,
     }).create();
+
+    new Toc({
+      config: this.config,
+      DOM: DOM,
+      selector: SELECTOR,
+      layout: layout,
+    }).render();
 
     this.config.debugMode && console.timeEnd("printTHIS");
   }

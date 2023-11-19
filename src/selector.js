@@ -16,6 +16,11 @@ const SELECTOR = {
   pageNumberCurrent: '[html2pdf-page-number-current]',
   pageNumberTotal: '[html2pdf-page-number-total]',
 
+  // *** TOC page numbers:
+  // PageMarker is used to determine which page an object is on.
+  pageMarker: 'html2pdf-page',
+  tocPageNumber: 'html2pdf-toc-page-number',
+
   // * Layout
   paperFlow: 'html2pdf-paper-flow',
   contentFlow: 'html2pdf-content-flow',
