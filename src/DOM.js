@@ -132,7 +132,7 @@ export default class DocumentObjectModel {
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);
-      element.setAttribute(attr, '');
+      element.setAttribute(attr, (value ? value : ''));
       return
     }
     this.debugMode && this.debugToggler._DOM && console.log(`you're really sure ${selector} is a selector?`)
