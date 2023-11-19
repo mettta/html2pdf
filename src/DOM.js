@@ -36,6 +36,10 @@ export default class DocumentObjectModel {
     return target.querySelector(selector);
   }
 
+  getElementById(id, target = this.DOM) {
+    return target.getElementById(id);
+  }
+
   removeNode(element) {
     element.remove();
   }
@@ -84,7 +88,30 @@ export default class DocumentObjectModel {
     return item.dataset.id;
   }
 
-  setAttribute(element, selector) {
+  getAttribute(element, selector) {
+    if (!element || !selector) {
+      this.debugMode && this.debugToggler._DOM && console.warn('setAttribute() must have 2 params');
+      return;
+    }
+
+    const first = selector.charAt(0);
+
+    if (first === '.' || first === '#') {
+      this.debugMode && this.debugToggler._DOM && console.log(`you're really sure ${selector} is attribute selector?`)
+    }
+
+    if (first === '[') {
+      this.debugMode && this.debugToggler._DOM && console.assert(
+        selector.at(-1) === ']', `the ${selector} selector is not OK.`
+      );
+      const attr = selector.substring(1, selector.length - 1);
+      return element.getAttribute(attr);
+    }
+
+    element.getAttribute(selector);
+  }
+
+  setAttribute(element, selector, value) {
     if (!element || !selector) {
       this.debugMode && this.debugToggler._DOM && console.warn('setAttribute() must have 2 params');
       return;
