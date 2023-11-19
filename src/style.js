@@ -105,7 +105,7 @@ ${SELECTOR.footerContent} {
   padding-top: ${this.config.footerMargin}${this.config.screenUnits};
   /* padding-bottom: 1px; */
   /* Page numbers: */
-  padding-bottom: 10px;
+  min-height: 32px;
 }
 
 ${SELECTOR.pageNumberRoot} {
@@ -124,10 +124,6 @@ ${SELECTOR.headerContent} ${SELECTOR.pageNumberRoot} {
 
 ${SELECTOR.footerContent} ${SELECTOR.pageNumberRoot} {
   bottom: 0;
-}
-
-${SELECTOR.pageNumberCurrent} {
-  font-weight: bold;
 }
 
 ${SELECTOR.paperFlow} {
