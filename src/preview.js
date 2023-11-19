@@ -27,6 +27,7 @@ export default class Preview {
     this.virtualPaperGapSelector = selector?.virtualPaperGap;
     this.runningSafetySelector = selector?.runningSafety;
     this.printPageBreakSelector = selector?.printPageBreak;
+    this.pageMarker = selector?.pageMarker;
 
     // selectors used for the mask
     this.virtualPaper = selector?.virtualPaper;
@@ -110,7 +111,7 @@ export default class Preview {
     // insert first page without pre-separator
     this._insertIntoPaperFlow(firstPage)
     // ADD ONLY HEADER into Content Flow before the first page.
-    this._insertIntoContentFlow(this.pages[0].pageStart);
+    this._insertIntoContentFlow(0);
   }
 
   _processOtherPages() {
@@ -127,7 +128,7 @@ export default class Preview {
       this._insertIntoPaperFlow(paper, paperSeparator)
 
       // ADD FOOTER and HEADER into Content Flow (as page break)
-      this._insertIntoContentFlow(this.pages[index].pageStart, paperSeparator);
+      this._insertIntoContentFlow(index, paperSeparator);
     }
   }
 
@@ -142,11 +143,21 @@ export default class Preview {
     );
   }
 
-  _insertIntoContentFlow(element, separator) {
+  _insertIntoContentFlow(pageIndex, separator) {
+    const element = this.pages[pageIndex].pageStart;
     // ADD FOOTER and HEADER into Content Flow (as page break),
     // ADD ONLY HEADER into Content Flow before the first page.
+    // PageMarker is used to determine which page an object is on.
     separator && this._insertFooterSpacer(element, this.paper.footerHeight, separator);
+    this._insertPageStartMarker(element, pageIndex);
     this._insertHeaderSpacer(element, this.paper.headerHeight);
+  }
+
+  _insertPageStartMarker(target, pageIndex) {
+    const pageMarker = this.DOM.create(this.pageMarker);
+    this.DOM.setAttribute(pageMarker, '[page]', pageIndex + 1)
+    // Put into DOM
+    this.DOM.insertBefore(target, pageMarker)
   }
 
   _insertPaper(paperFlow, paper, separator) {
