@@ -57,13 +57,6 @@ export default class HTML2PDF4DOC {
       referenceWidth: paper.bodyWidth,
     }).calculate();
 
-    new Toc({
-      config: this.config,
-      DOM: DOM,
-      selector: SELECTOR,
-      pages: pages,
-    }).render();
-
     new Preview({
       config: this.config,
       DOM,
@@ -72,6 +65,13 @@ export default class HTML2PDF4DOC {
       paper: paper,
       pages: pages,
     }).create();
+
+    new Toc({
+      config: this.config,
+      DOM: DOM,
+      selector: SELECTOR,
+      layout: layout,
+    }).render();
 
     this.config.debugMode && console.timeEnd("printTHIS");
   }
