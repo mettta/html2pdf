@@ -52,6 +52,11 @@ export default class DocumentObjectModel {
     return node?.cloneNode(false);
   }
 
+  replaceNodeContentsWith(element, ...payload) {
+    this.setInnerHTML(element, '');
+    element.append(...payload);
+  }
+
   insertBefore(element, ...payload) {
     element.before(...payload)
   }
