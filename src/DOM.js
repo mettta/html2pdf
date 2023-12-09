@@ -250,6 +250,17 @@ export default class DocumentObjectModel {
     return wrapperHeight;
   }
 
+  markPartNodesWithClass(nodes) {
+    nodes.forEach( node => {
+      // this.setAttribute()
+      // TODO remove Attribute
+      node.classList.add(SELECTOR.topCutPart.substring(1));
+      node.classList.add(SELECTOR.bottomCutPart.substring(1));
+    });
+    nodes.at(0).classList.remove(SELECTOR.topCutPart.substring(1));
+    nodes.at(-1).classList.remove(SELECTOR.bottomCutPart.substring(1));
+  }
+
   getTableRowHeight(tr, num = 0) {
     // Create an empty row by cloning the TR, insert it into the table,
     // * add the specified number of lines to it (num),

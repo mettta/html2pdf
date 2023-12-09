@@ -253,6 +253,16 @@ ${SELECTOR.printForcedPageBreak} {
     /* break-inside: avoid-page; */
   }
 }
+
+/* arrangement */
+${SELECTOR.topCutPart} {
+  margin-top: 0 !important;
+  border-top: none !important;
+}
+${SELECTOR.bottomCutPart} {
+  margin-bottom: 0 !important;
+  border-bottom: none !important;
+}
     `;
   }
 

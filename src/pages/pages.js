@@ -1046,6 +1046,9 @@ export default class Pages {
         return part;
       });
 
+      // * Mark nodes as parts
+      this.DOM.markPartNodesWithClass(newPreElementsArray);
+
       this.debugMode && this.debugToggler._splitPreNode && console.log(
         ...consoleMark,
         'newPreElementsArray',
