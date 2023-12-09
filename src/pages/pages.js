@@ -907,7 +907,7 @@ export default class Pages {
     const nodeTop = this.DOM.getElementRootedTop(node, this.root);
     const nodeHeight = this.DOM.getElementHeight(node);
     const nodeLineHeight = this.DOM.getLineHeight(node);
-    const preWrapperHeight = this.DOM.getEmptyNodeHeight(node); // TODO it has extra height!
+    const preWrapperHeight = this.DOM.getEmptyNodeHeight(node, false);
 
     // * Let's check the probable number of rows in the simplest case,
     // * as if the element had the style.whiteSpace=='pre'
