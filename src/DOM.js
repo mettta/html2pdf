@@ -232,6 +232,7 @@ export default class DocumentObjectModel {
     // testNode.style.position = 'absolute';
     // testNode.style.left = '-10000px';
     // testNode.style.width = '100%';
+    testNode.style.display = 'block';
     node.append(testNode);
     const lineHeight = testNode.offsetHeight;
     testNode.remove();
@@ -683,6 +684,11 @@ export default class DocumentObjectModel {
                 - this.getElementRelativeBottom(current);
     const vert = delta <= (-2);
     return vert;
+  }
+
+  splitByLinesGreedy(string) {
+    const arr = string.split(/(?<=\n)/); // JOINER = '';
+    return arr
   }
 
   splitByWordsGreedy(node) {
