@@ -239,9 +239,9 @@ export default class DocumentObjectModel {
     return lineHeight;
   }
 
-  getEmptyNodeHeight(node) {
+  getEmptyNodeHeight(node, margins = true) {
     const wrapper = this.create();
-    wrapper.style.padding = '0.1px';
+    margins && (wrapper.style.padding = '0.1px');
     const clone = node.cloneNode(false);
     wrapper.append(clone);
     node.before(wrapper);
