@@ -52,6 +52,11 @@ export default class DocumentObjectModel {
     return node?.cloneNode(false);
   }
 
+  replaceNodeContentsWith(element, ...payload) {
+    this.setInnerHTML(element, '');
+    element.append(...payload);
+  }
+
   insertBefore(element, ...payload) {
     element.before(...payload)
   }
@@ -227,21 +232,33 @@ export default class DocumentObjectModel {
     // testNode.style.position = 'absolute';
     // testNode.style.left = '-10000px';
     // testNode.style.width = '100%';
+    testNode.style.display = 'block';
     node.append(testNode);
     const lineHeight = testNode.offsetHeight;
     testNode.remove();
     return lineHeight;
   }
 
-  getEmptyNodeHeight(node) {
+  getEmptyNodeHeight(node, margins = true) {
     const wrapper = this.create();
-    wrapper.style.padding = '0.1px';
+    margins && (wrapper.style.padding = '0.1px');
     const clone = node.cloneNode(false);
     wrapper.append(clone);
     node.before(wrapper);
     const wrapperHeight = wrapper.offsetHeight;
     wrapper.remove();
     return wrapperHeight;
+  }
+
+  markPartNodesWithClass(nodes) {
+    nodes.forEach( node => {
+      // this.setAttribute()
+      // TODO remove Attribute
+      node.classList.add(SELECTOR.topCutPart.substring(1));
+      node.classList.add(SELECTOR.bottomCutPart.substring(1));
+    });
+    nodes.at(0).classList.remove(SELECTOR.topCutPart.substring(1));
+    nodes.at(-1).classList.remove(SELECTOR.bottomCutPart.substring(1));
   }
 
   getTableRowHeight(tr, num = 0) {
@@ -599,8 +616,8 @@ export default class DocumentObjectModel {
     }
 
     if (!root) {
-      this.debugMode && this.debugToggler._DOM && console.warn(
-        'root must be provided, but was received:', element,
+      this.debugMode && console.warn(
+        'root must be provided, but was received:', root,
         '\nThe function returned:', undefined
       );
       return
@@ -608,6 +625,7 @@ export default class DocumentObjectModel {
 
     const offsetParent = element.offsetParent;
 
+    // TODO element == document.body
     if (!offsetParent) {
       this.debugMode && this.debugToggler._DOM && console.warn(
         'element has no offset parent', element,
@@ -677,6 +695,11 @@ export default class DocumentObjectModel {
                 - this.getElementRelativeBottom(current);
     const vert = delta <= (-2);
     return vert;
+  }
+
+  splitByLinesGreedy(string) {
+    const arr = string.split(/(?<=\n)/); // JOINER = '';
+    return arr
   }
 
   splitByWordsGreedy(node) {

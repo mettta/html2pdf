@@ -54,6 +54,10 @@ const SELECTOR = {
   flagNoBreak: '[html2pdf-flag-no-break]',
   flagNoHanging: '[html2pdf-flag-no-hanging]',
 
+  // *** SPECIAL
+  topCutPart: '.html2pdf-top-cut',
+  bottomCutPart: '.html2pdf-bottom-cut',
+
 };
 
 export default SELECTOR;

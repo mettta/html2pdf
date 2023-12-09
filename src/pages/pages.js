@@ -889,382 +889,188 @@ export default class Pages {
 
   // HELPERS
 
-  _splitPreNode(node, pageBottom, fullPageHeight) {
-    const consoleMark = ['%c_splitPreNode\n', 'color:white',]
+  _splitPreNode(node, pageBottom, fullPageHeight, nodeComputedStyle) {
+    // ['pre', 'pre-wrap', 'pre-line', 'break-spaces']
 
+    // * If we call the function in a context where
+    // * the computedStyle for a node has already been computed,
+    // * it will be passed in the nodeComputedStyle variable.
+    const _nodeComputedStyle = nodeComputedStyle
+      ? nodeComputedStyle
+      : this.DOM.getComputedStyle(node);
+
+    const consoleMark = ['%c_splitPreNode\n', 'color:white',]
     this.debugMode && this.debugToggler._splitPreNode && console.group('%c_splitPreNode', 'background:cyan');
     this.debugMode && this.debugToggler._splitPreNode && console.log(...consoleMark, 'node', node);
-
-    // TODO the same in splitTextNode - make one code piece
-
-    // TODO try first split the PRE by \n\n
-    // and then split solid PRE by lines
-
-    // TODO check if there are NODES except text nodes
 
     // Prepare node parameters
     const nodeTop = this.DOM.getElementRootedTop(node, this.root);
     const nodeHeight = this.DOM.getElementHeight(node);
     const nodeLineHeight = this.DOM.getLineHeight(node);
-    const preWrapperHeight = this.DOM.getEmptyNodeHeight(node);
-    const totalLines = (nodeHeight - preWrapperHeight) / nodeLineHeight;
+    const preWrapperHeight = this.DOM.getEmptyNodeHeight(node, false);
 
-    if (totalLines < this.minPreBreakableLines) {
-      // this._registerPageStart(node);
+    // * Let's check the probable number of rows in the simplest case,
+    // * as if the element had the style.whiteSpace=='pre'
+    // * and the line would occupy exactly one line.
+    const minNodeHeight = preWrapperHeight + nodeLineHeight * this.minPreBreakableLines;
+    if (nodeHeight < minNodeHeight) {
       return []
     }
 
-
-
-
-
-
-
-
-
-
-
-
-    // *** try split by blocks
-    // TODO <br>
-
-    // TODO
-    // const linesJoiner = '\n';
-    // const blocksJoiner = '\n\n';
-
-    // correction for line break, not affecting the block view, but affecting the calculations
-    let preText = this.DOM.getInnerHTML(node);
-    if (preText.charAt(preText.length - 1) === '\n') {
-      this.debugMode && this.debugToggler._splitPreNode && console.log(
-        ...consoleMark,
-        'LAST CHAR IS \\n'
-      );
-      preText = preText.slice(0, -1);
-    }
-
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark,
-      '1 - preText'
-    );
-
-    const preLines = preText.split('\n');
-    // "000", "", "001", "002", "003", "004", "005", "006", "", "007" .....
-
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark,
-      '#### 2 - preLines', preLines
-    );
-
-
-    if (preLines.length < this.minPreBreakableLines) {
-      // this._registerPageStart(node);
-      this.debugMode && this.debugToggler._splitPreNode && console.log(
-        ...consoleMark,
-        '< minPreBreakableLines => return []'
-      );
+    const _children = this.DOM.getChildNodes(node);
+    this.debugMode && this.debugToggler._splitPreNode && console.log('_children:', _children.length);
+    if (_children.length == 0) {
+      // ??? empty tag => not breakable
       return []
-    }
-
-
-    // TODO
-    // нужны ли эти странные вычисления,
-    // нужно смотреть, сколько реальных строк помещается в первой части/
-    // А НАДО ЛИ ЭТО?
-    // может просто разбить на возможные части и отправить выше, пусть сами распределяют
-
-    // ? Can we not do all these calculations,
-    // ? but just split up into lines and send them upstairs to make decisions?
-    // * The current answer:
-    // ** When we split, we create new nodes,
-    // ** so we need to know exactly what pieces we can and should split into.
-
-    // * Prepare parameters for splitters calculation
-    // TODO : availableSpace considers the upper margin, but does not consider the lower margin
-    let availableSpace = pageBottom - nodeTop - preWrapperHeight;
-    const pageSpace = fullPageHeight - preWrapperHeight;
-
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark,
-      'availableSpace: \n',
-      `${availableSpace} = ${pageBottom} - ${nodeTop} - ${preWrapperHeight}`,
-    );
-
-    let firstPartLines = Math.trunc(availableSpace / nodeLineHeight);
-    const linesPerPage = Math.trunc(pageSpace / nodeLineHeight);
-
-    if (firstPartLines < this.minPreFirstBlockLines) {
-      this.debugMode && this.debugToggler._splitPreNode && console.log(
-        ...consoleMark,
-        'availableSpace is too small \n (availableSpace = fullPageHeight)'
-      );
-      availableSpace = fullPageHeight;
-      firstPartLines = linesPerPage;
-    }
-
-    const restLines = totalLines - firstPartLines;
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark,
-      'restLines:', restLines
-    ); // BUG -32 ????
-
-    const fullPages = Math.floor(restLines / linesPerPage);
-    const lastPartLines = restLines % linesPerPage;
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark,
-      'lastPartLines:', lastPartLines
-    );
-
-    if (lastPartLines < this.minPreLastBlockLines) {
-      firstPartLines = firstPartLines - (this.minPreLastBlockLines - lastPartLines);
-      this.debugMode && this.debugToggler._splitPreNode && console.log(
-        ...consoleMark,
-        'firstPartLines:', firstPartLines
-      );
-    }
-
-
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark,
-      '#### 3 - grouping lines',
-    );
-
-    // ["000"], ["001", "002", "003", "004", "005", "006"], ["007", .....
-    const preGroupedLines = preLines.reduce((accumulator, line, index, array) => {
-
-      if (line === '') {
-        accumulator.push([]);
-      } else {
-        accumulator[accumulator.length - 1].push(line)
+    } else if (_children.length > 1) {
+      // ! if _children.length > 1
+      // TODO check if there are NODES except text nodes
+      // ! TODO
+      return []
+    } else { // * if _children.length == 1
+      // * then it is a TEXT node and has only `\n` as a line breaker
+      if (this.DOM.isElementNode(_children[0])) {
+        // element node
+        // TODO check if there are NODES except text nodes
+        const currentElementNode = _children[0];
+        this.debugMode && this.debugToggler._splitPreNode && console.warn("is Element Node", currentElementNode)
+        // FIXME other cases i.e. node and we need recursion
+        return []
       }
-      return accumulator;
-    }, [[]])
-      .filter(array => array.length);
+      if (this.DOM.isTextNode(_children[0])) {
+        // if (textNode.nodeType === 3) // 3 - тип TextNode
+        this.debugMode && this.debugToggler._splitPreNode && console.warn(`is TEXT Node: ${_children[0]}`);
+        // FIXME other cases i.e. node and we need recursion
+      }
 
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark,
-      '(3) raw preGroupedLines:', ...preGroupedLines
-    );
+      // ? wholeText vs textContent
+      const currentNodeText = _children[0].wholeText;
 
-    // TODO TEST THIS! logik is too compex
-    let veryStartGroup = '';
-    let veryEndGroup = '';
+      // * split the text node into lines by \n,
+      // * leaving the character \n at the end of the resulting string:
+      const stringsFromNodeText = this.DOM.splitByLinesGreedy(currentNodeText);
 
-    if (preGroupedLines[0].length < this.minPreFirstBlockLines) {
-      veryStartGroup = preGroupedLines.shift().join('\n') + '\n\n';
-    }
-    if (preGroupedLines[preGroupedLines.length - 1].length < this.minPreLastBlockLines) {
-      veryEndGroup = '\n' + preGroupedLines.pop().join('\n');
-    }
+      if (stringsFromNodeText.length < this.minPreBreakableLines) {
+        return []
+      }
 
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark, '(3) split into groups of lines:'
-    );
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark,
-      'veryStartGroup', veryStartGroup
-    );
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark,
-      'preGroupedLines', preGroupedLines
-    );
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark,
-      'veryEndGroup', veryEndGroup
-    );
+      // * Strings array normalization.
+      // ** Get the first this.minPreFirstBlockLines elements
+      // ** and concatenate them into a string
+      const startString = stringsFromNodeText.splice(0, this.minPreFirstBlockLines).join('');
+      // ** Get the first this.minPreLastBlockLines elements
+      // ** and concatenate them into a string
+      const endString = stringsFromNodeText.splice(-this.minPreLastBlockLines).join('');
+      // ** Insert new rows into the array stringsFromNodeText
+      stringsFromNodeText.unshift(startString);
+      stringsFromNodeText.push(endString);
 
-    // ["000"], [Array(3), Array(3)], [Array(3), "010", "011", Array(3)], .....
-    const preBlocks = preGroupedLines.reduce((accumulator, block, index, array) => {
+      // * Modifying DOM
+      const linesFromNode = stringsFromNodeText.map(string => {
+        const line = this.DOM.createWithFlagNoBreak();
+        this.DOM.setInnerHTML(line, string);
+        return line
+      });
+      console.log('linesFromNode', linesFromNode);
+      this.DOM.replaceNodeContentsWith(node, ...linesFromNode);
+
+      // * calculate parts
+
+      // ** Prepare parameters for splitters calculation
+      let firstPartSpace = pageBottom - nodeTop - preWrapperHeight;
+      const fullPageSpace = fullPageHeight - preWrapperHeight;
+
+      // * find starts of parts splitters
+
+      let page = 0;
+      let splitters = [];
+      let floater = firstPartSpace;
+
+      // *** need to make the getElementRootedTop work with root = node
+      const initPosition = _nodeComputedStyle.position;
+      if (initPosition != 'relative') {
+        node.style.position = 'relative';
+      }
+
+      for (let index = 0; index < linesFromNode.length; index++) {
+        const current = linesFromNode[index];
+        const currentBottom = this.DOM.getElementRootedBottom(current, node);
+
+        // TODO move to DOM
+        if (currentBottom > floater) {
+          // * start a new part at [index]
+          index && splitters.push(index);
+          // ? start a new page
+          index && (page += 1);
+          // * move the floater down:
+          // ** if this is the very first element,
+          // ** we just assume that the first part can take up the whole page.
+          floater = index ? this.DOM.getElementRootedTop(current, node) + fullPageSpace : fullPageSpace;
+        } // end for
+      }
+
+      // *** need to revert back to the original positioning of the node
+      node.style.position = initPosition;
+
+      if(!splitters.length) {
+        // ** if there is no partitioning, we return an empty array
+        // ** and the original node will be taken in its entirety.
+        return []
+      }
+
+      // ******** ELSE:
+      // * If there are parts here, and the node will be split, continue.
+      // * Render new parts.
+
+      // * The last part end is registered automatically.
+      splitters.push(null);
+      this.debugMode && this.debugToggler._splitPreNode && console.log(
+        ...consoleMark,
+        'splitters', splitters
+      );
+
+      const newPreElementsArray = splitters.map((id, index, splitters) => {
+        // Avoid trying to break this node: createWithFlagNoBreak()
+        // We can't wrap in createWithFlagNoBreak()
+        // because PRE may have margins and that will affect the height of the wrapper.
+        // So we will give the PRE itself this property.
+        const part = this.DOM.cloneNodeWrapper(node);
+        this.DOM.setFlagNoBreak(part);
+
+        // id = the beginning of the next part
+        const start = splitters[index - 1] || 0;
+        const end = id || splitters[splitters.length];
+
+        this.DOM.insertAtEnd(part, ...linesFromNode.slice(start, end));
+
+        return part;
+      });
+
+      // * Mark nodes as parts
+      this.DOM.markPartNodesWithClass(newPreElementsArray);
 
       this.debugMode && this.debugToggler._splitPreNode && console.log(
         ...consoleMark,
-        `preBlocks block # ${index}`,
-        block
+        'newPreElementsArray',
+        newPreElementsArray
       );
 
-      if (block.length < this.minPreBreakableLines) {
-        accumulator.push(block.join('\n') + '\n');
+      //// this.DOM.insertInsteadOf(node, ...newPreElementsArray);
+      // * We need to keep the original node,
+      // * we may need it as a parent in this._parseNode().
+      this.DOM.replaceNodeContentsWith(node, ...newPreElementsArray);
+      // * We "open" the slough node, but leave it.
+      node.style.display = 'contents';
+      node.setAttribute('slough-node', '')
+      node.classList = '';
 
-        this.debugMode && this.debugToggler._splitPreNode && console.log(
-          ...consoleMark,
-          `this block.length < this.minPreBreakableLines`
-        );
-      } else {
-        const first = block.slice(0, this.minPreFirstBlockLines).join('\n') + '\n';
-        const rest = block.slice(this.minPreFirstBlockLines, - this.minPreLastBlockLines)
-          .map(line => line + '\n');
-        const last = block.slice(-this.minPreLastBlockLines).join('\n') + '\n';
-        const res = [];
-        accumulator.push(first);
-        rest.length && accumulator.push(...rest);
-        accumulator.push(last);
-      };
+      this.debugMode && this.debugToggler._splitPreNode && console.groupEnd('%c_splitPreNode', 'background:cyan');
 
-      accumulator.push('\n');
-      // (index < array.length - 1) && accumulator.push('\n'); // for each block except last
-      return accumulator;
-    }, []);
+      return newPreElementsArray; 
 
-    if (preBlocks[preBlocks.length - 1] === '\n') {
-      preBlocks.pop()
-    }
+    } // END OF * if _children.length == 1
 
-    veryStartGroup.length && (preBlocks[0] = veryStartGroup + preBlocks[0]);
-    veryEndGroup.length && (preBlocks[preBlocks.length - 1] = preBlocks[preBlocks.length - 1] + veryEndGroup);
-
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark,
-      '#### 4 - preBlocks',
-      preBlocks
-    );
-
-    // TODO TEST THIS! its hack
-
-    if (preBlocks.length === 1) {
-      this.debugMode && this.debugToggler._splitPreNode && console.log(
-        ...consoleMark,
-        `DON'T SPLIT IT`
-      );
-      return []
-    }
-
-
-    // **************************************
-
-    const blockAndLineElementsArray = preBlocks.map(
-      block => {
-        const blockElement = this.DOM.createNeutral();
-        this.DOM.setInnerHTML(blockElement, block);
-        return blockElement;
-      }
-    )
-
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark,
-      'blockAndLineElementsArray',
-      blockAndLineElementsArray
-    );
-
-    //TODO move to DOM, like prepareSplittedNode(node)
-
-
-
-    const testNode = this.DOM.createTestNodeFrom(node);
-    this.DOM.insertAtEnd(testNode, ...blockAndLineElementsArray);
-    this.DOM.insertAtEnd(node, testNode);
-
-
-
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark,
-      `• availableSpace: ${availableSpace}`,
-      '\n',
-      `• pageSpace: ${pageSpace}`,
-    );
-
-    // find starts of parts splitters
-
-    let page = 0;
-    let splitters = [];
-    let floater = availableSpace;
-
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark,
-      'Find starts of parts splitters\n',
-      '◆ page: #', page,
-      '\n',
-      '◆ floater:', floater,
-    );
-
-    for (let index = 0; index < blockAndLineElementsArray.length; index++) {
-      // const floater = availableSpace + page * pageSpace;
-      const current = blockAndLineElementsArray[index];
-      const currentBottom = this.DOM.getElementRootedBottom(current, testNode);
-
-
-      // TODO: If the first part does not fit in the available space,
-      // start the second page.
-
-
-      this.debugMode && this.debugToggler._splitPreNode && console.log(
-        'currentBottom:', currentBottom
-      );
-
-      // TODO move to DOM
-      if (this.DOM.getElementRootedBottom(current, testNode) > floater) {
-        index && splitters.push(index);
-        index && (page += 1);
-        floater = this.DOM.getElementRootedTop(current, testNode) + pageSpace;
-
-        this.debugMode && this.debugToggler._splitPreNode && console.log(
-          ...consoleMark,
-          '◆ page: #', page,
-          '\n',
-          '◆ new floater:', floater,
-        );
-      }
-    }
-
-    // * Delete the test node that is no longer needed.
-    testNode.remove();
-
-    // * The last part end is registered automatically.
-    // * Thus, this array has at least 1 element.
-    splitters.push(null);
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark,
-      'splitters', splitters
-    );
-    // * The last part end may be the only part. Check it out below.
-    if(splitters.length < 2) {
-      // ** If we have only one part, we return an empty array
-      // ** and the original node will be taken in its entirety.
-      return []
-    }
-
-    // * If there are more parts and the node will be split, continue.
-
-    const newPreElementsArray = splitters.map((id, index, splitters) => {
-      // Avoid trying to break this node: createWithFlagNoBreak()
-      // We can't wrap in createWithFlagNoBreak()
-      // because PRE may have margins and that will affect the height of the wrapper.
-      // So we will give the PRE itself this property.
-      const part = this.DOM.cloneNodeWrapper(node);
-      this.DOM.setFlagNoBreak(part);
-
-      const start = splitters[index - 1] || 0;
-      const end = id || splitters[splitters.length];
-
-      this.DOM.insertAtEnd(part, ...blockAndLineElementsArray.slice(start, end));
-
-      return part;
-    });
-
-    this.debugMode && this.debugToggler._splitPreNode && console.log(
-      ...consoleMark,
-      'newPreElementsArray',
-      newPreElementsArray
-    );
-
-
-
-
-
-    //// this.DOM.insertInsteadOf(node, ...newPreElementsArray);
-    // * We need to keep the original node,
-    // * we may need it as a parent in this._parseNode().
-    this.DOM.setInnerHTML(node, '');
-    this.DOM.insertAtEnd(node, ...newPreElementsArray);
-    // * We "open" the slough node, but leave it.
-    node.style.display = 'contents';
-    node.setAttribute('slough-node', '')
-    node.classList = '';
-
-    this.debugMode && this.debugToggler._splitPreNode && console.groupEnd('%c_splitPreNode', 'background:cyan');
-
-    return newPreElementsArray;
-
-    // TODO переполнение ширины страницы
-    // overflow-x hidden + warning
+    // TODO the same in splitTextNode - make one code piece
 
   }
 
@@ -1912,6 +1718,13 @@ export default class Pages {
       const nextElement = children[i + 1];
       const nextElementTop = nextElement ? this.DOM.getElementRootedTop(nextElement, rootNode): undefined;
 
+      // nextElement && console.log(
+      //   'ddddd',
+      //   this.DOM.getElementRootedTop(nextElement, rootNode),
+      //   nextElement,
+      //   rootNode
+      // )
+
       const newObject = {
         id: i,
         element: children[i],
@@ -1946,6 +1759,10 @@ export default class Pages {
           );
       }
 
+      // TODO:
+      // nextElementTop?
+      // nextElement?
+
       if (nextElementTop <= floater) {
         // -- current fits
 
@@ -1968,7 +1785,7 @@ export default class Pages {
 
         this.debugMode
           && this.debugToggler._getInternalSplitters
-          && console.log('💟💟 nextElementTop > floater',);
+          && console.log('💟💟', `nextElementTop > floater \n ${nextElementTop} > ${floater} `,);
 
         if (this._isSVG(currentElement) || this._isIMG(currentElement)) {
           // TODO needs testing
