@@ -128,7 +128,14 @@ export default class Pages {
         pageStarters.shift()
       };
 
-      pageStarters.forEach(element => this.DOM.insertForcedPageBreakBefore(element));
+      pageStarters.forEach(element => {
+        const firstChildParent = this.DOM.findFirstChildParent(element, this.contentFlow)
+        if (firstChildParent) {
+          this.DOM.insertForcedPageBreakBefore(firstChildParent);
+        } else {
+          this.DOM.insertForcedPageBreakBefore(element);
+        }
+      });
     }
   }
 
