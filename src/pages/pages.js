@@ -971,7 +971,7 @@ export default class Pages {
         this.DOM.setInnerHTML(line, string);
         return line
       });
-      console.log('linesFromNode', linesFromNode);
+      this.debugMode && this.debugToggler._splitPreNode && console.log('linesFromNode', linesFromNode);
       this.DOM.replaceNodeContentsWith(node, ...linesFromNode);
 
       // * calculate parts
