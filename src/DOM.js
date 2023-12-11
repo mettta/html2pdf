@@ -383,10 +383,11 @@ export default class DocumentObjectModel {
 
       if (element === firstChild) {
         firstSuitableParent = parent;
+        element = parent;
+        parent = element.parentElement;
+      } else {
+        return firstSuitableParent;
       }
-
-      element = parent;
-      parent = element.parentElement;
     }
 
     return firstSuitableParent;
@@ -401,10 +402,11 @@ export default class DocumentObjectModel {
 
       if (element === lastChild) {
         lastSuitableParent = parent;
+        element = parent;
+        parent = element.parentElement;
+      } else {
+        return lastSuitableParent;
       }
-
-      element = parent;
-      parent = element.parentElement;
     }
 
     return lastSuitableParent;
