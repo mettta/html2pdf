@@ -204,7 +204,8 @@ export default class Pages {
     this.pages.push({
       pageStart: pageStart,
       pageBottom: pageBottom,
-    })
+    });
+    this.DOM.markPageStartElement(pageStart, this.pages.length)
     this.debugMode && this.debugToggler._registerPageStart && console.log(
       `📍 %c register page ${this.pages.length} \n`, "background:yellow; color:red",
       pageBottom, pageStart,

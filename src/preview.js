@@ -41,6 +41,8 @@ export default class Preview {
     this.paperFlow = layout.paperFlow;
     this.paper = paper;
 
+    this.hasFrontPage = !!this.paper.frontpageTemplate;
+
   }
 
   create() {
@@ -83,7 +85,7 @@ export default class Preview {
     // LET'S MAKE A FIRST PAGE.
     let firstPage;
 
-    if (this.paper.frontpageTemplate) {
+    if (this.hasFrontPage) {
       // IF FRONTPAGE,
 
       // insert Frontpage Spacer into Content Flow,
@@ -151,13 +153,22 @@ export default class Preview {
     separator && this._insertFooterSpacer(element, this.paper.footerHeight, separator);
     this._insertPageStartMarker(element, pageIndex);
     this._insertHeaderSpacer(element, this.paper.headerHeight);
+    this._updatePageStartElementAttrValue(element, pageIndex);
   }
 
   _insertPageStartMarker(target, pageIndex) {
+    // TODO move to DOM:
     const pageMarker = this.DOM.create(this.pageMarker);
-    this.DOM.setAttribute(pageMarker, '[page]', pageIndex + 1)
-    // Put into DOM
+    this.DOM.setAttribute(pageMarker, '[page]', `${pageIndex + 1}`)
     this.DOM.insertBefore(target, pageMarker)
+  }
+
+  _updatePageStartElementAttrValue(element, pageIndex) {
+    // makes sense if there is a frontpage
+    // that is not registered in the page array,
+    // and there is no element that starts it,
+    // so it needs to increase by 1 the numbering for starting elements:
+    this.hasFrontPage && this.DOM.markPageStartElement(element, `${pageIndex + 2}`);
   }
 
   _insertPaper(paperFlow, paper, separator) {

@@ -250,6 +250,13 @@ export default class DocumentObjectModel {
     return wrapperHeight;
   }
 
+  markPageStartElement(element, page) {
+    this.setAttribute(element, SELECTOR.pageStartMarker, page)
+  }
+  isPageStartElement(element) {
+    return this.isSelectorMatching(element, SELECTOR.pageStartMarker)
+  }
+
   markPartNodesWithClass(nodes) {
     nodes.forEach( node => {
       // this.setAttribute()

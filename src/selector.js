@@ -19,6 +19,7 @@ const SELECTOR = {
   // *** TOC page numbers:
   // PageMarker is used to determine which page an object is on.
   pageMarker: 'html2pdf-page',
+  pageStartMarker: '[html2pdf-page-start]',
   tocPageNumber: 'html2pdf-toc-page-number',
 
   // * Layout

@@ -173,6 +173,19 @@ ${SELECTOR.frontpageContent} {
   height: 100%;
 }
 
+${SELECTOR.pageMarker} {
+  display: inline;
+  padding: 0;
+  margin: 0;
+  font: 0;
+  color: transparent;
+  line-height: 0;
+  border: none;
+  outline: none;
+  background: none;
+  background-color: transparent;
+}
+
 ${SELECTOR.textNode},
 ${SELECTOR.neutral},
 ${SELECTOR.neutral} span {
