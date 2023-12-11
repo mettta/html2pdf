@@ -219,7 +219,12 @@ export default class Pages {
     parent,
     parentBottom,
   }) {
-    this.debugMode && this.debugToggler._parseNodes && console.log('🔵 _parseNodes', '\narray:', [...array], '\nretainedParent:', parent)
+    this.debugMode && this.debugToggler._parseNodes && console.log(
+      '🔵 _parseNodes',
+      '\narray:', [...array],
+      '\ntracedParent:', parent
+    );
+
     for (let i = 0; i < array.length; i++) {
 
       this._parseNode({
@@ -270,12 +275,11 @@ export default class Pages {
       '\nisCurrentFirst: ', isCurrentFirst,
       );
 
-    // TODO #retainedParent
+    // TODO #tracedParent
     // * If we want to start a new page from the current node,
-    // * which is the first (i == 0) or only child (= has 'parent'),
+    // * which is the first child (i == 0),
     // * we want to register its parent as the start of the page.
     const currentOrParentElement = (isCurrentFirst && parent) ? parent : currentElement;
-    // const currentOrParentElement = currentElement;
 
     this.debugMode && this.debugToggler._parseNode && console.log(
       ...consoleMark,
@@ -328,7 +332,7 @@ export default class Pages {
       this.DOM.findAllForcedPageBreakInside(currentElement).forEach(
         element => this._registerPageStart(element)
       );
-      // TODO: это может быть внутри таблицы или другого элеммента,
+      // TODO: это может быть внутри таблицы или другого элемента,
       // который мы не хотим / не можем разбить обычным образом!
       // Нужно проверять currentElement
 
@@ -346,7 +350,7 @@ export default class Pages {
         // ** if currentElement can't be the last element on the page,
         // ** immediately move it to the next page:
 
-        // TODO #retainedParent
+        // TODO #tracedParent
         // this._registerPageStart(currentElement);
         // ** And if it's the first child, move the parent node to the next page.
         this._registerPageStart(currentOrParentElement);
@@ -451,20 +455,16 @@ export default class Pages {
       this.debugMode && this.debugToggler._parseNode && console.log(...consoleMark,
         'currentElement ', currentElement);
 
-      // TODO #retainedParent
-      // ** If it is an only child (it means that the parent node is not split),
+      // TODO #tracedParent
+      // ?? If it is an only child (it means that the parent node is not split),
       // ** as well as if the first child is being registered,
       // ** -- we want to use the past parent (=wrapper of the current node)
       // ** as the start of the page.
 
-      const retainedParent = (
-        isCurrentFirst
-        // childrenNumber <= 1 || // !!! - P PRE и тп с 1 ребенком вносят ошибки
-        )
-                            ? (parent ? parent : currentElement)
-                            : undefined;
-      this.debugMode && this.debugToggler._parseNode && console.log(...consoleMark,
-        'set retainedParent', retainedParent)
+      // condition "childrenNumber <= 1" || // !!! - P PRE и тп с 1 ребенком вносят ошибки
+      // * if the first child - keep the previous parent,
+      // * if not the first - change to the current element:
+      const tracedParent = isCurrentFirst ? (parent || currentElement) : currentElement;
 
       // * Parse children:
       if (childrenNumber) {
@@ -476,7 +476,7 @@ export default class Pages {
           array: children,
           previous: previousElement,
           next: nextElement,
-          parent: retainedParent,
+          parent: tracedParent,
           parentBottom: isFullySPlittedParent ? undefined : currentElementBottom,
         })
       } else {
@@ -490,7 +490,7 @@ export default class Pages {
           // а если там подряд несколько заголовков, и перед previousElement есть еще заголовки, которые мы не проверяли еслтенствнно, и они будут висеть
           this._registerPageStart(previousElement)
         } else {
-          // TODO #retainedParent
+          // TODO #tracedParent
           // this._registerPageStart(currentElement);
           this.debugMode && this.debugToggler._parseNode && console.log(
             ...consoleMark,
@@ -1883,7 +1883,7 @@ export default class Pages {
               this.debugMode && this.debugToggler._getInternalSplitters && console.log('previousElement _isNoHanging')
               registerResult(previousElement, i - 1);
             } else {
-              // TODO #retainedParent
+              // TODO #tracedParent
               // this._registerPageStart(currentElement);
               // this._registerPageStart(currentOrParentElement);
               this.debugMode
