@@ -200,12 +200,16 @@ export default class Pages {
   }
 
   _registerPageStart(pageStart, improveResult = false) {
-
     if (improveResult) {
       const firstChildParent = this.DOM.findFirstChildParent(pageStart, this.contentFlow);
       pageStart = firstChildParent || pageStart;
 
-      const previousCandidate = this.DOM.findPreviousNoHangingsFromPage(pageStart, this.pages.at(-2)?.pageBottom, this.root)
+      const previousCandidate = this.DOM.findPreviousNoHangingsFromPage(
+        pageStart,
+        // * limited to the element from which the last registered page starts:
+        this.DOM.getElementRootedTop(this.pages.at(-1)?.pageStart, this.root),
+        this.root
+      );
       pageStart = previousCandidate || pageStart;
     }
 

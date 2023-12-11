@@ -430,8 +430,8 @@ export default class DocumentObjectModel {
     let prev = element.previousElementSibling;
 
     // while the candidates are within the current page
+    // (below the element from which the last registered page starts):
     while (this.getElementRootedTop(prev, root) > topFloater) {
-
       // if it can't be left
       if (this.isNoHanging(prev)) {
         // and it's the Start of the page
@@ -451,7 +451,6 @@ export default class DocumentObjectModel {
         return suitableSibling;
       }
     }
-
     return suitableSibling;
   }
 
