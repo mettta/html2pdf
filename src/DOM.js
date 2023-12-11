@@ -253,6 +253,7 @@ export default class DocumentObjectModel {
   markPageStartElement(element, page) {
     this.setAttribute(element, SELECTOR.pageStartMarker, page)
   }
+
   isPageStartElement(element) {
     return this.isSelectorMatching(element, SELECTOR.pageStartMarker)
   }
@@ -422,6 +423,36 @@ export default class DocumentObjectModel {
 
   isNoHanging(element) {
     return this.isSelectorMatching(element, SELECTOR.flagNoHanging)
+  }
+
+  findPreviousNoHangingsFromPage(element, topFloater, root) {
+    let suitableSibling = null;
+    let prev = element.previousElementSibling;
+
+    // while the candidates are within the current page
+    while (this.getElementRootedTop(prev, root) > topFloater) {
+
+      // if it can't be left
+      if (this.isNoHanging(prev)) {
+        // and it's the Start of the page
+        if (this.isPageStartElement(prev)) {
+          // if I'm still on the current page and have a "start" -
+          // then I simply drop the case and move the original element
+          return element
+        } else {
+          // * isNoHanging(prev) && !isPageStartElement(prev)
+          // I'm looking at the previous element:
+          suitableSibling = prev;
+          element = prev;
+          prev = element.previousElementSibling;
+        }
+      } else {
+        // * !isNoHanging(prev) - return last computed
+        return suitableSibling;
+      }
+    }
+
+    return suitableSibling;
   }
 
   // CHECK
