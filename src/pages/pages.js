@@ -199,11 +199,14 @@ export default class Pages {
 
   }
 
-  _registerPageStart(pageStart, checkParent = false) {
+  _registerPageStart(pageStart, improveResult = false) {
 
-    if (checkParent) {
+    if (improveResult) {
       const firstChildParent = this.DOM.findFirstChildParent(pageStart, this.contentFlow);
       pageStart = firstChildParent || pageStart;
+
+      const previousCandidate = this.DOM.findPreviousNoHangingsFromPage(pageStart, this.pages.at(-2)?.pageBottom, this.root)
+      pageStart = previousCandidate || pageStart;
     }
 
     const pageBottom = this.DOM.getElementRootedRealTop(pageStart, this.root) + this.referenceHeight;
@@ -356,12 +359,10 @@ export default class Pages {
         // ** if currentElement can't be the last element on the page,
         // ** immediately move it to the next page:
 
-        console.log('_isNoHanging', currentElement, currentOrParentElement)
-
         // TODO #tracedParent
         // this._registerPageStart(currentElement);
         // ** And if it's the first child, move the parent node to the next page.
-        this._registerPageStart(currentElement, true); // @@@
+        this._registerPageStart(currentElement, true);
         this.debugMode && this.debugToggler._parseNode && console.groupEnd(...consoleMark, '_isNoHanging(current)');
         return
       }
@@ -502,12 +503,6 @@ export default class Pages {
         if (this._isNoHanging(previousElement)) {
           // ** if previousElement can't be the last element on the page,
           // ** move it to the next page.
-          // TODO #_canNotBeLast
-          // а если там подряд несколько заголовков, и перед previousElement
-          //  есть еще заголовки, которые мы не проверяли еслтенствнно,
-          //  и они будут висеть
-          console.log('_isNoHanging previousElement', previousElement)
-
           this._registerPageStart(previousElement, true)
         } else {
           // TODO #tracedParent
