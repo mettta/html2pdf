@@ -77,6 +77,9 @@ export default class Pages {
 
     this.pages = [];
 
+    this.commonLineHeight = this.DOM.getLineHeight(this.root);
+    this.minimumBreakableHeight = this.commonLineHeight * this.minBreakableLines;
+
     // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browsers
     // Firefox 1.0+
     // https://bugzilla.mozilla.org/show_bug.cgi?id=820891
@@ -462,6 +465,21 @@ export default class Pages {
         this.debugMode && this.debugToggler._parseNode && console.groupEnd(...consoleMark, 'register Next');
         return
       }
+
+      // see if this node is worth paying attention to, based on its height
+      // TODO: need to rearrange the order of the condition checks
+      if (this.DOM.getElementHeight(currentElement) <= this.minimumBreakableHeight) {
+        console.log('??????????????????????????? \n getElementHeight(currentElement) <= this.minimumBreakableHeight',
+         this.DOM.getElementHeight(currentElement),
+         '<',
+         this.minimumBreakableHeight,
+          currentElement)
+        this._registerPageStart(currentElement, true);
+        return
+      }
+
+      // page 17?
+      // 6.1.1. Strict rule #1: One empty line between all nodes
 
       // otherwise try to break it and loop the children:
       const children = this._getProcessedChildren(currentElement, newPageBottom, this.referenceHeight);
