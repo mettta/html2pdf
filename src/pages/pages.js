@@ -1895,8 +1895,18 @@ export default class Pages {
               // TODO #_canNotBeLast
               // а если там подряд несколько заголовков, и перед previousElement есть еще заголовки, которые мы не проверяли еслтенствнно, и они будут висеть
               // this._registerPageStart(previousElement)
+              console.warn('tst improveResult', previousElement)
+              // if (improveResult) {
+              let result = previousElement;
+              const firstChildParent = this.DOM.findFirstChildParent(result, this.contentFlow);
+              result = firstChildParent || result;
+
+              const previousCandidate = this.DOM.findPreviousNoHangingsFromPage(result, this.pages.at(-2)?.pageBottom, this.root)
+              result = previousCandidate || result;
+
+
               this.debugMode && this.debugToggler._getInternalSplitters && console.log('previousElement _isNoHanging')
-              registerResult(previousElement, i - 1);
+              registerResult(result, i - 1);
             } else {
               // TODO #tracedParent
               // this._registerPageStart(currentElement);
