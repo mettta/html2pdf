@@ -199,7 +199,13 @@ export default class Pages {
 
   }
 
-  _registerPageStart(pageStart) {
+  _registerPageStart(pageStart, checkParent = false) {
+
+    if (checkParent) {
+      const firstChildParent = this.DOM.findFirstChildParent(pageStart, this.contentFlow);
+      pageStart = firstChildParent || pageStart;
+    }
+
     const pageBottom = this.DOM.getElementRootedRealTop(pageStart, this.root) + this.referenceHeight;
     this.pages.push({
       pageStart: pageStart,
@@ -350,10 +356,12 @@ export default class Pages {
         // ** if currentElement can't be the last element on the page,
         // ** immediately move it to the next page:
 
+        console.log('_isNoHanging', currentElement, currentOrParentElement)
+
         // TODO #tracedParent
         // this._registerPageStart(currentElement);
         // ** And if it's the first child, move the parent node to the next page.
-        this._registerPageStart(currentOrParentElement);
+        this._registerPageStart(currentElement, true); // @@@
         this.debugMode && this.debugToggler._parseNode && console.groupEnd(...consoleMark, '_isNoHanging(current)');
         return
       }
@@ -412,7 +420,10 @@ export default class Pages {
         }
 
         // otherwise move it to next page,
-        this._registerPageStart(currentImage);
+        // *** 'true':
+        // *** add the possibility of moving it with the wrap tag
+        // *** if it's the first child
+        this._registerPageStart(currentImage, true);
         // and avoid page overflow if the picture is too big to fit on the page as a whole
         if (currentImageHeight > this.referenceHeight) {
           this.DOM.fitElementWithinBoundaries({
@@ -437,6 +448,11 @@ export default class Pages {
       if (currentElementBottom <= newPageBottom) {
         // we need <= because splitted elements often get equal height // todo comment
 
+        // * AND it's being fulfilled:
+        // *** nextElementTop > newPageBottom
+        // * so this element cannot be the first child,
+        // * because the previous element surely ends before this one begins,
+        // * and so is its previous neighbor, not its parent.
         this._registerPageStart(nextElement);
         this.debugMode && this.debugToggler._parseNode && console.groupEnd(...consoleMark, 'register Next');
         return
@@ -487,8 +503,12 @@ export default class Pages {
           // ** if previousElement can't be the last element on the page,
           // ** move it to the next page.
           // TODO #_canNotBeLast
-          // а если там подряд несколько заголовков, и перед previousElement есть еще заголовки, которые мы не проверяли еслтенствнно, и они будут висеть
-          this._registerPageStart(previousElement)
+          // а если там подряд несколько заголовков, и перед previousElement
+          //  есть еще заголовки, которые мы не проверяли еслтенствнно,
+          //  и они будут висеть
+          console.log('_isNoHanging previousElement', previousElement)
+
+          this._registerPageStart(previousElement, true)
         } else {
           // TODO #tracedParent
           // this._registerPageStart(currentElement);
@@ -497,7 +517,7 @@ export default class Pages {
             '_registerPageStart (from _parseNode): \n',
             currentOrParentElement
           );
-          this._registerPageStart(currentOrParentElement);
+          this._registerPageStart(currentElement, true);
         }
       }
     }
