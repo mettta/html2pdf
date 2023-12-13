@@ -547,6 +547,7 @@ export default class Pages {
     return (
       this._isPRE(node, _style) ||
       this._isTableNode(node, _style) ||
+      this._isTableLikeNode(node, _style) ||
       this.DOM.isGridAutoFlowRow(_style) // todo
     );
   }
@@ -559,13 +560,13 @@ export default class Pages {
     if (this._isNoBreak(node)) {
       // don't break apart, thus keep an empty children array
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
-        '🧡 isNoBreak');
-      children = [];
+        '🧡 isNoBreak', node);
+      return children = [];
 
     } else if (this.DOM.isComplexTextBlock(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 ComplexTextBlock', node);
-      children = this._splitComplexTextBlockIntoLines(node) || [];
+      return children = this._splitComplexTextBlockIntoLines(node) || [];
 
     } else if (this._isTextNode(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
@@ -574,17 +575,40 @@ export default class Pages {
       // temporarily use the less productive function.
 
       // children = this._splitTextNode(node, firstPageBottom, fullPageHeight) || [];
-      children = this._splitComplexTextBlockIntoLines(node) || [];
+      return children = this._splitComplexTextBlockIntoLines(node) || [];
 
-    } else if (this._isPRE(node)) {
-      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
-        '💚 PRE');
-      children = this._splitPreNode(node, firstPageBottom, fullPageHeight) || [];
+    }
 
-    } else if (this._isTableNode(node)) {
+    const nodeComputedStyle = this.DOM.getComputedStyle(node);
+
+    if (this._isPRE(node, nodeComputedStyle)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
-        '💚 TABLE');
-      children = this._splitTableNode(node, firstPageBottom, fullPageHeight) || [];
+        '💚 PRE', node);
+      children = this._splitPreNode(
+        node,
+        firstPageBottom,
+        fullPageHeight,
+      ) || [];
+
+    } else if (this._isTableNode(node, nodeComputedStyle)) {
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+        '💚 TABLE', node);
+      children = this._splitTableNode(
+        node,
+        firstPageBottom,
+        fullPageHeight,
+        nodeComputedStyle
+      ) || [];
+
+    } else if (this._isTableLikeNode(node, nodeComputedStyle)) {
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+        '💚 TABLE like', node);
+      children = this._splitTableLikeNode(
+        node,
+        firstPageBottom,
+        fullPageHeight,
+        nodeComputedStyle
+      ) || [];
 
     } else if (this.DOM.isGridAutoFlowRow(this.DOM.getComputedStyle(node))) {
       // ** If it is a grid element.
@@ -595,7 +619,11 @@ export default class Pages {
       // ***** behaves as a block element in the flow thanks to its content.
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💜 GRID');
-      children = this._splitGridNode(node, firstPageBottom, fullPageHeight) || [];
+      children = this._splitGridNode(
+        node,
+        firstPageBottom,
+        fullPageHeight
+      ) || [];
 
 
       // TODO LI: если в LI есть UL, маркер может оставаться на прежней странице - см. скрин в телеге.
@@ -619,14 +647,16 @@ export default class Pages {
       //     }, []);
 
     } else {
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+        '💚 some node', node);
       children = this._getChildren(node);
-    }
 
-    this.debugMode && this.debugToggler._getProcessedChildren && console.info(
-      ...consoleMark,
-      '🚸 get element children ',
-      children
-    );
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(
+        ...consoleMark,
+        '🚸 get element children ',
+        children
+      );
+    }
 
     return children
   }
@@ -1115,7 +1145,7 @@ export default class Pages {
 
       this.debugMode && this.debugToggler._splitPreNode && console.groupEnd('%c_splitPreNode', 'background:cyan');
 
-      return newPreElementsArray; 
+      return newPreElementsArray;
 
     } // END OF * if _children.length == 1
 
@@ -1153,6 +1183,114 @@ export default class Pages {
 
     return part
   };
+
+  _splitTableLikeNode(node, pageBottom, fullPageHeight, nodeComputedStyle) {
+    // FF has page breaks has no effect inside internal table elements.
+    // So such a node will have to be split like a table.
+
+    // todo improve partitioning:
+    // now we split by rows,
+    // without regard to the content or height of the rows
+
+    // * If we call the function in a context where
+    // * the computedStyle for a node has already been computed,
+    // * it will be passed in the nodeComputedStyle variable.
+    const _nodeComputedStyle = nodeComputedStyle
+      ? nodeComputedStyle
+      : this.DOM.getComputedStyle(node);
+
+    const sortOfLines = this._getChildren(node);
+
+    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
+    const nodeWrapperHeight = this.DOM.getEmptyNodeHeight(node);
+
+    // ** Prepare parameters for splitters calculation
+    const firstPartSpace = pageBottom - nodeTop - nodeWrapperHeight;
+    const fullPageSpace = fullPageHeight - nodeWrapperHeight;
+
+    let distributedRows = sortOfLines; // todo?
+
+    // todo common way to split (pre?) // 1042
+
+    // * find starts of parts splitters
+
+    let page = 0;
+    let splitters = [];
+    let floater = firstPartSpace;
+
+    // *** need to make the getElementRootedTop work with root = node
+    const initPosition = _nodeComputedStyle.position;
+    if (initPosition != 'relative') {
+      node.style.position = 'relative';
+    }
+
+    for (let index = 0; index < distributedRows.length; index++) {
+      const current = distributedRows[index];
+      const currentBottom = this.DOM.getElementRootedBottom(current, node);
+
+      // TODO move to DOM
+      if (currentBottom > floater) {
+        // * start a new part at [index]
+        index && splitters.push(index);
+        // ? start a new page
+        index && (page += 1);
+        // * move the floater down:
+        // ** if this is the very first element,
+        // ** we just assume that the first part can take up the whole page.
+        floater = index ? this.DOM.getElementRootedTop(current, node) + fullPageSpace : fullPageSpace;
+      } // end for
+    }
+
+    // *** need to revert back to the original positioning of the node
+    node.style.position = initPosition;
+
+    if(!splitters.length) {
+      // ** if there is no partitioning, we return an empty array
+      // ** and the original node will be taken in its entirety.
+      console.log('splitters.length', splitters.length)
+      return []
+    }
+
+    // ******** ELSE:
+    // * If there are parts here, and the node will be split, continue.
+    // * Render new parts.
+
+    // * The last part end is registered automatically.
+    splitters.push(null);
+
+    const newPreElementsArray = splitters.map((id, index, splitters) => {
+      // Avoid trying to break this node: createWithFlagNoBreak()
+      // We can't wrap in createWithFlagNoBreak()
+      // because PRE may have margins and that will affect the height of the wrapper.
+      // So we will give the PRE itself this property.
+      const part = this.DOM.cloneNodeWrapper(node);
+      this.DOM.setFlagNoBreak(part);
+
+      // id = the beginning of the next part
+      const start = splitters[index - 1] || 0;
+      const end = id || splitters[splitters.length];
+
+      this.DOM.insertAtEnd(part, ...distributedRows.slice(start, end));
+
+      return part;
+    });
+
+    // * Mark nodes as parts
+    this.DOM.markPartNodesWithClass(newPreElementsArray);
+
+    // * We need to keep the original node,
+    // * we may need it as a parent in this._parseNode().
+    this.DOM.replaceNodeContentsWith(node, ...newPreElementsArray);
+    // * We "open" the slough node, but leave it.
+    node.style.display = 'contents';
+    node.setAttribute('slough-node', '')
+    node.classList = '';
+
+    return newPreElementsArray;
+
+
+    // return this._getChildren(node);
+  }
 
   _splitTableNode(table, pageBottom, fullPageHeight) {
     // * Split simple tables, without regard to col-span and the like.
@@ -2386,6 +2524,9 @@ export default class Pages {
   _isPRE(element, _style = this.DOM.getComputedStyle(element)) {
     // this.DOM.getElementTagName(element) === 'PRE'
     return [
+      'block'
+    ].includes(_style.display)
+    && [
       'pre',
       'pre-wrap',
       'pre-line',
@@ -2407,10 +2548,17 @@ export default class Pages {
   }
 
   _isTableNode(element, _style = this.DOM.getComputedStyle(element)) {
-    // return this.DOM.getElementTagName(element) === 'TABLE';
-    return [
+    return this.DOM.getElementTagName(element) === 'TABLE'
+    && [
       'table'
-    ].includes(_style.whiteSpace);
+    ].includes(_style.display);
+  }
+
+  _isTableLikeNode(element, _style = this.DOM.getComputedStyle(element)) {
+    return this.DOM.getElementTagName(element) !== 'TABLE'
+    && [
+      'table'
+    ].includes(_style.display);
   }
 
   _isLiNode(element) {
