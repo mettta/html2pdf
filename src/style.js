@@ -55,6 +55,10 @@ ${SELECTOR.root} {
   padding-bottom: ${this.config.virtualPagesGap * 2 + this.config.screenUnits};
 }
 
+${SELECTOR.pageBreaker} {
+  display: block;
+}
+
 ${SELECTOR.virtualPaper} {
   display: grid;
   grid-template-columns: 1fr;
@@ -173,7 +177,7 @@ ${SELECTOR.frontpageContent} {
   height: 100%;
 }
 
-${SELECTOR.pageMarker} {
+.null {
   display: inline;
   padding: 0;
   margin: 0;

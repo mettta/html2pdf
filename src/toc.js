@@ -17,7 +17,7 @@ export default class Toc {
     this.contentFlow = layout.contentFlow;
     this.root = layout.root;
 
-    this.pageMarkerSelector = selector.pageMarker;
+    this.pageBreakerSelector = selector.pageBreaker;
     this.tocPageNumberSelector = selector.tocPageNumber;
 
     // local
@@ -34,8 +34,8 @@ export default class Toc {
 
 tocPageNumberSelector:
  • ${this.tocPageNumberSelector}
-pageMarkerSelector:
- • ${this.pageMarkerSelector}
+ pageBreakerSelector:
+ • ${this.pageBreakerSelector}
       `);
 
     const tocPageNumberBoxes = this.DOM.findAllSelectorsInside(this.contentFlow, this.tocPageNumberSelector);
@@ -52,7 +52,7 @@ pageMarkerSelector:
     //    which have their 'targetTop' positions as keys
     // 3) merge the dictionaries.
 
-    const dataFromPagesMarkers = this.DOM.findAllSelectorsInside(this.contentFlow, this.pageMarkerSelector)
+    const dataFromPagesMarkers = this.DOM.findAllSelectorsInside(this.contentFlow, this.pageBreakerSelector)
     .reduce((acc, marker, index) => {
       // * The conditions for the following code snippet are as follows:
       // - It should be executed after the preview is rendered.

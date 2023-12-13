@@ -27,7 +27,7 @@ export default class Preview {
     this.virtualPaperGapSelector = selector?.virtualPaperGap;
     this.runningSafetySelector = selector?.runningSafety;
     this.printPageBreakSelector = selector?.printPageBreak;
-    this.pageMarker = selector?.pageMarker;
+    this.pageBreaker = selector?.pageBreaker;
 
     // selectors used for the mask
     this.virtualPaper = selector?.virtualPaper;
@@ -149,18 +149,42 @@ export default class Preview {
     const element = this.pages[pageIndex].pageStart;
     // ADD FOOTER and HEADER into Content Flow (as page break),
     // ADD ONLY HEADER into Content Flow before the first page.
-    // PageMarker is used to determine which page an object is on.
-    separator && this._insertFooterSpacer(element, this.paper.footerHeight, separator);
-    this._insertPageStartMarker(element, pageIndex);
-    this._insertHeaderSpacer(element, this.paper.headerHeight);
+
+    const pageBreaker = this._createPageBreaker(pageIndex, separator);
+    // This wrapper pageBreaker must be inserted into the DOM immediately,
+    // because in the process of creating and inserting the footer into the DOM,
+    // balancing is going on, and the parent of the spacer
+    // must already be in the DOM.
+    this.DOM.insertBefore(element, pageBreaker);
+
+    separator && this._insertFooterSpacer(pageBreaker, this.paper.footerHeight, separator);
+    this._insertHeaderSpacer(pageBreaker, this.paper.headerHeight);
     this._updatePageStartElementAttrValue(element, pageIndex);
   }
 
-  _insertPageStartMarker(target, pageIndex) {
+  _createPageBreaker(pageIndex, separator) {
+    // PageBreaker isolates all inserted elements
+    // to create a new formatting context,
+    // and also used to determine which page an object is on.
+
     // TODO move to DOM:
-    const pageMarker = this.DOM.create(this.pageMarker);
-    this.DOM.setAttribute(pageMarker, '[page]', `${pageIndex + 1}`)
-    this.DOM.insertBefore(target, pageMarker)
+    const pageBreaker = this.DOM.create(this.pageBreaker);
+    this.DOM.setAttribute(pageBreaker, '[page]', `${pageIndex + 1}`);
+
+    // Non-virtual margins need to be added to the outer wrapper pageBreaker,
+    // because if the code of the document being printed puts
+    // this breaking element into an inline context,
+    // the margins will not work correctly
+    // (instead of internal elements - header and footer, whose margins are lost
+    // in cases like inline formatting of one of the parents).
+
+    // * because of firefox, we added 1pixel of padding for runningSafety in style.js,
+    // * and are now subtracting it to compensate.
+    // FIXME -1
+    (separator && this.paper.footerHeight) && this.DOM.setStyles(pageBreaker, { marginTop: this.paper.footerHeight - 1 + 'px' });
+    this.paper.headerHeight && this.DOM.setStyles(pageBreaker, { marginBottom: this.paper.headerHeight - 1 + 'px' });
+
+    return pageBreaker;
   }
 
   _updatePageStartElementAttrValue(element, pageIndex) {
@@ -218,26 +242,32 @@ export default class Preview {
 
   _insertHeaderSpacer(target, headerHeight) {
 
+    const headerSpacer = this.DOM.createDocumentFragment();
+
     // In the virtual footer/header we add an empty element
     // with a calculated height instead of the content.
     // We use margins to compensate for possible opposite margins in the content.
     const balancingHeader = this.DOM.create(this.runningSafetySelector);
-    // * because of firefox, we added 1pixel of padding for runningSafety in style.js,
-    // * and are now subtracting it to compensate (in marginBottom).
-    headerHeight && this.DOM.setStyles(balancingHeader, { marginBottom: headerHeight - 1 + 'px' });
 
-    const headerSpacer = this.DOM.createDocumentFragment();
     this.DOM.insertAtEnd(
       headerSpacer,
       this._createVirtualPaperTopMargin(),
       balancingHeader,
     )
 
-    // Put into DOM
-    this.DOM.insertBefore(target, headerSpacer)
+    // Put into DOM inside the target, in its lower part
+    this.DOM.insertAtEnd(target, headerSpacer)
   }
 
   _insertFooterSpacer(target, footerHeight, paperSeparator) {
+
+    const footerSpacer = this.DOM.createDocumentFragment();
+
+    // Based on contentSeparator (virtual, not printed element, inserted into contentFlow)
+    // and paperSeparator (virtual, not printed element, inserted into paperFlow),
+    // calculate the height of the necessary compensator to visually fit page breaks
+    // in the content in contentFlow and virtual page images on the screen in paperFlow.
+    const contentSeparator = this._createVirtualPaperGap();
 
     // In the virtual footer/header we add an empty element
     // with a calculated height instead of the content.
@@ -247,17 +277,7 @@ export default class Preview {
     // We create it with a basic compensator,
     // which takes into account now only the footerHeight.
     const balancingFooter = this.DOM.create(this.runningSafetySelector);
-    // * because of firefox, we added 1pixel of padding for runningSafety in style.js,
-    // * and are now subtracting it to compensate (in marginTop).
-    footerHeight && this.DOM.setStyles(balancingFooter, { marginTop: footerHeight - 1 + 'px' });
 
-    // Based on contentSeparator (virtual, not printed element, inserted into contentFlow)
-    // and paperSeparator (virtual, not printed element, inserted into paperFlow),
-    // calculate the height of the necessary compensator to visually fit page breaks
-    // in the content in contentFlow and virtual page images on the screen in paperFlow.
-    const contentSeparator = this._createVirtualPaperGap();
-
-    const footerSpacer = this.DOM.createDocumentFragment();
     this.DOM.insertAtEnd(
       footerSpacer,
       balancingFooter,
@@ -266,16 +286,23 @@ export default class Preview {
       contentSeparator,
     )
 
-    // Put into DOM
-    this.DOM.insertBefore(target, footerSpacer)
+    // Put into DOM inside the target, in its upper part
+    this.DOM.insertAtStart(target, footerSpacer);
 
+    this._balanceFooter(balancingFooter, contentSeparator, paperSeparator);
+  }
+
+  _balanceFooter(balancingFooter, contentSeparator, paperSeparator) {
+    // * Must be run after all members have been added to the DOM.
     // Determine what inaccuracy there is visually in the break simulation position,
-    // and compensate for it.
+    // focusing on the difference between the position of the paired elements
+    // in Paper Flow and Content Flow, and compensate for it.
     const balancer = this.DOM.getElementRootedTop(paperSeparator, this.root) - this.DOM.getElementRootedTop(contentSeparator, this.root);
+
     this.DOM.setStyles(balancingFooter, { marginBottom: balancer + 'px' });
 
     // TODO check if negative on large documents
-    this.debugMode && console.log('%c balancer ', CONSOLE_CSS_LABEL_PREVIEW, balancer);
+    this.debugMode && console.assert(balancer >= 0, `balancer is negative: ${balancer} < 0`);
   }
 
 }
