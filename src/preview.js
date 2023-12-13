@@ -188,11 +188,9 @@ export default class Preview {
   }
 
   _updatePageStartElementAttrValue(element, pageIndex) {
-    // makes sense if there is a frontpage
-    // that is not registered in the page array,
-    // and there is no element that starts it,
-    // so it needs to increase by 1 the numbering for starting elements:
-    this.hasFrontPage && this.DOM.markPageStartElement(element, `${pageIndex + 2}`);
+    //  frontpage on page 1 forces page numbers to be refreshed
+    console.log(`${pageIndex + 1}`, element, )
+    this.hasFrontPage && this.DOM.markPageStartElement(element, `${pageIndex + 1}`);
   }
 
   _insertPaper(paperFlow, paper, separator) {

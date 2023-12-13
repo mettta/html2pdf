@@ -143,6 +143,24 @@ export default class DocumentObjectModel {
     this.debugMode && this.debugToggler._DOM && console.log(`you're really sure ${selector} is a selector?`)
   }
 
+  removeAttribute(element, selector) {
+    element.removeAttribute(selector);
+  }
+
+  removeAllAttributes(element) {
+    while (element.attributes.length > 0) {
+      element.removeAttribute(element.attributes[0].name);
+    }
+  }
+
+  removeAllClasses(element) {
+    element.classList = '';
+  }
+
+  removeAllStyles(element) {
+    element.style = '';
+  }
+
   isSelectorMatching(element, selector) {
     if (!element || !selector) {
       this.debugMode && this.debugToggler._DOM && console.warn('isSelectorMatching() must have 2 params',
@@ -252,6 +270,16 @@ export default class DocumentObjectModel {
 
   markPageStartElement(element, page) {
     this.setAttribute(element, SELECTOR.pageStartMarker, page)
+  }
+
+  unmarkPageStartElement(element) {
+    this.removeAttribute(
+      element,
+      SELECTOR.pageStartMarker.substring(
+        1,
+        SELECTOR.pageStartMarker.length - 1
+      )
+    );
   }
 
   isPageStartElement(element) {

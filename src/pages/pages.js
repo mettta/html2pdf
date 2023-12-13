@@ -221,7 +221,7 @@ export default class Pages {
       pageStart: pageStart,
       pageBottom: pageBottom,
     });
-    this.DOM.markPageStartElement(pageStart, this.pages.length)
+    this.DOM.markPageStartElement(pageStart, this.pages.length);
     this.debugMode && this.debugToggler._registerPageStart && console.log(
       `📍 %c register page ${this.pages.length} \n`, "background:yellow; color:red",
       pageBottom, pageStart,
@@ -475,12 +475,12 @@ export default class Pages {
         // ! and the rounding of 1 line will be rougher than 4 -->
         // ! we will get a smaller number than the actual 4 lines, at least by a 2 pixel.
         // todo #mm-px convert mm to px before all calculations and rendering
-        console.log('??????????????????????????? \n getElementHeight(currentElement) <= this.minimumBreakableHeight',
-        this.DOM.getElementHeight(currentElement),
-         '<',
-         this.minimumBreakableHeight,
-          currentElement)
-        this._registerPageStart(currentElement, true);
+        // console.log('??????????????????????????? \n getElementHeight(currentElement) <= this.minimumBreakableHeight',
+        // this.DOM.getElementHeight(currentElement),
+        //  '<',
+        //  this.minimumBreakableHeight,
+        //   currentElement)
+        // this._registerPageStart(currentElement, true);
         return
       }
 
@@ -1270,6 +1270,8 @@ export default class Pages {
       // So we will give the PRE itself this property.
       const part = this.DOM.cloneNodeWrapper(node);
       this.DOM.setFlagNoBreak(part);
+      // TODO make the same with other splitted nodes
+      this.DOM.unmarkPageStartElement(part);
 
       // id = the beginning of the next part
       const start = splitters[index - 1] || 0;
@@ -1287,9 +1289,11 @@ export default class Pages {
     // * we may need it as a parent in this._parseNode().
     this.DOM.replaceNodeContentsWith(node, ...newPreElementsArray);
     // * We "open" the slough node, but leave it.
+    this.DOM.removeAllClasses(node);
+    // this.DOM.removeAllAttributes(node);
+    this.DOM.removeAllStyles(node);
     node.style.display = 'contents';
-    node.setAttribute('slough-node', '')
-    node.classList = '';
+    this.DOM.setAttribute(node, 'slough-node', '')
 
     return newPreElementsArray;
 
