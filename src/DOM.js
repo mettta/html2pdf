@@ -143,6 +143,24 @@ export default class DocumentObjectModel {
     this.debugMode && this.debugToggler._DOM && console.log(`you're really sure ${selector} is a selector?`)
   }
 
+  removeAttribute(element, selector) {
+    element.removeAttribute(selector);
+  }
+
+  removeAllAttributes(element) {
+    while (element.attributes.length > 0) {
+      element.removeAttribute(element.attributes[0].name);
+    }
+  }
+
+  removeAllClasses(element) {
+    element.classList = '';
+  }
+
+  removeAllStyles(element) {
+    element.style = '';
+  }
+
   isSelectorMatching(element, selector) {
     if (!element || !selector) {
       this.debugMode && this.debugToggler._DOM && console.warn('isSelectorMatching() must have 2 params',
@@ -250,6 +268,24 @@ export default class DocumentObjectModel {
     return wrapperHeight;
   }
 
+  markPageStartElement(element, page) {
+    this.setAttribute(element, SELECTOR.pageStartMarker, page)
+  }
+
+  unmarkPageStartElement(element) {
+    this.removeAttribute(
+      element,
+      SELECTOR.pageStartMarker.substring(
+        1,
+        SELECTOR.pageStartMarker.length - 1
+      )
+    );
+  }
+
+  isPageStartElement(element) {
+    return this.isSelectorMatching(element, SELECTOR.pageStartMarker)
+  }
+
   markPartNodesWithClass(nodes) {
     nodes.forEach( node => {
       // this.setAttribute()
@@ -289,8 +325,8 @@ export default class DocumentObjectModel {
     return window.getComputedStyle(element);
   }
 
-  isInline(element) {
-    const display = this.getComputedStyle(element).display;
+  isInline(computedStyle) {
+    const display = computedStyle.display;
     const res = display === "inline" ||
                 display === "inline-block" ||
                 display === "inline-table" ||
@@ -299,8 +335,8 @@ export default class DocumentObjectModel {
     return res;
   }
 
-  isInlineBlock(element) {
-    const display = this.getComputedStyle(element).display;
+  isInlineBlock(computedStyle) {
+    const display = computedStyle.display;
     const res = display === "inline-block" ||
                 display === "inline-table" ||
                 display === "inline-flex" ||
@@ -308,15 +344,15 @@ export default class DocumentObjectModel {
     return res;
   }
 
-  isGrid(element) {
-    const display = this.getComputedStyle(element).display;
+  isGrid(computedStyle) {
+    const display = computedStyle.display;
     const res = display === "grid";
     return res;
   }
 
-  isGridAutoFlowRow(element) {
-    const display = this.getComputedStyle(element).display;
-    const gridAutoFlow = this.getComputedStyle(element).gridAutoFlow;
+  isGridAutoFlowRow(computedStyle) {
+    const display = computedStyle.display;
+    const gridAutoFlow = computedStyle.gridAutoFlow;
     const res1 = display === "grid" ||
                  display === "inline-grid";
     const res2 = gridAutoFlow === "row";
@@ -376,10 +412,11 @@ export default class DocumentObjectModel {
 
       if (element === firstChild) {
         firstSuitableParent = parent;
+        element = parent;
+        parent = element.parentElement;
+      } else {
+        return firstSuitableParent;
       }
-
-      element = parent;
-      parent = element.parentElement;
     }
 
     return firstSuitableParent;
@@ -394,10 +431,11 @@ export default class DocumentObjectModel {
 
       if (element === lastChild) {
         lastSuitableParent = parent;
+        element = parent;
+        parent = element.parentElement;
+      } else {
+        return lastSuitableParent;
       }
-
-      element = parent;
-      parent = element.parentElement;
     }
 
     return lastSuitableParent;
@@ -413,6 +451,35 @@ export default class DocumentObjectModel {
 
   isNoHanging(element) {
     return this.isSelectorMatching(element, SELECTOR.flagNoHanging)
+  }
+
+  findPreviousNoHangingsFromPage(element, topFloater, root) {
+    let suitableSibling = null;
+    let prev = element.previousElementSibling;
+
+    // while the candidates are within the current page
+    // (below the element from which the last registered page starts):
+    while (this.getElementRootedTop(prev, root) > topFloater) {
+      // if it can't be left
+      if (this.isNoHanging(prev)) {
+        // and it's the Start of the page
+        if (this.isPageStartElement(prev)) {
+          // if I'm still on the current page and have a "start" -
+          // then I simply drop the case and move the original element
+          return element
+        } else {
+          // * isNoHanging(prev) && !isPageStartElement(prev)
+          // I'm looking at the previous element:
+          suitableSibling = prev;
+          element = prev;
+          prev = element.previousElementSibling;
+        }
+      } else {
+        // * !isNoHanging(prev) - return last computed
+        return suitableSibling;
+      }
+    }
+    return suitableSibling;
   }
 
   // CHECK
@@ -628,8 +695,10 @@ export default class DocumentObjectModel {
     // TODO element == document.body
     if (!offsetParent) {
       this.debugMode && this.debugToggler._DOM && console.warn(
-        'element has no offset parent', element,
-        '\nThe function returned:', undefined
+        'Element has no offset parent.',
+        '\n element:', element,
+        '\n offsetParent:', offsetParent,
+        '\n The function returned:', undefined
       );
       return
     }

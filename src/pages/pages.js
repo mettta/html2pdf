@@ -77,6 +77,9 @@ export default class Pages {
 
     this.pages = [];
 
+    this.commonLineHeight = this.DOM.getLineHeight(this.root);
+    this.minimumBreakableHeight = this.commonLineHeight * this.minBreakableLines;
+
     // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browsers
     // Firefox 1.0+
     // https://bugzilla.mozilla.org/show_bug.cgi?id=820891
@@ -128,7 +131,14 @@ export default class Pages {
         pageStarters.shift()
       };
 
-      pageStarters.forEach(element => this.DOM.insertForcedPageBreakBefore(element));
+      pageStarters.forEach(element => {
+        const firstChildParent = this.DOM.findFirstChildParent(element, this.contentFlow)
+        if (firstChildParent) {
+          this.DOM.insertForcedPageBreakBefore(firstChildParent);
+        } else {
+          this.DOM.insertForcedPageBreakBefore(element);
+        }
+      });
     }
   }
 
@@ -192,12 +202,26 @@ export default class Pages {
 
   }
 
-  _registerPageStart(pageStart) {
+  _registerPageStart(pageStart, improveResult = false) {
+    if (improveResult) {
+      const firstChildParent = this.DOM.findFirstChildParent(pageStart, this.contentFlow);
+      pageStart = firstChildParent || pageStart;
+
+      const previousCandidate = this.DOM.findPreviousNoHangingsFromPage(
+        pageStart,
+        // * limited to the element from which the last registered page starts:
+        this.DOM.getElementRootedTop(this.pages.at(-1)?.pageStart, this.root),
+        this.root
+      );
+      pageStart = previousCandidate || pageStart;
+    }
+
     const pageBottom = this.DOM.getElementRootedRealTop(pageStart, this.root) + this.referenceHeight;
     this.pages.push({
       pageStart: pageStart,
       pageBottom: pageBottom,
-    })
+    });
+    this.DOM.markPageStartElement(pageStart, this.pages.length);
     this.debugMode && this.debugToggler._registerPageStart && console.log(
       `📍 %c register page ${this.pages.length} \n`, "background:yellow; color:red",
       pageBottom, pageStart,
@@ -211,7 +235,12 @@ export default class Pages {
     parent,
     parentBottom,
   }) {
-    this.debugMode && this.debugToggler._parseNodes && console.log('🔵 _parseNodes', '\narray:', [...array], '\nretainedParent:', parent)
+    this.debugMode && this.debugToggler._parseNodes && console.log(
+      '🔵 _parseNodes',
+      '\narray:', [...array],
+      '\ntracedParent:', parent
+    );
+
     for (let i = 0; i < array.length; i++) {
 
       this._parseNode({
@@ -262,12 +291,11 @@ export default class Pages {
       '\nisCurrentFirst: ', isCurrentFirst,
       );
 
-    // TODO #retainedParent
+    // TODO #tracedParent
     // * If we want to start a new page from the current node,
-    // * which is the first (i == 0) or only child (= has 'parent'),
+    // * which is the first child (i == 0),
     // * we want to register its parent as the start of the page.
     const currentOrParentElement = (isCurrentFirst && parent) ? parent : currentElement;
-    // const currentOrParentElement = currentElement;
 
     this.debugMode && this.debugToggler._parseNode && console.log(
       ...consoleMark,
@@ -320,7 +348,7 @@ export default class Pages {
       this.DOM.findAllForcedPageBreakInside(currentElement).forEach(
         element => this._registerPageStart(element)
       );
-      // TODO: это может быть внутри таблицы или другого элеммента,
+      // TODO: это может быть внутри таблицы или другого элемента,
       // который мы не хотим / не можем разбить обычным образом!
       // Нужно проверять currentElement
 
@@ -338,10 +366,10 @@ export default class Pages {
         // ** if currentElement can't be the last element on the page,
         // ** immediately move it to the next page:
 
-        // TODO #retainedParent
+        // TODO #tracedParent
         // this._registerPageStart(currentElement);
         // ** And if it's the first child, move the parent node to the next page.
-        this._registerPageStart(currentOrParentElement);
+        this._registerPageStart(currentElement, true);
         this.debugMode && this.debugToggler._parseNode && console.groupEnd(...consoleMark, '_isNoHanging(current)');
         return
       }
@@ -400,7 +428,10 @@ export default class Pages {
         }
 
         // otherwise move it to next page,
-        this._registerPageStart(currentImage);
+        // *** 'true':
+        // *** add the possibility of moving it with the wrap tag
+        // *** if it's the first child
+        this._registerPageStart(currentImage, true);
         // and avoid page overflow if the picture is too big to fit on the page as a whole
         if (currentImageHeight > this.referenceHeight) {
           this.DOM.fitElementWithinBoundaries({
@@ -425,8 +456,31 @@ export default class Pages {
       if (currentElementBottom <= newPageBottom) {
         // we need <= because splitted elements often get equal height // todo comment
 
+        // * AND it's being fulfilled:
+        // *** nextElementTop > newPageBottom
+        // * so this element cannot be the first child,
+        // * because the previous element surely ends before this one begins,
+        // * and so is its previous neighbor, not its parent.
         this._registerPageStart(nextElement);
         this.debugMode && this.debugToggler._parseNode && console.groupEnd(...consoleMark, 'register Next');
+        return
+      }
+
+      // see if this node is worth paying attention to, based on its height
+      // TODO: need to rearrange the order of the condition checks
+      if (this.DOM.getElementHeight(currentElement) + 2 < this.minimumBreakableHeight) {
+        // todo #fewLines
+        // ! add 2 compensation pixels, because when converting millimeters to pixels,
+        // ! there's a rounding off, and with a rough calculation (like now)
+        // ! and the rounding of 1 line will be rougher than 4 -->
+        // ! we will get a smaller number than the actual 4 lines, at least by a 2 pixel.
+        // todo #mm-px convert mm to px before all calculations and rendering
+        // console.log('??????????????????????????? \n getElementHeight(currentElement) <= this.minimumBreakableHeight',
+        // this.DOM.getElementHeight(currentElement),
+        //  '<',
+        //  this.minimumBreakableHeight,
+        //   currentElement)
+        // this._registerPageStart(currentElement, true);
         return
       }
 
@@ -443,20 +497,16 @@ export default class Pages {
       this.debugMode && this.debugToggler._parseNode && console.log(...consoleMark,
         'currentElement ', currentElement);
 
-      // TODO #retainedParent
-      // ** If it is an only child (it means that the parent node is not split),
+      // TODO #tracedParent
+      // ?? If it is an only child (it means that the parent node is not split),
       // ** as well as if the first child is being registered,
       // ** -- we want to use the past parent (=wrapper of the current node)
       // ** as the start of the page.
 
-      const retainedParent = (
-        isCurrentFirst
-        // childrenNumber <= 1 || // !!! - P PRE и тп с 1 ребенком вносят ошибки
-        )
-                            ? (parent ? parent : currentElement)
-                            : undefined;
-      this.debugMode && this.debugToggler._parseNode && console.log(...consoleMark,
-        'set retainedParent', retainedParent)
+      // condition "childrenNumber <= 1" || // !!! - P PRE и тп с 1 ребенком вносят ошибки
+      // * if the first child - keep the previous parent,
+      // * if not the first - change to the current element:
+      const tracedParent = isCurrentFirst ? (parent || currentElement) : currentElement;
 
       // * Parse children:
       if (childrenNumber) {
@@ -468,7 +518,7 @@ export default class Pages {
           array: children,
           previous: previousElement,
           next: nextElement,
-          parent: retainedParent,
+          parent: tracedParent,
           parentBottom: isFullySPlittedParent ? undefined : currentElementBottom,
         })
       } else {
@@ -478,18 +528,16 @@ export default class Pages {
         if (this._isNoHanging(previousElement)) {
           // ** if previousElement can't be the last element on the page,
           // ** move it to the next page.
-          // TODO #_canNotBeLast
-          // а если там подряд несколько заголовков, и перед previousElement есть еще заголовки, которые мы не проверяли еслтенствнно, и они будут висеть
-          this._registerPageStart(previousElement)
+          this._registerPageStart(previousElement, true)
         } else {
-          // TODO #retainedParent
+          // TODO #tracedParent
           // this._registerPageStart(currentElement);
           this.debugMode && this.debugToggler._parseNode && console.log(
             ...consoleMark,
             '_registerPageStart (from _parseNode): \n',
             currentOrParentElement
           );
-          this._registerPageStart(currentOrParentElement);
+          this._registerPageStart(currentElement, true);
         }
       }
     }
@@ -500,10 +548,12 @@ export default class Pages {
   }
 
   _isFullySPlitted(node) {
+    const _style = this.DOM.getComputedStyle(node);
     return (
-      this._isPRE(node) ||
-      this._isTableNode(node) ||
-      this.DOM.isGridAutoFlowRow(node)
+      this._isPRE(node, _style) ||
+      this._isTableNode(node, _style) ||
+      this._isTableLikeNode(node, _style) ||
+      this.DOM.isGridAutoFlowRow(_style) // todo
     );
   }
 
@@ -515,12 +565,14 @@ export default class Pages {
     if (this._isNoBreak(node)) {
       // don't break apart, thus keep an empty children array
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
-        '🧡 isNoBreak');
-      children = [];
+        '🧡 isNoBreak', node);
+      return children = [];
+
     } else if (this.DOM.isComplexTextBlock(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 ComplexTextBlock', node);
-      children = this._splitComplexTextBlockIntoLines(node) || [];
+      return children = this._splitComplexTextBlockIntoLines(node) || [];
+
     } else if (this._isTextNode(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TextNode', node);
@@ -528,17 +580,42 @@ export default class Pages {
       // temporarily use the less productive function.
 
       // children = this._splitTextNode(node, firstPageBottom, fullPageHeight) || [];
-      children = this._splitComplexTextBlockIntoLines(node) || [];
-    } else if (this._isPRE(node)) {
-      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
-        '💚 PRE');
-      children = this._splitPreNode(node, firstPageBottom, fullPageHeight) || [];
-    } else if (this._isTableNode(node)) {
-      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
-        '💚 TABLE');
-      children = this._splitTableNode(node, firstPageBottom, fullPageHeight) || [];
+      return children = this._splitComplexTextBlockIntoLines(node) || [];
 
-    } else if (this.DOM.isGridAutoFlowRow(node)) {
+    }
+
+    const nodeComputedStyle = this.DOM.getComputedStyle(node);
+
+    if (this._isPRE(node, nodeComputedStyle)) {
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+        '💚 PRE', node);
+      children = this._splitPreNode(
+        node,
+        firstPageBottom,
+        fullPageHeight,
+      ) || [];
+
+    } else if (this._isTableNode(node, nodeComputedStyle)) {
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+        '💚 TABLE', node);
+      children = this._splitTableNode(
+        node,
+        firstPageBottom,
+        fullPageHeight,
+        nodeComputedStyle
+      ) || [];
+
+    } else if (this._isTableLikeNode(node, nodeComputedStyle)) {
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+        '💚 TABLE like', node);
+      children = this._splitTableLikeNode(
+        node,
+        firstPageBottom,
+        fullPageHeight,
+        nodeComputedStyle
+      ) || [];
+
+    } else if (this.DOM.isGridAutoFlowRow(this.DOM.getComputedStyle(node))) {
       // ** If it is a grid element.
       // ????? Process only some modifications of grids!
       // ***** There's an inline grid check here, too.
@@ -547,7 +624,11 @@ export default class Pages {
       // ***** behaves as a block element in the flow thanks to its content.
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💜 GRID');
-      children = this._splitGridNode(node, firstPageBottom, fullPageHeight) || [];
+      children = this._splitGridNode(
+        node,
+        firstPageBottom,
+        fullPageHeight
+      ) || [];
 
 
       // TODO LI: если в LI есть UL, маркер может оставаться на прежней странице - см. скрин в телеге.
@@ -571,7 +652,10 @@ export default class Pages {
       //     }, []);
 
     } else {
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+        '💚 some node', node);
       children = this._getChildren(node);
+
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(
         ...consoleMark,
         '🚸 get element children ',
@@ -588,7 +672,7 @@ export default class Pages {
     const newChildren = [];
 
     children.forEach(child => {
-      if (this.DOM.isInline(child)) {
+      if (this.DOM.isInline(this.DOM.getComputedStyle(child))) {
         if (!complexTextBlock) {
           // the first inline child
           complexTextBlock = this.DOM.createComplexTextBlock();
@@ -971,7 +1055,7 @@ export default class Pages {
         this.DOM.setInnerHTML(line, string);
         return line
       });
-      console.log('linesFromNode', linesFromNode);
+      this.debugMode && this.debugToggler._splitPreNode && console.log('linesFromNode', linesFromNode);
       this.DOM.replaceNodeContentsWith(node, ...linesFromNode);
 
       // * calculate parts
@@ -1066,7 +1150,7 @@ export default class Pages {
 
       this.debugMode && this.debugToggler._splitPreNode && console.groupEnd('%c_splitPreNode', 'background:cyan');
 
-      return newPreElementsArray; 
+      return newPreElementsArray;
 
     } // END OF * if _children.length == 1
 
@@ -1104,6 +1188,118 @@ export default class Pages {
 
     return part
   };
+
+  _splitTableLikeNode(node, pageBottom, fullPageHeight, nodeComputedStyle) {
+    // FF has page breaks has no effect inside internal table elements.
+    // So such a node will have to be split like a table.
+
+    // todo improve partitioning:
+    // now we split by rows,
+    // without regard to the content or height of the rows
+
+    // * If we call the function in a context where
+    // * the computedStyle for a node has already been computed,
+    // * it will be passed in the nodeComputedStyle variable.
+    const _nodeComputedStyle = nodeComputedStyle
+      ? nodeComputedStyle
+      : this.DOM.getComputedStyle(node);
+
+    const sortOfLines = this._getChildren(node);
+
+    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
+    const nodeWrapperHeight = this.DOM.getEmptyNodeHeight(node);
+
+    // ** Prepare parameters for splitters calculation
+    const firstPartSpace = pageBottom - nodeTop - nodeWrapperHeight;
+    const fullPageSpace = fullPageHeight - nodeWrapperHeight;
+
+    let distributedRows = sortOfLines; // todo?
+
+    // todo common way to split (pre?) // 1042
+
+    // * find starts of parts splitters
+
+    let page = 0;
+    let splitters = [];
+    let floater = firstPartSpace;
+
+    // *** need to make the getElementRootedTop work with root = node
+    const initPosition = _nodeComputedStyle.position;
+    if (initPosition != 'relative') {
+      node.style.position = 'relative';
+    }
+
+    for (let index = 0; index < distributedRows.length; index++) {
+      const current = distributedRows[index];
+      const currentBottom = this.DOM.getElementRootedBottom(current, node);
+
+      // TODO move to DOM
+      if (currentBottom > floater) {
+        // * start a new part at [index]
+        index && splitters.push(index);
+        // ? start a new page
+        index && (page += 1);
+        // * move the floater down:
+        // ** if this is the very first element,
+        // ** we just assume that the first part can take up the whole page.
+        floater = index ? this.DOM.getElementRootedTop(current, node) + fullPageSpace : fullPageSpace;
+      } // end for
+    }
+
+    // *** need to revert back to the original positioning of the node
+    node.style.position = initPosition;
+
+    if(!splitters.length) {
+      // ** if there is no partitioning, we return an empty array
+      // ** and the original node will be taken in its entirety.
+      console.log('splitters.length', splitters.length)
+      return []
+    }
+
+    // ******** ELSE:
+    // * If there are parts here, and the node will be split, continue.
+    // * Render new parts.
+
+    // * The last part end is registered automatically.
+    splitters.push(null);
+
+    const newPreElementsArray = splitters.map((id, index, splitters) => {
+      // Avoid trying to break this node: createWithFlagNoBreak()
+      // We can't wrap in createWithFlagNoBreak()
+      // because PRE may have margins and that will affect the height of the wrapper.
+      // So we will give the PRE itself this property.
+      const part = this.DOM.cloneNodeWrapper(node);
+      this.DOM.setFlagNoBreak(part);
+      // TODO make the same with other splitted nodes
+      this.DOM.unmarkPageStartElement(part);
+
+      // id = the beginning of the next part
+      const start = splitters[index - 1] || 0;
+      const end = id || splitters[splitters.length];
+
+      this.DOM.insertAtEnd(part, ...distributedRows.slice(start, end));
+
+      return part;
+    });
+
+    // * Mark nodes as parts
+    this.DOM.markPartNodesWithClass(newPreElementsArray);
+
+    // * We need to keep the original node,
+    // * we may need it as a parent in this._parseNode().
+    this.DOM.replaceNodeContentsWith(node, ...newPreElementsArray);
+    // * We "open" the slough node, but leave it.
+    this.DOM.removeAllClasses(node);
+    // this.DOM.removeAllAttributes(node);
+    this.DOM.removeAllStyles(node);
+    node.style.display = 'contents';
+    this.DOM.setAttribute(node, 'slough-node', '')
+
+    return newPreElementsArray;
+
+
+    // return this._getChildren(node);
+  }
 
   _splitTableNode(table, pageBottom, fullPageHeight) {
     // * Split simple tables, without regard to col-span and the like.
@@ -1872,10 +2068,20 @@ export default class Pages {
               // TODO #_canNotBeLast
               // а если там подряд несколько заголовков, и перед previousElement есть еще заголовки, которые мы не проверяли еслтенствнно, и они будут висеть
               // this._registerPageStart(previousElement)
+              console.warn('tst improveResult', previousElement)
+              // if (improveResult) {
+              let result = previousElement;
+              const firstChildParent = this.DOM.findFirstChildParent(result, this.contentFlow);
+              result = firstChildParent || result;
+
+              const previousCandidate = this.DOM.findPreviousNoHangingsFromPage(result, this.pages.at(-2)?.pageBottom, this.root)
+              result = previousCandidate || result;
+
+
               this.debugMode && this.debugToggler._getInternalSplitters && console.log('previousElement _isNoHanging')
-              registerResult(previousElement, i - 1);
+              registerResult(result, i - 1);
             } else {
-              // TODO #retainedParent
+              // TODO #tracedParent
               // this._registerPageStart(currentElement);
               // this._registerPageStart(currentOrParentElement);
               this.debugMode
@@ -2324,8 +2530,18 @@ export default class Pages {
     return this.DOM.getElementTagName(element) === 'STYLE'
   }
 
-  _isPRE(element) {
-    return this.DOM.getElementTagName(element) === 'PRE'
+  _isPRE(element, _style = this.DOM.getComputedStyle(element)) {
+    // this.DOM.getElementTagName(element) === 'PRE'
+    return [
+      'block'
+    ].includes(_style.display)
+    && [
+      'pre',
+      'pre-wrap',
+      'pre-line',
+      'break-spaces',
+      'nowrap'
+    ].includes(_style.whiteSpace);
   }
 
   _isIMG(element) {
@@ -2340,17 +2556,27 @@ export default class Pages {
     return this.DOM.isWrappedTextNode(element);
   }
 
-  _isTableNode(element) {
-    return this.DOM.getElementTagName(element) === 'TABLE';
+  _isTableNode(element, _style = this.DOM.getComputedStyle(element)) {
+    return this.DOM.getElementTagName(element) === 'TABLE'
+    && [
+      'table'
+    ].includes(_style.display);
+  }
+
+  _isTableLikeNode(element, _style = this.DOM.getComputedStyle(element)) {
+    return this.DOM.getElementTagName(element) !== 'TABLE'
+    && [
+      'table'
+    ].includes(_style.display);
   }
 
   _isLiNode(element) {
     return this.DOM.getElementTagName(element) === 'LI';
   }
 
-  _isNoBreak(element) {
+  _isNoBreak(element, _style = this.DOM.getComputedStyle(element)) {
     return this.DOM.isNoBreak(element)
-        || this.DOM.isInlineBlock(element)
+        || this.DOM.isInlineBlock(_style)
         || this._notSolved(element);
   }
 

@@ -55,6 +55,10 @@ ${SELECTOR.root} {
   padding-bottom: ${this.config.virtualPagesGap * 2 + this.config.screenUnits};
 }
 
+${SELECTOR.pageBreaker} {
+  display: block;
+}
+
 ${SELECTOR.virtualPaper} {
   display: grid;
   grid-template-columns: 1fr;
@@ -171,6 +175,19 @@ ${SELECTOR.frontpageContent} {
   transform-origin: top center;
   padding: .1px;
   height: 100%;
+}
+
+.null {
+  display: inline;
+  padding: 0;
+  margin: 0;
+  font: 0;
+  color: transparent;
+  line-height: 0;
+  border: none;
+  outline: none;
+  background: none;
+  background-color: transparent;
 }
 
 ${SELECTOR.textNode},
