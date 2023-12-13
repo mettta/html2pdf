@@ -666,9 +666,12 @@ export default class DocumentObjectModel {
 
     // TODO element == document.body
     if (!offsetParent) {
-      this.debugMode && this.debugToggler._DOM && console.warn(
-        'element has no offset parent', element,
-        '\nThe function returned:', undefined
+      // this.debugMode && this.debugToggler._DOM && 
+      console.warn(
+        'Element has no offset parent.',
+        '\n element:', element,
+        '\n offsetParent:', offsetParent,
+        '\n The function returned:', undefined
       );
       return
     }
