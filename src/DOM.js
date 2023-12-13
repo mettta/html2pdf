@@ -297,8 +297,8 @@ export default class DocumentObjectModel {
     return window.getComputedStyle(element);
   }
 
-  isInline(element) {
-    const display = this.getComputedStyle(element).display;
+  isInline(computedStyle) {
+    const display = computedStyle.display;
     const res = display === "inline" ||
                 display === "inline-block" ||
                 display === "inline-table" ||
@@ -307,8 +307,8 @@ export default class DocumentObjectModel {
     return res;
   }
 
-  isInlineBlock(element) {
-    const display = this.getComputedStyle(element).display;
+  isInlineBlock(computedStyle) {
+    const display = computedStyle.display;
     const res = display === "inline-block" ||
                 display === "inline-table" ||
                 display === "inline-flex" ||
@@ -316,15 +316,15 @@ export default class DocumentObjectModel {
     return res;
   }
 
-  isGrid(element) {
-    const display = this.getComputedStyle(element).display;
+  isGrid(computedStyle) {
+    const display = computedStyle.display;
     const res = display === "grid";
     return res;
   }
 
-  isGridAutoFlowRow(element) {
-    const display = this.getComputedStyle(element).display;
-    const gridAutoFlow = this.getComputedStyle(element).gridAutoFlow;
+  isGridAutoFlowRow(computedStyle) {
+    const display = computedStyle.display;
+    const gridAutoFlow = computedStyle.gridAutoFlow;
     const res1 = display === "grid" ||
                  display === "inline-grid";
     const res2 = gridAutoFlow === "row";

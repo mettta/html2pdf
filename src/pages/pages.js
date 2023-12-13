@@ -469,17 +469,15 @@ export default class Pages {
       // see if this node is worth paying attention to, based on its height
       // TODO: need to rearrange the order of the condition checks
       if (this.DOM.getElementHeight(currentElement) <= this.minimumBreakableHeight) {
-        console.log('??????????????????????????? \n getElementHeight(currentElement) <= this.minimumBreakableHeight',
-         this.DOM.getElementHeight(currentElement),
-         '<',
-         this.minimumBreakableHeight,
-          currentElement)
+        // todo #fewLines
+        // console.log('??????????????????????????? \n getElementHeight(currentElement) <= this.minimumBreakableHeight',
+        //  this.DOM.getElementHeight(currentElement),
+        //  '<',
+        //  this.minimumBreakableHeight,
+        //   currentElement)
         this._registerPageStart(currentElement, true);
         return
       }
-
-      // page 17?
-      // 6.1.1. Strict rule #1: One empty line between all nodes
 
       // otherwise try to break it and loop the children:
       const children = this._getProcessedChildren(currentElement, newPageBottom, this.referenceHeight);
@@ -545,10 +543,11 @@ export default class Pages {
   }
 
   _isFullySPlitted(node) {
+    const _style = this.DOM.getComputedStyle(node);
     return (
-      this._isPRE(node) ||
-      this._isTableNode(node) ||
-      this.DOM.isGridAutoFlowRow(node)
+      this._isPRE(node, _style) ||
+      this._isTableNode(node, _style) ||
+      this.DOM.isGridAutoFlowRow(_style) // todo
     );
   }
 
@@ -562,10 +561,12 @@ export default class Pages {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '🧡 isNoBreak');
       children = [];
+
     } else if (this.DOM.isComplexTextBlock(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 ComplexTextBlock', node);
       children = this._splitComplexTextBlockIntoLines(node) || [];
+
     } else if (this._isTextNode(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TextNode', node);
@@ -574,16 +575,18 @@ export default class Pages {
 
       // children = this._splitTextNode(node, firstPageBottom, fullPageHeight) || [];
       children = this._splitComplexTextBlockIntoLines(node) || [];
+
     } else if (this._isPRE(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 PRE');
       children = this._splitPreNode(node, firstPageBottom, fullPageHeight) || [];
+
     } else if (this._isTableNode(node)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TABLE');
       children = this._splitTableNode(node, firstPageBottom, fullPageHeight) || [];
 
-    } else if (this.DOM.isGridAutoFlowRow(node)) {
+    } else if (this.DOM.isGridAutoFlowRow(this.DOM.getComputedStyle(node))) {
       // ** If it is a grid element.
       // ????? Process only some modifications of grids!
       // ***** There's an inline grid check here, too.
@@ -617,12 +620,13 @@ export default class Pages {
 
     } else {
       children = this._getChildren(node);
-      this.debugMode && this.debugToggler._getProcessedChildren && console.info(
-        ...consoleMark,
-        '🚸 get element children ',
-        children
-      );
     }
+
+    this.debugMode && this.debugToggler._getProcessedChildren && console.info(
+      ...consoleMark,
+      '🚸 get element children ',
+      children
+    );
 
     return children
   }
@@ -633,7 +637,7 @@ export default class Pages {
     const newChildren = [];
 
     children.forEach(child => {
-      if (this.DOM.isInline(child)) {
+      if (this.DOM.isInline(this.DOM.getComputedStyle(child))) {
         if (!complexTextBlock) {
           // the first inline child
           complexTextBlock = this.DOM.createComplexTextBlock();
@@ -2379,8 +2383,15 @@ export default class Pages {
     return this.DOM.getElementTagName(element) === 'STYLE'
   }
 
-  _isPRE(element) {
-    return this.DOM.getElementTagName(element) === 'PRE'
+  _isPRE(element, _style = this.DOM.getComputedStyle(element)) {
+    // this.DOM.getElementTagName(element) === 'PRE'
+    return [
+      'pre',
+      'pre-wrap',
+      'pre-line',
+      'break-spaces',
+      'nowrap'
+    ].includes(_style.whiteSpace);
   }
 
   _isIMG(element) {
@@ -2395,17 +2406,20 @@ export default class Pages {
     return this.DOM.isWrappedTextNode(element);
   }
 
-  _isTableNode(element) {
-    return this.DOM.getElementTagName(element) === 'TABLE';
+  _isTableNode(element, _style = this.DOM.getComputedStyle(element)) {
+    // return this.DOM.getElementTagName(element) === 'TABLE';
+    return [
+      'table'
+    ].includes(_style.whiteSpace);
   }
 
   _isLiNode(element) {
     return this.DOM.getElementTagName(element) === 'LI';
   }
 
-  _isNoBreak(element) {
+  _isNoBreak(element, _style = this.DOM.getComputedStyle(element)) {
     return this.DOM.isNoBreak(element)
-        || this.DOM.isInlineBlock(element)
+        || this.DOM.isInlineBlock(_style)
         || this._notSolved(element);
   }
 
