@@ -1779,6 +1779,7 @@ export default class Pages {
 
   _getInternalSplitters({
     rootNode,
+    rootComputedStyle,
     children,
     pageBottom,
     firstPartHeight,
@@ -1789,9 +1790,25 @@ export default class Pages {
     stack = [],
   }) {
 
+    // * Need to make the getElementRootedTop work with root = rootNode.
+    // * A positioned ancestor is either:
+    // * - an element with a non-static position, or
+    // * - td, th, table in case the element itself is static positioned.
+    // * So we need to set non-static position for rootNode
+    // * for the calculation runtime.
+    // * Because anything in the content could be with a non-static position,
+    // * and then TD without positioning wouldn't work for it as a offset parent.
+    const _rootComputedStyle = rootComputedStyle
+    ? rootComputedStyle
+    : this.DOM.getComputedStyle(rootNode);
+    const initPosition = _rootComputedStyle.position;
+    if (initPosition != 'relative') {
+      rootNode.style.position = 'relative';
+    }
+
     this.debugMode
       && this.debugToggler._getInternalSplitters
-      && console.group('💟 _getInternalSplitters'); // Collapsed
+      && console.groupCollapsed('💟 _getInternalSplitters'); // Collapsed
 
     const findFirstNullIDInContinuousChain = (array) => {
       let item = null;
@@ -2017,10 +2034,6 @@ export default class Pages {
             registerResult(nextElement, i + 1);
           } // else - this is the end of element list
 
-          this.debugMode
-            && this.debugToggler._getInternalSplitters
-            && console.groupEnd('💟 _getInternalSplitters');
-
         } else {
           // currentElementBottom > floater
           // try to split
@@ -2041,6 +2054,7 @@ export default class Pages {
             // * Process children if exist:
             this._getInternalSplitters({
               rootNode,
+              rootComputedStyle: _rootComputedStyle,
               children: currentElementChildren,
               pageBottom,
               firstPartHeight,
@@ -2098,9 +2112,13 @@ export default class Pages {
     // *** remove last wrapper ID after children processing is complete
     updateIndexTracker();
 
+    // *** need to revert back to the original positioning of the rootNode:
+    rootNode.style.position = initPosition;
+
     this.debugMode
       && this.debugToggler._getInternalSplitters
       && console.groupEnd('💟 _getInternalSplitters');
+
     return {result, trail}
   }
 

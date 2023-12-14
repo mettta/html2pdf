@@ -674,6 +674,30 @@ export default class DocumentObjectModel {
 
   getElementRootedTop(element, root, topAcc = 0) {
 
+    // For now, expect this to be done when the function is called:
+
+    // * A positioned ancestor is either:
+    // * - an element with a non-static position, or
+    // * - td, th, table in case the element itself is static positioned.
+    // * So we need to set non-static position for root
+    // * for the calculation runtime.
+
+    // *** 1
+    // const _rootComputedStyle = rootComputedStyle
+    // ? rootComputedStyle
+    // : this.DOM.getComputedStyle(root);
+
+    // *** 2
+    // *** need to make the getElementRootedTop work with root = node
+    // const initPosition = _rootComputedStyle.position;
+    // if (initPosition != 'relative') {
+    //   root.style.position = 'relative';
+    // }
+
+    // *** 3
+    // *** need to revert back to the original positioning of the node
+    // root.style.position = initPosition;
+
     if (!element) {
       this.debugMode && this.debugToggler._DOM && console.warn(
         'element must be provided, but was received:', element,
@@ -696,7 +720,7 @@ export default class DocumentObjectModel {
     if (!offsetParent) {
       this.debugMode && this.debugToggler._DOM && console.warn(
         'Element has no offset parent.',
-        '\n element:', element,
+        '\n element:', [element],
         '\n offsetParent:', offsetParent,
         '\n The function returned:', undefined
       );
