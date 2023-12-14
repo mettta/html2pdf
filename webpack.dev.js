@@ -49,10 +49,18 @@ module.exports = merge(common, {
       title: '🐱 current case',
       inject: false,
     }),
+    // TEST
     new HtmlWebpackPlugin({
       appMountId: 'app',
       filename: 'test.html',
       template: './examples/strictdoc/test.html',
+      title: '📍 test',
+      inject: false,
+    }),
+    new HtmlWebpackPlugin({
+      appMountId: 'app',
+      filename: 'test_.html',
+      template: './examples/strictdoc/test_.html',
       title: '📍 test',
       inject: false,
     }),
