@@ -35,3 +35,7 @@ test/python/.lit_test_times.txt
 
 ### SeleniumBase ###
 latest_logs/
+
+
+test/random_test/output/
+

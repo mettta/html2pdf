@@ -21,6 +21,10 @@ class Helper:
         self.do_open(file)
         self.test_case.assert_text(text)
 
+    def do_open_and_assert_title(self, file: str, title: str) -> None:
+        self.do_open(file)
+        self.test_case.assert_title(title)
+
     # Pages & Paper
 
     def get_print_area_height(self) -> int:
