@@ -70,6 +70,16 @@ def test_unit(context):
 
 
 @task(build)
+def test_end2end_generate(
+    context,
+):
+    run_invoke(context, """
+        PYTHONPATH=.
+        python test/random_test/random_test_generator.py dist/bundle.js
+    """)
+
+
+@task(build)
 def test_end2end(
     context,
     focus=None,
@@ -103,6 +113,46 @@ def test_end2end(
             {exit_first_argument}
             {long_timeouts_argument}
             test/end2end
+    """
+
+    run_invoke(context, test_command)
+
+
+@task(build, test_end2end_generate)
+def test_end2end_random(
+    context,
+    focus=None,
+    exit_first=False,
+    parallelize=False,
+    long_timeouts=False,
+):
+    long_timeouts_argument = (
+        "--strictdoc-long-timeouts" if long_timeouts else ""
+    )
+
+    parallelize_argument = ""
+    if parallelize:
+        print(  # noqa: T201
+            "warning: "
+            "Running parallelized end-2-end tests is supported "
+            "but is not stable."
+        )
+        parallelize_argument = "--numprocesses=2 --strictdoc-parallelize"
+
+    focus_argument = f"-k {focus}" if focus is not None else ""
+    exit_first_argument = "--exitfirst" if exit_first else ""
+
+    test_command = f"""
+        PYTHONPATH=.
+        pytest
+            --failed-first
+            --capture=no
+            --reuse-session
+            {parallelize_argument}
+            {focus_argument}
+            {exit_first_argument}
+            {long_timeouts_argument}
+            test/random_test/output
     """
 
     run_invoke(context, test_command)
