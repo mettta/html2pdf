@@ -340,6 +340,9 @@ export default class Pages {
     // TODO if next elem is SVG it has no offset Top!
 
     if (nextElementTop <= newPageBottom) {
+      this.debugMode && this.debugToggler._parseNode && console.log(
+        'nextElementTop <= newPageBottom', nextElementTop, '<=', newPageBottom
+      )
       // * IF: nextElementTop <= newPageBottom,
       // * then currentElement fits.
 
@@ -354,6 +357,9 @@ export default class Pages {
 
       // * ... then continue.
     } else {
+      this.debugMode && this.debugToggler._parseNode && console.log(
+        'nextElementTop > newPageBottom', nextElementTop, '>', newPageBottom
+      )
       // * ELSE IF: nextElementTop > newPageBottom,
       // * nextElement does not start on the current page.
       // * Possible cases for the currentElement:
@@ -363,6 +369,9 @@ export default class Pages {
 
       // * Check the possibility of (0)
       if (this._isNoHanging(currentElement)) {
+        this.debugMode && this.debugToggler._parseNode && console.log(
+          'currentElement _isNoHanging => move it to the next page'
+        )
         // ** if currentElement can't be the last element on the page,
         // ** immediately move it to the next page:
 
@@ -446,14 +455,80 @@ export default class Pages {
         return
       }
 
+      // ... in case nextElementTop > newPageBottom
+      if(currentElement.style.height) {
+        // TODO: create test
+        this.debugMode && this.debugToggler._parseNode && console.log(
+          '🥁 currentElement has HEIGHT', currentElement.style.height
+        );
+        // * If a node has its height set with styles, we handle it as a non-breaking object,
+        // * and can just scale it if it doesn't fit on the page.
+
+        const currentElementTop = this.DOM.getElementRootedTop(currentElement, this.root);
+        const availableSpace = newPageBottom - currentElementTop;
+        const currentElementContextualHeight = nextElementTop - currentElementTop;
+
+        const availableSpaceFactor = availableSpace / currentElementContextualHeight;
+        const fullPageFactor = this.referenceHeight / currentElementContextualHeight;
+
+        this.debugMode && this.debugToggler._parseNode && console.log(
+          '\n🥁 currentElementTop', currentElementTop,
+          '\n🥁 availableSpace', availableSpace,
+          '\n🥁 currentElementContextualHeight', currentElementContextualHeight,
+          '\n🥁 availableSpaceFactor', availableSpaceFactor,
+          '\n🥁 fullPageFactor', fullPageFactor,
+        );
+
+        console.assert(availableSpaceFactor < 1);
+
+        // Try to fit currentElement into the remaining space
+        // on the current(last) page (availableSpace).
+        if(availableSpaceFactor > 0.8) {
+          this.debugMode && this.debugToggler._parseNode && console.log(
+            '🥁 availableSpaceFactor > 0.8: ', availableSpaceFactor
+          );
+          // If, in order for it to fit, it needs to be scaled by no more than 20%,
+          // we can afford to scale:
+          this.DOM.setStyles(currentElement, { transform: `scale(${availableSpaceFactor})` });
+          // and start a new page with the next element:
+          this._registerPageStart(nextElement);
+          return
+        }
+
+        // Otherwise the element will be placed on the next page.
+        // And now we'll scale it anyway if it doesn't fit in its entirety.
+
+        if(fullPageFactor < 1) {
+          this.debugMode && this.debugToggler._parseNode && console.log(
+            '🥁 fullPageFactor < 1: ', fullPageFactor
+          );
+          this.DOM.setStyles(currentElement, { transform: `scale(${fullPageFactor})` });
+        }
+
+        this.debugMode && this.debugToggler._parseNode && console.log(
+          '🥁 _registerPageStart', currentElement
+        );
+        this._registerPageStart(currentElement);
+        return
+      }
+
       // * Check the possibility of (1) or (2): split or not?
 
 
       const currentElementBottom = parentBottom || this.DOM.getElementRootedRealBottom(currentElement, this.root);
 
+      this.debugMode && this.debugToggler._parseNode && console.log(
+        'split or not? \n',
+        'currentElementBottom', currentElementBottom
+      );
+
       // IF currentElement does fit
       // in the remaining space on the page,
       if (currentElementBottom <= newPageBottom) {
+        this.debugMode && this.debugToggler._parseNode && console.log(
+          'currentElementBottom <= newPageBottom', currentElementBottom, '<=', newPageBottom,
+          '\n register nextElement as pageStart'
+        );
         // we need <= because splitted elements often get equal height // todo comment
 
         // * AND it's being fulfilled:
@@ -466,9 +541,18 @@ export default class Pages {
         return
       }
 
+      this.debugMode && this.debugToggler._parseNode && console.log(
+        'currentElementBottom > newPageBottom', currentElementBottom, '>', newPageBottom
+      );
+
       // see if this node is worth paying attention to, based on its height
       // TODO: need to rearrange the order of the condition checks
       if (this.DOM.getElementHeight(currentElement) + 2 < this.minimumBreakableHeight) {
+        this.debugMode && this.debugToggler._parseNode && console.log(
+          'this.DOM.getElementHeight(currentElement) + 2 < this.minimumBreakableHeight',
+          this.DOM.getElementHeight(currentElement),
+        );
+
         // todo #fewLines
         // ! add 2 compensation pixels, because when converting millimeters to pixels,
         // ! there's a rounding off, and with a rough calculation (like now)
@@ -486,6 +570,9 @@ export default class Pages {
 
       // otherwise try to break it and loop the children:
       const children = this._getProcessedChildren(currentElement, newPageBottom, this.referenceHeight);
+      this.debugMode && this.debugToggler._parseNode && console.log(
+        'try to break it and loop the children:', children
+      );
 
       // **
       // * The children are processed.
