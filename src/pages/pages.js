@@ -492,6 +492,7 @@ export default class Pages {
           this.DOM.setStyles(currentElement, { transform: `scale(${availableSpaceFactor})` });
           // and start a new page with the next element:
           this._registerPageStart(nextElement);
+          this.debugMode && this.debugToggler._parseNode && console.groupEnd();
           return
         }
 
@@ -509,6 +510,7 @@ export default class Pages {
           '🥁 _registerPageStart', currentElement
         );
         this._registerPageStart(currentElement);
+        this.debugMode && this.debugToggler._parseNode && console.groupEnd();
         return
       }
 
@@ -565,6 +567,7 @@ export default class Pages {
         //  this.minimumBreakableHeight,
         //   currentElement)
         // this._registerPageStart(currentElement, true);
+        this.debugMode && this.debugToggler._parseNode && console.groupEnd();
         return
       }
 
