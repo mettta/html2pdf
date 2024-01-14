@@ -566,7 +566,7 @@ export default class Pages {
         //  '<',
         //  this.minimumBreakableHeight,
         //   currentElement)
-        // this._registerPageStart(currentElement, true);
+        this._registerPageStart(currentElement, true);
         this.debugMode && this.debugToggler._parseNode && console.groupEnd();
         return
       }
@@ -619,6 +619,7 @@ export default class Pages {
           // ** if previousElement can't be the last element on the page,
           // ** move it to the next page.
           this._registerPageStart(previousElement, true);
+
         } else {
           // TODO #tracedParent
           // this._registerPageStart(currentElement);
@@ -628,11 +629,10 @@ export default class Pages {
             currentOrParentElement
           );
           this._registerPageStart(currentElement, true);
+
         }
       }
     }
-
-
 
     this.debugMode && this.debugToggler._parseNode && console.groupEnd();
   }
