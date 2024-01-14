@@ -17,9 +17,9 @@ export default function createConfig(params) {
 
     mask: false,
 
-    noHangingSelector: false,
-    forcedPageBreakSelector: false,
-    noBreakSelector: false,
+    noHangingSelectors: false,
+    forcedPageBreakSelectors: false,
+    noBreakSelectors: false,
 
     // toc
     tocPageNumberSelector: 'html2pdf-toc-page-number',

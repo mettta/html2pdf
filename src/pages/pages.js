@@ -38,11 +38,11 @@ export default class Pages {
     }
 
     // no hanging params:
-    this.noHangingSelector = this._prepareNoHangingSelector(config.noHangingSelector);
+    this.noHangingSelectors = this._prepareNoHangingSelector(config.noHangingSelectors);
     // forced Page Break params:
-    this.forcedPageBreakSelector = this._prepareForcedPageBreakSelector(config.forcedPageBreakSelector);
+    this.forcedPageBreakSelectors = this._prepareForcedPageBreakSelector(config.forcedPageBreakSelectors);
     // do not break params:
-    this.noBreakSelector = this._prepareNoBreakSelector(config.noBreakSelector);
+    this.noBreakSelectors = this._prepareNoBreakSelector(config.noBreakSelectors);
 
     // ***:
     this.DOM = DOM;
@@ -100,8 +100,8 @@ export default class Pages {
   }
 
   _prepareNoHangingElements() {
-    if (this.noHangingSelector) {
-      const elements = this.DOM.findAllSelectorsInside(this.contentFlow, this.noHangingSelector);
+    if (this.noHangingSelectors) {
+      const elements = this.DOM.findAllSelectorsInside(this.contentFlow, this.noHangingSelectors);
       elements.forEach(element => {
         this.DOM.setFlagNoHanging(element);
         const lastChildParent = this.DOM.findLastChildParent(element, this.contentFlow)
@@ -113,16 +113,16 @@ export default class Pages {
   }
 
   _prepareNoBreakElements() {
-    if (this.noBreakSelector) {
-      const elements = this.DOM.findAllSelectorsInside(this.contentFlow, this.noBreakSelector);
+    if (this.noBreakSelectors) {
+      const elements = this.DOM.findAllSelectorsInside(this.contentFlow, this.noBreakSelectors);
       elements.forEach(element => this.DOM.setFlagNoBreak(element));
     }
   }
 
   _prepareForcedPageBreakElements() {
     // * find all relevant elements and insert forced page break markers before them.
-    if (this.forcedPageBreakSelector) {
-      const pageStarters = this.DOM.findAllSelectorsInside(this.contentFlow, this.forcedPageBreakSelector);
+    if (this.forcedPageBreakSelectors) {
+      const pageStarters = this.DOM.findAllSelectorsInside(this.contentFlow, this.forcedPageBreakSelectors);
 
       // ** If the element is the first child of nested first children of a content flow,
       // ** we do not process it further for page breaks.
@@ -149,9 +149,9 @@ export default class Pages {
     this.debugMode && console.log(
       'this.referenceHeight', this.referenceHeight,
       '\n',
-      'this.noHangingSelector', this.noHangingSelector,
+      'this.noHangingSelectors', this.noHangingSelectors,
       '\n',
-      'this.forcedPageBreakSelector', this.forcedPageBreakSelector,
+      'this.forcedPageBreakSelectors', this.forcedPageBreakSelectors,
       '\n',
       'isFirefox', this.isFirefox,
     );
