@@ -27,7 +27,7 @@ export default class Preview {
     this.virtualPaperGapSelector = selector?.virtualPaperGap;
     this.runningSafetySelector = selector?.runningSafety;
     this.printPageBreakSelector = selector?.printPageBreak;
-    this.pageBreaker = selector?.pageBreaker;
+    this.pageDivider = selector?.pageDivider;
 
     // selectors used for the mask
     this.virtualPaper = selector?.virtualPaper;
@@ -150,15 +150,15 @@ export default class Preview {
     // ADD FOOTER and HEADER into Content Flow (as page break),
     // ADD ONLY HEADER into Content Flow before the first page.
 
-    const pageBreaker = this._createPageBreaker(pageIndex, separator);
-    // This wrapper pageBreaker must be inserted into the DOM immediately,
+    const pageDivider = this._createPageBreaker(pageIndex, separator);
+    // This wrapper pageDivider must be inserted into the DOM immediately,
     // because in the process of creating and inserting the footer into the DOM,
     // balancing is going on, and the parent of the spacer
     // must already be in the DOM.
-    this.DOM.insertBefore(element, pageBreaker);
+    this.DOM.insertBefore(element, pageDivider);
 
-    separator && this._insertFooterSpacer(pageBreaker, this.paper.footerHeight, separator);
-    this._insertHeaderSpacer(pageBreaker, this.paper.headerHeight);
+    separator && this._insertFooterSpacer(pageDivider, this.paper.footerHeight, separator);
+    this._insertHeaderSpacer(pageDivider, this.paper.headerHeight);
     this._updatePageStartElementAttrValue(element, pageIndex);
   }
 
@@ -168,10 +168,10 @@ export default class Preview {
     // and also used to determine which page an object is on.
 
     // TODO move to DOM:
-    const pageBreaker = this.DOM.create(this.pageBreaker);
-    this.DOM.setAttribute(pageBreaker, '[page]', `${pageIndex + 1}`);
+    const pageDivider = this.DOM.create(this.pageDivider);
+    this.DOM.setAttribute(pageDivider, '[page]', `${pageIndex + 1}`);
 
-    // Non-virtual margins need to be added to the outer wrapper pageBreaker,
+    // Non-virtual margins need to be added to the outer wrapper pageDivider,
     // because if the code of the document being printed puts
     // this breaking element into an inline context,
     // the margins will not work correctly
@@ -181,10 +181,10 @@ export default class Preview {
     // * because of firefox, we added 1pixel of padding for runningSafety in style.js,
     // * and are now subtracting it to compensate.
     // FIXME -1
-    (separator && this.paper.footerHeight) && this.DOM.setStyles(pageBreaker, { marginTop: this.paper.footerHeight - 1 + 'px' });
-    this.paper.headerHeight && this.DOM.setStyles(pageBreaker, { marginBottom: this.paper.headerHeight - 1 + 'px' });
+    (separator && this.paper.footerHeight) && this.DOM.setStyles(pageDivider, { marginTop: this.paper.footerHeight - 1 + 'px' });
+    this.paper.headerHeight && this.DOM.setStyles(pageDivider, { marginBottom: this.paper.headerHeight - 1 + 'px' });
 
-    return pageBreaker;
+    return pageDivider;
   }
 
   _updatePageStartElementAttrValue(element, pageIndex) {

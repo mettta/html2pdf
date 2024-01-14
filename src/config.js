@@ -21,6 +21,9 @@ export default function createConfig(params) {
     forcedPageBreakSelector: false,
     noBreakSelector: false,
 
+    // toc
+    tocPageNumberSelector: 'html2pdf-toc-page-number',
+
     // print
     printUnits: 'mm',
     printLeftMargin: '21',

@@ -2,9 +2,12 @@ const SELECTOR = {
   // * root, is taken from DOM
   root: '[html2pdf]',
 
-  // PageBreaker is used to determine which page an object is on,
+  // pageDivider is used to determine which page an object is on,
   // and contains elements that separate the pages in the content flow.
-  pageBreaker: 'html2pdf-page',
+  // *** service page separator:
+  pageDivider: 'html2pdf-page',
+  // *** page-beginning element:
+  pageStartMarker: '[html2pdf-page-start]',
 
   // * TEMPLATES
   // *** are taken from DOM:
@@ -19,10 +22,6 @@ const SELECTOR = {
   pageNumberRoot: '[html2pdf-page-number]',
   pageNumberCurrent: '[html2pdf-page-number-current]',
   pageNumberTotal: '[html2pdf-page-number-total]',
-
-  // *** TOC page numbers:
-  pageStartMarker: '[html2pdf-page-start]',
-  tocPageNumber: 'html2pdf-toc-page-number',
 
   // * Layout
   paperFlow: 'html2pdf-paper-flow',
