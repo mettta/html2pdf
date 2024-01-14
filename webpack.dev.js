@@ -33,6 +33,13 @@ module.exports = merge(common, {
       filename: 'tags.html',
       template: './examples/test/tags.html',
     }),
+    new HtmlWebpackPlugin({
+      appMountId: 'app',
+      filename: 'current.html',
+      template: './examples/test/current.html',
+      title: '🥁 current test',
+      inject: false,
+    }),
 
     // Strictdoc 🌲
     new HtmlWebpackPlugin({
