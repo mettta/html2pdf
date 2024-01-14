@@ -26,11 +26,8 @@ export default class HTML2PDF4DOC {
 
   render() {
 
-    this.config.debugMode && console.time("printTHIS");
-
-    // TODO
-    // this.config.debugMode && 
-    console.info(this.config);
+    console.time("HTML2PDF4DOC time");
+    console.info('HTML2PDF4DOC config:', this.config);
 
     const DOM = new DocumentObjectModel({DOM: window.document, debugMode: this.config.debugMode});
     DOM.insertStyle(new Style(this.config).create());
@@ -73,6 +70,6 @@ export default class HTML2PDF4DOC {
       layout: layout,
     }).render();
 
-    this.config.debugMode && console.timeEnd("printTHIS");
+    console.timeEnd("HTML2PDF4DOC time");
   }
 }
