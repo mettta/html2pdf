@@ -189,7 +189,7 @@ export default class Preview {
 
   _updatePageStartElementAttrValue(element, pageIndex) {
     //  frontpage on page 1 forces page numbers to be refreshed
-    console.log(`${pageIndex + 1}`, element, )
+    this.debugMode && console.log(`${pageIndex + 1}`, element, )
     this.hasFrontPage && this.DOM.markPageStartElement(element, `${pageIndex + 1}`);
   }
 
