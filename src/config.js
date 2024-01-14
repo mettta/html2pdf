@@ -5,9 +5,21 @@ export default function createConfig(params) {
     // * Debug mode is set in the user configuration.
     // * In the case of connecting the script in HTML without configuration
     // * in order to display messages in the browser console,
-    // * this line can be uncommented:
-    // debugMode: true,
+    // * this option can be set to true:
+    debugMode: false,
     // ** The preloader is only debugged when enabled via user configuration.
+
+
+    // Register option to print for informational purposes:
+    preloader: false,
+    preloaderTarget: false,
+    preloaderBackground: false,
+
+    mask: false,
+
+    noHangingSelector: false,
+    forcedPageBreakSelector: false,
+    noBreakSelector: false,
 
     // print
     printUnits: 'mm',
