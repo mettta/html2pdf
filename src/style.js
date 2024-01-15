@@ -284,7 +284,8 @@ ${SELECTOR.bottomCutPart} {
   }
 
   _testStyle() {
-    return this.config.debugMode && `
+    return this.config.debugMode ?
+    `
 /* FOR TEST */
 ${SELECTOR.virtualPaperGap} {
   background: #ff000020;
@@ -321,6 +322,6 @@ ${SELECTOR.textNode} {
     rgba(0, 175, 255, .15) 20px
   );
 }
-    `;
+    ` : '';
   }
 }
