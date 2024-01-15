@@ -134,9 +134,6 @@ export default class Pages {
     // there's at least one element:
     const forcedPageStarters = this.DOM.findAllSelectorsInside(this.contentFlow, this.forcedPageBreakSelectors);
 
-
-    console.log('pageEnders.at(-1)', pageEnders.at(-1))
-
     // ** If the element is the FIRST child of nested FIRST children of a content flow,
     // ** we do not process it further for page breaks.
     // ** This ensures that page breaks are only made where they have not already been made for other reasons.
