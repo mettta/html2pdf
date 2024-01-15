@@ -16,6 +16,7 @@ export default class Pages {
   constructor({
     config,
     DOM,
+    selector,
     layout,
     referenceWidth,
     referenceHeight
@@ -24,10 +25,10 @@ export default class Pages {
     // * From config:
     this.debugMode = config.debugMode;
     this.debugToggler = {
-      _parseNode: true,
-      _parseNodes: true,
-      _registerPageStart: true,
-      _getProcessedChildren: true,
+      _parseNode: false,
+      _parseNodes: false,
+      _registerPageStart: false,
+      _getProcessedChildren: false,
       _splitPreNode: false,
       _splitTableNode: false,
       _splitTableRow: false,
@@ -37,12 +38,16 @@ export default class Pages {
       _splitComplexTextBlockIntoLines: false,
     }
 
+    this.selector = selector;
+
     // no hanging params:
     this.noHangingSelectors = this._prepareNoHangingSelector(config.noHangingSelectors);
     // forced Page Break params:
+    this.pageBreakBeforeSelectors = this._arrayFromString(config.pageBreakBeforeSelectors);
+    this.pageBreakAfterSelectors = this._arrayFromString(config.pageBreakAfterSelectors);
     this.forcedPageBreakSelectors = this._prepareForcedPageBreakSelector(config.forcedPageBreakSelectors);
     // do not break params:
-    this.noBreakSelectors = this._prepareNoBreakSelector(config.noBreakSelectors);
+    this.noBreakSelectors = this._arrayFromString(config.noBreakSelectors);
 
     // ***:
     this.DOM = DOM;
@@ -120,26 +125,61 @@ export default class Pages {
   }
 
   _prepareForcedPageBreakElements() {
+    const pageStarters = this.pageBreakBeforeSelectors
+                       ? this.DOM.findAllSelectorsInside(this.contentFlow, this.pageBreakBeforeSelectors)
+                       : [];
+    const pageEnders = this.pageBreakAfterSelectors
+                     ? this.DOM.findAllSelectorsInside(this.contentFlow, this.pageBreakAfterSelectors)
+                     : [];
+    // there's at least one element:
+    const forcedPageStarters = this.DOM.findAllSelectorsInside(this.contentFlow, this.forcedPageBreakSelectors);
+
+
+    console.log('pageEnders.at(-1)', pageEnders.at(-1))
+
+    // ** If the element is the FIRST child of nested FIRST children of a content flow,
+    // ** we do not process it further for page breaks.
+    // ** This ensures that page breaks are only made where they have not already been made for other reasons.
+    if (this.DOM.isFirstChildOfFirstChild(pageStarters[0], this.contentFlow)) {
+      pageStarters.shift()
+    };
+    // ** If the element is the LAST child of nested LAST children of a content flow,
+    // ** we do not process it further for page breaks.
+    // ** This ensures that page breaks are only made where they have not already been made for other reasons.
+    if (this.DOM.isLastChildOfLastChild(pageEnders.at(-1), this.contentFlow)) {
+      pageEnders.pop()
+    };
+
     // * find all relevant elements and insert forced page break markers before them.
-    if (this.forcedPageBreakSelectors) {
-      const pageStarters = this.DOM.findAllSelectorsInside(this.contentFlow, this.forcedPageBreakSelectors);
-
-      // ** If the element is the first child of nested first children of a content flow,
-      // ** we do not process it further for page breaks.
-      // ** This ensures that page breaks are only made where they have not already been made for other reasons.
-      if (this.DOM.isFirstChildOfFirstChild(pageStarters[0], this.contentFlow)) {
-        pageStarters.shift()
+    pageStarters.length && pageStarters.forEach(element => {
+      const firstChildParent = this.DOM.findFirstChildParent(element, this.contentFlow);
+      if (firstChildParent) {
+        element = firstChildParent;
       };
+      this.DOM.insertForcedPageBreakBefore(element);
+    });
 
-      pageStarters.forEach(element => {
-        const firstChildParent = this.DOM.findFirstChildParent(element, this.contentFlow)
-        if (firstChildParent) {
-          this.DOM.insertForcedPageBreakBefore(firstChildParent);
-        } else {
-          this.DOM.insertForcedPageBreakBefore(element);
-        }
-      });
-    }
+    // * find all relevant elements and insert forced page break markers before them.
+    forcedPageStarters && forcedPageStarters.forEach(element => {
+      const firstChildParent = this.DOM.findFirstChildParent(element, this.contentFlow)
+      if (firstChildParent) {
+        element = firstChildParent;
+      }
+      this.DOM.insertForcedPageBreakBefore(element);
+    });
+
+    // * find all relevant elements and insert forced page break markers after them.
+    pageEnders.length && pageEnders.forEach(element => {
+      const lastChildParent = this.DOM.findLastChildParent(element, this.contentFlow)
+      if (lastChildParent) {
+        element = lastChildParent;
+      }
+      // If there are AFTER and BEFORE breaks - insert only one.
+      if (!this.DOM.isForcedPageBreak(element.nextElementSibling)) {
+        this.DOM.insertForcedPageBreakAfter(element);
+      } // else pass
+    });
+
   }
 
   _calculate() {
@@ -151,7 +191,13 @@ export default class Pages {
       '\n',
       'this.noHangingSelectors', this.noHangingSelectors,
       '\n',
+      'this.pageBreakBeforeSelectors', this.pageBreakBeforeSelectors,
+      '\n',
+      'this.pageBreakAfterSelectors', this.pageBreakAfterSelectors,
+      '\n',
       'this.forcedPageBreakSelectors', this.forcedPageBreakSelectors,
+      '\n',
+      'this.noBreakSelectors', this.noBreakSelectors,
       '\n',
       'isFirefox', this.isFirefox,
     );
@@ -2624,12 +2670,10 @@ export default class Pages {
   }
 
   _prepareForcedPageBreakSelector(string) {
-    // * The settings may pass an empty string, prevent errors here.
-    return string?.length ? string?.split(/\s+/) : [];
+    return [...this._arrayFromString(string), this.selector.printForcedPageBreak];
   }
 
-  _prepareNoBreakSelector(string) {
-    // TODO the same as _prepareForcedPageBreakSelector!
+  _arrayFromString(string) {
     // * The settings may pass an empty string, prevent errors here.
     return string?.length ? string?.split(/\s+/) : [];
   }
