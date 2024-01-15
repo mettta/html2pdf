@@ -19,6 +19,8 @@ export default function createConfig(params) {
 
     noHangingSelectors: false,
     forcedPageBreakSelectors: false,
+    pageBreakBeforeSelectors: false,
+    pageBreakAfterSelectors: false,
     noBreakSelectors: false,
 
     // toc

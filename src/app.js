@@ -48,7 +48,8 @@ export default class HTML2PDF4DOC {
 
     const pages = new Pages({
       config: this.config,
-      DOM,
+      DOM: DOM,
+      selector: SELECTOR,
       layout: layout,
       referenceHeight: paper.bodyHeight,
       referenceWidth: paper.bodyWidth,
@@ -56,7 +57,7 @@ export default class HTML2PDF4DOC {
 
     new Preview({
       config: this.config,
-      DOM,
+      DOM: DOM,
       selector: SELECTOR,
       layout: layout,
       paper: paper,

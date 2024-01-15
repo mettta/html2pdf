@@ -374,6 +374,12 @@ export default class DocumentObjectModel {
     return div;
   }
 
+  insertForcedPageBreakAfter(element) {
+    const div = this.create(SELECTOR.printForcedPageBreak);
+    this.insertAfter(element, div);
+    return div;
+  }
+
   findAllSelectorsInside(element, selectors) {
     if (typeof selectors === 'string') {
       selectors = [selectors]
@@ -392,6 +398,52 @@ export default class DocumentObjectModel {
 
     while (currentElement.parentElement && currentElement !== rootElement) {
       if (currentElement.parentElement.firstElementChild !== currentElement) {
+        return false;
+      }
+
+      currentElement = currentElement.parentElement;
+    }
+
+    // * Making sure we get to the end,
+    // * and don't exit with "false" until the end of the check.
+    return currentElement === rootElement;
+  }
+
+  isLastChildOfLastChild(element, rootElement) {
+    if (!element || !element.parentElement) {
+      return false;
+    }
+
+    let currentElement = element;
+
+    // *** moving up
+    while (currentElement.parentElement && currentElement !== rootElement) {
+
+      // *** if we're at the root, we move to the right
+      if (currentElement.parentElement === rootElement) {
+
+        // ! in layout we inserted an element '[data-content-flow-end]'
+        // ! at the end of the content flow.
+        // ! Therefore, in the last step of the check, we should not check the last child,
+        // ! but the matchings of the nextSibling.
+        // ? ...and some plugins like to insert themselves at the end of the body.
+        // ? So let's check that stupidity too..
+        let _next = currentElement.nextElementSibling;
+
+        while (!_next.offsetHeight && !_next.offsetWidth) {
+          // *** move to the right
+          _next = _next.nextElementSibling;
+          // *** and see if we've reached the end
+          if (this.isSelectorMatching(_next, '[data-content-flow-end]')) {
+            return true;
+          }
+        }
+        // *** see if we've reached the end
+        return this.isSelectorMatching(_next, '[data-content-flow-end]');
+      }
+
+      // *** and while we're still not at the root, we're moving up
+      if (currentElement.parentElement.lastElementChild !== currentElement) {
         return false;
       }
 
