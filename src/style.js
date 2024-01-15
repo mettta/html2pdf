@@ -55,7 +55,7 @@ ${SELECTOR.root} {
   padding-bottom: ${this.config.virtualPagesGap * 2 + this.config.screenUnits};
 }
 
-${SELECTOR.pageBreaker} {
+${SELECTOR.pageDivider} {
   display: block;
 }
 

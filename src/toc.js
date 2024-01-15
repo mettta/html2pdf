@@ -1,7 +1,5 @@
 export default class Toc {
 
-  // TODO SHOW STATS (with close option)
-
   constructor({
     config,
     DOM,
@@ -10,6 +8,8 @@ export default class Toc {
   }) {
     this.config = config;
     this.debugMode = config.debugMode;
+    this.tocPageNumberSelector = config.tocPageNumberSelector;
+
     this.selector = selector;
     this.DOM = DOM;
     this.layout = layout;
@@ -17,8 +17,7 @@ export default class Toc {
     this.contentFlow = layout.contentFlow;
     this.root = layout.root;
 
-    this.pageBreakerSelector = selector.pageBreaker;
-    this.tocPageNumberSelector = selector.tocPageNumber;
+    this.pageDividerSelector = selector.pageDivider;
 
     // local
     this.debugToggler = {
@@ -34,8 +33,8 @@ export default class Toc {
 
 tocPageNumberSelector:
  • ${this.tocPageNumberSelector}
- pageBreakerSelector:
- • ${this.pageBreakerSelector}
+ pageDividerSelector:
+ • ${this.pageDividerSelector}
       `);
 
     const tocPageNumberBoxes = this.DOM.findAllSelectorsInside(this.contentFlow, this.tocPageNumberSelector);
@@ -52,7 +51,7 @@ tocPageNumberSelector:
     //    which have their 'targetTop' positions as keys
     // 3) merge the dictionaries.
 
-    const dataFromPagesMarkers = this.DOM.findAllSelectorsInside(this.contentFlow, this.pageBreakerSelector)
+    const dataFromPagesMarkers = this.DOM.findAllSelectorsInside(this.contentFlow, this.pageDividerSelector)
     .reduce((acc, marker, index) => {
       // * The conditions for the following code snippet are as follows:
       // - It should be executed after the preview is rendered.
