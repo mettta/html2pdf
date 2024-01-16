@@ -1,7 +1,6 @@
 
 import config from './config';
 import SELECTOR from './selector';
-import Style from './style';
 import DocumentObjectModel from './DOM';
 import Layout from './layout';
 import Node from './node';
@@ -31,13 +30,12 @@ export default class HTML2PDF4DOC {
     console.info('HTML2PDF4DOC config:', this.config);
 
     const DOM = new DocumentObjectModel({DOM: window.document, debugMode: this.config.debugMode});
+
     const node = new Node({
       config: this.config,
       DOM: DOM,
       selector: SELECTOR,
     });
-
-    DOM.insertStyle(new Style(this.config).create());
 
     const layout = new Layout({
       config: this.config,
@@ -45,13 +43,13 @@ export default class HTML2PDF4DOC {
       selector: SELECTOR
     });
 
+    layout.create();
+
     const paper = new Paper({
       config: this.config,
       DOM: DOM,
       selector: SELECTOR
     });
-
-    layout.create();
 
     const pages = new Pages({
       config: this.config,

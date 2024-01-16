@@ -1,3 +1,5 @@
+import Style from './style';
+
 const CONSOLE_CSS_LABEL_LAYOUT = 'border:1px solid #8888CC;'
                                + 'background:#EEEEEE;'
                                + 'color:#8888CC;'
@@ -10,6 +12,7 @@ export default class Layout {
     selector
   }) {
 
+    this.config = config;
     this.debugMode = config.debugMode;
 
     this.DOM = DOM;
@@ -33,6 +36,10 @@ export default class Layout {
 
   create() {
     this.debugMode && console.groupCollapsed('%c Layout ', CONSOLE_CSS_LABEL_LAYOUT);
+
+    // prepare styles
+    const styles = new Style(this.config).create();
+    this.DOM.insertStyle(styles);
 
     // clean up the Root before append.
     this.DOM.setInnerHTML(this.root, '');
