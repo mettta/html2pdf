@@ -44,6 +44,10 @@ export default class HTML2PDF4DOC {
     });
 
     layout.create();
+    if (!layout.success) {
+      console.error( 'Failed to create layout.\n\nWe have to interrupt the process of creating PDF preview. ');
+      return
+    }
 
     const paper = new Paper({
       config: this.config,

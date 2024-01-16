@@ -12,15 +12,7 @@ export default class DocumentObjectModel {
     }
   }
 
-  // STYLES
 
-  insertStyle(printStyles) {
-    const head = this.DOM.querySelector('head');
-    const style = this.DOM.createElement('style');
-    style.append(this.DOM.createTextNode(printStyles));
-    style.setAttribute("data-printthis-inserted", '');
-    head.append(style);
-  }
 
   createDocumentFragment() {
     return this.DOM.createDocumentFragment()

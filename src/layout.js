@@ -28,6 +28,9 @@ export default class Layout {
     this.paperFlow = this._createPaperFlow();
     this.contentFlow = this._createContentFlow();
 
+    // init result flag
+    this.success = false;
+
   }
 
   // todo
@@ -35,11 +38,13 @@ export default class Layout {
   // чтобы его верстка не пострадала.
 
   create() {
-    this.debugMode && console.groupCollapsed('%c Layout ', CONSOLE_CSS_LABEL_LAYOUT);
+    this.debugMode && console.group('%c Layout ', CONSOLE_CSS_LABEL_LAYOUT);
 
-    // prepare styles
-    const styles = new Style(this.config).create();
-    this.DOM.insertStyle(styles);
+    const isStylesInserted = this._insertStyles();
+    if (!isStylesInserted) {
+      console.error('Failed to add print styles.');
+      return
+    }
 
     // clean up the Root before append.
     this.DOM.setInnerHTML(this.root, '');
@@ -52,7 +57,39 @@ export default class Layout {
       this._ignorePrintingEnvironment(this.root);
     }
 
+    // * success!
+    this.success = true;
+
     this.debugMode && console.groupEnd('%c Layout ', CONSOLE_CSS_LABEL_LAYOUT);
+  }
+
+  _insertStyles() {
+    const head = this.DOM.getElement('head');
+    const body = this.DOM.body;
+
+    if (!head && !body) {
+      console.error('Check the structure of your document. We didn`t find HEAD and BODY tags. HTML2PDF4DOC expects valid HTML.');
+      return
+    };
+
+    const styleElement = this.DOM.create('style', new Style(this.config).create());
+    if (styleElement) {
+      styleElement.setAttribute("HTML2PDF-style", '');
+    } else {
+      console.error('Failed to create print styles');
+      return
+    }
+
+    if (head) {
+      this.DOM.insertAtEnd(head, styleElement);
+      return true
+    } else if (body) {
+      this.DOM.insertBefore(body, styleElement);
+      return true
+    } else {
+      console.assert(false, 'We expected to find the HEAD and BODY tags.');
+      return false
+    }
   }
 
   _initRoot() {
