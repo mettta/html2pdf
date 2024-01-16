@@ -1,9 +1,5 @@
 import SELECTOR from './selector';
 
-const CONSOLE_CSS_LABEL_DOM = 'border:1px solid #FFBB00;'
-                            + 'background:#EEEEEE;'
-                            + 'color:#FFBB00;'
-
 export default class DocumentObjectModel {
 
   constructor({DOM, debugMode}) {
