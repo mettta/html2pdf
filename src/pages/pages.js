@@ -16,6 +16,7 @@ export default class Pages {
   constructor({
     config,
     DOM,
+    node,
     selector,
     layout,
     referenceWidth,
@@ -39,6 +40,7 @@ export default class Pages {
     }
 
     this.selector = selector;
+    this.node = node;
 
     // TODO remove from fields:
     // no hanging params:
@@ -96,6 +98,8 @@ export default class Pages {
   }
 
   calculate() {
+    this.node.init();
+
     this._prepareForcedPageBreakElements();
     this._prepareNoBreakElements();
     this._prepareNoHangingElements();
