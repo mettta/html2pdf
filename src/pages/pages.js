@@ -40,6 +40,7 @@ export default class Pages {
 
     this.selector = selector;
 
+    // TODO remove from fields:
     // no hanging params:
     this.noHangingSelectors = this._prepareNoHangingSelector(config.noHangingSelectors);
     // forced Page Break params:
