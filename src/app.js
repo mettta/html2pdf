@@ -24,6 +24,7 @@ export default class HTML2PDF4DOC {
       // definition of the selector for the default printable area
       // as specified in the SELECTOR,
       initialRoot: this.selector.init, // TODO: make the config dependent on SELECTOR
+      tocPageNumberSelector: this.selector.tocPageNumber, // TODO: make the config dependent on SELECTOR
       // and then also redefine the base config.
       ...this.params
     }

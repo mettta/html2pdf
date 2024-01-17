@@ -64,6 +64,8 @@ const SELECTOR = {
   topCutPart: '.html2pdf-top-cut',
   bottomCutPart: '.html2pdf-bottom-cut',
 
+  tocPageNumber: 'html2pdf-toc-page-number'
+
 };
 
 export default SELECTOR;

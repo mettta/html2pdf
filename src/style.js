@@ -6,6 +6,8 @@ export default class Style {
     this.config = config;
 
     // TODO put SELECTOR here (use config for templates ID)
+
+    this.charWidth = '10px'; // TODO get from calculations
   }
 
   create() {
@@ -110,6 +112,13 @@ ${SELECTOR.footerContent} {
   /* padding-bottom: 1px; */
   /* Page numbers: */
   min-height: 32px;
+}
+
+${SELECTOR.tocPageNumber} {
+  min-width: calc(3 * ${this.charWidth});
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
 }
 
 ${SELECTOR.pageNumberRoot} {
