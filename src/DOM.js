@@ -24,6 +24,10 @@ export default class DocumentObjectModel {
     return target.querySelector(selector);
   }
 
+  getAllElements(selector, target = this.DOM) {
+    return target.querySelectorAll(selector);
+  }
+
   getElementById(id, target = this.DOM) {
     return target.getElementById(id);
   }
