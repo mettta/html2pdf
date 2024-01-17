@@ -41,7 +41,7 @@ export default class Preview {
     this.paperFlow = layout.paperFlow;
     this.paper = paper;
 
-    this.hasFrontPage = !!this.paper.frontpageTemplate;
+    this.hasFrontPage = !!layout.frontpageTemplate;
 
   }
 
