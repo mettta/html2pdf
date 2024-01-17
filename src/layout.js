@@ -26,8 +26,12 @@ export default class Layout {
     this._debugMode = config.debugMode;
     this._DOM = DOM;
 
+    // root selector
+    this._customInitialRootSelector = config.initialRoot;
+    this._defaultInitialRootSelector = selector.init;
+
+    // selectors
     this._styleSelector = selector.style;
-    this._initSelector = selector.init;
     this._rootSelector = selector.root;
     this._paperFlowSelector = selector.paperFlow;
     this._contentFlowSelector = selector.contentFlow;
@@ -134,9 +138,9 @@ export default class Layout {
   }
 
   _getInitialRoot() {
-    // todo: set initial_root via config
-
-    let initialRoot = this._DOM.getElement(this._initSelector);
+    let initialRoot = this._customInitialRootSelector
+    ? this._DOM.getElement(this._customInitialRootSelector)
+    : this._DOM.getElement(this._defaultInitialRootSelector);
 
     if (!initialRoot) {
       if (!this._DOM.body) {
@@ -144,7 +148,7 @@ export default class Layout {
         return
       }
       initialRoot = this._DOM.body;
-      console.warn(`Add ${this._rootSelector} to the root element of the area you want to print. ${this._rootSelector} is now automatically added to the BODY tag.`);
+      console.warn(`The printable area is currently unspecified and encompasses the entire contents of the BODY tag. To restrict the printed content to a specific area, include ${this._defaultInitialRootSelector} in the root element of the desired printing area.`);
     }
 
     this._initialRoot = initialRoot;

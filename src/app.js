@@ -12,13 +12,18 @@ import Toc from './toc';
 export default class HTML2PDF4DOC {
   constructor(params) {
     this.params = params;
+    this.selector = SELECTOR;
     this.config = this._config();
   }
 
   _config() {
+    console.assert(this.selector, "SELECTOR must be provided before calling _config()")
     return {
       // Parameters affect the base config,
       ...config(this.params),
+      // definition of the selector for the default printable area
+      // as specified in the SELECTOR,
+      initialRoot: this.selector.init, // TODO: make the config dependent on SELECTOR
       // and then also redefine the base config.
       ...this.params
     }
@@ -34,13 +39,13 @@ export default class HTML2PDF4DOC {
     const node = new Node({
       config: this.config,
       DOM: DOM,
-      selector: SELECTOR,
+      selector: this.selector,
     });
 
     const layout = new Layout({
       config: this.config,
       DOM: DOM,
-      selector: SELECTOR
+      selector: this.selector
     });
 
     layout.create();
@@ -52,13 +57,13 @@ export default class HTML2PDF4DOC {
     const paper = new Paper({
       config: this.config,
       DOM: DOM,
-      selector: SELECTOR
+      selector: this.selector
     });
 
     const pages = new Pages({
       config: this.config,
       DOM: DOM,
-      selector: SELECTOR,
+      selector: this.selector,
       node: node,
       layout: layout,
       referenceHeight: paper.bodyHeight,
@@ -68,7 +73,7 @@ export default class HTML2PDF4DOC {
     new Preview({
       config: this.config,
       DOM: DOM,
-      selector: SELECTOR,
+      selector: this.selector,
       layout: layout,
       paper: paper,
       pages: pages,
@@ -77,7 +82,7 @@ export default class HTML2PDF4DOC {
     new Toc({
       config: this.config,
       DOM: DOM,
-      selector: SELECTOR,
+      selector: this.selector,
       layout: layout,
     }).render();
 

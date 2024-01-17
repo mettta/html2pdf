@@ -9,13 +9,20 @@ export default function createConfig(params) {
     debugMode: false,
     // ** The preloader is only debugged when enabled via user configuration.
 
-
     // Register option to print for informational purposes:
     preloader: false,
     preloaderTarget: false,
     preloaderBackground: false,
 
     mask: false,
+
+    // * The initialRoot can be overridden in the configuration settings.
+    // * The default value is set in App.js.
+    // * The selector '[html2pdf]' is a constant from SELECTOR (selector.js).
+    // * Uncommenting it will have no effect.
+    // * This comment is provided for better code navigation.
+    // * Left for code navigation purposes.
+    // initialRoot: '[html2pdf]', // TODO: make the config dependent on SELECTOR
 
     noHangingSelectors: false,
     forcedPageBreakSelectors: false,
@@ -24,7 +31,7 @@ export default function createConfig(params) {
     noBreakSelectors: false,
 
     // toc
-    tocPageNumberSelector: 'html2pdf-toc-page-number',
+    tocPageNumberSelector: 'html2pdf-toc-page-number', // TODO: make the config dependent on SELECTOR
 
     // print
     printUnits: 'mm',
