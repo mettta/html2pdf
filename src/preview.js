@@ -189,7 +189,7 @@ export default class Preview {
 
   _updatePageStartElementAttrValue(element, pageIndex) {
     //  frontpage on page 1 forces page numbers to be refreshed
-    this.debugMode && console.log(`${pageIndex + 1}`, element, )
+    // this.debugMode && console.log(`${pageIndex + 1}`, element, )
     this.hasFrontPage && this.DOM.markPageStartElement(element, `${pageIndex + 1}`);
   }
 
@@ -300,7 +300,7 @@ export default class Preview {
     this.DOM.setStyles(balancingFooter, { marginBottom: balancer + 'px' });
 
     // TODO check if negative on large documents
-    this.debugMode && console.assert(balancer >= 0, `balancer is negative: ${balancer} < 0`);
+    this.debugMode && console.assert(balancer >= 0, `balancer is negative: ${balancer} < 0`, contentSeparator);
   }
 
 }
