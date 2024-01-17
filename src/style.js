@@ -115,7 +115,7 @@ ${SELECTOR.footerContent} {
 }
 
 ${SELECTOR.tocPageNumber} {
-  min-width: calc(3 * ${this.charWidth});
+  min-width: 3ch;
   display: flex;
   justify-content: flex-end;
   align-items: baseline;
