@@ -1,6 +1,6 @@
 const SELECTOR = {
   // * root, is taken from DOM
-  root: '[html2pdf]',
+  init: '[html2pdf]',
 
   // pageDivider is used to determine which page an object is on,
   // and contains elements that separate the pages in the content flow.
@@ -27,6 +27,7 @@ const SELECTOR = {
   pageNumberTotal: '[html2pdf-page-number-total]',
 
   // * Layout
+  root: 'html2pdf-root',
   paperFlow: 'html2pdf-paper-flow',
   contentFlow: 'html2pdf-content-flow',
 
