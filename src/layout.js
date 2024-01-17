@@ -25,25 +25,18 @@ export default class Layout {
     this._config = config;
     this._debugMode = config.debugMode;
     this._DOM = DOM;
+    this._selector = selector;
 
     // root selector
     this._customInitialRootSelector = config.initialRoot;
     this._defaultInitialRootSelector = selector.init;
-
-    // selectors
-    this._styleSelector = selector.style;
-    this._rootSelector = selector.root;
-    this._paperFlowSelector = selector.paperFlow;
-    this._contentFlowSelector = selector.contentFlow;
-    this._printIgnoreElementSelector = selector.printIgnore;
-    this._printHideElementSelector = selector.printHide;
   }
 
   create() {
     this._debugMode && console.group('%c Layout ', CONSOLE_CSS_LABEL_LAYOUT);
 
     this._insertStyle();
-    if (!this._DOM.getElement(`style${this._styleSelector}`)) {
+    if (!this._DOM.getElement(`style${this._selector.style}`)) {
       console.error('Failed to add print styles into the DOM.');
       return
     }
@@ -80,7 +73,7 @@ export default class Layout {
 
     const styleElement = this._DOM.create('style', new Style(this._config).create());
     if (styleElement) {
-      this._DOM.setAttribute(styleElement, this._styleSelector, '');
+      this._DOM.setAttribute(styleElement, this._selector.style, '');
     } else {
       console.error('Failed to create print styles');
       return
@@ -156,21 +149,21 @@ export default class Layout {
   }
 
   _createRoot() {
-    const root = this._DOM.create(this._rootSelector);
+    const root = this._DOM.create(this._selector.root);
 
     this.root = root;
     return root;
   }
 
   _createPaperFlow() {
-    const paperFlow = this._DOM.create(this._paperFlowSelector);
+    const paperFlow = this._DOM.create(this._selector.paperFlow);
 
     this.paperFlow = paperFlow;
     return paperFlow;
   }
 
   _createContentFlow() {
-    const contentFlow = this._DOM.create(this._contentFlowSelector);
+    const contentFlow = this._DOM.create(this._selector.contentFlow);
 
     this.contentFlow = contentFlow;
     return contentFlow;
@@ -185,17 +178,17 @@ export default class Layout {
 
     let parentNode = this._DOM.getParentNode(root);
 
-    this._DOM.setAttribute(parentNode, this._printIgnoreElementSelector);
+    this._DOM.setAttribute(parentNode, this._selector.printIgnore);
 
     this._DOM.getChildNodes(parentNode)
       .forEach((child) => {
 
         if (child !== root && this._DOM.isElementNode(child)) {
-          this._DOM.setAttribute(child, this._printHideElementSelector);
+          this._DOM.setAttribute(child, this._selector.printHide);
 
         } else if (this._DOM.isSignificantTextNode(child)) {
           // process text nodes
-          this._DOM.setAttribute(this._DOM.wrapTextNode(child), this._printHideElementSelector);
+          this._DOM.setAttribute(this._DOM.wrapTextNode(child), this._selector.printHide);
 
         } else {
           return
