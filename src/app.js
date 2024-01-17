@@ -8,6 +8,7 @@ import Pages from './pages';
 import Paper from './paper';
 import Preview from './preview';
 import Toc from './toc';
+import Validator from './validator';
 
 export default class HTML2PDF4DOC {
   constructor(params) {
@@ -87,6 +88,13 @@ export default class HTML2PDF4DOC {
       selector: this.selector,
       layout: layout,
     }).render();
+
+    new Validator({
+      config: this.config,
+      DOM: DOM,
+      selector: this.selector,
+      layout: layout,
+    }).init();
 
     console.timeEnd("HTML2PDF4DOC time");
   }
