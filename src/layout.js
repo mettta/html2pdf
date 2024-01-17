@@ -11,26 +11,25 @@ export default class Layout {
     DOM,
     selector
   }) {
-
-    this.config = config;
-    this.debugMode = config.debugMode;
-
-    this.DOM = DOM;
-    this.selector = selector;
-    // selectors
-    this.rootSelector = selector?.root;
-    this.paperFlowSelector = selector?.paperFlow;
-    this.contentFlowSelector = selector?.contentFlow;
-    this.printIgnoreElementSelector = selector?.printIgnore;
-    this.printHideElementSelector = selector?.printHide;
-
-    this.root = this._initRoot();
-    this.paperFlow = this._createPaperFlow();
-    this.contentFlow = this._createContentFlow();
-
     // init result flag
     this.success = false;
 
+    // public
+    this.root;
+    this.paperFlow;
+    this.contentFlow;
+
+    // private
+    this._config = config;
+    this._debugMode = config.debugMode;
+    this._DOM = DOM;
+
+    this._styleSelector = selector.style;
+    this._rootSelector = selector.root;
+    this._paperFlowSelector = selector.paperFlow;
+    this._contentFlowSelector = selector.contentFlow;
+    this._printIgnoreElementSelector = selector.printIgnore;
+    this._printHideElementSelector = selector.printHide;
   }
 
   // todo
@@ -38,121 +37,156 @@ export default class Layout {
   // чтобы его верстка не пострадала.
 
   create() {
-    this.debugMode && console.group('%c Layout ', CONSOLE_CSS_LABEL_LAYOUT);
+    this._debugMode && console.group('%c Layout ', CONSOLE_CSS_LABEL_LAYOUT);
 
-    const isStylesInserted = this._insertStyles();
-    if (!isStylesInserted) {
-      console.error('Failed to add print styles.');
+    this._insertStyle();
+    if (!this._DOM.getElement(`style${this._styleSelector}`)) {
+      console.error('Failed to add print styles into the DOM.');
       return
     }
 
-    // clean up the Root before append.
-    this.DOM.setInnerHTML(this.root, '');
+    this._initRoot();
+    if (!this.root) {
+      console.error('Failed to initialize the root element.');
+      return
+    }
+    this._debugMode && console.log('%c root ', CONSOLE_CSS_LABEL_LAYOUT, this.root);
 
-    // createLayout
-    this.DOM.insertAtEnd(this.root, this.paperFlow, this.contentFlow)
-
-    // disable printing the root environment
-    if (this.root !== this.DOM.body) {
-      this._ignorePrintingEnvironment(this.root);
+    this._createPaperFlow();
+    if (!this.paperFlow) {
+      console.error('Failed to create layout element: paperFlow.');
+      return
     }
 
-    // * success!
-    this.success = true;
+    this._createContentFlow(this.root);
+    if (!this.contentFlow) {
+      console.error('Failed to create layout element: contentFlow.');
+      return
+    }
 
-    this.debugMode && console.groupEnd('%c Layout ', CONSOLE_CSS_LABEL_LAYOUT);
+    this._createLayout(this.root, this.paperFlow, this.contentFlow);
+    if (this.paperFlow.offsetParent === this.root && this.contentFlow.offsetParent === this.root) {
+      // * success!
+      this.success = true;
+    } else {
+      console.assert(this.paperFlow.offsetParent === this.root, 'Failed to insert paperFlow into the DOM.')
+      console.assert(this.contentFlow.offsetParent === this.root, 'Failed to insert contentFlow into the DOM.')
+      return
+    }
+
+    this._debugMode && console.groupEnd();
   }
 
-  _insertStyles() {
-    const head = this.DOM.getElement('head');
-    const body = this.DOM.body;
+  _insertStyle() {
+    const head = this._DOM.getElement('head');
+    const body = this._DOM.body;
 
     if (!head && !body) {
       console.error('Check the structure of your document. We didn`t find HEAD and BODY tags. HTML2PDF4DOC expects valid HTML.');
       return
     };
 
-    const styleElement = this.DOM.create('style', new Style(this.config).create());
+    const styleElement = this._DOM.create('style', new Style(this._config).create());
     if (styleElement) {
-      styleElement.setAttribute("HTML2PDF-style", '');
+      this._DOM.setAttribute(styleElement, this._styleSelector, '');
     } else {
       console.error('Failed to create print styles');
       return
     }
 
     if (head) {
-      this.DOM.insertAtEnd(head, styleElement);
-      return true
+      this._DOM.insertAtEnd(head, styleElement);
     } else if (body) {
-      this.DOM.insertBefore(body, styleElement);
-      return true
+      this._DOM.insertBefore(body, styleElement);
     } else {
       console.assert(false, 'We expected to find the HEAD and BODY tags.');
-      return false
     }
   }
 
   _initRoot() {
     // Prepare root element
-    let root = this.DOM.getElement(this.rootSelector);
-    this.debugMode && console.log('%c Layout: init root ', CONSOLE_CSS_LABEL_LAYOUT, root);
+    let root = this._DOM.getElement(this._rootSelector);
     if (!root) {
-      root = this.DOM.body;
-      this.DOM.setAttribute(root, this.rootSelector)
-      console.warn(`Add ${this.rootSelector} to the root element of the area you want to print. ${this.rootSelector} is now automatically added to the BODY tag.`);
+      if (!this._DOM.body) {
+        console.error('We expected to find the BODY tag.');
+        return
+      }
+      root = this._DOM.body;
+      this._DOM.setAttribute(root, this._rootSelector)
+      console.warn(`Add ${this._rootSelector} to the root element of the area you want to print. ${this._rootSelector} is now automatically added to the BODY tag.`);
     }
+
+    this.root = root;
     return root;
   }
 
   _createPaperFlow() {
-    // return this.DOM.createPaperFlow();
-    return this.DOM.create(this.paperFlowSelector);
+    const paperFlow = this._DOM.create(this._paperFlowSelector);
+
+    this.paperFlow = paperFlow;
+    return paperFlow;
   }
 
-  _createContentFlow() {
-    const contentFlow = this.DOM.create(this.contentFlowSelector);
+  _createContentFlow(root) {
+    const contentFlow = this._DOM.create(this._contentFlowSelector);
 
-    const printedContent = this.DOM.getInnerHTML(this.root);
+    const printedContent = this._DOM.getInnerHTML(root);
     const significantPrintedContent = (printedContent.trim().length > 0) ? true : false;
 
     if (significantPrintedContent) {
       // Copy the content from Root into contentFlow,
-      this.DOM.setInnerHTML(contentFlow, printedContent);
+      this._DOM.setInnerHTML(contentFlow, printedContent);
       // remove all <template>s, if there are any in the Root,
-      this.DOM.clearTemplates(contentFlow);
+      this._DOM.clearTemplates(contentFlow);
       // add an empty div as a safeguard element to the end of content flow,
-      this.DOM.insertAtEnd(contentFlow, this.DOM.create('[data-content-flow-end]'));
+      this._DOM.insertAtEnd(contentFlow, this._DOM.create('[data-content-flow-end]'));
     } else {
       console.warn(`It looks like you don't have any printable content.`);
     }
 
+    this.contentFlow = contentFlow;
     return contentFlow;
   }
 
-  _ignorePrintingEnvironment(root) {
-    let parentNode = this.DOM.getParentNode(root);
+  _ignoreUnprintableEnvironment(root) {
+    if (root === this._DOM.body) {
+      return
+    }
 
-    this.DOM.setAttribute(parentNode, this.printIgnoreElementSelector);
+    let parentNode = this._DOM.getParentNode(root);
 
-    this.DOM.getChildNodes(parentNode)
+    this._DOM.setAttribute(parentNode, this._printIgnoreElementSelector);
+
+    this._DOM.getChildNodes(parentNode)
       .forEach((child) => {
 
-        if (child !== root && this.DOM.isElementNode(child)) {
-          this.DOM.setAttribute(child, this.printHideElementSelector);
+        if (child !== root && this._DOM.isElementNode(child)) {
+          this._DOM.setAttribute(child, this._printHideElementSelector);
 
-        } else if (this.DOM.isSignificantTextNode(child)) {
+        } else if (this._DOM.isSignificantTextNode(child)) {
           // process text nodes
-          this.DOM.setAttribute(this.DOM.wrapTextNode(child), this.printHideElementSelector);
+          this._DOM.setAttribute(this._DOM.wrapTextNode(child), this._printHideElementSelector);
 
         } else {
           return
         }
       });
 
-    if (this.DOM.isDocumentBody(parentNode)) {
+    if (this._DOM.isDocumentBody(parentNode)) {
       return;
     } else {
-      this._ignorePrintingEnvironment(parentNode);
+      this._ignoreUnprintableEnvironment(parentNode);
     };
+  }
+
+  _createLayout(root, paperFlow, contentFlow) {
+    // clean up the Root before append.
+    this._DOM.setInnerHTML(root, '');
+
+    // createLayout
+    this._DOM.insertAtEnd(root, paperFlow, contentFlow);
+
+    // disable printing the root environment
+    this._ignoreUnprintableEnvironment(root);
   }
 }

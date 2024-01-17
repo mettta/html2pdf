@@ -9,6 +9,9 @@ const SELECTOR = {
   // *** page-beginning element:
   pageStartMarker: '[html2pdf-page-start]',
 
+  // * STYLE element
+  style: '[html2pdf-style]',
+
   // * TEMPLATES
   // *** are taken from DOM:
   footerTemplate: '[html2pdf-footer]',
