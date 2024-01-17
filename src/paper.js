@@ -3,18 +3,20 @@ export default class Paper {
   constructor({
     config,
     DOM,
-    selector
+    selector,
+    layout,
   }) {
 
     this.debugMode = config.debugMode;
     this.DOM = DOM;
     this.selector = selector;
 
-    // selectors
-    this.frontpageTemplateSelector = selector?.frontpageTemplate;
-    this.headerTemplateSelector = selector?.headerTemplate;
-    this.footerTemplateSelector = selector?.footerTemplate;
+    // templates
+    this.frontpageTemplate = layout.frontpageTemplate;
+    this.headerTemplate = layout.headerTemplate;
+    this.footerTemplate = layout.footerTemplate;
 
+    // selectors
     this.paperBodySelector = selector?.paperBody || '.paperBody';
     this.paperHeaderSelector = selector?.paperHeader || '.paperHeader';
     this.paperFooterSelector = selector?.paperFooter || '.paperFooter';
@@ -29,11 +31,6 @@ export default class Paper {
     this.pageNumberRootSelector = selector?.pageNumberRoot || undefined;
     this.pageNumberCurrentSelector = selector?.pageNumberCurrent || undefined;
     this.pageNumberTotalSelector = selector?.pageNumberTotal || undefined;
-
-    // set:
-    this.frontpageTemplate = this.DOM.getInnerHTML(this.frontpageTemplateSelector);
-    this.headerTemplate = this.DOM.getInnerHTML(this.headerTemplateSelector);
-    this.footerTemplate = this.DOM.getInnerHTML(this.footerTemplateSelector);
 
     this.paperHeight;
     this.headerHeight;

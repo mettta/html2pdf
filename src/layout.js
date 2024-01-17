@@ -14,12 +14,15 @@ export default class Layout {
     // init result flag
     this.success = false;
 
-    // public
+    // * public
     this.root;
     this.paperFlow;
     this.contentFlow;
+    this.frontpageTemplate;
+    this.headerTemplate;
+    this.footerTemplate;
 
-    // private
+    // * private
     this._initialRoot;
 
     this._config = config;
@@ -27,13 +30,15 @@ export default class Layout {
     this._DOM = DOM;
     this._selector = selector;
 
-    // root selector
+    // * root selector
     this._customInitialRootSelector = config.initialRoot;
     this._defaultInitialRootSelector = selector.init;
   }
 
   create() {
     this._debugMode && console.group('%c Layout ', CONSOLE_CSS_LABEL_LAYOUT);
+
+    this._getTemplates();
 
     this._insertStyle();
     if (!this._DOM.getElement(`style${this._selector.style}`)) {
@@ -60,6 +65,15 @@ export default class Layout {
     }
 
     this._debugMode && console.groupEnd();
+  }
+
+  _getTemplates() {
+    console.assert(this._selector.frontpageTemplate, 'frontpageTemplate selector is missing');
+    console.assert(this._selector.headerTemplate, 'headerTemplate selector is missing');
+    console.assert(this._selector.footerTemplate, 'footerTemplate selector is missing');
+    this.frontpageTemplate = this._DOM.getInnerHTML(this._selector.frontpageTemplate);
+    this.headerTemplate = this._DOM.getInnerHTML(this._selector.headerTemplate);
+    this.footerTemplate = this._DOM.getInnerHTML(this._selector.footerTemplate);
   }
 
   _insertStyle() {
@@ -111,11 +125,11 @@ export default class Layout {
     const printedContent = this._DOM.getInnerHTML(initialRoot);
     const significantPrintedContent = (printedContent.trim().length > 0) ? true : false;
     if (significantPrintedContent) {
-      // Copy the content from initialRoot into contentFlow,
+      // * Copy the content from initialRoot into contentFlow,
       this._DOM.setInnerHTML(contentFlow, printedContent);
-      // remove all <template>s, if there are any in the initialRoot,
-      this._DOM.clearTemplates(contentFlow);
-      // add an empty div as a safeguard element to the end of content flow,
+      // * remove all <template>s, if there are any in the initialRoot,
+      // this._DOM.clearTemplates(contentFlow);
+      // * add an empty div as a safeguard element to the end of content flow,
       this._DOM.insertAtEnd(contentFlow, this._DOM.create('[data-content-flow-end]'));
     } else {
       console.warn(`It looks like you don't have any printable content.`);

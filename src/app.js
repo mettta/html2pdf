@@ -45,7 +45,7 @@ export default class HTML2PDF4DOC {
     const layout = new Layout({
       config: this.config,
       DOM: DOM,
-      selector: this.selector
+      selector: this.selector,
     });
 
     layout.create();
@@ -57,7 +57,8 @@ export default class HTML2PDF4DOC {
     const paper = new Paper({
       config: this.config,
       DOM: DOM,
-      selector: this.selector
+      selector: this.selector,
+      layout: layout,
     });
 
     const pages = new Pages({
