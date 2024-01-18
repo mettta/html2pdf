@@ -49,7 +49,7 @@ export default class Preview {
     this.debugMode && console.groupCollapsed('%c Preview ', CONSOLE_CSS_LABEL_PREVIEW);
     this._processFirstPage();
     this._processOtherPages();
-    (this.config.mask === 'true') && this._addMask();
+    (this.config.mask === true || this.config.mask === 'true') && this._addMask();
     this.debugMode && console.groupEnd('%c Preview ', CONSOLE_CSS_LABEL_PREVIEW);
 
   }
@@ -73,6 +73,7 @@ export default class Preview {
       this.paperFlow.querySelector(this.paperBody)
     );
 
+    // TODO: do a simplified calculation based on pixel dimensions
     addCSSMask({
       targetElement: this.contentFlow,
       maskHeight: maskHeight,
