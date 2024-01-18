@@ -36,28 +36,29 @@ export default function createConfig(params) {
     tocPageNumberSelector: 'html2pdf-toc-page-number', // TODO: make the config dependent on SELECTOR
 
     // print
-    printUnits: 'mm',
-    printLeftMargin: '21',
-    printRightMargin: '21',
-    printTopMargin: '12',
-    printBottomMargin: '12',
+    printLeftMargin: '21mm',
+    printRightMargin: '21mm',
+    printTopMargin: '12mm',
+    printBottomMargin: '12mm',
     printFontSize: '12pt', // todo 16+ // 1:18px 2:36px 3:54px
+    // print A4 default
+    printWidth: '210mm', // todo <170
+    printHeight: '297mm', // todo ~400
     // html template
-    screenUnits: 'px',
-    headerMargin: '16',
-    footerMargin: '16',
+    headerMargin: '16px',
+    footerMargin: '16px',
     // virtual
-    virtualPagesGap: '16',
+    virtualPagesGap: '16px',
   }
 
   const A4 = {
-    printWidth: '210', // todo <170
-    printHeight: '297', // todo ~400
+    printWidth: '210mm', // todo <170
+    printHeight: '297mm', // todo ~400
   }
 
   const A5 = {
-    printWidth: '148.5', // todo <170
-    printHeight: '210', // todo ~400
+    printWidth: '148.5mm', // todo <170
+    printHeight: '210mm', // todo ~400
   }
 
   // * Can be specified by a shorthand entry,
