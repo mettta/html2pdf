@@ -14,26 +14,14 @@ export default class HTML2PDF4DOC {
   constructor(params) {
     this.params = params;
     this.selector = SELECTOR;
-    this.config = this._config();
-  }
-
-  _config() {
-    console.assert(this.selector, "SELECTOR must be provided before calling _config()")
-    return {
-      // Parameters affect the base config,
-      ...config(this.params),
-      // definition of the selector for the default printable area
-      // as specified in the SELECTOR,
-      initialRoot: this.selector.init, // TODO: make the config dependent on SELECTOR
-      tocPageNumberSelector: this.selector.tocPageNumber, // TODO: make the config dependent on SELECTOR
-      // and then also redefine the base config.
-      ...this.params
-    }
+    this.config;
   }
 
   render() {
 
     console.time("HTML2PDF4DOC time");
+
+    this.config = config(this.params);
     console.info('HTML2PDF4DOC config:', this.config);
 
     const DOM = new DocumentObjectModel({DOM: window.document, debugMode: this.config.debugMode});

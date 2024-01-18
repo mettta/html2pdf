@@ -1,3 +1,5 @@
+import SELECTOR from './selector';
+
 export default function createConfig(params) {
 
   // ? used in style.js
@@ -58,6 +60,10 @@ export default function createConfig(params) {
     printHeight: '210', // todo ~400
   }
 
+  // * Can be specified by a shorthand entry,
+  // * and then can be partially or completely overridden
+  // * by specifying printWidth and printHeight.
+  // TODO
   // ? landscape | portrait
   switch (params.printPaperSize) {
     case 'A5':
@@ -74,6 +80,21 @@ export default function createConfig(params) {
         ...config,
         ...A4
       };
+  }
+
+  // * Apply the defaults and custom configuration
+  // * extracted from the script attributes from the DOM.
+  config = {
+    // Parameters affect the base config,
+    ...config,
+
+    // definition of the selector for the default printable area
+    // as specified in the SELECTOR,
+    initialRoot: SELECTOR.init,
+    tocPageNumberSelector:SELECTOR.tocPageNumber,
+
+    // and then also redefine the base config.
+    ...params
   }
 
   return config;
