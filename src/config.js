@@ -98,5 +98,46 @@ export default function createConfig(params) {
     ...params
   }
 
+  console.info('HTML2PDF4DOC config:', config);
+
+  // * Convert units to pixels
+  const measurement = {
+    printLeftMargin: config.printLeftMargin,
+    printRightMargin: config.printRightMargin,
+    printTopMargin: config.printTopMargin,
+    printBottomMargin: config.printBottomMargin,
+    printFontSize: config.printFontSize,
+    printWidth: config.printWidth,
+    printHeight: config.printHeight,
+    headerMargin: config.headerMargin,
+    footerMargin: config.footerMargin,
+    virtualPagesGap: config.virtualPagesGap,
+  }
+
+  const test = document.createElement('div');
+  test.style = `
+  position:absolute;
+  z-index:1000;
+  left: 200%;
+  `;
+  document.body.append(test);
+
+  Object.entries(measurement)
+    .forEach(([key, value]) => {
+      test.style.width = value;
+      measurement[key] = `${Math.trunc(test.getBoundingClientRect().width)}px`;
+
+      // console.log(test.offsetWidth, test.getBoundingClientRect().width, `${Math.trunc(test.getBoundingClientRect().width)}px`)
+    });
+  test.remove();
+
+  // * Update config with recalculated measurement
+  config = {
+    ...config,
+    ...measurement
+  };
+
+  // console.info('HTML2PDF4DOC config with converted units:', config);
+
   return config;
 }

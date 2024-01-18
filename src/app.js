@@ -22,7 +22,6 @@ export default class HTML2PDF4DOC {
     console.time("HTML2PDF4DOC time");
 
     this.config = config(this.params);
-    console.info('HTML2PDF4DOC config:', this.config);
 
     const DOM = new DocumentObjectModel({DOM: window.document, debugMode: this.config.debugMode});
 
