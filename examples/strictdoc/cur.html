@@ -305,44 +305,90 @@
 
 <div html2pdf="" class="content">
 
-  <sdoc-section>
-    <sdoc-section-title data-level="1"><h2 id="1-Introduction">1.&nbsp;Introduction</h2></sdoc-section-title>
-
-    <div filler style="height:500px"></div>
-
+    <h2 id="2-Project-milestones">2.&nbsp;Project milestones</h2>
+  </sdoc-section-title>
+    
     <sdoc-section-text>
-      <sdoc-autogen>
-        <div class="document">
-
-
-<pre class="code text literal-block">
-[DOCUMENT]
-TITLE: StrictDoc
-
-[REQUIREMENT]
-UID: SDOC-HIGH-REQS-MANAGEMENT
-TITLE: Requirements management
-STATEMENT: StrictDoc shall enable requirements management.
-</pre>
-
-<pre class="code text literal-block">
-// no hanging params:
-this.noHangingSelector = this._prepareNoHangingSelector(config.noHangingSelector);
-// forced Page Break params:
-this.forcedPageBreakSelector = this._prepareForcedPageBreakSelector(config.forcedPageBreakSelector);
-
-
-// do not break params:
-this.noBreakSelector = this._prepareNoBreakSelector(config.noBreakSelector);
-this.noBreakSelector = this._prepareNoBreakSelector(config.noBreakSelector);
-</pre>
-
-        </div>
-      </sdoc-autogen>
-    </sdoc-section-text>
+  
+  <sdoc-autogen><div class="document">
+  <p>As an open-source project, StrictDoc is developed without strict deadlines, however there are certain high-level priorities that influence the development. The work is loosely organized in quarters.</p>
+  <table border="1" class="docutils">
+  <colgroup>
+  <col width="15%">
+  <col width="85%">
+  </colgroup>
+  <thead valign="bottom">
+  <tr><th class="head"><strong>Quarter</strong></th>
+  <th class="head"><strong>Planned / accomplished work</strong></th>
+  </tr>
+  </thead>
+  <tbody valign="top">
+  <tr><td>2019-Q2</td>
+  <td>Pre-StrictDoc development in a fork of Doorstop.</td>
+  </tr>
+  <tr><td>2019-Q3</td>
+  <td>StrictDoc, first prototype. Markdown-based C++ program. Custom requirements metadata in YAML.</td>
+  </tr>
+  <tr><td>2020-Q1</td>
+  <td>The second prototype of StrictDoc based on RST/Sphinx. Using Sphinx extensions to manage meta information. First integration tests.</td>
+  </tr>
+  <tr><td>2020-Q2</td>
+  <td>StrictDoc created on GitHub. The code still uses RST for parsing requirements meta information and PySide for GUI.</td>
+  </tr>
+  <tr><td>2020-Q3</td>
+  <td>The RST parsing is replaced with a TextX-based DSL, new StrictDoc grammar is created. The PySide is replaced with a simple export to HTML using Jinja templates. Export to Sphinx HTML/PDF is introduced.</td>
+  </tr>
+  <tr><td>2020-Q4</td>
+  <td>Improvements in the styles of HTML/PDF exports. First Table, Traceability, and Deep Traceability screens.</td>
+  </tr>
+  <tr><td>2021-Q1</td>
+  <td>Excel export. The first implementation for forward and reverse traceability between SDoc and source files.</td>
+  </tr>
+  <tr><td>2021-Q2</td>
+  <td>Further work on the SDoc-source traceability.</td>
+  </tr>
+  <tr><td>2021-Q3</td>
+  <td>Further work on the SDoc-source traceability. Tree cycles detection, validations. MathJax support.</td>
+  </tr>
+  <tr><td>2021-Q4</td>
+  <td>Improvements of the traceability index generation and validation. Initial implementation of ReqIF. First support of custom grammars.</td>
+  </tr>
+  <tr><td>2022-Q1</td>
+  <td>Further work on ReqIF and custom grammars. Document fragments feature.</td>
+  </tr>
+  <tr><td>2022-Q2</td>
+  <td>Excel conversion improvements. Improvements of how meta information is displayed in HTML export.</td>
+  </tr>
+  <tr><td>2022-Q3</td>
+  <td>No work in this quarter.</td>
+  </tr>
+  <tr><td>2022-Q4</td>
+  <td>Installation using PyInstaller. The first prototype of a Web-based interface. First end-to-end Web tests using SeleniumBase. Improvements of the ReqIF support.</td>
+  </tr>
+  <tr><td>2023-Q1</td>
+  <td>Improvements of the Web-based interface towards first release. Improvements of the ReqIF support.</td>
+  </tr>
+  <tr><td>2023-Q2</td>
+  <td>Further stabilization of the Web interface. Graphviz export. RST markup stability improvements. Work on StrictDoc's own requirements traceability.</td>
+  </tr>
+  <tr><td>2023-Q3</td>
+  <td>Anchors and incoming links. Improvements of the ReqIF interface. Work on StrictDoc's own requirements traceability. Mermaid diagramming tool. Reverse parent / child links. Project statistics screen. Performance improvements.</td>
+  </tr>
+  <tr><td>2023-Q4</td>
+  <td>Requirements relations and roles. UI improvements and stabilization. Further ReqIF work. Search engine and requirements filters. Project tree Diff/Changelog screens. Basic Git operations.</td>
+  </tr>
+  <tr><td>2024-Q1</td>
+  <td>TBD</td>
+  </tr>
+  </tbody>
+  </table>
+  </div>
+  </sdoc-autogen></sdoc-section-text>
   </sdoc-section>
 
-</div>
+  <sdoc-section>
+
+        </div>
 
 
 

@@ -724,24 +724,17 @@ export default class Pages {
 
     const nodeComputedStyle = this.DOM.getComputedStyle(node);
 
-    if (this._isPRE(node, nodeComputedStyle)) {
-      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
-        '💚 PRE', node);
-      children = this._splitPreNode(
-        node,
-        firstPageBottom,
-        fullPageHeight,
-      ) || [];
-
-    } else if (this._isTableNode(node, nodeComputedStyle)) {
-      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
-        '💚 TABLE', node);
-      children = this._splitTableNode(
-        node,
-        firstPageBottom,
-        fullPageHeight,
-        nodeComputedStyle
-      ) || [];
+    // ? TABLE now has conditions that overlap with PRE (except for the tag name),
+    // ? so let's check it first.
+    if (this._isTableNode(node, nodeComputedStyle)) {
+    this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+      '💚 TABLE', node);
+    children = this._splitTableNode(
+      node,
+      firstPageBottom,
+      fullPageHeight,
+      nodeComputedStyle
+    ) || [];
 
     } else if (this._isTableLikeNode(node, nodeComputedStyle)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
@@ -751,6 +744,15 @@ export default class Pages {
         firstPageBottom,
         fullPageHeight,
         nodeComputedStyle
+      ) || [];
+
+    } else if (this._isPRE(node, nodeComputedStyle)) {
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+        '💚 PRE', node);
+      children = this._splitPreNode(
+        node,
+        firstPageBottom,
+        fullPageHeight,
       ) || [];
 
     } else if (this.DOM.isGridAutoFlowRow(this.DOM.getComputedStyle(node))) {
@@ -2711,10 +2713,13 @@ export default class Pages {
   }
 
   _isTableNode(element, _style = this.DOM.getComputedStyle(element)) {
+    //*** STRICTDOC specific
+    //*** add scroll for wide tables */
+    //* issue#1370 https://css-tricks.com/preventing-a-grid-blowout/ */
+    // so table can has 'block' and 'nowrap'.
     return this.DOM.getElementTagName(element) === 'TABLE'
-    && [
-      'table'
-    ].includes(_style.display);
+    || // ! &&
+    ['table'].includes(_style.display);
   }
 
   _isTableLikeNode(element, _style = this.DOM.getComputedStyle(element)) {

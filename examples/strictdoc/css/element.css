@@ -18,6 +18,15 @@ h4 { font-size: 1.2em; }
 h5 { font-size: 1em; }
 h6 { font-size: 1em; }
 
+h1:first-child,
+h2:first-child,
+h3:first-child,
+h4:first-child,
+h5:first-child,
+h6:first-child {
+  margin-top: 0;
+}
+
 /* a */
 
 a {
@@ -199,6 +208,35 @@ a.action_icon:hover {
   z-index: 6;
 }
 
+.action_button.compact {
+  column-gap: 0;
+  padding-left: calc(var(--base-rhythm)* 0.75);
+  padding-right: calc(var(--base-rhythm)* 0.75);
+  min-height: calc(var(--base-rhythm)*3);
+}
+
+.action_button.compact .action_button_compact__arising {
+  overflow: hidden;
+
+  max-width: 0;
+  margin-left: 0;
+
+  transition-property: max-width, margin;
+  transition-duration: .5s;
+  transition-timing-function: ease-in-out;
+  transition-delay: 1s;
+}
+
+.action_button.compact:hover > .action_button_compact__arising {
+  max-width: 200px;
+  margin-left: var(--base-rhythm);
+
+  transition-property: max-width, margin;
+  transition-duration: .5s;
+  transition-timing-function: ease-in-out;
+  transition-delay: 0;
+}
+
 /* TODO */
 sdoc-node-controls .action_button {
   /* depends on sdoc-node-controls: */
@@ -282,8 +320,24 @@ sdoc-field:hover .copy_to_clipboard-button {
 
 sdoc-anchor {
   /* for Fixed Headers + Section Anchors */
-  scroll-snap-margin-top: calc(var(--base-gap) + var(--base-padding));
-  scroll-margin-top:      calc(var(--base-gap) + var(--base-padding));
+  /* calc(var(--base-gap) + var(--base-padding)); */
+  scroll-snap-margin-top: var(--base-gap);
+  scroll-margin-top:      var(--base-gap);
+}
+
+sdoc-node > sdoc-anchor {
+  scroll-snap-margin-top: unset; /** top: 0; */
+  scroll-margin-top:      unset; /** top: 0; */
+
+  display: block;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+
+  /* for test: */
+  /* width: 10px;
+  background: red; */
 }
 
 sdoc-anchor:target + sdoc-requirement sdoc-requirement-title,
@@ -505,11 +559,59 @@ sdoc-anchor[visible]:hover .anchor_back_links_number {
 /* should be like .nav .nav_button:hover */
 [data-viewtype="document-tree"] [data-link="index"],
 [data-viewtype="search"] [data-link="search"],
+[data-viewtype="diff"] [data-link="diff"],
 [data-viewtype="requirements-coverage"] [data-link="requirements_coverage"],
+[data-viewtype="traceability-matrix"] [data-link="traceability-matrix"],
 [data-viewtype="coverage-tree"] [data-link="source_coverage"] {
   color: var(--color-bg-contrast);
   border-color: var(--color-bg-contrast);
   cursor: default;
+}
+
+/* sdoc tabs (page nav) */
+
+.sdoc-tabs {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sdoc-tab-list {
+  display: flex;
+  overflow: auto;
+  margin-bottom: -1px;
+}
+
+.sdoc-tab {
+  padding: var(--base-rhythm) calc(2 * var(--base-rhythm));
+  font-size: var(--font-size-xsm);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--color-link);
+  text-decoration: none;
+  background-color: transparent;
+  border-width: 1px 1px 0px;
+  border-top-style: solid;
+  border-right-style: solid;
+  border-left-style: solid;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-left-color: transparent;
+  border-image: initial;
+  border-bottom-style: initial;
+  border-bottom-color: initial;
+
+  color: var(--color-fg-contrast);
+}
+
+.sdoc-tab:hover {
+  color: var(--color-hover);
+}
+
+.sdoc-tab[active] {
+  color: var(--color-fg-contrast);
+  border-color: var(--color-border);
+  border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
+  background-color: var(--color-bg-main);
 }
 
 /* tags */
@@ -607,6 +709,7 @@ ol.upperroman {
 svg.svg_icon polyline,
 svg.svg_icon line,
 svg.svg_icon circle,
+svg.svg_icon rect,
 svg.svg_icon path {
   fill: none;
   fill-rule: evenodd;
@@ -969,7 +1072,7 @@ a.tree_item:hover {
   opacity:0.6;
 }
 
-/* toc */
+/** TOC **/
 
 .toc,
 .toc ul,
@@ -995,6 +1098,7 @@ a.tree_item:hover {
 
 .toc a {
   display: block;
+  position: relative;
   padding-top: var(--base-rhythm);
   padding-bottom: var(--base-rhythm);
   /* padding-left: var(--base-rhythm); */
@@ -1009,7 +1113,6 @@ a.tree_item:hover {
   color: var(--color-fg-secondary);
 }
 .toc a:hover {
-  /* background-color: var(--color-bg-contrast); */
   color: var(--color-fg-contrast);
 }
 
@@ -1025,6 +1128,47 @@ a.tree_item:hover {
   padding-top: var(--base-rhythm);
   padding-bottom: var(--base-rhythm);
   padding-right: var(--base-rhythm);
+}
+
+/* TOC targeted */
+.toc a[targeted]::before  {
+  position: absolute;
+  z-index: -1;
+  content: '';
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: -200px; /* parent has overflow */
+  background-color: var(--color-highlight);
+}
+
+/* TOC intersected */
+.toc a::after {
+  position: absolute;
+  z-index: -1;
+  content: '';
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 8px;
+  background-color: var(--color-bg-main);
+}
+
+.toc a[intersected]::after {
+  position: absolute;
+  z-index: -1;
+  content: '';
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 8px;
+  background-color: var(--color-highlight);
+}
+
+/* TOC parented */
+/* behavior depends on collapsible_list_controller.js */
+.toc [data-collapsible_list__branch="closed"] ~ a[parented]::after {
+  background-color: var(--color-highlight);
 }
 
 /* pdf-toc */
@@ -1085,13 +1229,12 @@ a.tree_item:hover {
 
   width: fit-content;
   max-width: 100%;
-  overflow-x: auto;
+  /* overflow-x: auto; */
 }
 
 .sdoc-table_key_value-section,
 .sdoc-table_key_value-key,
 .sdoc-table_key_value-value {
-  display: flex;
   padding: var(--base-rhythm) calc(var(--base-rhythm)*2);
   background-color: var(--color-bg-secondary);
 }
@@ -1102,8 +1245,9 @@ a.tree_item:hover {
   /* background-color: var(--color-bg-contrast); */
 
   display: flex;
+  flex-direction: row;
   justify-content: flex-start;
-  align-items: center;
+  align-items: flex-start;
 
   position: relative;
   transition: 0.3s all;
@@ -1113,6 +1257,7 @@ a.sdoc-table_key_value-key {
   background-color: rgba(255,255,255,0.5);
   color: var(--color-fg-contrast);
   padding-right: calc(var(--base-rhythm)*5);
+  align-items: center;
 }
 
 a.sdoc-table_key_value-key:hover {
@@ -1145,4 +1290,20 @@ a.sdoc-table_key_value-key::after {
   text-transform: uppercase;
   color: var(--color-fg-secondary);
   background-color: var(--color-bg-main);
+}
+
+/* badge */
+
+.badge {
+  white-space: nowrap;
+}
+
+.badge::before {
+  content: attr(text);
+  padding: 0 calc(var(--base-rhythm)/2);
+  border: 1px solid;
+  border-radius: calc(var(--base-rhythm)/2);
+  font-size: var(--font-size-xxsm);
+  font-weight: 600;
+  text-transform: uppercase;
 }
