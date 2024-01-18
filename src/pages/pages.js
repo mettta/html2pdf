@@ -726,20 +726,21 @@ export default class Pages {
 
     // ? TABLE now has conditions that overlap with PRE (except for the tag name),
     // ? so let's check it first.
-    if (this._isTableNode(node, nodeComputedStyle)) {
-    this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
-      '💚 TABLE', node);
-    children = this._splitTableNode(
-      node,
-      firstPageBottom,
-      fullPageHeight,
-      nodeComputedStyle
-    ) || [];
-
-    } else if (this._isTableLikeNode(node, nodeComputedStyle)) {
+    // FIXME the order of checks
+    if (this._isTableLikeNode(node, nodeComputedStyle)) {
       this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TABLE like', node);
       children = this._splitTableLikeNode(
+        node,
+        firstPageBottom,
+        fullPageHeight,
+        nodeComputedStyle
+      ) || [];
+
+    } else if (this._isTableNode(node, nodeComputedStyle)) {
+      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+        '💚 TABLE', node);
+      children = this._splitTableNode(
         node,
         firstPageBottom,
         fullPageHeight,
