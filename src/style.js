@@ -77,7 +77,7 @@ ${SELECTOR.virtualPaper} {
   grid-template-rows: minmax(min-content, max-content) minmax(min-content, max-content) 1fr minmax(min-content, max-content) minmax(min-content, max-content);
   place-items: stretch stretch;
   place-content: stretch stretch;
-  width: calc(${this.config.printWidth}-${this.config.printLeftMargin}-${this.config.printRightMargin});
+  width: calc(${this.config.printWidth} - ${this.config.printLeftMargin} - ${this.config.printRightMargin});
   height: ${this.config.printHeight};
   font-size: ${this.config.printFontSize};
 }
@@ -252,8 +252,7 @@ ${SELECTOR.printForcedPageBreak} {
             mask-image: none !important;
   }
 
-  ${SELECTOR.printIgnore},
-  ${SELECTOR.virtualPaper} {
+  ${SELECTOR.printIgnore} {
     display: contents;
   }
 
@@ -265,8 +264,13 @@ ${SELECTOR.printForcedPageBreak} {
     display: none;
   }
 
+  ${SELECTOR.virtualPaper} {
+    break-inside: avoid;
+    height: auto;
+  }
+
   ${SELECTOR.paperBody} {
-    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   ${SELECTOR.printPageBreak} {
