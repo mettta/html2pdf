@@ -23,6 +23,16 @@ export default class Style {
     return this._baseStyle() + this._testStyle();
   }
 
+  // ***   @page {
+  // ***     ...
+  // ***     /* margin-bottom: calc(${this.config.printBottomMargin} - 2px); */
+  // ***     margin-bottom: 0;
+  // ***    }
+  // In this way we allow content to be theoretically printed on the bottom margin.
+  // And we leave it up to the printer to decide whether to print there or not.
+  // And in this way we avoid extra blank pages when some pixel
+  // of the invisible lower margin does not "fit" in the area to be printed.
+
   _baseStyle() {
     return `
 
@@ -34,7 +44,7 @@ export default class Style {
   margin-left: ${this.config.printLeftMargin};
   margin-right: ${this.config.printRightMargin};
   margin-top: ${this.config.printTopMargin};
-  margin-bottom: ${this.config.printBottomMargin};
+  margin-bottom: 0; /* hack */
 }
 
 ${SELECTOR.root} {
