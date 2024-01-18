@@ -1,24 +1,68 @@
 /* .main */
 
 .main {
-  padding: var(--base-gap);
   position: relative;
   overflow: auto;
   scroll-behavior: smooth;
+  scrollbar-gutter: stable both-edges;
+  padding: var(--base-gap) /* == calc(var(--base-rhythm)*6) */
+           calc(var(--base-rhythm)*5); /* compensate both-edges scrollbar-gutter */
+
   height: 100%;
   background-color: var(--color-bg-main);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: var(--base-rhythm);
 }
 
 /* redefine main layout grid */
+
+[data-viewtype="diff"] .main {
+  padding-bottom: 0;
+}
 
 [data-viewtype="source-file"] .main {
   padding: 0;
   background: white;
 }
 
+.main_sticky_header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 11;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--base-rhythm);
+
+  /* margin-bottom: calc(var(--base-rhythm)*4); */
+  background-color: var(--color-bg-main);
+  border: none;
+}
+
+.main_sticky_header > * {
+  position: relative;
+}
+
+.main_sticky_header::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  top: -60px;
+  left: calc(-1 * var(--base-gap));
+  right: calc(-1 * var(--base-gap));
+  background-color: var(--color-bg-main);
+  z-index: 0;
+}
+
 /* .content */
 
 .content {
+  width: 100%;
   min-width: calc(var(--card-width) + calc(var(--base-padding)*4));
 }
 
@@ -139,16 +183,28 @@ sdoc-main-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
   color: var(--color-placeholder);
   font-weight: 700;
   font-family: var(--code-font-family);
 }
 
-sdoc-main-placeholder.page-tips {
-  height: unset;
-  font-family: unset;
-  font-weight:unset;
-  color: unset;
-  opacity: 0.5;
+main > sdoc-main-placeholder {
+  height: 100%;
+}
+
+.page-tips {
+  width: 100%;
+  padding: var(--base-gap);
+  font-weight: 500;
+}
+
+/* .page-tips > *, */
+.page-tips > p,
+.page-tips > ul {
+  max-width: 900px;
+}
+
+.page-tips > .sdoc-table_key_value {
+  width: auto;
+  max-width: 1024px;
 }
