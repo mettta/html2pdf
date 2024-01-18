@@ -4,12 +4,13 @@ export default class Validator {
     DOM,
     selector
   }) {
+    this._config = config;
     this._selector = selector;
     this._DOM = DOM;
   }
 
   init() {
-    console.log('🐙 i am Validator!');
+    this._config.debugMode && console.log('🐙 i am Validator!');
 
     const paperGapSelector = `${this._selector.paperFlow} ${this._selector.virtualPaperGap}`;
     const pageGapSelector = `${this._selector.contentFlow} ${this._selector.virtualPaperGap}`;

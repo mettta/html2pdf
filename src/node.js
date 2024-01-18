@@ -3,9 +3,11 @@ export default class Node {
     config,
     DOM,
     selector
-  }) {}
+  }) {
+    this._config = config;
+  }
 
   init() {
-    console.log('i am Node!')
+    this._config.debugMode && console.log('🍄 i am Node!')
   }
 }
