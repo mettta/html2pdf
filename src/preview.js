@@ -41,7 +41,7 @@ export default class Preview {
     this.paperFlow = layout.paperFlow;
     this.paper = paper;
 
-    this.hasFrontPage = !!this.paper.frontpageTemplate;
+    this.hasFrontPage = !!layout.frontpageTemplate;
 
   }
 
@@ -49,7 +49,7 @@ export default class Preview {
     this.debugMode && console.groupCollapsed('%c Preview ', CONSOLE_CSS_LABEL_PREVIEW);
     this._processFirstPage();
     this._processOtherPages();
-    (this.config.mask === 'true') && this._addMask();
+    (this.config.mask === true || this.config.mask === 'true') && this._addMask();
     this.debugMode && console.groupEnd('%c Preview ', CONSOLE_CSS_LABEL_PREVIEW);
 
   }
@@ -73,6 +73,7 @@ export default class Preview {
       this.paperFlow.querySelector(this.paperBody)
     );
 
+    // TODO: do a simplified calculation based on pixel dimensions
     addCSSMask({
       targetElement: this.contentFlow,
       maskHeight: maskHeight,
@@ -189,7 +190,7 @@ export default class Preview {
 
   _updatePageStartElementAttrValue(element, pageIndex) {
     //  frontpage on page 1 forces page numbers to be refreshed
-    this.debugMode && console.log(`${pageIndex + 1}`, element, )
+    // this.debugMode && console.log(`${pageIndex + 1}`, element, )
     this.hasFrontPage && this.DOM.markPageStartElement(element, `${pageIndex + 1}`);
   }
 
@@ -300,7 +301,7 @@ export default class Preview {
     this.DOM.setStyles(balancingFooter, { marginBottom: balancer + 'px' });
 
     // TODO check if negative on large documents
-    this.debugMode && console.assert(balancer >= 0, `balancer is negative: ${balancer} < 0`);
+    this.debugMode && console.assert(balancer >= 0, `balancer is negative: ${balancer} < 0`, contentSeparator);
   }
 
 }

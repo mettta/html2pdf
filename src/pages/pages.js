@@ -16,6 +16,7 @@ export default class Pages {
   constructor({
     config,
     DOM,
+    node,
     selector,
     layout,
     referenceWidth,
@@ -39,7 +40,9 @@ export default class Pages {
     }
 
     this.selector = selector;
+    this.node = node;
 
+    // TODO remove from fields:
     // no hanging params:
     this.noHangingSelectors = this._prepareNoHangingSelector(config.noHangingSelectors);
     // forced Page Break params:
@@ -95,6 +98,8 @@ export default class Pages {
   }
 
   calculate() {
+    this.node.init();
+
     this._prepareForcedPageBreakElements();
     this._prepareNoBreakElements();
     this._prepareNoHangingElements();
@@ -133,9 +138,6 @@ export default class Pages {
                      : [];
     // there's at least one element:
     const forcedPageStarters = this.DOM.findAllSelectorsInside(this.contentFlow, this.forcedPageBreakSelectors);
-
-
-    console.log('pageEnders.at(-1)', pageEnders.at(-1))
 
     // ** If the element is the FIRST child of nested FIRST children of a content flow,
     // ** we do not process it further for page breaks.

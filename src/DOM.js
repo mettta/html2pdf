@@ -1,9 +1,5 @@
 import SELECTOR from './selector';
 
-const CONSOLE_CSS_LABEL_DOM = 'border:1px solid #FFBB00;'
-                            + 'background:#EEEEEE;'
-                            + 'color:#FFBB00;'
-
 export default class DocumentObjectModel {
 
   constructor({DOM, debugMode}) {
@@ -16,15 +12,7 @@ export default class DocumentObjectModel {
     }
   }
 
-  // STYLES
 
-  insertStyle(printStyles) {
-    const head = this.DOM.querySelector('head');
-    const style = this.DOM.createElement('style');
-    style.append(this.DOM.createTextNode(printStyles));
-    style.setAttribute("data-printthis-inserted", '');
-    head.append(style);
-  }
 
   createDocumentFragment() {
     return this.DOM.createDocumentFragment()
@@ -34,6 +22,10 @@ export default class DocumentObjectModel {
 
   getElement(selector, target = this.DOM) {
     return target.querySelector(selector);
+  }
+
+  getAllElements(selector, target = this.DOM) {
+    return target.querySelectorAll(selector);
   }
 
   getElementById(id, target = this.DOM) {
@@ -617,35 +609,39 @@ export default class DocumentObjectModel {
 
   // CREATE ELEMENTS
 
-  create(element) {
-    if (!element) {
-      const el = this.DOM.createElement('div');
-      return el;
+  create(selector, textContent) {
+    let element;
+
+    if (!selector) {
+      element = this.DOM.createElement('div');
+    } else {
+      const first = selector.charAt(0);
+
+      if (first === '.') {
+        const cl = selector.substring(1);
+        element = this.DOM.createElement('div');
+        element.classList.add(cl);
+      } else if (first === '#') {
+        const id = selector.substring(1);
+        element = this.DOM.createElement('div');
+        element.id = id;
+      } else if (first === '[') {
+        const attr = selector.substring(1, selector.length - 1);
+        element = this.DOM.createElement('div');
+        element.setAttribute(attr, '');
+      } else if (first.match(/[a-zA-Z]/)) {
+        element = this.DOM.createElement(selector);
+      } else {
+        console.assert(false, `Expected valid html selector ot tag name, but received:`, selector)
+        return
+      }
     }
 
-    const first = element.charAt(0);
-
-    if (first === '.') {
-      const cl = element.substring(1);
-      const el = this.DOM.createElement('div');
-      el.classList.add(cl);
-      return el;
-    }
-    if (first === '#') {
-      const id = element.substring(1);
-      const el = this.DOM.createElement('div');
-      el.id = id;
-      return el;
-    }
-    if (first === '[') {
-      const attr = element.substring(1, element.length - 1);
-      const el = this.DOM.createElement('div');
-      el.setAttribute(attr, '');
-      return el;
+    if (textContent) {
+      this.setInnerHTML(element, textContent);
     }
 
-    const el = this.DOM.createElement(element);
-    return el;
+    return element;
   }
 
   createPrintPageBreak() {

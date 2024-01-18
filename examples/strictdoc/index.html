@@ -235,13 +235,16 @@
 
   <!-- HTML2PDF -->
   <!-- data-debug-mode='true' -->
+  <!-- data-initial-root='[html2pdf]' -->
   <script
     defer
     data-debug-mode='true'
     data-preloader='true'
     data-preloader-target='[html2pdf-preloader]'
     data-preloader-background='#F2F5F9'
-    data-forced-page-break-selectors='.free_text .pdf-toc H2'
+    data-forced-page-break-selectors=''
+    data-page-break-before-selectors='H2'
+    data-page-break-after-selectors='.pdf-toc .free_text'
     data-no-break-selectors='sdoc-section-title sdoc-meta .pdf-toc-row'
     data-no-hanging-selectors='sdoc-section-title sdoc-meta sdoc-requirement-field-label'
     src="bundle.js"></script>

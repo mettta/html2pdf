@@ -6,6 +6,8 @@ export default class Style {
     this.config = config;
 
     // TODO put SELECTOR here (use config for templates ID)
+
+    this.charWidth = '10px'; // TODO get from calculations
   }
 
   create() {
@@ -27,12 +29,12 @@ export default class Style {
 @page {
   size: A4;
   /* 2 values: width then height */
-  size: ${this.config.printWidth + this.config.printUnits} ${this.config.printHeight + this.config.printUnits};
+  size: ${this.config.printWidth} ${this.config.printHeight};
 
-  margin-left: ${this.config.printLeftMargin - 1 + this.config.printUnits};
-  margin-right: ${this.config.printRightMargin - 1 + this.config.printUnits};
-  margin-top: ${this.config.printTopMargin - 0 + this.config.printUnits};
-  margin-bottom: ${this.config.printBottomMargin - 2 + this.config.printUnits};
+  margin-left: ${this.config.printLeftMargin};
+  margin-right: ${this.config.printRightMargin};
+  margin-top: ${this.config.printTopMargin};
+  margin-bottom: ${this.config.printBottomMargin};
 }
 
 ${SELECTOR.root} {
@@ -47,12 +49,12 @@ ${SELECTOR.root} {
 
   /* set print styles: affects previews */
   margin: 0 auto;
-  width: ${this.config.printWidth - this.config.printLeftMargin - this.config.printRightMargin}${this.config.printUnits};
+  width: calc(${this.config.printWidth} - ${this.config.printLeftMargin} - ${this.config.printRightMargin});
   font-size: ${this.config.printFontSize};
 
   /* protection against unpredictability of margins */
   padding-top: .1px;
-  padding-bottom: ${this.config.virtualPagesGap * 2 + this.config.screenUnits};
+  padding-bottom: calc(2 * ${this.config.virtualPagesGap});
 }
 
 ${SELECTOR.pageDivider} {
@@ -65,17 +67,17 @@ ${SELECTOR.virtualPaper} {
   grid-template-rows: minmax(min-content, max-content) minmax(min-content, max-content) 1fr minmax(min-content, max-content) minmax(min-content, max-content);
   place-items: stretch stretch;
   place-content: stretch stretch;
-  width: ${this.config.printWidth - this.config.printLeftMargin - this.config.printRightMargin}${this.config.printUnits};
-  height: ${this.config.printHeight}${this.config.printUnits};
+  width: calc(${this.config.printWidth}-${this.config.printLeftMargin}-${this.config.printRightMargin});
+  height: ${this.config.printHeight};
   font-size: ${this.config.printFontSize};
 }
 
 ${SELECTOR.virtualPaper}::before {
   position: absolute;
   content: '';
-  width: ${this.config.printWidth}${this.config.printUnits};
-  height: ${this.config.printHeight}${this.config.printUnits};
-  left: -${this.config.printLeftMargin}${this.config.printUnits};
+  width: ${this.config.printWidth};
+  height: ${this.config.printHeight};
+  left: -${this.config.printLeftMargin};
   background-color: #fff;
   box-shadow: rgba(0, 0, 0, 0.1) 2px 2px 12px 0px;
   z-index: -1;
@@ -99,17 +101,24 @@ ${SELECTOR.footerContent} p {
 }
 
 ${SELECTOR.headerContent} {
-  padding-bottom: ${this.config.headerMargin}${this.config.screenUnits};
+  padding-bottom: ${this.config.headerMargin};
   /* padding-top: 1px; */
   /* Page numbers: */
   padding-top: 10px;
 }
 
 ${SELECTOR.footerContent} {
-  padding-top: ${this.config.footerMargin}${this.config.screenUnits};
+  padding-top: ${this.config.footerMargin};
   /* padding-bottom: 1px; */
   /* Page numbers: */
   min-height: 32px;
+}
+
+${SELECTOR.tocPageNumber} {
+  min-width: 3ch;
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
 }
 
 ${SELECTOR.pageNumberRoot} {
@@ -153,17 +162,17 @@ ${SELECTOR.runningSafety} {
 
 ${SELECTOR.virtualPaperTopMargin} {
   display: block;
-  height: ${this.config.printTopMargin}${this.config.printUnits};
+  height: ${this.config.printTopMargin};
 }
 
 ${SELECTOR.virtualPaperBottomMargin} {
   display: block;
-  height: ${this.config.printBottomMargin}${this.config.printUnits};
+  height: ${this.config.printBottomMargin};
 }
 
 ${SELECTOR.virtualPaperGap} {
   display: block;
-  padding-top: ${this.config.virtualPagesGap}${this.config.screenUnits};
+  padding-top: ${this.config.virtualPagesGap};
 }
 
 ${SELECTOR.paperBody} {

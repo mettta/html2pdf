@@ -1,3 +1,5 @@
+import SELECTOR from './selector';
+
 export default function createConfig(params) {
 
   // ? used in style.js
@@ -9,13 +11,20 @@ export default function createConfig(params) {
     debugMode: false,
     // ** The preloader is only debugged when enabled via user configuration.
 
-
     // Register option to print for informational purposes:
     preloader: false,
     preloaderTarget: false,
     preloaderBackground: false,
 
     mask: false,
+
+    // * The initialRoot can be overridden in the configuration settings.
+    // * The default value is set in App.js.
+    // * The selector '[html2pdf]' is a constant from SELECTOR (selector.js).
+    // * Uncommenting it will have no effect.
+    // * This comment is provided for better code navigation.
+    // * Left for code navigation purposes.
+    // initialRoot: '[html2pdf]', // TODO: make the config dependent on SELECTOR
 
     noHangingSelectors: false,
     forcedPageBreakSelectors: false,
@@ -24,33 +33,38 @@ export default function createConfig(params) {
     noBreakSelectors: false,
 
     // toc
-    tocPageNumberSelector: 'html2pdf-toc-page-number',
+    tocPageNumberSelector: 'html2pdf-toc-page-number', // TODO: make the config dependent on SELECTOR
 
     // print
-    printUnits: 'mm',
-    printLeftMargin: '21',
-    printRightMargin: '21',
-    printTopMargin: '12',
-    printBottomMargin: '12',
+    printLeftMargin: '21mm',
+    printRightMargin: '21mm',
+    printTopMargin: '12mm',
+    printBottomMargin: '12mm',
     printFontSize: '12pt', // todo 16+ // 1:18px 2:36px 3:54px
+    // print A4 default
+    printWidth: '210mm', // todo <170
+    printHeight: '297mm', // todo ~400
     // html template
-    screenUnits: 'px',
-    headerMargin: '16',
-    footerMargin: '16',
+    headerMargin: '16px',
+    footerMargin: '16px',
     // virtual
-    virtualPagesGap: '16',
+    virtualPagesGap: '16px',
   }
 
   const A4 = {
-    printWidth: '210', // todo <170
-    printHeight: '297', // todo ~400
+    printWidth: '210mm', // todo <170
+    printHeight: '297mm', // todo ~400
   }
 
   const A5 = {
-    printWidth: '148.5', // todo <170
-    printHeight: '210', // todo ~400
+    printWidth: '148.5mm', // todo <170
+    printHeight: '210mm', // todo ~400
   }
 
+  // * Can be specified by a shorthand entry,
+  // * and then can be partially or completely overridden
+  // * by specifying printWidth and printHeight.
+  // TODO
   // ? landscape | portrait
   switch (params.printPaperSize) {
     case 'A5':
@@ -68,6 +82,62 @@ export default function createConfig(params) {
         ...A4
       };
   }
+
+  // * Apply the defaults and custom configuration
+  // * extracted from the script attributes from the DOM.
+  config = {
+    // Parameters affect the base config,
+    ...config,
+
+    // definition of the selector for the default printable area
+    // as specified in the SELECTOR,
+    initialRoot: SELECTOR.init,
+    tocPageNumberSelector:SELECTOR.tocPageNumber,
+
+    // and then also redefine the base config.
+    ...params
+  }
+
+  console.info('HTML2PDF4DOC config:', config);
+
+  // * Convert units to pixels
+  const measurement = {
+    printLeftMargin: config.printLeftMargin,
+    printRightMargin: config.printRightMargin,
+    printTopMargin: config.printTopMargin,
+    printBottomMargin: config.printBottomMargin,
+    printFontSize: config.printFontSize,
+    printWidth: config.printWidth,
+    printHeight: config.printHeight,
+    headerMargin: config.headerMargin,
+    footerMargin: config.footerMargin,
+    virtualPagesGap: config.virtualPagesGap,
+  }
+
+  const test = document.createElement('div');
+  test.style = `
+  position:absolute;
+  z-index:1000;
+  left: 200%;
+  `;
+  document.body.append(test);
+
+  Object.entries(measurement)
+    .forEach(([key, value]) => {
+      test.style.width = value;
+      measurement[key] = `${Math.trunc(test.getBoundingClientRect().width)}px`;
+
+      // console.log(test.offsetWidth, test.getBoundingClientRect().width, `${Math.trunc(test.getBoundingClientRect().width)}px`)
+    });
+  test.remove();
+
+  // * Update config with recalculated measurement
+  config = {
+    ...config,
+    ...measurement
+  };
+
+  // console.info('HTML2PDF4DOC config with converted units:', config);
 
   return config;
 }

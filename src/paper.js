@@ -3,53 +3,52 @@ export default class Paper {
   constructor({
     config,
     DOM,
-    selector
+    selector,
+    layout,
   }) {
+    // * private
+    this._debugMode = config.debugMode;
+    this._DOM = DOM;
+    this._selector = selector;
 
-    this.debugMode = config.debugMode;
-    this.DOM = DOM;
-    this.selector = selector;
+    // templates
+    this._frontpageTemplate = layout.frontpageTemplate;
+    this._headerTemplate = layout.headerTemplate;
+    this._footerTemplate = layout.footerTemplate;
 
     // selectors
-    this.frontpageTemplateSelector = selector?.frontpageTemplate;
-    this.headerTemplateSelector = selector?.headerTemplate;
-    this.footerTemplateSelector = selector?.footerTemplate;
+    this._paperBodySelector = selector?.paperBody || '.paperBody';
+    this._paperHeaderSelector = selector?.paperHeader || '.paperHeader';
+    this._paperFooterSelector = selector?.paperFooter || '.paperFooter';
+    this._headerContentSelector = selector?.headerContent || '.headerContent';
+    this._footerContentSelector = selector?.footerContent || '.footerContent';
+    this._frontpageContentSelector = selector?.frontpageContent || '.frontpageContent';
 
-    this.paperBodySelector = selector?.paperBody || '.paperBody';
-    this.paperHeaderSelector = selector?.paperHeader || '.paperHeader';
-    this.paperFooterSelector = selector?.paperFooter || '.paperFooter';
-    this.headerContentSelector = selector?.headerContent || '.headerContent';
-    this.footerContentSelector = selector?.footerContent || '.footerContent';
-    this.frontpageContentSelector = selector?.frontpageContent || '.frontpageContent';
+    this._virtualPaperSelector = selector?.virtualPaper || '.virtualPaper';
+    this._virtualPaperTopMarginSelector = selector?.virtualPaperTopMargin || '.virtualPaperTopMargin';
+    this._virtualPaperBottomMarginSelector = selector?.virtualPaperBottomMargin || '.virtualPaperBottomMargin';
 
-    this.virtualPaperSelector = selector?.virtualPaper || '.virtualPaper';
-    this.virtualPaperTopMarginSelector = selector?.virtualPaperTopMargin || '.virtualPaperTopMargin';
-    this.virtualPaperBottomMarginSelector = selector?.virtualPaperBottomMargin || '.virtualPaperBottomMargin';
+    this._pageNumberRootSelector = selector?.pageNumberRoot || undefined;
+    this._pageNumberCurrentSelector = selector?.pageNumberCurrent || undefined;
+    this._pageNumberTotalSelector = selector?.pageNumberTotal || undefined;
 
-    this.pageNumberRootSelector = selector?.pageNumberRoot || undefined;
-    this.pageNumberCurrentSelector = selector?.pageNumberCurrent || undefined;
-    this.pageNumberTotalSelector = selector?.pageNumberTotal || undefined;
+    // * private page params
+    this._paperHeight;
+    this._frontpageFactor;
 
-    // set:
-    this.frontpageTemplate = this.DOM.getInnerHTML(this.frontpageTemplateSelector);
-    this.headerTemplate = this.DOM.getInnerHTML(this.headerTemplateSelector);
-    this.footerTemplate = this.DOM.getInnerHTML(this.footerTemplateSelector);
-
-    this.paperHeight;
+    // * public page params
     this.headerHeight;
     this.footerHeight;
     this.bodyHeight;
     this.bodyWidth;
-    this.frontpageFactor;
 
     this._calculatePaperParams();
-
   }
 
   create({ currentPage, totalPages }) {
     const body = this._createPaperBody(this.bodyHeight);
-    const header = this._createPaperHeader(this.headerTemplate);
-    const footer = this._createPaperFooter(this.footerTemplate);
+    const header = this._createPaperHeader(this._headerTemplate);
+    const footer = this._createPaperFooter(this._footerTemplate);
 
     return this._createPaper({
       header,
@@ -62,10 +61,10 @@ export default class Paper {
 
   createFrontpage({ currentPage, totalPages }) {
 
-    const frontpage = this._createFrontpageContent(this.frontpageTemplate, this.frontpageFactor);
+    const frontpage = this._createFrontpageContent(this._frontpageTemplate, this._frontpageFactor);
     const body = this._createPaperBody(this.bodyHeight, frontpage);
-    const header = this._createPaperHeader(this.headerTemplate);
-    const footer = this._createPaperFooter(this.footerTemplate);
+    const header = this._createPaperHeader(this._headerTemplate);
+    const footer = this._createPaperFooter(this._footerTemplate);
 
     return this._createPaper({
       header,
@@ -77,10 +76,10 @@ export default class Paper {
   }
 
   createVirtualTopMargin() {
-    return this.DOM.create(this.virtualPaperTopMarginSelector);
+    return this._DOM.create(this._virtualPaperTopMarginSelector);
   }
   createVirtualBottomMargin() {
-    return this.DOM.create(this.virtualPaperBottomMarginSelector);
+    return this._DOM.create(this._virtualPaperBottomMarginSelector);
   }
 
   // TODO make createPaper() dependent on templates and parameters:
@@ -94,9 +93,9 @@ export default class Paper {
     totalPages,
   }) {
 
-    const paper = this.DOM.create(this.virtualPaperSelector);
+    const paper = this._DOM.create(this._virtualPaperSelector);
 
-    this.DOM.insertAtEnd(
+    this._DOM.insertAtEnd(
       paper,
       this.createVirtualTopMargin(),
       header,
@@ -114,55 +113,55 @@ export default class Paper {
   }
 
   _createFrontpageContent(template, factor) {
-    const _node = this.DOM.create(this.frontpageContentSelector);
-    template && this.DOM.setInnerHTML(_node, template);
-    factor && this.DOM.setStyles(_node, { transform: `scale(${factor})` });
+    const _node = this._DOM.create(this._frontpageContentSelector);
+    template && this._DOM.setInnerHTML(_node, template);
+    factor && this._DOM.setStyles(_node, { transform: `scale(${factor})` });
 
     return _node;
   }
 
   _createPaperBody(height, content) {
-    const _node = this.DOM.create(this.paperBodySelector);
+    const _node = this._DOM.create(this._paperBodySelector);
     // Lock the height of the paperBody for the content area.
     // This affects the correct printing of the paper layer.
-    this.DOM.setStyles(_node, { height: height + 'px' });
+    this._DOM.setStyles(_node, { height: height + 'px' });
     // To create a frontpage, we can pass content here.
-    content && this.DOM.insertAtEnd(_node, content);
+    content && this._DOM.insertAtEnd(_node, content);
     return _node;
   }
 
   _createPaperHeader(template) {
-    const _node = this.DOM.create(this.paperHeaderSelector);
+    const _node = this._DOM.create(this._paperHeaderSelector);
 
     if (template) {
-      const content = this.DOM.create(this.headerContentSelector);
-      this.DOM.setInnerHTML(content, template);
-      this.DOM.insertAtEnd(_node, content);
+      const content = this._DOM.create(this._headerContentSelector);
+      this._DOM.setInnerHTML(content, template);
+      this._DOM.insertAtEnd(_node, content);
     }
     return _node;
   }
 
   _createPaperFooter(template) {
-    const _node = this.DOM.create(this.paperFooterSelector);
+    const _node = this._DOM.create(this._paperFooterSelector);
 
     if (template) {
-      const content = this.DOM.create(this.footerContentSelector);
-      this.DOM.setInnerHTML(content, template);
-      this.DOM.insertAtEnd(_node, content);
+      const content = this._DOM.create(this._footerContentSelector);
+      this._DOM.setInnerHTML(content, template);
+      this._DOM.insertAtEnd(_node, content);
     }
     return _node;
   }
 
   _setPageNumber(target, current, total) {
-    const container = this.pageNumberRootSelector
-      ? this.DOM.getElement(this.pageNumberRootSelector, target)
-      : this.pageNumberRootSelector;
+    const container = this._pageNumberRootSelector
+      ? this._DOM.getElement(this._pageNumberRootSelector, target)
+      : this._pageNumberRootSelector;
 
     if (container) {
-      const currentNum = this.DOM.getElement(this.pageNumberCurrentSelector, container);
-      const totalNum = this.DOM.getElement(this.pageNumberTotalSelector, container);
-      this.DOM.setInnerHTML(currentNum, current);
-      this.DOM.setInnerHTML(totalNum, total);
+      const currentNum = this._DOM.getElement(this._pageNumberCurrentSelector, container);
+      const totalNum = this._DOM.getElement(this._pageNumberTotalSelector, container);
+      this._DOM.setInnerHTML(currentNum, current);
+      this._DOM.setInnerHTML(totalNum, total);
     }
   }
 
@@ -170,9 +169,9 @@ export default class Paper {
 
     // CREATE TEST PAPER ELEMENTS
     const bodyElement = this._createPaperBody();
-    const frontpageElement = this._createFrontpageContent(this.frontpageTemplate);
-    const headerElement = this._createPaperHeader(this.headerTemplate);
-    const footerElement = this._createPaperFooter(this.footerTemplate);
+    const frontpageElement = this._createFrontpageContent(this._frontpageTemplate);
+    const headerElement = this._createPaperHeader(this._headerTemplate);
+    const footerElement = this._createPaperFooter(this._footerTemplate);
 
     const testPaper = this._createPaper({
       header: headerElement,
@@ -181,35 +180,35 @@ export default class Paper {
     });
 
     // CREATE TEMP CONTAINER
-    const workbench = this.DOM.create('#workbench')
-    this.DOM.setStyles(
+    const workbench = this._DOM.create('#workbench')
+    this._DOM.setStyles(
       workbench,
       {
         position: 'absolute',
         left: '-3000px',
       }
     );
-    this.DOM.insertAtEnd(workbench, testPaper);
-    this.DOM.insertAtStart(this.DOM.body, workbench);
+    this._DOM.insertAtEnd(workbench, testPaper);
+    this._DOM.insertAtStart(this._DOM.body, workbench);
 
     // get heights for an blank page
-    const paperHeight = this.DOM.getElementBCR(testPaper).height;
-    const headerHeight = this.DOM.getElementHeight(headerElement) || 0;
-    const footerHeight = this.DOM.getElementHeight(footerElement) || 0;
-    const bodyHeight = this.DOM.getElementHeight(bodyElement);
-    const bodyWidth = this.DOM.getElementWidth(bodyElement);
+    const paperHeight = this._DOM.getElementBCR(testPaper).height;
+    const headerHeight = this._DOM.getElementHeight(headerElement) || 0;
+    const footerHeight = this._DOM.getElementHeight(footerElement) || 0;
+    const bodyHeight = this._DOM.getElementHeight(bodyElement);
+    const bodyWidth = this._DOM.getElementWidth(bodyElement);
 
     // add frontpage text
-    this.DOM.insertAtStart(bodyElement, frontpageElement);
+    this._DOM.insertAtStart(bodyElement, frontpageElement);
     // get height for the frontpage content
-    const filledBodyHeight = this.DOM.getElementHeight(bodyElement);
+    const filledBodyHeight = this._DOM.getElementHeight(bodyElement);
 
     const frontpageFactor = (filledBodyHeight > bodyHeight)
       ? bodyHeight / filledBodyHeight
       : 1;
 
     // REMOVE TEMP CONTAINER
-    this.DOM.removeNode(workbench);
+    this._DOM.removeNode(workbench);
 
     // --------
 
@@ -223,11 +222,11 @@ export default class Paper {
       console.warn('It seems that your frontpage content is too large. We made it smaller to fit on the page. Check out how it looks! It might make sense to fix this with styles or reduce the text amount.')
     }
 
-    this.paperHeight = paperHeight;
+    this._paperHeight = paperHeight;
     this.headerHeight = headerHeight;
     this.footerHeight = footerHeight;
     this.bodyHeight = bodyHeight;
     this.bodyWidth = bodyWidth;
-    this.frontpageFactor = frontpageFactor;
+    this._frontpageFactor = frontpageFactor;
   }
 }
