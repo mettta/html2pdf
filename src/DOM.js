@@ -3,11 +3,14 @@ import SELECTOR from './selector';
 export default class DocumentObjectModel {
 
   constructor({DOM, debugMode}) {
-    this.debugMode = debugMode;
-    this.DOM = DOM;
+
+    // * public
     this.body = DOM.body;
 
-    this.debugToggler = {
+    // * private
+    this._debugMode = debugMode;
+    this._DOM = DOM;
+    this._debugToggler = {
       _DOM: false,
     }
   }
@@ -15,20 +18,20 @@ export default class DocumentObjectModel {
 
 
   createDocumentFragment() {
-    return this.DOM.createDocumentFragment()
+    return this._DOM.createDocumentFragment()
   }
 
   // -
 
-  getElement(selector, target = this.DOM) {
+  getElement(selector, target = this._DOM) {
     return target.querySelector(selector);
   }
 
-  getAllElements(selector, target = this.DOM) {
+  getAllElements(selector, target = this._DOM) {
     return target.querySelectorAll(selector);
   }
 
-  getElementById(id, target = this.DOM) {
+  getElementById(id, target = this._DOM) {
     return target.getElementById(id);
   }
 
@@ -87,18 +90,18 @@ export default class DocumentObjectModel {
 
   getAttribute(element, selector) {
     if (!element || !selector) {
-      this.debugMode && this.debugToggler._DOM && console.warn('setAttribute() must have 2 params');
+      this._debugMode && this._debugToggler._DOM && console.warn('setAttribute() must have 2 params');
       return;
     }
 
     const first = selector.charAt(0);
 
     if (first === '.' || first === '#') {
-      this.debugMode && this.debugToggler._DOM && console.log(`you're really sure ${selector} is attribute selector?`)
+      this._debugMode && this._debugToggler._DOM && console.log(`you're really sure ${selector} is attribute selector?`)
     }
 
     if (first === '[') {
-      this.debugMode && this.debugToggler._DOM && console.assert(
+      this._debugMode && this._debugToggler._DOM && console.assert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);
@@ -110,7 +113,7 @@ export default class DocumentObjectModel {
 
   setAttribute(element, selector, value) {
     if (!element || !selector) {
-      this.debugMode && this.debugToggler._DOM && console.warn('setAttribute() must have 2 params');
+      this._debugMode && this._debugToggler._DOM && console.warn('setAttribute() must have 2 params');
       return;
     }
 
@@ -125,14 +128,14 @@ export default class DocumentObjectModel {
       element.id = id;
       return
     } else if (first === '[') {
-      this.debugMode && this.debugToggler._DOM && console.assert(
+      this._debugMode && this._debugToggler._DOM && console.assert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);
       element.setAttribute(attr, (value ? value : ''));
       return
     }
-    this.debugMode && this.debugToggler._DOM && console.log(`you're really sure ${selector} is a selector?`)
+    this._debugMode && this._debugToggler._DOM && console.log(`you're really sure ${selector} is a selector?`)
   }
 
   removeAttribute(element, selector) {
@@ -155,7 +158,7 @@ export default class DocumentObjectModel {
 
   isSelectorMatching(element, selector) {
     if (!element || !selector) {
-      this.debugMode && this.debugToggler._DOM && console.warn('isSelectorMatching() must have 2 params',
+      this._debugMode && this._debugToggler._DOM && console.warn('isSelectorMatching() must have 2 params',
       '\n element: ', element,
       '\n selector: ', selector);
       return;
@@ -172,7 +175,7 @@ export default class DocumentObjectModel {
       return element.id === id;
 
     } else if (first === '[') {
-      this.debugMode && this.debugToggler._DOM && console.assert(
+      this._debugMode && this._debugToggler._DOM && console.assert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);
@@ -579,7 +582,7 @@ export default class DocumentObjectModel {
   getInnerHTML(selector) {
 
     if (typeof selector === 'string') {
-      const source = this.DOM.querySelector(selector);
+      const source = this._DOM.querySelector(selector);
       if (source) {
         return source.innerHTML;
       }
@@ -591,7 +594,7 @@ export default class DocumentObjectModel {
   setInnerHTML(selector, html) {
 
     if (typeof selector === 'string') {
-      const source = this.DOM.querySelector(selector);
+      const source = this._DOM.querySelector(selector);
       if (source) {
         source.innerHTML = html;
       }
@@ -613,24 +616,24 @@ export default class DocumentObjectModel {
     let element;
 
     if (!selector) {
-      element = this.DOM.createElement('div');
+      element = this._DOM.createElement('div');
     } else {
       const first = selector.charAt(0);
 
       if (first === '.') {
         const cl = selector.substring(1);
-        element = this.DOM.createElement('div');
+        element = this._DOM.createElement('div');
         element.classList.add(cl);
       } else if (first === '#') {
         const id = selector.substring(1);
-        element = this.DOM.createElement('div');
+        element = this._DOM.createElement('div');
         element.id = id;
       } else if (first === '[') {
         const attr = selector.substring(1, selector.length - 1);
-        element = this.DOM.createElement('div');
+        element = this._DOM.createElement('div');
         element.setAttribute(attr, '');
       } else if (first.match(/[a-zA-Z]/)) {
-        element = this.DOM.createElement(selector);
+        element = this._DOM.createElement(selector);
       } else {
         console.assert(false, `Expected valid html selector ot tag name, but received:`, selector)
         return
@@ -733,7 +736,7 @@ export default class DocumentObjectModel {
     // *** 1
     // const _rootComputedStyle = rootComputedStyle
     // ? rootComputedStyle
-    // : this.DOM.getComputedStyle(root);
+    // : this._DOM.getComputedStyle(root);
 
     // *** 2
     // *** need to make the getElementRootedTop work with root = node
@@ -747,7 +750,7 @@ export default class DocumentObjectModel {
     // root.style.position = initPosition;
 
     if (!element) {
-      this.debugMode && this.debugToggler._DOM && console.warn(
+      this._debugMode && this._debugToggler._DOM && console.warn(
         'element must be provided, but was received:', element,
         '\nThe function returned:', undefined
       );
@@ -755,7 +758,7 @@ export default class DocumentObjectModel {
     }
 
     if (!root) {
-      this.debugMode && console.warn(
+      this._debugMode && console.warn(
         'root must be provided, but was received:', root,
         '\nThe function returned:', undefined
       );
@@ -766,7 +769,7 @@ export default class DocumentObjectModel {
 
     // TODO element == document.body
     if (!offsetParent) {
-      this.debugMode && this.debugToggler._DOM && console.warn(
+      this._debugMode && this._debugToggler._DOM && console.warn(
         'Element has no offset parent.',
         '\n element:', [element],
         '\n offsetParent:', offsetParent,
@@ -805,7 +808,7 @@ export default class DocumentObjectModel {
     // *** so no dummy padding is needed.
     element && element.after(test);
     const top = element ? this.getElementRootedTop(test, root) : undefined;
-    // this.debugMode && this.debugToggler._DOM && console.log(
+    // this._debugMode && this._debugToggler._DOM && console.log(
     //   '%c getElementRootedBottom ', CONSOLE_CSS_LABEL_DOM,
     //    {element, top});
     test.remove();
@@ -868,7 +871,7 @@ export default class DocumentObjectModel {
     const nodeWords = this.splitByWordsGreedy(node);
 
     const nodeWordItems = nodeWords.map((item) => {
-      const span = this.DOM.createElement('span');
+      const span = this._DOM.createElement('span');
       span.innerHTML = item + ' ';
       return span;
     })
@@ -990,7 +993,7 @@ export default class DocumentObjectModel {
     });
 
     if (nodeEntries.unexpected.length > 0) {
-      this.debugMode && this.debugToggler._DOM
+      this._debugMode && this._debugToggler._DOM
         && console.warn(`something unexpected is found in the table ${node}`);
     }
 
