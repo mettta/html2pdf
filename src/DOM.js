@@ -345,15 +345,6 @@ export default class DocumentObjectModel {
     return res;
   }
 
-  isGridAutoFlowRow(computedStyle) {
-    const display = computedStyle.display;
-    const gridAutoFlow = computedStyle.gridAutoFlow;
-    const res1 = display === "grid" ||
-                 display === "inline-grid";
-    const res2 = gridAutoFlow === "row";
-    return res1 && res2;
-  }
-
   isNeutral(element) {
     const match = this.isSelectorMatching(element, SELECTOR.neutral);
     return match
@@ -496,38 +487,9 @@ export default class DocumentObjectModel {
     return this.isSelectorMatching(element, SELECTOR.flagNoBreak)
   }
 
-  isNoHanging(element) {
-    return this.isSelectorMatching(element, SELECTOR.flagNoHanging)
-  }
 
-  findPreviousNoHangingsFromPage(element, topFloater, root) {
-    let suitableSibling = null;
-    let prev = element.previousElementSibling;
 
-    // while the candidates are within the current page
-    // (below the element from which the last registered page starts):
-    while (this.getElementRootedTop(prev, root) > topFloater) {
-      // if it can't be left
-      if (this.isNoHanging(prev)) {
-        // and it's the Start of the page
-        if (this.isPageStartElement(prev)) {
-          // if I'm still on the current page and have a "start" -
-          // then I simply drop the case and move the original element
-          return element
-        } else {
-          // * isNoHanging(prev) && !isPageStartElement(prev)
-          // I'm looking at the previous element:
-          suitableSibling = prev;
-          element = prev;
-          prev = element.previousElementSibling;
-        }
-      } else {
-        // * !isNoHanging(prev) - return last computed
-        return suitableSibling;
-      }
-    }
-    return suitableSibling;
-  }
+
 
   // CHECK
 

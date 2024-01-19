@@ -258,7 +258,7 @@ export default class Pages {
       const firstChildParent = this._DOM.findFirstChildParent(pageStart, this._contentFlow);
       pageStart = firstChildParent || pageStart;
 
-      const previousCandidate = this._DOM.findPreviousNoHangingsFromPage(
+      const previousCandidate = this._node.findPreviousNoHangingsFromPage(
         pageStart,
         // * limited to the element from which the last registered page starts:
         this._DOM.getElementRootedTop(this.pages.at(-1)?.pageStart, this._root),
@@ -419,7 +419,7 @@ export default class Pages {
       // *** (2) must be split
 
       // * Check the possibility of (0)
-      if (this._isNoHanging(currentElement)) {
+      if (this._node.isNoHanging(currentElement)) {
         this._debugMode && this._debugToggler._parseNode && console.log(
           'currentElement _isNoHanging => move it to the next page'
         )
@@ -439,12 +439,12 @@ export default class Pages {
       // IMAGE with optional resizing
       // TODO float images
 
-      if (this._isSVG(currentElement) || this._isIMG(currentElement)) {
+      if (this._node.isSVG(currentElement) || this._node.isIMG(currentElement)) {
 
         // TODO needs testing
 
         // svg has not offset props
-        const currentImage = this._isSVG(currentElement)
+        const currentImage = this._node.isSVG(currentElement)
         // TODO replace with setFlag... and remove wrapper function
         // TODO process at the beginning, find all SVG and set Flag
           ? this._DOM.wrapWithFlagNoBreak(currentElement)
@@ -666,7 +666,7 @@ export default class Pages {
         // * If no children,
         // * move element to the next page.
         // ** But,
-        if (this._isNoHanging(previousElement)) {
+        if (this._node.isNoHanging(previousElement)) {
           // ** if previousElement can't be the last element on the page,
           // ** move it to the next page.
           this._registerPageStart(previousElement, true);
@@ -691,10 +691,10 @@ export default class Pages {
   _isFullySPlitted(node) {
     const _style = this._DOM.getComputedStyle(node);
     return (
-      this._isPRE(node, _style) ||
-      this._isTableNode(node, _style) ||
-      this._isTableLikeNode(node, _style) ||
-      this._DOM.isGridAutoFlowRow(_style) // todo
+      this._node.isPRE(node, _style) ||
+      this._node.isTableNode(node, _style) ||
+      this._node.isTableLikeNode(node, _style) ||
+      this._node.isGridAutoFlowRow(_style) // todo
     );
   }
 
@@ -703,7 +703,7 @@ export default class Pages {
 
     let children = [];
 
-    if (this._isNoBreak(node)) {
+    if (this._node.isNoBreak(node)) {
       // don't break apart, thus keep an empty children array
       this._debugMode && this._debugToggler._getProcessedChildren && console.info(...consoleMark,
         '🧡 isNoBreak', node);
@@ -714,7 +714,7 @@ export default class Pages {
         '💚 ComplexTextBlock', node);
       return children = this._splitComplexTextBlockIntoLines(node) || [];
 
-    } else if (this._isTextNode(node)) {
+    } else if (this._node.isTextNode(node)) {
       this._debugMode && this._debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TextNode', node);
       // TODO: Compare performance of _splitComplexTextBlockIntoLines and _splitTextNode!
@@ -730,7 +730,7 @@ export default class Pages {
     // ? TABLE now has conditions that overlap with PRE (except for the tag name),
     // ? so let's check it first.
     // FIXME the order of checks
-    if (this._isTableLikeNode(node, nodeComputedStyle)) {
+    if (this._node.isTableLikeNode(node, nodeComputedStyle)) {
       this._debugMode && this._debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TABLE like', node);
       children = this._splitTableLikeNode(
@@ -740,7 +740,7 @@ export default class Pages {
         nodeComputedStyle
       ) || [];
 
-    } else if (this._isTableNode(node, nodeComputedStyle)) {
+    } else if (this._node.isTableNode(node, nodeComputedStyle)) {
       this._debugMode && this._debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TABLE', node);
       children = this._splitTableNode(
@@ -750,7 +750,7 @@ export default class Pages {
         nodeComputedStyle
       ) || [];
 
-    } else if (this._isPRE(node, nodeComputedStyle)) {
+    } else if (this._node.isPRE(node, nodeComputedStyle)) {
       this._debugMode && this._debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 PRE', node);
       children = this._splitPreNode(
@@ -759,7 +759,7 @@ export default class Pages {
         fullPageHeight,
       ) || [];
 
-    } else if (this._DOM.isGridAutoFlowRow(this._DOM.getComputedStyle(node))) {
+    } else if (this._node.isGridAutoFlowRow(this._DOM.getComputedStyle(node))) {
       // ** If it is a grid element.
       // ????? Process only some modifications of grids!
       // ***** There's an inline grid check here, too.
@@ -776,7 +776,7 @@ export default class Pages {
 
 
       // TODO LI: если в LI есть UL, маркер может оставаться на прежней странице - см. скрин в телеге.
-      // } else if (this._isLiNode(node)) {
+      // } else if (this._node.isLiNode(node)) {
       //   // todo
       //   // now make all except UL unbreakable
       //   const liChildren = this._getChildren(node)
@@ -920,7 +920,7 @@ export default class Pages {
     // * Process the children of the block:
     const newComplexChildren = complexChildren.flatMap((item) => {
       // * Break it down as needed:
-      if ((item.lines > 1) && !this._isNoBreak(item.element)) {
+      if ((item.lines > 1) && !this._node.isNoBreak(item.element)) {
         // TODO: add GROUP to no-break elements?
         item.element.classList.add('newComplexChildren🅱️');
         return this._breakItIntoLines(item.element); // array
@@ -1034,7 +1034,7 @@ export default class Pages {
 
   _breakItIntoLines(splittedItem) {
 
-    if (this._isNoBreak(splittedItem)) {
+    if (this._node.isNoBreak(splittedItem)) {
       return splittedItem
     }
 
@@ -2127,7 +2127,7 @@ export default class Pages {
         //     && this._debugToggler._getInternalSplitters
         //     && console.log('💟💟 nextElementTop <= floater // current fits');
 
-        if (this._isNoHanging(currentElement)) {
+        if (this._node.isNoHanging(currentElement)) {
           // -- current fits but it can't be the last
 
           this._debugMode
@@ -2144,7 +2144,7 @@ export default class Pages {
           && this._debugToggler._getInternalSplitters
           && console.log('💟💟', `nextElementTop > floater \n ${nextElementTop} > ${floater} `,);
 
-        if (this._isSVG(currentElement) || this._isIMG(currentElement)) {
+        if (this._node.isSVG(currentElement) || this._node.isIMG(currentElement)) {
           // TODO needs testing
           this._debugMode
             && this._debugToggler._getInternalSplitters
@@ -2220,7 +2220,7 @@ export default class Pages {
             // * If no children,
             // * move element to the next page.
             // ** But,
-            if (previousElement && this._isNoHanging(previousElement)) {
+            if (previousElement && this._node.isNoHanging(previousElement)) {
               // ** if previousElement can't be the last element on the page,
               // ** move it to the next page.
               // TODO #_canNotBeLast
@@ -2232,7 +2232,7 @@ export default class Pages {
               const firstChildParent = this._DOM.findFirstChildParent(result, this._contentFlow);
               result = firstChildParent || result;
 
-              const previousCandidate = this._DOM.findPreviousNoHangingsFromPage(result, this.pages.at(-2)?.pageBottom, this._root)
+              const previousCandidate = this._node.findPreviousNoHangingsFromPage(result, this.pages.at(-2)?.pageBottom, this._root)
               result = previousCandidate || result;
 
 
@@ -2324,7 +2324,7 @@ export default class Pages {
           // * If this is the beginning, or if a new line.
           if (
             result.at(-1)
-            && this._isNoHanging(result.at(-1).at(-1).element)
+            && this._node.isNoHanging(result.at(-1).at(-1).element)
           ) {
             // ** If the previous last element cannot be the last element,
             // ** add to the previous group.
@@ -2630,7 +2630,7 @@ export default class Pages {
           (acc, item) => {
 
             // * filter STYLE, use element.tagName
-            if (this._isSTYLE(item)) {
+            if (this._node.isSTYLE(item)) {
               return acc;
             }
 
@@ -2664,13 +2664,7 @@ export default class Pages {
     }
   }
 
-  _isSignificantChild(child) {
-    const tag = this._DOM.getElementTagName(child);
 
-    // TODO isSignificantChild
-    // If my nodeName is #text, my height is always undefined
-    return (tag !== 'A' && tag !== 'TT' && this._DOM.getElementHeight(child) > 0);
-  }
 
   _prepareNoHangingSelector(string) {
     const arr = string?.length ? string?.split(/\s+/) : [];
@@ -2686,90 +2680,18 @@ export default class Pages {
     return string?.length ? string?.split(/\s+/) : [];
   }
 
-  _isSTYLE(element) {
-    return this._DOM.getElementTagName(element) === 'STYLE'
-  }
 
-  _isPRE(element, _style = this._DOM.getComputedStyle(element)) {
-    // this._DOM.getElementTagName(element) === 'PRE'
-    return [
-      'block'
-    ].includes(_style.display)
-    && [
-      'pre',
-      'pre-wrap',
-      'pre-line',
-      'break-spaces',
-      'nowrap'
-    ].includes(_style.whiteSpace);
-  }
 
-  _isIMG(element) {
-    return this._DOM.getElementTagName(element) === 'IMG'
-  }
 
-  _isSVG(element) {
-    return this._DOM.getElementTagName(element) === 'svg'
-  }
 
-  _isTextNode(element) {
-    return this._DOM.isWrappedTextNode(element);
-  }
 
-  _isTableNode(element, _style = this._DOM.getComputedStyle(element)) {
-    //*** STRICTDOC specific
-    //*** add scroll for wide tables */
-    //* issue#1370 https://css-tricks.com/preventing-a-grid-blowout/ */
-    // so table can has 'block' and 'nowrap'.
-    return this._DOM.getElementTagName(element) === 'TABLE'
-    || // ! &&
-    ['table'].includes(_style.display);
-  }
 
-  _isTableLikeNode(element, _style = this._DOM.getComputedStyle(element)) {
-    return this._DOM.getElementTagName(element) !== 'TABLE'
-    && [
-      'table'
-    ].includes(_style.display);
-  }
 
-  _isLiNode(element) {
-    return this._DOM.getElementTagName(element) === 'LI';
-  }
 
-  _isNoBreak(element, _style = this._DOM.getComputedStyle(element)) {
-    return this._DOM.isNoBreak(element)
-        || this._DOM.isInlineBlock(_style)
-        || this._notSolved(element);
-  }
 
-  _isNoHanging(element) {
-    return this._DOM.isNoHanging(element);
-  }
 
-  _notSolved(element) {
-    // TODO !!!
-    // помещать такой объект просто на отдельную страницу
-    // проверить, если объект больше - как печатаются номера и разрывы
-    const tag = this._DOM.getElementTagName(element);
-    return (tag === 'OBJECT')
-  }
 
-  // _isUnbreakable(element) {
-  //   // IF currentElement is specific,
-  //   // process as a whole:
-  //   const tag = this._DOM.getElementTagName(element);
 
-  //   // BUG WITH OBJECT: in FF is ignored, in Chrome get wrong height
-  //   // if (tag === 'OBJECT') {
-  //   //   this._debugMode && console.log('i am object');
-  //   //   resizeObserver.observe(currentElement)
-  //   // }
 
-  //   // this._DOM.isNeutral(element) || 
-
-  //   const takeAsWhole = (tag === 'IMG' || tag === 'svg' || tag === 'TABLE' || this._DOM.isNoBreak(element) || tag === 'OBJECT')
-  //   return takeAsWhole;
-  // }
 
 }
