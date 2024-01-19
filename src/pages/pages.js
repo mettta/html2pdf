@@ -45,11 +45,11 @@ export default class Pages {
 
     // TODO remove from fields:
     // no hanging params:
-    this._noHangingSelectors = this._prepareNoHangingSelector(config.noHangingSelectors);
+    this._noHangingSelectors = this._arrayFromString(config.noHangingSelectors);
     // forced Page Break params:
     this._pageBreakBeforeSelectors = this._arrayFromString(config.pageBreakBeforeSelectors);
     this._pageBreakAfterSelectors = this._arrayFromString(config.pageBreakAfterSelectors);
-    this._forcedPageBreakSelectors = this._prepareForcedPageBreakSelector(config.forcedPageBreakSelectors);
+    this._forcedPageBreakSelectors = this._arrayFromString(config.forcedPageBreakSelectors);
     // do not break params:
     this._noBreakSelectors = this._arrayFromString(config.noBreakSelectors);
 
@@ -130,7 +130,7 @@ export default class Pages {
       const elements = this._DOM.findAllSelectorsInside(this._contentFlow, this._noBreakSelectors);
       elements.forEach(element => this._DOM.setFlagNoBreak(element));
     }
-  }_
+  }
 
   _prepareForcedPageBreakElements() {
     const pageStarters = this._pageBreakBeforeSelectors
@@ -185,7 +185,7 @@ export default class Pages {
       } // else pass
     });
 
-  }__
+  }
 
   _calculate() {
     this._debugMode && console.log('%c ▼▼▼ Pages ▼▼▼ ', CONSOLE_CSS_LABEL_PAGES);
@@ -2664,34 +2664,9 @@ export default class Pages {
     }
   }
 
-
-
-  _prepareNoHangingSelector(string) {
-    const arr = string?.length ? string?.split(/\s+/) : [];
-    return ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', ...arr]
-  }
-
-  _prepareForcedPageBreakSelector(string) {
-    return [...this._arrayFromString(string), this._selector.printForcedPageBreak];
-  }
-
   _arrayFromString(string) {
     // * The settings may pass an empty string, prevent errors here.
-    return string?.length ? string?.split(/\s+/) : [];
+    return string?.length ? string?.split(/\s+/).filter(Boolean) : [];
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
