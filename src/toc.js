@@ -4,11 +4,13 @@ export default class Toc {
     config,
     DOM,
     selector,
+    node,
     layout,
   }) {
 
     this._debugMode = config.debugMode;
     this._DOM = DOM;
+    this._node = node;
     this._tocPageNumberSelector = config.tocPageNumberSelector;
     this._root = layout.root;
     this._contentFlow = layout.contentFlow;
@@ -31,7 +33,7 @@ tocPageNumberSelector:
  • ${this._pageDividerSelector}
       `);
 
-    const tocPageNumberBoxes = this._DOM.findAllSelectorsInside(this._contentFlow, this._tocPageNumberSelector);
+    const tocPageNumberBoxes = this._node.getAll(this._tocPageNumberSelector, this._contentFlow);
     this._debugMode && this._debugToggler._ && console.log('📑 tocPageNumberBoxes', tocPageNumberBoxes.length);
 
     if (!tocPageNumberBoxes.length) {
@@ -45,7 +47,7 @@ tocPageNumberSelector:
     //    which have their 'targetTop' positions as keys
     // 3) merge the dictionaries.
 
-    const dataFromPagesMarkers = this._DOM.findAllSelectorsInside(this._contentFlow, this._pageDividerSelector)
+    const dataFromPagesMarkers = this._node.getAll(this._pageDividerSelector, this._contentFlow)
     .reduce((acc, marker, index) => {
       // * The conditions for the following code snippet are as follows:
       // - It should be executed after the preview is rendered.

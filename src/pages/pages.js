@@ -114,7 +114,7 @@ export default class Pages {
 
   _prepareNoHangingElements() {
     if (this._noHangingSelectors) {
-      const elements = this._DOM.findAllSelectorsInside(this._contentFlow, this._noHangingSelectors);
+      const elements = this._node.getAll(this._noHangingSelectors, this._contentFlow);
       elements.forEach(element => {
         this._node.setFlagNoHanging(element);
         const lastChildParent = this._node.findLastChildParent(element, this._contentFlow)
@@ -127,20 +127,20 @@ export default class Pages {
 
   _prepareNoBreakElements() {
     if (this._noBreakSelectors) {
-      const elements = this._DOM.findAllSelectorsInside(this._contentFlow, this._noBreakSelectors);
+      const elements = this._node.getAll(this._noBreakSelectors, this._contentFlow);
       elements.forEach(element => this._node.setFlagNoBreak(element));
     }
   }
 
   _prepareForcedPageBreakElements() {
     const pageStarters = this._pageBreakBeforeSelectors
-                       ? this._DOM.findAllSelectorsInside(this._contentFlow, this._pageBreakBeforeSelectors)
+                       ? this._node.getAll(this._pageBreakBeforeSelectors, this._contentFlow)
                        : [];
     const pageEnders = this._pageBreakAfterSelectors
-                     ? this._DOM.findAllSelectorsInside(this._contentFlow, this._pageBreakAfterSelectors)
+                     ? this._node.getAll(this._pageBreakAfterSelectors, this._contentFlow)
                      : [];
     // there's at least one element:
-    const forcedPageStarters = this._DOM.findAllSelectorsInside(this._contentFlow, this._forcedPageBreakSelectors);
+    const forcedPageStarters = this._node.getAll(this._forcedPageBreakSelectors, this._contentFlow);
 
     // ** If the element is the FIRST child of nested FIRST children of a content flow,
     // ** we do not process it further for page breaks.

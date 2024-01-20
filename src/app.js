@@ -76,6 +76,7 @@ export default class HTML2PDF4DOC {
       config: this.config,
       DOM: DOM,
       selector: this.selector,
+      node: node,
       layout: layout,
     }).render();
 

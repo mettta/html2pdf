@@ -13,6 +13,37 @@ export default class Node {
     this._config.debugMode && console.log('🍄 i am Node!')
   }
 
+
+
+
+
+
+  get(selector, target = this._DOM) {
+    console.assert(selector);
+    return this._DOM.getElement(selector, target)
+  }
+
+  getAll(selectors, target = this._DOM) {
+    console.assert(selectors);
+    if (typeof selectors === 'string') {
+      selectors = selectors.split(',').filter(Boolean);
+    }
+    console.assert(Array.isArray(selectors), 'Selectors must be provided as an array or string (one selector or multiple selectors, separated by commas). Now the selectors are:', selectors);
+    console.assert(selectors.length > 0);
+
+    if (selectors.length === 1) {
+      return [...this._DOM.getAllElements(selectors[0], target)]
+    } else {
+      return [...selectors].flatMap(
+        selector => [...this._DOM.getAllElements(selector, target)]
+      )
+    }
+  }
+
+
+
+
+
   isSelectorMatching(element, selector) {
     if (!element || !selector) {
       this._debugMode && this._debugToggler._DOM && console.warn('isSelectorMatching() must have 2 params',

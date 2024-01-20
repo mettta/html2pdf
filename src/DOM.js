@@ -6,6 +6,7 @@ export default class DocumentObjectModel {
 
     // * public
     this.body = DOM.body;
+    this.document = DOM;
 
     // * private
     this._debugMode = debugMode;
@@ -30,6 +31,12 @@ export default class DocumentObjectModel {
   getAllElements(selector, target = this._DOM) {
     return target.querySelectorAll(selector);
   }
+
+
+
+
+
+
 // TODO above and below
   findAllSelectorsInside(element, selectors) {
     if (typeof selectors === 'string') {
@@ -39,6 +46,8 @@ export default class DocumentObjectModel {
       selector => [...element.querySelectorAll(selector)]
     )
   }
+
+
 
   findAllForcedPageBreakInside(element) {
     return [...this.findAllSelectorsInside(element, SELECTOR.printForcedPageBreak)];
