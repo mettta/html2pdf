@@ -30,6 +30,19 @@ export default class DocumentObjectModel {
   getAllElements(selector, target = this._DOM) {
     return target.querySelectorAll(selector);
   }
+// TODO above and below
+  findAllSelectorsInside(element, selectors) {
+    if (typeof selectors === 'string') {
+      selectors = [selectors]
+    };
+    return [...selectors].flatMap(
+      selector => [...element.querySelectorAll(selector)]
+    )
+  }
+
+  findAllForcedPageBreakInside(element) {
+    return [...this.findAllSelectorsInside(element, SELECTOR.printForcedPageBreak)];
+  }
 
   getElementById(id, target = this._DOM) {
     return target.getElementById(id);
@@ -224,18 +237,7 @@ export default class DocumentObjectModel {
 
 
 
-  findAllSelectorsInside(element, selectors) {
-    if (typeof selectors === 'string') {
-      selectors = [selectors]
-    };
-    return [...selectors].flatMap(
-      selector => [...element.querySelectorAll(selector)]
-    )
-  }
 
-  findAllForcedPageBreakInside(element) {
-    return [...element.querySelectorAll(SELECTOR.printForcedPageBreak)];
-  }
 
 
 
@@ -269,7 +271,7 @@ export default class DocumentObjectModel {
 
   clearTemplates(root) {
     // Remove all <template>s, if there are any in the Root.
-    const templates = root.querySelectorAll('template');
+    const templates = this.findAllSelectorsInside(root, 'template');
     templates.forEach((el) => el.remove());
   }
 
@@ -631,7 +633,7 @@ export default class DocumentObjectModel {
 
   lockTableWidths(table) {
     this.copyNodeWidth(table, table);
-    table.querySelectorAll('td').forEach(
+    this.findAllSelectorsInside(table, 'td').forEach(
       td => this.copyNodeWidth(td, td)
     )
   }
