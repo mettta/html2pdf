@@ -40,8 +40,18 @@ export default class Node {
     }
   }
 
+  // GET TEMPLATES
+
+  clearTemplates(root) {
+    // Remove all <template>s, if there are any in the Root.
+    const templates = this.getAll('template', root);
+    templates.forEach((el) => el.remove());
+  }
 
 
+  findAllForcedPageBreakInside(element) {
+    return this.getAll(this._selector.printForcedPageBreak, element);
+  }
 
 
   isSelectorMatching(element, selector) {
@@ -565,6 +575,105 @@ export default class Node {
     }
 
     return lastSuitableParent;
+  }
+
+
+
+
+
+
+
+
+  getTableEntries(node) {
+
+    const nodeEntries = [...node.children].reduce(function (acc, curr) {
+
+      const tag = curr.tagName;
+
+      if (tag === 'TBODY') {
+        return {
+          ...acc,
+          rows: [
+            ...acc.rows,
+            ...curr.children,
+          ]
+        }
+      }
+
+      if (tag === 'CAPTION') {
+        return {
+          ...acc,
+          caption: curr
+        }
+      }
+
+      if (tag === 'COLGROUP') {
+        return {
+          ...acc,
+          colgroup: curr
+        }
+      }
+
+      if (tag === 'THEAD') {
+        return {
+          ...acc,
+          thead: curr
+        }
+      }
+
+      if (tag === 'TFOOT') {
+        return {
+          ...acc,
+          tfoot: curr
+        }
+      }
+
+      if (tag === 'TR') {
+        return {
+          ...acc,
+          rows: [
+            ...acc.rows,
+            ...curr,
+          ]
+        }
+      }
+
+      return {
+        ...acc,
+        unexpected: [
+          ...acc.unexpected,
+          // BUG: •Uncaught TypeError: t is not iterable at bundle.js:1:19184
+          // curr,
+          ...curr,
+        ]
+      }
+    }, {
+      caption: null,
+      thead: null,
+      tfoot: null,
+      rows: [],
+      unexpected: [],
+    });
+
+    if (nodeEntries.unexpected.length > 0) {
+      this._debugMode && this._debugToggler._DOM
+        && console.warn(`something unexpected is found in the table ${node}`);
+    }
+
+    return nodeEntries
+  }
+
+  lockTableWidths(table) {
+    this.copyNodeWidth(table, table);
+    this.getAll('td', table).forEach(
+      td => this.copyNodeWidth(td, td)
+    )
+  }
+
+  copyNodeWidth(clone, node) {
+    // TODO check the fix:
+    // * (-1): Browser rounding fix (when converting mm to pixels).
+    clone.style.width = `${this._DOM.getElementWidth(node) - 1}px`;
   }
 
 }

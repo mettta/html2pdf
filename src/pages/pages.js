@@ -227,7 +227,7 @@ export default class Pages {
 
       // Check for forced page breaks, and if they are, we register these pages.
       // If not - we'll have a single page.
-      this._DOM.findAllForcedPageBreakInside(this._contentFlow).forEach(
+      this._node.findAllForcedPageBreakInside(this._contentFlow).forEach(
         element => this._registerPageStart(element)
       );
 
@@ -399,7 +399,7 @@ export default class Pages {
 
       // ** Check for page break markers inside.
       // ** If there are - register new page starts.
-      this._DOM.findAllForcedPageBreakInside(currentElement).forEach(
+      this._node.findAllForcedPageBreakInside(currentElement).forEach(
         element => this._registerPageStart(element)
       );
       // TODO: это может быть внутри таблицы или другого элемента,
@@ -1449,7 +1449,7 @@ export default class Pages {
     // * Split simple tables, without regard to col-span and the like.
     // TODO test more complex tables
 
-    this._DOM.lockTableWidths(table);
+    this._node.lockTableWidths(table);
 
     const consoleMark = ['%c_splitTableNode\n', 'color:white',];
     this._debugMode && this._debugToggler._splitTableNode && console.time('_splitTableNode')
@@ -1461,7 +1461,7 @@ export default class Pages {
     const tableWrapperHeight = this._node.getEmptyNodeHeight(table);
 
     // tableEntries
-    const tableEntries = this._DOM.getTableEntries(table);
+    const tableEntries = this._node.getTableEntries(table);
     this._debugMode && this._debugToggler._splitTableNode && console.log(
       ...consoleMark,
       'tableEntries', tableEntries

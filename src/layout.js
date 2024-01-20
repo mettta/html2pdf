@@ -130,7 +130,7 @@ export default class Layout {
       // * Copy the content from initialRoot into contentFlow,
       this._DOM.setInnerHTML(contentFlow, printedContent);
       // * remove all <template>s, if there are any in the initialRoot,
-      // this._DOM.clearTemplates(contentFlow);
+      // this._node.clearTemplates(contentFlow);
       // * add an empty div as a safeguard element to the end of content flow,
       this._DOM.insertAtEnd(contentFlow, this._node.create('[data-content-flow-end]'));
     } else {
