@@ -117,7 +117,7 @@ export default class Pages {
       const elements = this._DOM.findAllSelectorsInside(this._contentFlow, this._noHangingSelectors);
       elements.forEach(element => {
         this._node.setFlagNoHanging(element);
-        const lastChildParent = this._DOM.findLastChildParent(element, this._contentFlow)
+        const lastChildParent = this._node.findLastChildParent(element, this._contentFlow)
         if (lastChildParent) {
           this._node.setFlagNoHanging(lastChildParent);
         }
@@ -145,19 +145,19 @@ export default class Pages {
     // ** If the element is the FIRST child of nested FIRST children of a content flow,
     // ** we do not process it further for page breaks.
     // ** This ensures that page breaks are only made where they have not already been made for other reasons.
-    if (this._DOM.isFirstChildOfFirstChild(pageStarters[0], this._contentFlow)) {
+    if (this._node.isFirstChildOfFirstChild(pageStarters[0], this._contentFlow)) {
       pageStarters.shift()
     };
     // ** If the element is the LAST child of nested LAST children of a content flow,
     // ** we do not process it further for page breaks.
     // ** This ensures that page breaks are only made where they have not already been made for other reasons.
-    if (this._DOM.isLastChildOfLastChild(pageEnders.at(-1), this._contentFlow)) {
+    if (this._node.isLastChildOfLastChild(pageEnders.at(-1), this._contentFlow)) {
       pageEnders.pop()
     };
 
     // * find all relevant elements and insert forced page break markers before them.
     pageStarters.length && pageStarters.forEach(element => {
-      const firstChildParent = this._DOM.findFirstChildParent(element, this._contentFlow);
+      const firstChildParent = this._node.findFirstChildParent(element, this._contentFlow);
       if (firstChildParent) {
         element = firstChildParent;
       };
@@ -166,7 +166,7 @@ export default class Pages {
 
     // * find all relevant elements and insert forced page break markers before them.
     forcedPageStarters && forcedPageStarters.forEach(element => {
-      const firstChildParent = this._DOM.findFirstChildParent(element, this._contentFlow)
+      const firstChildParent = this._node.findFirstChildParent(element, this._contentFlow)
       if (firstChildParent) {
         element = firstChildParent;
       }
@@ -175,12 +175,12 @@ export default class Pages {
 
     // * find all relevant elements and insert forced page break markers after them.
     pageEnders.length && pageEnders.forEach(element => {
-      const lastChildParent = this._DOM.findLastChildParent(element, this._contentFlow)
+      const lastChildParent = this._node.findLastChildParent(element, this._contentFlow)
       if (lastChildParent) {
         element = lastChildParent;
       }
       // If there are AFTER and BEFORE breaks - insert only one.
-      if (!this._DOM.isForcedPageBreak(element.nextElementSibling)) {
+      if (!this._node.isForcedPageBreak(element.nextElementSibling)) {
         this._DOM.insertForcedPageBreakAfter(element);
       } // else pass
     });
@@ -255,7 +255,7 @@ export default class Pages {
 
   _registerPageStart(pageStart, improveResult = false) {
     if (improveResult) {
-      const firstChildParent = this._DOM.findFirstChildParent(pageStart, this._contentFlow);
+      const firstChildParent = this._node.findFirstChildParent(pageStart, this._contentFlow);
       pageStart = firstChildParent || pageStart;
 
       const previousCandidate = this._node.findPreviousNoHangingsFromPage(
@@ -367,7 +367,7 @@ export default class Pages {
     }
 
     // FORCED BREAK
-    if (this._DOM.isForcedPageBreak(currentElement)) {
+    if (this._node.isForcedPageBreak(currentElement)) {
       // TODO I've replaced the 'next' with the 'current' - need to test it out
       this._registerPageStart(currentElement)
       this._debugMode && this._debugToggler._parseNode && console.groupEnd();
@@ -709,7 +709,7 @@ export default class Pages {
         '🧡 isNoBreak', node);
       return children = [];
 
-    } else if (this._DOM.isComplexTextBlock(node)) {
+    } else if (this._node.isComplexTextBlock(node)) {
       this._debugMode && this._debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 ComplexTextBlock', node);
       return children = this._splitComplexTextBlockIntoLines(node) || [];
@@ -816,7 +816,7 @@ export default class Pages {
     const newChildren = [];
 
     children.forEach(child => {
-      if (this._DOM.isInline(this._DOM.getComputedStyle(child))) {
+      if (this._node.isInline(this._DOM.getComputedStyle(child))) {
         if (!complexTextBlock) {
           // the first inline child
           complexTextBlock = this._node.createComplexTextBlock();
@@ -850,7 +850,7 @@ export default class Pages {
     // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
 
     // TODO [html2pdf-splitted] SELECTOR
-    if (this._DOM.isSelectorMatching(node, '[html2pdf-splitted]')) {
+    if (this._node.isSelectorMatching(node, '[html2pdf-splitted]')) {
 
       this._debugMode
       && this._debugToggler._splitComplexTextBlockIntoLines
@@ -1560,7 +1560,7 @@ export default class Pages {
           const splittingEmptyRowHeight = this._DOM.getTableRowHeight(splittingRow);
           const splittingRowTop = this._DOM.getElementRootedTop(splittingRow, table) + captionFirefoxAmendment;
 
-          const isNoBreak = this._DOM.isNoBreak(splittingRow);
+          const isNoBreak = this._node.isNoBreak(splittingRow);
           const makesSenseToSplitTheRow = (splittingRowHeight >= splittingMinRowHeight) && (!isNoBreak);
 
 
@@ -2105,7 +2105,7 @@ export default class Pages {
           : fullPageHeight + this._DOM.getElementRootedTop(result.at(-1), rootNode)
         );
 
-      if (this._DOM.isForcedPageBreak(currentElement)) {
+      if (this._node.isForcedPageBreak(currentElement)) {
         //register
 
         // TODO #ForcedPageBreak
@@ -2229,7 +2229,7 @@ export default class Pages {
               console.warn('tst improveResult', previousElement)
               // if (improveResult) {
               let result = previousElement;
-              const firstChildParent = this._DOM.findFirstChildParent(result, this._contentFlow);
+              const firstChildParent = this._node.findFirstChildParent(result, this._contentFlow);
               result = firstChildParent || result;
 
               const previousCandidate = this._node.findPreviousNoHangingsFromPage(result, this.pages.at(-2)?.pageBottom, this._root)
@@ -2620,7 +2620,7 @@ export default class Pages {
     // ...
     // const nodeChildren = this._getChildren(node);
     // * _processInlineChildren (makes ComplexTextBlock) is running extra on complex nodes
-    if (this._DOM.isComplexTextBlock(element)) {
+    if (this._node.isComplexTextBlock(element)) {
       return [...this._DOM.getChildren(element)]
 
     } else {

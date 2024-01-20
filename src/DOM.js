@@ -156,37 +156,7 @@ export default class DocumentObjectModel {
     element.style = '';
   }
 
-  isSelectorMatching(element, selector) {
-    if (!element || !selector) {
-      this._debugMode && this._debugToggler._DOM && console.warn('isSelectorMatching() must have 2 params',
-      '\n element: ', element,
-      '\n selector: ', selector);
-      return;
-    }
 
-    const first = selector.charAt(0);
-
-    if (first === '.') {
-      const cl = selector.substring(1);
-      return element.classList.contains(cl);
-
-    } else if (first === '#') {
-      const id = selector.substring(1);
-      return element.id === id;
-
-    } else if (first === '[') {
-      this._debugMode && this._debugToggler._DOM && console.assert(
-        selector.at(-1) === ']', `the ${selector} selector is not OK.`
-      );
-      const attr = selector.substring(1, selector.length - 1);
-      return element.hasAttribute(attr);
-
-    } else {
-      // Strictly speaking, the tag name is not a selector,
-      // but to be on the safe side, let's check that too:
-      return this.getElementTagName(element) === selector.toUpperCase();
-    }
-  }
 
 
 
@@ -212,9 +182,7 @@ export default class DocumentObjectModel {
     );
   }
 
-  isPageStartElement(element) {
-    return this.isSelectorMatching(element, SELECTOR.pageStartMarker)
-  }
+
 
   markPartNodesWithClass(nodes) {
     nodes.forEach( node => {
@@ -244,47 +212,13 @@ export default class DocumentObjectModel {
 
 
 
-  isComplexTextBlock(element) {
-    return this.isSelectorMatching(element, SELECTOR.complexTextBlock)
-  }
+
 
   getComputedStyle(element) {
     return window.getComputedStyle(element);
   }
 
-  isInline(computedStyle) {
-    const display = computedStyle.display;
-    const res = display === "inline" ||
-                display === "inline-block" ||
-                display === "inline-table" ||
-                display === "inline-flex" ||
-                display === "inline-grid";
-    return res;
-  }
 
-  isInlineBlock(computedStyle) {
-    const display = computedStyle.display;
-    const res = display === "inline-block" ||
-                display === "inline-table" ||
-                display === "inline-flex" ||
-                display === "inline-grid";
-    return res;
-  }
-
-  isGrid(computedStyle) {
-    const display = computedStyle.display;
-    const res = display === "grid";
-    return res;
-  }
-
-  isNeutral(element) {
-    const match = this.isSelectorMatching(element, SELECTOR.neutral);
-    return match
-  }
-
-  isForcedPageBreak(element) {
-    return this.isSelectorMatching(element, SELECTOR.printForcedPageBreak)
-  }
 
 
 
@@ -299,116 +233,8 @@ export default class DocumentObjectModel {
     )
   }
 
-  isFirstChildOfFirstChild(element, rootElement) {
-    if (!element || !element.parentElement) {
-      return false;
-    }
-
-    let currentElement = element;
-
-    while (currentElement.parentElement && currentElement !== rootElement) {
-      if (currentElement.parentElement.firstElementChild !== currentElement) {
-        return false;
-      }
-
-      currentElement = currentElement.parentElement;
-    }
-
-    // * Making sure we get to the end,
-    // * and don't exit with "false" until the end of the check.
-    return currentElement === rootElement;
-  }
-
-  isLastChildOfLastChild(element, rootElement) {
-    if (!element || !element.parentElement) {
-      return false;
-    }
-
-    let currentElement = element;
-
-    // *** moving up
-    while (currentElement.parentElement && currentElement !== rootElement) {
-
-      // *** if we're at the root, we move to the right
-      if (currentElement.parentElement === rootElement) {
-
-        // ! in layout we inserted an element '[data-content-flow-end]'
-        // ! at the end of the content flow.
-        // ! Therefore, in the last step of the check, we should not check the last child,
-        // ! but the matchings of the nextSibling.
-        // ? ...and some plugins like to insert themselves at the end of the body.
-        // ? So let's check that stupidity too..
-        let _next = currentElement.nextElementSibling;
-
-        while (!_next.offsetHeight && !_next.offsetWidth) {
-          // *** move to the right
-          _next = _next.nextElementSibling;
-          // *** and see if we've reached the end
-          if (this.isSelectorMatching(_next, '[data-content-flow-end]')) {
-            return true;
-          }
-        }
-        // *** see if we've reached the end
-        return this.isSelectorMatching(_next, '[data-content-flow-end]');
-      }
-
-      // *** and while we're still not at the root, we're moving up
-      if (currentElement.parentElement.lastElementChild !== currentElement) {
-        return false;
-      }
-
-      currentElement = currentElement.parentElement;
-    }
-
-    // * Making sure we get to the end,
-    // * and don't exit with "false" until the end of the check.
-    return currentElement === rootElement;
-  }
-
-  findFirstChildParent(element, rootElement) {
-    let parent = element.parentElement;
-    let firstSuitableParent = null;
-
-    while (parent && parent !== rootElement) {
-      const firstChild = parent.firstElementChild;
-
-      if (element === firstChild) {
-        firstSuitableParent = parent;
-        element = parent;
-        parent = element.parentElement;
-      } else {
-        return firstSuitableParent;
-      }
-    }
-
-    return firstSuitableParent;
-  }
-
-  findLastChildParent(element, rootElement) {
-    let parent = element.parentElement;
-    let lastSuitableParent = null;
-
-    while (parent && parent !== rootElement) {
-      const lastChild = parent.lastElementChild;
-
-      if (element === lastChild) {
-        lastSuitableParent = parent;
-        element = parent;
-        parent = element.parentElement;
-      } else {
-        return lastSuitableParent;
-      }
-    }
-
-    return lastSuitableParent;
-  }
-
   findAllForcedPageBreakInside(element) {
     return [...element.querySelectorAll(SELECTOR.printForcedPageBreak)];
-  }
-
-  isNoBreak(element) {
-    return this.isSelectorMatching(element, SELECTOR.flagNoBreak)
   }
 
 
