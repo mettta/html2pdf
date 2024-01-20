@@ -188,80 +188,15 @@ export default class DocumentObjectModel {
     }
   }
 
-  setFlagNoBreak(element) {
-    this.setAttribute(element, SELECTOR.flagNoBreak)
-  }
-  setFlagNoHanging(element) {
-    this.setAttribute(element, SELECTOR.flagNoHanging)
-  }
 
-  wrapTextNode(element) {
-    if (!this.isSignificantTextNode(element)) {
-      return
-    }
-    const wrapper = this.create(SELECTOR.textNode);
-    element.before(wrapper);
-    wrapper.append(element);
-    return wrapper;
-  }
 
-  isWrappedTextNode(element) {
-    return this.isSelectorMatching(element, SELECTOR.textNode)
-  }
 
-  createNeutral() {
-    return this.create(SELECTOR.neutral)
-  }
 
-  createTestNodeFrom(node) {
-    const testNode = node.cloneNode(false);
-    testNode.classList = 'test-node'
-    testNode.style.position = 'absolute';
-    testNode.style.background = 'rgb(255 239 177)';
-    // testNode.style.left = '-10000px';
-    testNode.style.width = this.getMaxWidth(node) + 'px';
-    return testNode;
-  }
 
-  getMaxWidth(node) {
-    // * width adjustment for createTestNodeFrom()
-    // ? problem: if the node is inline,
-    // it may not show its maximum width in the parent context.
-    // So we make a block element that shows
-    // the maximum width of the node in the current context:
-    const tempDiv = this.create();
-    node.append(tempDiv);
-    const width = this.getElementWidth(tempDiv);
-    tempDiv.remove();
-    return width;
-  }
 
-  getLineHeight(node) {
-    const testNode = this.createNeutral();
-    // if node has padding, this affects so cant be taken bode clone as wrapper // todo comment
-    // const testNode = node.cloneNode(false);
-    testNode.innerHTML = '!';
-    // ! 'absolute' added extra height to the element:
-    // testNode.style.position = 'absolute';
-    // testNode.style.left = '-10000px';
-    // testNode.style.width = '100%';
-    testNode.style.display = 'block';
-    node.append(testNode);
-    const lineHeight = testNode.offsetHeight;
-    testNode.remove();
-    return lineHeight;
-  }
 
-  getEmptyNodeHeight(node, margins = true) {
-    const wrapper = this.create();
-    margins && (wrapper.style.padding = '0.1px');
-    const clone = node.cloneNode(false);
-    wrapper.append(clone);
-    node.before(wrapper);
-    const wrapperHeight = wrapper.offsetHeight;
-    wrapper.remove();
-    return wrapperHeight;
-  }
+
+
 
   markPageStartElement(element, page) {
     this.setAttribute(element, SELECTOR.pageStartMarker, page)
@@ -307,10 +242,7 @@ export default class DocumentObjectModel {
     return endTop - initialTop;
   }
 
-  createComplexTextBlock() {
-    const textBlock = this.create(SELECTOR.complexTextBlock);
-    return textBlock;
-  }
+
 
   isComplexTextBlock(element) {
     return this.isSelectorMatching(element, SELECTOR.complexTextBlock)
@@ -354,17 +286,9 @@ export default class DocumentObjectModel {
     return this.isSelectorMatching(element, SELECTOR.printForcedPageBreak)
   }
 
-  insertForcedPageBreakBefore(element) {
-    const div = this.create(SELECTOR.printForcedPageBreak);
-    this.insertBefore(element, div);
-    return div;
-  }
 
-  insertForcedPageBreakAfter(element) {
-    const div = this.create(SELECTOR.printForcedPageBreak);
-    this.insertAfter(element, div);
-    return div;
-  }
+
+
 
   findAllSelectorsInside(element, selectors) {
     if (typeof selectors === 'string') {
@@ -574,71 +498,17 @@ export default class DocumentObjectModel {
 
   // CREATE ELEMENTS
 
-  create(selector, textContent) {
-    let element;
-
-    if (!selector) {
-      element = this._DOM.createElement('div');
-    } else {
-      const first = selector.charAt(0);
-
-      if (first === '.') {
-        const cl = selector.substring(1);
-        element = this._DOM.createElement('div');
-        element.classList.add(cl);
-      } else if (first === '#') {
-        const id = selector.substring(1);
-        element = this._DOM.createElement('div');
-        element.id = id;
-      } else if (first === '[') {
-        const attr = selector.substring(1, selector.length - 1);
-        element = this._DOM.createElement('div');
-        element.setAttribute(attr, '');
-      } else if (first.match(/[a-zA-Z]/)) {
-        element = this._DOM.createElement(selector);
-      } else {
-        console.assert(false, `Expected valid html selector ot tag name, but received:`, selector)
-        return
-      }
-    }
-
-    if (textContent) {
-      this.setInnerHTML(element, textContent);
-    }
-
-    return element;
+  createElement(selector) {
+    return this._DOM.createElement(selector);
   }
 
-  createPrintPageBreak() {
-    return this.create(SELECTOR.printPageBreak);
-  }
 
-  createWithFlagNoBreak(style) {
-    const element = this.create(SELECTOR.flagNoBreak);
-    style && (element.style = style);
-    return element;
-  }
 
-  wrapNode(node, wrapper) {
-    node.before(wrapper);
-    wrapper.append(node);
-  }
 
-  wrapNodeChildren(node) {
-    const children = this.getChildren(node);
-    const wrapper = this.create();
-    this.insertAtStart(wrapper, ...children);
-    this.insertAtStart(node, wrapper);
-    return wrapper
-  }
 
-  // TODO replace with setFlag... and remove wrapper function
-  wrapWithFlagNoBreak(element) {
-    const wrapper = this.createWithFlagNoBreak();
-    element.before(wrapper);
-    wrapper.append(element);
-    return wrapper;
-  }
+
+
+
 
   // PAGES
 
@@ -765,7 +635,8 @@ export default class DocumentObjectModel {
     // * the exact check will be through the creation of the test element.
     // ? However, the performance compared to getElementRootedBottom() decreases:
     // ? 0.001 to 0.3 ms per such operation.
-    const test = this.create();
+    // const test = this.create();
+    const test = document.createElement('div'); // TODO
     // *** The bottom margin pushes the DIV below the margin,
     // *** so no dummy padding is needed.
     element && element.after(test);
@@ -849,39 +720,9 @@ export default class DocumentObjectModel {
     }
   }
 
-  // todo: move styles to params as optional
-  createSignpost(text, height = 24) {
-    const prefix = this.create();
-    prefix.style.display = 'flex';
-    prefix.style.flexWrap = 'nowrap';
-    prefix.style.alignItems = 'center';
-    prefix.style.justifyContent = 'center';
-    prefix.style.textAlign = 'center';
-    prefix.style.fontSize = '8px';
-    prefix.style.fontFamily = 'sans-serif';
-    prefix.style.letterSpacing = '1px';
-    prefix.style.textTransform = 'uppercase';
-    prefix.style.height = height + 'px';
-    text && (prefix.innerHTML = text);
-    return prefix
-  }
 
-  createTable({
-    wrapper,
-    caption,
-    thead,
-    tfoot,
-    tbody,
-  }) {
-    const table = wrapper ? wrapper : this.create('table');
-    const tableBody = this.create('TBODY');
-    caption && table.append(caption);
-    thead && table.append(thead);
-    tbody && tableBody.append(...tbody);
-    table.append(tableBody);
-    tfoot && table.append(tfoot);
-    return table;
-  }
+
+
 
   getTableEntries(node) {
 

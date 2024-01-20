@@ -35,6 +35,7 @@ export default class HTML2PDF4DOC {
       config: this.config,
       DOM: DOM,
       selector: this.selector,
+      node: node,
     });
 
     layout.create();
@@ -47,6 +48,7 @@ export default class HTML2PDF4DOC {
       config: this.config,
       DOM: DOM,
       selector: this.selector,
+      node: node,
       layout: layout,
     });
 
@@ -64,6 +66,7 @@ export default class HTML2PDF4DOC {
       config: this.config,
       DOM: DOM,
       selector: this.selector,
+      node: node,
       layout: layout,
       paper: paper,
       pages: pages,

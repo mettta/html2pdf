@@ -12,6 +12,7 @@ export default class Preview {
     config,
     DOM,
     selector,
+    node,
 
     pages,
     layout,
@@ -22,6 +23,7 @@ export default class Preview {
     this._debugMode = config.debugMode;
     this._DOM = DOM;
     this._selector = selector;
+    this._node = node;
 
     // selectors
     this._virtualPaperGapSelector = selector.virtualPaperGap;
@@ -169,7 +171,7 @@ export default class Preview {
     // and also used to determine which page an object is on.
 
     // TODO move to DOM:
-    const pageDivider = this._DOM.create(this._pageDivider);
+    const pageDivider = this._node.create(this._pageDivider);
     this._DOM.setAttribute(pageDivider, '[page]', `${pageIndex + 1}`);
 
     // Non-virtual margins need to be added to the outer wrapper pageDivider,
@@ -215,7 +217,7 @@ export default class Preview {
   // create elements
 
   _createVirtualPaperGap() {
-    return this._DOM.create(this._virtualPaperGapSelector);
+    return this._node.create(this._virtualPaperGapSelector);
   }
 
   _createVirtualPaperTopMargin() {
@@ -228,7 +230,7 @@ export default class Preview {
 
   _insertFrontpageSpacer(target, bodyHeight) {
     // create spacer element
-    const spacer = this._DOM.create();
+    const spacer = this._node.create();
     this._DOM.setStyles(spacer, { paddingBottom: bodyHeight + 'px' });
     this._DOM.setAttribute(spacer, '.printFrontpageSpacer');
 
@@ -246,7 +248,7 @@ export default class Preview {
     // In the virtual footer/header we add an empty element
     // with a calculated height instead of the content.
     // We use margins to compensate for possible opposite margins in the content.
-    const balancingHeader = this._DOM.create(this._runningSafetySelector);
+    const balancingHeader = this._node.create(this._runningSafetySelector);
 
     this._DOM.insertAtEnd(
       headerSpacer,
@@ -275,13 +277,13 @@ export default class Preview {
     // In this element we will add a compensator.
     // We create it with a basic compensator,
     // which takes into account now only the footerHeight.
-    const balancingFooter = this._DOM.create(this._runningSafetySelector);
+    const balancingFooter = this._node.create(this._runningSafetySelector);
 
     this._DOM.insertAtEnd(
       footerSpacer,
       balancingFooter,
       this._createVirtualPaperBottomMargin(),
-      this._DOM.create(this._printPageBreakSelector), // PageBreak
+      this._node.create(this._printPageBreakSelector), // PageBreak
       contentSeparator,
     )
 

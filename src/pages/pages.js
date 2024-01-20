@@ -84,7 +84,7 @@ export default class Pages {
     // TODO move to config
     this._signpostHeight = 24;
 
-    this._commonLineHeight = this._DOM.getLineHeight(this._root);
+    this._commonLineHeight = this._node.getLineHeight(this._root);
     this._minimumBreakableHeight = this._commonLineHeight * this._minBreakableLines;
 
     // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browsers
@@ -116,10 +116,10 @@ export default class Pages {
     if (this._noHangingSelectors) {
       const elements = this._DOM.findAllSelectorsInside(this._contentFlow, this._noHangingSelectors);
       elements.forEach(element => {
-        this._DOM.setFlagNoHanging(element);
+        this._node.setFlagNoHanging(element);
         const lastChildParent = this._DOM.findLastChildParent(element, this._contentFlow)
         if (lastChildParent) {
-          this._DOM.setFlagNoHanging(lastChildParent);
+          this._node.setFlagNoHanging(lastChildParent);
         }
       });
     }
@@ -128,7 +128,7 @@ export default class Pages {
   _prepareNoBreakElements() {
     if (this._noBreakSelectors) {
       const elements = this._DOM.findAllSelectorsInside(this._contentFlow, this._noBreakSelectors);
-      elements.forEach(element => this._DOM.setFlagNoBreak(element));
+      elements.forEach(element => this._node.setFlagNoBreak(element));
     }
   }
 
@@ -161,7 +161,7 @@ export default class Pages {
       if (firstChildParent) {
         element = firstChildParent;
       };
-      this._DOM.insertForcedPageBreakBefore(element);
+      this._node.insertForcedPageBreakBefore(element);
     });
 
     // * find all relevant elements and insert forced page break markers before them.
@@ -170,7 +170,7 @@ export default class Pages {
       if (firstChildParent) {
         element = firstChildParent;
       }
-      this._DOM.insertForcedPageBreakBefore(element);
+      this._node.insertForcedPageBreakBefore(element);
     });
 
     // * find all relevant elements and insert forced page break markers after them.
@@ -221,7 +221,7 @@ export default class Pages {
 
       // register a FIRST page
       // todo: make a DOM function
-      const contentFlowStart = this._DOM.create('[data-content-flow-start]');
+      const contentFlowStart = this._node.create('[data-content-flow-start]');
       this._DOM.insertAtStart(this._contentFlow, contentFlowStart);
       this._registerPageStart(contentFlowStart);
 
@@ -819,8 +819,8 @@ export default class Pages {
       if (this._DOM.isInline(this._DOM.getComputedStyle(child))) {
         if (!complexTextBlock) {
           // the first inline child
-          complexTextBlock = this._DOM.createComplexTextBlock();
-          this._DOM.wrapNode(child, complexTextBlock);
+          complexTextBlock = this._node.createComplexTextBlock();
+          this._node.wrapNode(child, complexTextBlock);
           newChildren.push(complexTextBlock);
         }
         // not the first inline child
@@ -896,7 +896,7 @@ export default class Pages {
 
     const complexChildren = nodeChildren.map(
       element => {
-        const lineHeight = this._DOM.getLineHeight(element);
+        const lineHeight = this._node.getLineHeight(element);
         const height = this._DOM.getElementHeight(element);
         const left = this._DOM.getElementLeft(element);
         const top = this._DOM.getElementTop(element);
@@ -1001,7 +1001,7 @@ export default class Pages {
     const linedChildren = newComplexChildrenGroups.map(
       (arr, index) => {
         // * Create a new line
-        const line = this._DOM.createWithFlagNoBreak();
+        const line = this._node.createWithFlagNoBreak();
         (arr.length > 1) && line.classList.add('group🛗');
         line.setAttribute('role', 'group〰️');
 
@@ -1043,7 +1043,7 @@ export default class Pages {
     const itemWords = this._DOM.splitByWordsGreedyWithSpacesFilter(splittedItem);
     // * array with words wrapped with the inline tag 'html2pdf-word':
     const itemWrappedWords = itemWords.map((item, index) => {
-      const span = this._DOM.create('html2pdf-word');
+      const span = this._node.create('html2pdf-word');
       span.dataset.index = index;
       span.innerHTML = item + WORD_JOINER;
       return span;
@@ -1071,7 +1071,7 @@ export default class Pages {
     const newLines = beginnerNumbers.reduce(
       (result, currentElement, currentIndex) => {
         const line = this._DOM.cloneNodeWrapper(splittedItem);
-        this._DOM.setFlagNoBreak(line); // TODO ? 
+        this._node.setFlagNoBreak(line); // TODO ? 
         line.setAttribute('role', 'line-simplest');
         line.classList.add('cloned🅱️');
         const start = beginnerNumbers[currentIndex];
@@ -1134,8 +1134,8 @@ export default class Pages {
     // Prepare node parameters
     const nodeTop = this._DOM.getElementRootedTop(node, this._root);
     const nodeHeight = this._DOM.getElementHeight(node);
-    const nodeLineHeight = this._DOM.getLineHeight(node);
-    const preWrapperHeight = this._DOM.getEmptyNodeHeight(node, false);
+    const nodeLineHeight = this._node.getLineHeight(node);
+    const preWrapperHeight = this._node.getEmptyNodeHeight(node, false);
 
     // * Let's check the probable number of rows in the simplest case,
     // * as if the element had the style.whiteSpace=='pre'
@@ -1195,7 +1195,7 @@ export default class Pages {
 
       // * Modifying DOM
       const linesFromNode = stringsFromNodeText.map(string => {
-        const line = this._DOM.createWithFlagNoBreak();
+        const line = this._node.createWithFlagNoBreak();
         this._DOM.setInnerHTML(line, string);
         return line
       });
@@ -1263,7 +1263,7 @@ export default class Pages {
         // because PRE may have margins and that will affect the height of the wrapper.
         // So we will give the PRE itself this property.
         const part = this._DOM.cloneNodeWrapper(node);
-        this._DOM.setFlagNoBreak(part);
+        this._node.setFlagNoBreak(part);
 
         // id = the beginning of the next part
         const start = splitters[index - 1] || 0;
@@ -1310,7 +1310,7 @@ export default class Pages {
 
     const partEntries = tableEntries.rows.slice(startId, endId);
 
-    const part = this._DOM.createWithFlagNoBreak();
+    const part = this._node.createWithFlagNoBreak();
     table.before(part);
 
     if (startId) {
@@ -1351,7 +1351,7 @@ export default class Pages {
     const sortOfLines = this._getChildren(node);
 
     const nodeTop = this._DOM.getElementRootedTop(node, this._root);
-    const nodeWrapperHeight = this._DOM.getEmptyNodeHeight(node);
+    const nodeWrapperHeight = this._node.getEmptyNodeHeight(node);
 
     // ** Prepare parameters for splitters calculation
     const firstPartSpace = pageBottom - nodeTop - nodeWrapperHeight;
@@ -1413,7 +1413,7 @@ export default class Pages {
       // because PRE may have margins and that will affect the height of the wrapper.
       // So we will give the PRE itself this property.
       const part = this._DOM.cloneNodeWrapper(node);
-      this._DOM.setFlagNoBreak(part);
+      this._node.setFlagNoBreak(part);
       // TODO make the same with other splitted nodes
       this._DOM.unmarkPageStartElement(part);
 
@@ -1458,7 +1458,7 @@ export default class Pages {
 
     // calculate table wrapper (empty table element) height
     // to calculate the available space for table content
-    const tableWrapperHeight = this._DOM.getEmptyNodeHeight(table);
+    const tableWrapperHeight = this._node.getEmptyNodeHeight(table);
 
     // tableEntries
     const tableEntries = this._DOM.getTableEntries(table);
@@ -1639,7 +1639,7 @@ export default class Pages {
                 } else {
                   // * el.result === 0
                   // один раз полностью копируем весь контент из столбца
-                  const sliceWrapper = this._DOM.createWithFlagNoBreak();
+                  const sliceWrapper = this._node.createWithFlagNoBreak();
                   sliceWrapper.classList.add("🟣");
                   sliceWrapper.display = 'contents';
 
@@ -1662,7 +1662,7 @@ export default class Pages {
               const theNewRows = [];
               for (let i = 0; i < theNewTrCount; i++) {
                 const rowWrapper = this._DOM.cloneNodeWrapper(splittingRow);
-                this._DOM.setFlagNoBreak(rowWrapper);
+                this._node.setFlagNoBreak(rowWrapper);
 
                 [...splittingRowTDs].forEach(
                   (td, tdID) => {
@@ -1761,7 +1761,7 @@ export default class Pages {
     );
 
     // create LAST PART
-    const lastPart = this._DOM.createWithFlagNoBreak();
+    const lastPart = this._node.createWithFlagNoBreak();
     table.before(lastPart);
     this._DOM.insertAtEnd(
       lastPart,
@@ -1784,7 +1784,7 @@ export default class Pages {
     //   split: true | false,
     // }
 
-    const sliceWrapper = this._DOM.createWithFlagNoBreak();
+    const sliceWrapper = this._node.createWithFlagNoBreak();
     sliceWrapper.classList.add("🧰");
     sliceWrapper.display = 'contents';
 
@@ -2403,7 +2403,7 @@ export default class Pages {
 
     // ** Prepare node parameters
     const nodeTop = this._DOM.getElementRootedTop(node, this._root);
-    const nodeWrapperHeight = this._DOM.getEmptyNodeHeight(node);
+    const nodeWrapperHeight = this._node.getEmptyNodeHeight(node);
     const firstPartHeight = pageBottom
       - nodeTop
       // - this._signpostHeight
@@ -2464,13 +2464,13 @@ export default class Pages {
         ...consoleMark, `partEntries`, partEntries
       );
 
-      // const part = this._DOM.createWithFlagNoBreak();
+      // const part = this._node.createWithFlagNoBreak();
       // ! Do not wrap nodes so as not to break styles.
       // TODO - Check for other uses of createWithFlagNoBreak to see if the wrapper can be avoided.
 
       const part = this._DOM.cloneNodeWrapper(node);
       this._DOM.copyNodeWidth(part, node);
-      this._DOM.setFlagNoBreak(part);
+      this._node.setFlagNoBreak(part);
       node.before(part);
 
       if (startId) {
@@ -2510,7 +2510,7 @@ export default class Pages {
 
     // create LAST PART
     // TODO ??? is that really needed?
-    // const lastPart = this._DOM.createWithFlagNoBreak();
+    // const lastPart = this._node.createWithFlagNoBreak();
     // node.before(lastPart);
     // this._DOM.insertAtEnd(
     //   lastPart,
@@ -2519,7 +2519,7 @@ export default class Pages {
     // );
 
     // LAST PART handling
-    this._DOM.setFlagNoBreak(node);
+    this._node.setFlagNoBreak(node);
 
     this._debugMode && this._debugToggler._splitGridNode && console.groupEnd()
     // return children;
@@ -2534,7 +2534,7 @@ export default class Pages {
     // Prepare node parameters
     const nodeTop = this._DOM.getElementRootedTop(node, this._root);
     const nodeHeight = this._DOM.getElementHeight(node);
-    const nodeLineHeight = this._DOM.getLineHeight(node);
+    const nodeLineHeight = this._node.getLineHeight(node);
 
     // Prepare parameters for splitters calculation
     const availableSpace = pageBottom - nodeTop;
@@ -2585,7 +2585,7 @@ export default class Pages {
 
     const splitsArr = exactSplitters.map((id, index, exactSplitters) => {
       // Avoid trying to break this node: createWithFlagNoBreak()
-      const part = this._DOM.createWithFlagNoBreak();
+      const part = this._node.createWithFlagNoBreak();
 
       const start = exactSplitters[index - 1] || 0;
       const end = id || exactSplitters[exactSplitters.length];
@@ -2636,7 +2636,7 @@ export default class Pages {
 
             // * wrap text node, use element.nodeType
             if (this._DOM.isSignificantTextNode(item)) {
-              acc.push(this._DOM.wrapTextNode(item));
+              acc.push(this._node.wrapTextNode(item));
               return acc;
             }
 

@@ -9,6 +9,7 @@ export default class Layout {
   constructor({
     config,
     DOM,
+    node,
     selector
   }) {
     // init result flag
@@ -29,6 +30,7 @@ export default class Layout {
     this._debugMode = config.debugMode;
     this._DOM = DOM;
     this._selector = selector;
+    this._node = node;
 
     // * root selector
     this._customInitialRootSelector = config.initialRoot;
@@ -85,7 +87,7 @@ export default class Layout {
       return
     };
 
-    const styleElement = this._DOM.create('style', new Style(this._config).create());
+    const styleElement = this._node.create('style', new Style(this._config).create());
     if (styleElement) {
       this._DOM.setAttribute(styleElement, this._selector.style, '');
     } else {
@@ -130,7 +132,7 @@ export default class Layout {
       // * remove all <template>s, if there are any in the initialRoot,
       // this._DOM.clearTemplates(contentFlow);
       // * add an empty div as a safeguard element to the end of content flow,
-      this._DOM.insertAtEnd(contentFlow, this._DOM.create('[data-content-flow-end]'));
+      this._DOM.insertAtEnd(contentFlow, this._node.create('[data-content-flow-end]'));
     } else {
       console.warn(`It looks like you don't have any printable content.`);
     }
@@ -163,21 +165,21 @@ export default class Layout {
   }
 
   _createRoot() {
-    const root = this._DOM.create(this._selector.root);
+    const root = this._node.create(this._selector.root);
 
     this.root = root;
     return root;
   }
 
   _createPaperFlow() {
-    const paperFlow = this._DOM.create(this._selector.paperFlow);
+    const paperFlow = this._node.create(this._selector.paperFlow);
 
     this.paperFlow = paperFlow;
     return paperFlow;
   }
 
   _createContentFlow() {
-    const contentFlow = this._DOM.create(this._selector.contentFlow);
+    const contentFlow = this._node.create(this._selector.contentFlow);
 
     this.contentFlow = contentFlow;
     return contentFlow;
@@ -202,7 +204,7 @@ export default class Layout {
 
         } else if (this._DOM.isSignificantTextNode(child)) {
           // process text nodes
-          this._DOM.setAttribute(this._DOM.wrapTextNode(child), this._selector.printHide);
+          this._DOM.setAttribute(this._node.wrapTextNode(child), this._selector.printHide);
 
         } else {
           return
