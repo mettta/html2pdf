@@ -150,79 +150,9 @@ export default class DocumentObjectModel {
     element.style = '';
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-  markPageStartElement(element, page) {
-    this.setAttribute(element, SELECTOR.pageStartMarker, page)
-  }
-
-  unmarkPageStartElement(element) {
-    this.removeAttribute(
-      element,
-      SELECTOR.pageStartMarker.substring(
-        1,
-        SELECTOR.pageStartMarker.length - 1
-      )
-    );
-  }
-
-
-
-  markPartNodesWithClass(nodes) {
-    nodes.forEach( node => {
-      // this.setAttribute()
-      // TODO remove Attribute
-      node.classList.add(SELECTOR.topCutPart.substring(1));
-      node.classList.add(SELECTOR.bottomCutPart.substring(1));
-    });
-    nodes.at(0).classList.remove(SELECTOR.topCutPart.substring(1));
-    nodes.at(-1).classList.remove(SELECTOR.bottomCutPart.substring(1));
-  }
-
-  getTableRowHeight(tr, num = 0) {
-    // Create an empty row by cloning the TR, insert it into the table,
-    // * add the specified number of lines to it (num),
-    // and detect its actual height through the delta
-    // of the tops of the TR following it.
-    const initialTop = tr.offsetTop;
-    const clone = tr.cloneNode(true);
-    const text = '!<br />'.repeat(num);
-    [...clone.children].forEach(td => td.innerHTML = text);
-    tr.before(clone);
-    const endTop = tr.offsetTop;
-    clone.remove();
-    return endTop - initialTop;
-  }
-
-
-
-
-
   getComputedStyle(element) {
     return window.getComputedStyle(element);
   }
-
-
-
-
-
-
-
-
-
-
-
-
 
   // CHECK
 
@@ -241,12 +171,7 @@ export default class DocumentObjectModel {
     return element.nodeType === Node.ELEMENT_NODE;
   }
 
-  isSignificantTextNode(element) {
-    if (this.isTextNode(element)) {
-      return (element.nodeValue.trim().length > 0) ? true : false;
-    }
-    return false;
-  }
+
 
 
 

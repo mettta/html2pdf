@@ -86,6 +86,20 @@ export default class Node {
     }
   }
 
+
+
+
+
+  isSignificantTextNode(element) {
+    if (this._DOM.isTextNode(element)) {
+      return (element.nodeValue.trim().length > 0) ? true : false;
+    }
+    return false;
+  }
+
+
+
+
   isSTYLE(element) {
     return this._DOM.getElementTagName(element) === 'STYLE'
   }
@@ -282,7 +296,7 @@ export default class Node {
   }
 
   wrapTextNode(element) {
-    if (!this._DOM.isSignificantTextNode(element)) {
+    if (!this.isSignificantTextNode(element)) {
       return
     }
     const wrapper = this.create(this._selector.textNode);
@@ -466,6 +480,21 @@ export default class Node {
     const lineHeight = testNode.offsetHeight;
     testNode.remove();
     return lineHeight;
+  }
+
+  getTableRowHeight(tr, num = 0) {
+    // Create an empty row by cloning the TR, insert it into the table,
+    // * add the specified number of lines to it (num),
+    // and detect its actual height through the delta
+    // of the tops of the TR following it.
+    const initialTop = tr.offsetTop;
+    const clone = tr.cloneNode(true);
+    const text = '!<br />'.repeat(num);
+    [...clone.children].forEach(td => td.innerHTML = text);
+    tr.before(clone);
+    const endTop = tr.offsetTop;
+    clone.remove();
+    return endTop - initialTop;
   }
 
 
@@ -776,6 +805,37 @@ export default class Node {
   replaceNodeContentsWith(element, ...payload) {
     this._DOM.setInnerHTML(element, '');
     this._DOM.insertAtEnd(element, ...payload)
+  }
+
+
+
+
+
+  markPageStartElement(element, page) {
+    this._DOM.setAttribute(element, this._selector.pageStartMarker, page)
+  }
+
+  unmarkPageStartElement(element) {
+    this._DOM.removeAttribute(
+      element,
+      this._selector.pageStartMarker.substring(
+        1,
+        this._selector.pageStartMarker.length - 1
+      )
+    );
+  }
+
+  markPartNodesWithClass(nodes) {
+    nodes.forEach( node => {
+      // this.setAttribute()
+      // TODO remove Attribute
+      // TODO ???? check what is the purpose
+      // TODO USE Attribute from DOM
+      node.classList.add(this._selector.topCutPart.substring(1));
+      node.classList.add(this._selector.bottomCutPart.substring(1));
+    });
+    nodes.at(0).classList.remove(this._selector.topCutPart.substring(1));
+    nodes.at(-1).classList.remove(this._selector.bottomCutPart.substring(1));
   }
 
 }

@@ -202,7 +202,7 @@ export default class Layout {
         if (child !== root && this._DOM.isElementNode(child)) {
           this._DOM.setAttribute(child, this._selector.printHide);
 
-        } else if (this._DOM.isSignificantTextNode(child)) {
+        } else if (this._node.isSignificantTextNode(child)) {
           // process text nodes
           this._DOM.setAttribute(this._node.wrapTextNode(child), this._selector.printHide);
 

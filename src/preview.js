@@ -193,7 +193,7 @@ export default class Preview {
   _updatePageStartElementAttrValue(element, pageIndex) {
     //  frontpage on page 1 forces page numbers to be refreshed
     // this._debugMode && console.log(`${pageIndex + 1}`, element, )
-    this._hasFrontPage && this._DOM.markPageStartElement(element, `${pageIndex + 1}`);
+    this._hasFrontPage && this._node.markPageStartElement(element, `${pageIndex + 1}`);
   }
 
   _insertPaper(paperFlow, paper, separator) {

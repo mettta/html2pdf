@@ -272,7 +272,7 @@ export default class Pages {
       pageStart: pageStart,
       pageBottom: pageBottom,
     });
-    this._DOM.markPageStartElement(pageStart, this.pages.length);
+    this._node.markPageStartElement(pageStart, this.pages.length);
     this._debugMode && this._debugToggler._registerPageStart && console.log(
       `📍 %c register page ${this.pages.length} \n`, "background:yellow; color:red",
       pageBottom, pageStart,
@@ -1275,7 +1275,7 @@ export default class Pages {
       });
 
       // * Mark nodes as parts
-      this._DOM.markPartNodesWithClass(newPreElementsArray);
+      this._node.markPartNodesWithClass(newPreElementsArray);
 
       this._debugMode && this._debugToggler._splitPreNode && console.log(
         ...consoleMark,
@@ -1415,7 +1415,7 @@ export default class Pages {
       const part = this._DOM.cloneNodeWrapper(node);
       this._node.setFlagNoBreak(part);
       // TODO make the same with other splitted nodes
-      this._DOM.unmarkPageStartElement(part);
+      this._node.unmarkPageStartElement(part);
 
       // id = the beginning of the next part
       const start = splitters[index - 1] || 0;
@@ -1427,7 +1427,7 @@ export default class Pages {
     });
 
     // * Mark nodes as parts
-    this._DOM.markPartNodesWithClass(newPreElementsArray);
+    this._node.markPartNodesWithClass(newPreElementsArray);
 
     // * We need to keep the original node,
     // * we may need it as a parent in this._parseNode().
@@ -1556,8 +1556,8 @@ export default class Pages {
           const splittingRowIndex = index - 1;
           const splittingRow = tableEntries.rows[splittingRowIndex];
           const splittingRowHeight = this._DOM.getElementHeight(splittingRow);
-          const splittingMinRowHeight = this._DOM.getTableRowHeight(splittingRow, this._minBreakableRows);
-          const splittingEmptyRowHeight = this._DOM.getTableRowHeight(splittingRow);
+          const splittingMinRowHeight = this._node.getTableRowHeight(splittingRow, this._minBreakableRows);
+          const splittingEmptyRowHeight = this._node.getTableRowHeight(splittingRow);
           const splittingRowTop = this._DOM.getElementRootedTop(splittingRow, table) + captionFirefoxAmendment;
 
           const isNoBreak = this._node.isNoBreak(splittingRow);
@@ -2635,7 +2635,7 @@ export default class Pages {
             }
 
             // * wrap text node, use element.nodeType
-            if (this._DOM.isSignificantTextNode(item)) {
+            if (this._node.isSignificantTextNode(item)) {
               acc.push(this._node.wrapTextNode(item));
               return acc;
             }
