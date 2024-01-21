@@ -264,9 +264,9 @@ export default class Node {
   //   //   resizeObserver.observe(currentElement)
   //   // }
 
-  //   // this._DOM.isNeutral(element) || 
+  //   // this._node.isNeutral(element) || 
 
-  //   const takeAsWhole = (tag === 'IMG' || tag === 'svg' || tag === 'TABLE' || this._DOM.isNoBreak(element) || tag === 'OBJECT')
+  //   const takeAsWhole = (tag === 'IMG' || tag === 'svg' || tag === 'TABLE' || this._node.isNoBreak(element) || tag === 'OBJECT')
   //   return takeAsWhole;
   // }
 
@@ -736,19 +736,39 @@ export default class Node {
 
   isLineChanged(current, next) {
     // * (-1): Browser rounding fix (when converting mm to pixels).
-   const delta = this._DOM.getElementRelativeTop(next)
-               - this._DOM.getElementRelativeBottom(current);
-   const vert = delta > (-2);
-   // const gor = this.getElementLeft(current) + this.getElementWidth(current) > this.getElementLeft(next);
-   return vert;
- }
- // TODO: isLineChanged vs isLineKept: можно сделать else? они противоположны
- isLineKept(current, next) {
-   // * (-1): Browser rounding fix (when converting mm to pixels).
-   const delta = this._DOM.getElementRelativeTop(next)
-               - this._DOM.getElementRelativeBottom(current);
-   const vert = delta <= (-2);
-   return vert;
- }
+    const delta = this._DOM.getElementRelativeTop(next)
+                - this._DOM.getElementRelativeBottom(current);
+    const vert = delta > (-2);
+    // const gor = this.getElementLeft(current) + this.getElementWidth(current) > this.getElementLeft(next);
+    return vert;
+  }
+  // TODO: isLineChanged vs isLineKept: можно сделать else? они противоположны
+  isLineKept(current, next) {
+    // * (-1): Browser rounding fix (when converting mm to pixels).
+    const delta = this._DOM.getElementRelativeTop(next)
+                - this._DOM.getElementRelativeBottom(current);
+    const vert = delta <= (-2);
+    return vert;
+  }
+
+
+  fitElementWithinBoundaries({ element, height, width, vspace, hspace }) {
+
+    const hRatio = vspace / height;
+    const wRatio = hspace / width;
+
+    const ratio = hRatio < wRatio ? hRatio : wRatio;
+
+    const newHeight = Math.trunc(height * ratio);
+    const newWidth = Math.trunc(width * ratio);
+
+    element.style.height = newHeight + 'px';
+    element.style.width = newWidth + 'px';
+    // In SVG width and height of <rect> elements are attributes and not CSS properties
+    element.setAttribute("height", `${newHeight}px`);
+    element.setAttribute("width", `${newWidth}px`);
+    // todo
+    // element.style.margin = '0 auto';
+  }
 
 }

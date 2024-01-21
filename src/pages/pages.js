@@ -181,7 +181,7 @@ export default class Pages {
       }
       // If there are AFTER and BEFORE breaks - insert only one.
       if (!this._node.isForcedPageBreak(element.nextElementSibling)) {
-        this._DOM.insertForcedPageBreakAfter(element);
+        this._node.insertForcedPageBreakAfter(element);
       } // else pass
     });
 
@@ -447,7 +447,7 @@ export default class Pages {
         const currentImage = this._node.isSVG(currentElement)
         // TODO replace with setFlag... and remove wrapper function
         // TODO process at the beginning, find all SVG and set Flag
-          ? this._DOM.wrapWithFlagNoBreak(currentElement)
+          ? this._node.createSignpost(currentElement)
           : currentElement;
 
         const availableSpace = newPageBottom - this._DOM.getElementRootedTop(currentImage, this._root);
@@ -476,7 +476,7 @@ export default class Pages {
           // leave it on the current page
           this._registerPageStart(nextElement);
           // and reduce it a bit
-          this._DOM.fitElementWithinBoundaries({
+          this._node.fitElementWithinBoundaries({
             element: currentElement,
             height: currentImageHeight,
             width: currentImageWidth,
@@ -494,7 +494,7 @@ export default class Pages {
         this._registerPageStart(currentImage, true);
         // and avoid page overflow if the picture is too big to fit on the page as a whole
         if (currentImageHeight > this._referenceHeight) {
-          this._DOM.fitElementWithinBoundaries({
+          this._node.fitElementWithinBoundaries({
             element: currentElement,
             height: currentImageHeight,
             width: currentImageWidth,
@@ -1165,7 +1165,7 @@ export default class Pages {
         // FIXME other cases i.e. node and we need recursion
         return []
       }
-      if (this._DOM.isTextNode(_children[0])) {
+      if (this._node.isTextNode(_children[0])) {
         // if (textNode.nodeType === 3) // 3 - тип TextNode
         this._debugMode && this._debugToggler._splitPreNode && console.warn(`is TEXT Node: ${_children[0]}`);
         // FIXME other cases i.e. node and we need recursion
@@ -1315,19 +1315,19 @@ export default class Pages {
 
     if (startId) {
       // if is not first part
-      this._DOM.insertAtEnd(part, this._DOM.createSignpost('(table continued)', this._signpostHeight));
+      this._DOM.insertAtEnd(part, this._node.createSignpost('(table continued)', this._signpostHeight));
     }
 
     this._DOM.insertAtEnd(
       part,
-      this._DOM.createTable({
+      this._node.createTable({
         wrapper: tableWrapper,
         caption: this._DOM.cloneNode(tableEntries.caption),
         thead: this._DOM.cloneNode(tableEntries.thead),
         // tfoot,
         tbody: partEntries,
       }),
-      this._DOM.createSignpost('(table continues on the next page)', this._signpostHeight)
+      this._node.createSignpost('(table continues on the next page)', this._signpostHeight)
     );
 
     return part
@@ -1765,7 +1765,7 @@ export default class Pages {
     table.before(lastPart);
     this._DOM.insertAtEnd(
       lastPart,
-      this._DOM.createSignpost('(table continued)', this._signpostHeight),
+      this._node.createSignpost('(table continued)', this._signpostHeight),
       table
     );
 
@@ -2469,13 +2469,13 @@ export default class Pages {
       // TODO - Check for other uses of createWithFlagNoBreak to see if the wrapper can be avoided.
 
       const part = this._DOM.cloneNodeWrapper(node);
-      this._DOM.copyNodeWidth(part, node);
+      this._node.copyNodeWidth(part, node);
       this._node.setFlagNoBreak(part);
       node.before(part);
 
       if (startId) {
         // if is not first part
-        // this._DOM.insertAtEnd(part, this._DOM.createSignpost('(table continued)', this._signpostHeight));
+        // this._DOM.insertAtEnd(part, this._node.createSignpost('(table continued)', this._signpostHeight));
 
         // TODO: insertions between parts will not disturb the original layout & CSS.
         // Therefore, it is possible to insert an element after and before the parts
@@ -2485,14 +2485,14 @@ export default class Pages {
       // в таблице другое
       // this._DOM.insertAtEnd(
       //   part,
-      //   this._DOM.createTable({
+      //   this._node.createTable({
       //     wrapper: nodeWrapper,
       //     caption: this._DOM.cloneNode(nodeEntries.caption),
       //     thead: this._DOM.cloneNode(nodeEntries.thead),
       //     // tfoot,
       //     tbody: partEntries,
       //   }),
-      //   this._DOM.createSignpost('(table continues on the next page)', this._signpostHeight)
+      //   this._node.createSignpost('(table continues on the next page)', this._signpostHeight)
       // );
       // this._DOM.insertAtEnd(part, nodeWrapper);
       this._DOM.insertAtEnd(part, ...partEntries);
@@ -2514,7 +2514,7 @@ export default class Pages {
     // node.before(lastPart);
     // this._DOM.insertAtEnd(
     //   lastPart,
-    //   // this._DOM.createSignpost('(table continued)', this._signpostHeight),
+    //   // this._node.createSignpost('(table continued)', this._signpostHeight),
     //   node
     // );
 

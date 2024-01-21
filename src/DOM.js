@@ -333,24 +333,7 @@ export default class DocumentObjectModel {
 
   // PAGES
 
-  fitElementWithinBoundaries({ element, height, width, vspace, hspace }) {
 
-    const hRatio = vspace / height;
-    const wRatio = hspace / width;
-
-    const ratio = hRatio < wRatio ? hRatio : wRatio;
-
-    const newHeight = Math.trunc(height * ratio);
-    const newWidth = Math.trunc(width * ratio);
-
-    element.style.height = newHeight + 'px';
-    element.style.width = newWidth + 'px';
-    // In SVG width and height of <rect> elements are attributes and not CSS properties
-    element.setAttribute("height", `${newHeight}px`);
-    element.setAttribute("width", `${newWidth}px`);
-    // todo
-    // element.style.margin = '0 auto';
-  }
 
   getElementBCR(element) {
     return element.getBoundingClientRect();
