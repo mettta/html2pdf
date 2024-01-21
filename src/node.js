@@ -181,7 +181,7 @@ export default class Node {
 
     // while the candidates are within the current page
     // (below the element from which the last registered page starts):
-    while (this._DOM.getElementRootedTop(prev, root) > topFloater) {
+    while (this.getTop(prev, root) > topFloater) {
       // if it can't be left
       if (this.isNoHanging(prev)) {
         // and it's the Start of the page
@@ -836,6 +836,130 @@ export default class Node {
     });
     nodes.at(0).classList.remove(this._selector.topCutPart.substring(1));
     nodes.at(-1).classList.remove(this._selector.bottomCutPart.substring(1));
+  }
+
+
+
+
+  getTop( element, root = null, topAcc = 0 ) {
+
+    if (!element) {
+      this._debugMode && console.warn(
+        'element must be provided, but was received:', element,
+        '\nThe function returned:', undefined
+      );
+      return
+    }
+
+    // the offset case
+    if (root === null) {
+      return this._DOM.getElementOffsetTop(element)
+    }
+
+    if (!root) {
+      this._debugMode && console.warn(
+        'root must be provided, but was received:', root,
+        '\nThe function returned:', undefined
+      );
+      return
+    }
+
+    // For now, expect this to be done when the function is called:
+
+    // * A positioned ancestor is either:
+    // * - an element with a non-static position, or
+    // * - td, th, table in case the element itself is static positioned.
+    // * So we need to set non-static position for root
+    // * for the calculation runtime.
+
+    // *** 1
+    // const _rootComputedStyle = rootComputedStyle
+    // ? rootComputedStyle
+    // : this._DOM.getComputedStyle(root);
+
+    // *** 2
+    // *** need to make the getTop work with root = node
+    // const initPosition = _rootComputedStyle.position;
+    // if (initPosition != 'relative') {
+    //   root.style.position = 'relative';
+    // }
+
+    // *** 3
+    // *** need to revert back to the original positioning of the node
+    // root.style.position = initPosition;
+
+    const offsetParent = this._DOM.getElementOffsetParent(element);
+
+    // TODO element == document.body
+    if (!offsetParent) {
+      this._debugMode && this._debugToggler._DOM && console.warn(
+        'Element has no offset parent.',
+        '\n element:', [element],
+        '\n offsetParent:', offsetParent,
+        '\n The function returned:', undefined
+      );
+      return
+    }
+
+    const currTop = this._DOM.getElementOffsetTop(element);
+
+    if (offsetParent === root) {
+      return (currTop + topAcc);
+    } else {
+      return this.getTop(offsetParent, root, topAcc + currTop);
+    }
+
+  }
+
+  getBottom(element, root = null) {
+    if (!element) {
+      this._debugMode && console.warn(
+        'element must be provided, but was received:', element,
+        '\nThe function returned:', undefined
+      );
+      return
+    }
+
+    // the offset case
+    if (root === null) {
+      return this._DOM.getElementOffsetBottom(element)
+    }
+
+    if (!root) {
+      this._debugMode && console.warn(
+        'root must be provided, but was received:', root,
+        '\nThe function returned:', undefined
+      );
+      return
+    }
+
+    return this.getTop(element, root) + this._DOM.getElementOffsetHeight(element);
+  }
+
+  getBottomWithMargin(element, root) {
+    // TODO : performance
+    // * Because of the possible bottom margin
+    // * of the parent element or nested last children,
+    // * the exact check will be through the creation of the test element.
+    // ? However, the performance compared to getBottom() decreases:
+    // ? 0.001 to 0.3 ms per such operation.
+    // const test = this.create();
+    const test = this.create(); // TODO
+    // *** The bottom margin pushes the DIV below the margin,
+    // *** so no dummy padding is needed.
+    element && this._DOM.insertAfter(element, test);
+    const top = element ? this.getTop(test, root) : undefined;
+    this._DOM.removeNode(test);
+    return top;
+
+    // const bottomMargin = this._DOM.getComputedStyle(element).marginBottom;
+    // return this.getBottom(element, root) + bottomMargin;
+  }
+
+  getTopWithMargin(element, root) {
+    // TODO : performance
+    const topMargin = parseInt(this._DOM.getComputedStyle(element).marginTop);
+    return this.getTop(element, root) - topMargin;
   }
 
 }

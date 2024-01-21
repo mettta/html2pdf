@@ -65,7 +65,7 @@ tocPageNumberSelector:
       // * That's how we get the {-1 : 1} object,
       // * which means page 1 has a negative top.
       // * We ignore it, as described above.
-      const pageTop = this._DOM.getElementRootedTop(marker, this._root) - 1;
+      const pageTop = this._node.getTop(marker, this._root) - 1;
 
       const pageNum = this._DOM.getAttribute(marker, '[page]');
       acc[pageTop] = pageNum;
@@ -76,7 +76,7 @@ tocPageNumberSelector:
     const dataFromTOC = tocPageNumberBoxes.reduce((acc, box) => {
       const id = this._DOM.getDataId(box);
       const target = this._DOM.getElementById(id);
-      const targetTop = this._DOM.getElementRootedTop(target, this._root);
+      const targetTop = this._node.getTop(target, this._root);
       acc[targetTop] = {
         box: box,
         id: id,

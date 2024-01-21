@@ -210,7 +210,7 @@ export default class Pages {
 
     // IF contentFlow is less than one page,
 
-    if (this._DOM.getElementRootedRealBottom(this._contentFlow, this._root) < this._referenceHeight) {
+    if (this._node.getBottomWithMargin(this._contentFlow, this._root) < this._referenceHeight) {
       // In the case of a single page,
       // the markup was inserted BEFORE the contentFlow.
       // Because our script is lazy and won't go through the children
@@ -261,13 +261,13 @@ export default class Pages {
       const previousCandidate = this._node.findPreviousNoHangingsFromPage(
         pageStart,
         // * limited to the element from which the last registered page starts:
-        this._DOM.getElementRootedTop(this.pages.at(-1)?.pageStart, this._root),
+        this._node.getTop(this.pages.at(-1)?.pageStart, this._root),
         this._root
       );
       pageStart = previousCandidate || pageStart;
     }
 
-    const pageBottom = this._DOM.getElementRootedRealTop(pageStart, this._root) + this._referenceHeight;
+    const pageBottom = this._node.getTopWithMargin(pageStart, this._root) + this._referenceHeight;
     this.pages.push({
       pageStart: pageStart,
       pageBottom: pageBottom,
@@ -381,7 +381,7 @@ export default class Pages {
       currentElement);
 
     const newPageBottom = this.pages.at(-1).pageBottom;
-    const nextElementTop = this._DOM.getElementRootedTop(nextElement, this._root);
+    const nextElementTop = this._node.getTop(nextElement, this._root);
     this._debugMode && this._debugToggler._parseNode && console.log(...consoleMark,
       '• newPageBottom', newPageBottom,
       '\n',
@@ -450,7 +450,7 @@ export default class Pages {
           ? this._node.createSignpost(currentElement)
           : currentElement;
 
-        const availableSpace = newPageBottom - this._DOM.getElementRootedTop(currentImage, this._root);
+        const availableSpace = newPageBottom - this._node.getTop(currentImage, this._root);
         const currentImageHeight = this._DOM.getElementOffsetHeight(currentImage);
         const currentImageWidth = this._DOM.getElementOffsetWidth(currentImage);
 
@@ -515,7 +515,7 @@ export default class Pages {
         // * If a node has its height set with styles, we handle it as a non-breaking object,
         // * and can just scale it if it doesn't fit on the page.
 
-        const currentElementTop = this._DOM.getElementRootedTop(currentElement, this._root);
+        const currentElementTop = this._node.getTop(currentElement, this._root);
         const availableSpace = newPageBottom - currentElementTop;
         const currentElementContextualHeight = nextElementTop - currentElementTop;
 
@@ -568,7 +568,7 @@ export default class Pages {
       // * Check the possibility of (1) or (2): split or not?
 
 
-      const currentElementBottom = parentBottom || this._DOM.getElementRootedRealBottom(currentElement, this._root);
+      const currentElementBottom = parentBottom || this._node.getBottomWithMargin(currentElement, this._root);
 
       this._debugMode && this._debugToggler._parseNode && console.log(
         'split or not? \n',
@@ -1132,7 +1132,7 @@ export default class Pages {
     this._debugMode && this._debugToggler._splitPreNode && console.log(...consoleMark, 'node', node);
 
     // Prepare node parameters
-    const nodeTop = this._DOM.getElementRootedTop(node, this._root);
+    const nodeTop = this._node.getTop(node, this._root);
     const nodeHeight = this._DOM.getElementOffsetHeight(node);
     const nodeLineHeight = this._node.getLineHeight(node);
     const preWrapperHeight = this._node.getEmptyNodeHeight(node, false);
@@ -1214,7 +1214,7 @@ export default class Pages {
       let splitters = [];
       let floater = firstPartSpace;
 
-      // *** need to make the getElementRootedTop work with root = node
+      // *** need to make the getTop work with root = node
       const initPosition = _nodeComputedStyle.position;
       if (initPosition != 'relative') {
         node.style.position = 'relative';
@@ -1222,7 +1222,7 @@ export default class Pages {
 
       for (let index = 0; index < linesFromNode.length; index++) {
         const current = linesFromNode[index];
-        const currentBottom = this._DOM.getElementRootedBottom(current, node);
+        const currentBottom = this._node.getBottom(current, node);
 
         // TODO move to DOM
         if (currentBottom > floater) {
@@ -1233,7 +1233,7 @@ export default class Pages {
           // * move the floater down:
           // ** if this is the very first element,
           // ** we just assume that the first part can take up the whole page.
-          floater = index ? this._DOM.getElementRootedTop(current, node) + fullPageSpace : fullPageSpace;
+          floater = index ? this._node.getTop(current, node) + fullPageSpace : fullPageSpace;
         } // end for
       }
 
@@ -1350,7 +1350,7 @@ export default class Pages {
 
     const sortOfLines = this._getChildren(node);
 
-    const nodeTop = this._DOM.getElementRootedTop(node, this._root);
+    const nodeTop = this._node.getTop(node, this._root);
     const nodeWrapperHeight = this._node.getEmptyNodeHeight(node);
 
     // ** Prepare parameters for splitters calculation
@@ -1367,7 +1367,7 @@ export default class Pages {
     let splitters = [];
     let floater = firstPartSpace;
 
-    // *** need to make the getElementRootedTop work with root = node
+    // *** need to make the getTop work with root = node
     const initPosition = _nodeComputedStyle.position;
     if (initPosition != 'relative') {
       node.style.position = 'relative';
@@ -1375,7 +1375,7 @@ export default class Pages {
 
     for (let index = 0; index < distributedRows.length; index++) {
       const current = distributedRows[index];
-      const currentBottom = this._DOM.getElementRootedBottom(current, node);
+      const currentBottom = this._node.getBottom(current, node);
 
       // TODO move to DOM
       if (currentBottom > floater) {
@@ -1386,7 +1386,7 @@ export default class Pages {
         // * move the floater down:
         // ** if this is the very first element,
         // ** we just assume that the first part can take up the whole page.
-        floater = index ? this._DOM.getElementRootedTop(current, node) + fullPageSpace : fullPageSpace;
+        floater = index ? this._node.getTop(current, node) + fullPageSpace : fullPageSpace;
       } // end for
     }
 
@@ -1473,7 +1473,7 @@ export default class Pages {
     }
 
     // Prepare node parameters
-    const tableTop = this._DOM.getElementRootedTop(table, this._root);
+    const tableTop = this._node.getTop(table, this._root);
     const tableHeight = this._DOM.getElementOffsetHeight(table);
     const tableCaptionHeight = this._DOM.getElementOffsetHeight(tableEntries.caption) || 0;
     const tableTheadHeight = this._DOM.getElementOffsetHeight(tableEntries.thead) || 0;
@@ -1537,7 +1537,7 @@ export default class Pages {
     for (let index = 0; index < distributedRows.length; index++) {
       const currentRow = distributedRows[index];
 
-      const currTop = this._DOM.getElementRootedTop(currentRow, table) + captionFirefoxAmendment;
+      const currTop = this._node.getTop(currentRow, table) + captionFirefoxAmendment;
 
       if (currTop > currentPageBottom) {
         // * If the beginning of the line is on the second page
@@ -1558,7 +1558,7 @@ export default class Pages {
           const splittingRowHeight = this._DOM.getElementOffsetHeight(splittingRow);
           const splittingMinRowHeight = this._node.getTableRowHeight(splittingRow, this._minBreakableRows);
           const splittingEmptyRowHeight = this._node.getTableRowHeight(splittingRow);
-          const splittingRowTop = this._DOM.getElementRootedTop(splittingRow, table) + captionFirefoxAmendment;
+          const splittingRowTop = this._node.getTop(splittingRow, table) + captionFirefoxAmendment;
 
           const isNoBreak = this._node.isNoBreak(splittingRow);
           const makesSenseToSplitTheRow = (splittingRowHeight >= splittingMinRowHeight) && (!isNoBreak);
@@ -1717,7 +1717,7 @@ export default class Pages {
             }
 
             currentPageBottom =
-            this._DOM.getElementRootedTop(
+            this._node.getTop(
               distributedRows[index - 1], table
             ) + captionFirefoxAmendment
             + fullPagePartHeight;
@@ -1934,7 +1934,7 @@ export default class Pages {
     stack = [],
   }) {
 
-    // * Need to make the getElementRootedTop work with root = rootNode.
+    // * Need to make the getTop work with root = rootNode.
     // * A positioned ancestor is either:
     // * - an element with a non-static position, or
     // * - td, th, table in case the element itself is static positioned.
@@ -2073,11 +2073,11 @@ export default class Pages {
       const previousElement = children[i - 1];
       const currentElement = children[i];
       const nextElement = children[i + 1];
-      const nextElementTop = nextElement ? this._DOM.getElementRootedTop(nextElement, rootNode): undefined;
+      const nextElementTop = nextElement ? this._node.getTop(nextElement, rootNode): undefined;
 
       // nextElement && console.log(
       //   'ddddd',
-      //   this._DOM.getElementRootedTop(nextElement, rootNode),
+      //   this._node.getTop(nextElement, rootNode),
       //   nextElement,
       //   rootNode
       // )
@@ -2102,7 +2102,7 @@ export default class Pages {
       : (
           (result.at(-1) === null) // * case with empty first slice
           ? fullPageHeight
-          : fullPageHeight + this._DOM.getElementRootedTop(result.at(-1), rootNode)
+          : fullPageHeight + this._node.getTop(result.at(-1), rootNode)
         );
 
       if (this._node.isForcedPageBreak(currentElement)) {
@@ -2151,7 +2151,7 @@ export default class Pages {
             && console.log('%cIMAGE 💟💟', 'color:red;text-weight:bold')
         }
 
-        const currentElementBottom = this._DOM.getElementRootedRealBottom(currentElement, rootNode);
+        const currentElementBottom = this._node.getBottomWithMargin(currentElement, rootNode);
 
         this._debugMode
           && this._debugToggler._getInternalSplitters
@@ -2390,7 +2390,7 @@ export default class Pages {
       nodeHeight
     ];
       // ,
-      // this._DOM.getElementRootedTop(nodeEntries.tfoot, node) || nodeHeight
+      // this._node.getTop(nodeEntries.tfoot, node) || nodeHeight
 
 
     this._debugMode && this._debugToggler._splitGridNode && console.log(
@@ -2402,7 +2402,7 @@ export default class Pages {
     // TODO: same as the table
 
     // ** Prepare node parameters
-    const nodeTop = this._DOM.getElementRootedTop(node, this._root);
+    const nodeTop = this._node.getTop(node, this._root);
     const nodeWrapperHeight = this._node.getEmptyNodeHeight(node);
     const firstPartHeight = pageBottom
       - nodeTop
@@ -2532,7 +2532,7 @@ export default class Pages {
   _splitTextNode(node, pageBottom, fullPageHeight) {
 
     // Prepare node parameters
-    const nodeTop = this._DOM.getElementRootedTop(node, this._root);
+    const nodeTop = this._node.getTop(node, this._root);
     const nodeHeight = this._DOM.getElementOffsetHeight(node);
     const nodeLineHeight = this._node.getLineHeight(node);
 

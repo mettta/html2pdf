@@ -298,7 +298,7 @@ export default class Preview {
     // Determine what inaccuracy there is visually in the break simulation position,
     // focusing on the difference between the position of the paired elements
     // in Paper Flow and Content Flow, and compensate for it.
-    const balancer = this._DOM.getElementRootedTop(paperSeparator, this._root) - this._DOM.getElementRootedTop(contentSeparator, this._root);
+    const balancer = this._node.getTop(paperSeparator, this._root) - this._node.getTop(contentSeparator, this._root);
 
     this._DOM.setStyles(balancingFooter, { marginBottom: balancer + 'px' });
 
