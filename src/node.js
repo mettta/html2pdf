@@ -253,7 +253,7 @@ export default class Node {
 
   //   // TODO isSignificantChild
   //   // If my nodeName is #text, my height is always undefined
-  //   return (tag !== 'A' && tag !== 'TT' && this._DOM.getElementHeight(child) > 0);
+  //   return (tag !== 'A' && tag !== 'TT' && this._DOM.getElementOffsetHeight(child) > 0);
   // }
 
   // **********
@@ -702,7 +702,7 @@ export default class Node {
   copyNodeWidth(clone, node) {
     // TODO check the fix:
     // * (-1): Browser rounding fix (when converting mm to pixels).
-    clone.style.width = `${this._DOM.getElementWidth(node) - 1}px`;
+    clone.style.width = `${this._DOM.getElementOffsetWidth(node) - 1}px`;
   }
 
   // TODO make Obj with offsetTop and use it later
@@ -765,8 +765,8 @@ export default class Node {
 
   isLineChanged(current, next) {
     // * (-1): Browser rounding fix (when converting mm to pixels).
-    const delta = this._DOM.getElementRelativeTop(next)
-                - this._DOM.getElementRelativeBottom(current);
+    const delta = this._DOM.getElementOffsetTop(next)
+                - this._DOM.getElementOffsetBottom(current);
     const vert = delta > (-2);
     // const gor = this.getElementLeft(current) + this.getElementWidth(current) > this.getElementLeft(next);
     return vert;
@@ -774,8 +774,8 @@ export default class Node {
   // TODO: isLineChanged vs isLineKept: можно сделать else? они противоположны
   isLineKept(current, next) {
     // * (-1): Browser rounding fix (when converting mm to pixels).
-    const delta = this._DOM.getElementRelativeTop(next)
-                - this._DOM.getElementRelativeBottom(current);
+    const delta = this._DOM.getElementOffsetTop(next)
+                - this._DOM.getElementOffsetBottom(current);
     const vert = delta <= (-2);
     return vert;
   }

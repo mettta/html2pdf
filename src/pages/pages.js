@@ -451,8 +451,8 @@ export default class Pages {
           : currentElement;
 
         const availableSpace = newPageBottom - this._DOM.getElementRootedTop(currentImage, this._root);
-        const currentImageHeight = this._DOM.getElementHeight(currentImage);
-        const currentImageWidth = this._DOM.getElementWidth(currentImage);
+        const currentImageHeight = this._DOM.getElementOffsetHeight(currentImage);
+        const currentImageWidth = this._DOM.getElementOffsetWidth(currentImage);
 
         // TODO !!! page width overflow for SVG
         if (currentImageHeight < this._referenceWidth) {
@@ -600,10 +600,10 @@ export default class Pages {
 
       // see if this node is worth paying attention to, based on its height
       // TODO: need to rearrange the order of the condition checks
-      if (this._DOM.getElementHeight(currentElement) + 2 < this._minimumBreakableHeight) {
+      if (this._DOM.getElementOffsetHeight(currentElement) + 2 < this._minimumBreakableHeight) {
         this._debugMode && this._debugToggler._parseNode && console.log(
-          'this._DOM.getElementHeight(currentElement) + 2 < this._minimumBreakableHeight',
-          this._DOM.getElementHeight(currentElement),
+          'this._DOM.getElementOffsetHeight(currentElement) + 2 < this._minimumBreakableHeight',
+          this._DOM.getElementOffsetHeight(currentElement),
         );
 
         // todo #fewLines
@@ -613,7 +613,7 @@ export default class Pages {
         // ! we will get a smaller number than the actual 4 lines, at least by a 2 pixel.
         // todo #mm-px convert mm to px before all calculations and rendering
         // console.log('??????????????????????????? \n getElementHeight(currentElement) <= this._minimumBreakableHeight',
-        // this._DOM.getElementHeight(currentElement),
+        // this._DOM.getElementOffsetHeight(currentElement),
         //  '<',
         //  this._minimumBreakableHeight,
         //   currentElement)
@@ -897,9 +897,9 @@ export default class Pages {
     const complexChildren = nodeChildren.map(
       element => {
         const lineHeight = this._node.getLineHeight(element);
-        const height = this._DOM.getElementHeight(element);
-        const left = this._DOM.getElementLeft(element);
-        const top = this._DOM.getElementTop(element);
+        const height = this._DOM.getElementOffsetHeight(element);
+        const left = this._DOM.getElementOffsetLeft(element);
+        const top = this._DOM.getElementOffsetTop(element);
         const lines = ~~(height / lineHeight);
         const text = element.innerHTML;
 
@@ -1104,7 +1104,7 @@ export default class Pages {
         if (!nextElement) {
           return false
         };
-        const isTrue = this._DOM.getElementRelativeBottom(currentElement) > this._DOM.getElementRelativeTop(nextElement);
+        const isTrue = this._DOM.getElementOffsetBottom(currentElement) > this._DOM.getElementOffsetTop(nextElement);
         return isTrue;
       }
     )
@@ -1133,7 +1133,7 @@ export default class Pages {
 
     // Prepare node parameters
     const nodeTop = this._DOM.getElementRootedTop(node, this._root);
-    const nodeHeight = this._DOM.getElementHeight(node);
+    const nodeHeight = this._DOM.getElementOffsetHeight(node);
     const nodeLineHeight = this._node.getLineHeight(node);
     const preWrapperHeight = this._node.getEmptyNodeHeight(node, false);
 
@@ -1474,10 +1474,10 @@ export default class Pages {
 
     // Prepare node parameters
     const tableTop = this._DOM.getElementRootedTop(table, this._root);
-    const tableHeight = this._DOM.getElementHeight(table);
-    const tableCaptionHeight = this._DOM.getElementHeight(tableEntries.caption) || 0;
-    const tableTheadHeight = this._DOM.getElementHeight(tableEntries.thead) || 0;
-    const tableTfootHeight = this._DOM.getElementHeight(tableEntries.tfoot) || 0;
+    const tableHeight = this._DOM.getElementOffsetHeight(table);
+    const tableCaptionHeight = this._DOM.getElementOffsetHeight(tableEntries.caption) || 0;
+    const tableTheadHeight = this._DOM.getElementOffsetHeight(tableEntries.thead) || 0;
+    const tableTfootHeight = this._DOM.getElementOffsetHeight(tableEntries.tfoot) || 0;
     // *** Convert NULL/Undefined to 0
     // *** The logical nullish assignment (??=) operator
     const captionFirefoxAmendment = (tableCaptionHeight ?? 0) * (this._isFirefox ?? 0);
@@ -1555,7 +1555,7 @@ export default class Pages {
           // * Trying to split table row [index - 1]
           const splittingRowIndex = index - 1;
           const splittingRow = tableEntries.rows[splittingRowIndex];
-          const splittingRowHeight = this._DOM.getElementHeight(splittingRow);
+          const splittingRowHeight = this._DOM.getElementOffsetHeight(splittingRow);
           const splittingMinRowHeight = this._node.getTableRowHeight(splittingRow, this._minBreakableRows);
           const splittingEmptyRowHeight = this._node.getTableRowHeight(splittingRow);
           const splittingRowTop = this._DOM.getElementRootedTop(splittingRow, table) + captionFirefoxAmendment;
@@ -2307,7 +2307,7 @@ export default class Pages {
           element: currentElement,
           start: currentColumnStart,
           end: currentColumnEnd,
-          top: this._DOM.getElementTop(currentElement)
+          top: this._DOM.getElementOffsetTop(currentElement)
         };
 
         this._debugMode && this._debugToggler._splitGridNode && console.log(
@@ -2367,7 +2367,7 @@ export default class Pages {
     );
 
     const nodeRows = childrenGroups.length;
-    const nodeHeight = this._DOM.getElementHeight(node);
+    const nodeHeight = this._DOM.getElementOffsetHeight(node);
 
     // ** If there are enough rows for the split to be readable,
     // ** and the node is not too big (because of the content),
@@ -2533,7 +2533,7 @@ export default class Pages {
 
     // Prepare node parameters
     const nodeTop = this._DOM.getElementRootedTop(node, this._root);
-    const nodeHeight = this._DOM.getElementHeight(node);
+    const nodeHeight = this._DOM.getElementOffsetHeight(node);
     const nodeLineHeight = this._node.getLineHeight(node);
 
     // Prepare parameters for splitters calculation

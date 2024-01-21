@@ -246,24 +246,25 @@ export default class DocumentObjectModel {
     return element.getBoundingClientRect();
   }
 
-  getElementTop(element) {
-    return element?.offsetTop;
-  }
-
-  getElementLeft(element) {
+  getElementOffsetLeft(element) {
     return element?.offsetLeft;
   }
 
-  getElementHeight(element) {
+  getElementOffsetHeight(element) {
     return element?.offsetHeight;
   }
 
-  getElementWidth(element) {
+  getElementOffsetWidth(element) {
     return element?.offsetWidth;
   }
 
-  getElementRelativeTop(element) {
+  getElementOffsetTop(element) {
     return element?.offsetTop;
+  }
+
+  getElementOffsetBottom(element) {
+    // BUG ?
+    return element?.offsetTop + element?.offsetHeight || undefined;
   }
 
   getElementRootedTop(element, root, topAcc = 0) {
@@ -330,13 +331,8 @@ export default class DocumentObjectModel {
     }
   }
 
-  getElementRelativeBottom(element) {
-    // BUG ?
-    return element?.offsetTop + element?.offsetHeight || undefined;
-  }
-
   getElementRootedBottom(element, root) {
-    return this.getElementRootedTop(element, root) + this.getElementHeight(element);
+    return this.getElementRootedTop(element, root) + this.getElementOffsetHeight(element);
   }
 
   getElementRootedRealBottom(element, root) {
@@ -367,19 +363,5 @@ export default class DocumentObjectModel {
     const topMargin = parseInt(this.getComputedStyle(element).marginTop);
     return this.getElementRootedTop(element, root) - topMargin;
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

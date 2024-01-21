@@ -195,15 +195,15 @@ export default class Paper {
 
     // get heights for an blank page
     const paperHeight = this._DOM.getElementBCR(testPaper).height;
-    const headerHeight = this._DOM.getElementHeight(headerElement) || 0;
-    const footerHeight = this._DOM.getElementHeight(footerElement) || 0;
-    const bodyHeight = this._DOM.getElementHeight(bodyElement);
-    const bodyWidth = this._DOM.getElementWidth(bodyElement);
+    const headerHeight = this._DOM.getElementOffsetHeight(headerElement) || 0;
+    const footerHeight = this._DOM.getElementOffsetHeight(footerElement) || 0;
+    const bodyHeight = this._DOM.getElementOffsetHeight(bodyElement);
+    const bodyWidth = this._DOM.getElementOffsetWidth(bodyElement);
 
     // add frontpage text
     this._DOM.insertAtStart(bodyElement, frontpageElement);
     // get height for the frontpage content
-    const filledBodyHeight = this._DOM.getElementHeight(bodyElement);
+    const filledBodyHeight = this._DOM.getElementOffsetHeight(bodyElement);
 
     const frontpageFactor = (filledBodyHeight > bodyHeight)
       ? bodyHeight / filledBodyHeight

@@ -62,16 +62,16 @@ export default class Preview {
     // In fact, it most likely contains a fractional part, and inaccuracy is accumulated.
     // Therefore, let's calculate the average value on the whole set of pages.
     const papers = [...this._paperFlow.querySelectorAll(this._virtualPaper)];
-    const maskHeight = this._DOM.getElementTop(papers.at(-1)) / (papers.length - 1);
+    const maskHeight = this._DOM.getElementOffsetTop(papers.at(-1)) / (papers.length - 1);
 
     // The height of the topMargin is converted from millimeters to pixels.
     // The 'height' of the HTML element will be an integer, which is inaccurate.
     // But we use this shift only 1 time, so the error is insignificant.
-    const topMargin = this._DOM.getElementHeight(
+    const topMargin = this._DOM.getElementOffsetHeight(
       this._paperFlow.querySelector(this._virtualPaperTopMargin)
     );
 
-    const bodyHeight = this._DOM.getElementHeight(
+    const bodyHeight = this._DOM.getElementOffsetHeight(
       this._paperFlow.querySelector(this._paperBody)
     );
 
