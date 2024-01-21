@@ -676,4 +676,79 @@ export default class Node {
     clone.style.width = `${this._DOM.getElementWidth(node) - 1}px`;
   }
 
+  // TODO make Obj with offsetTop and use it later
+  prepareSplittedNode(node) {
+    const splittedNode = node;
+    const nodeWords = this.splitByWordsGreedy(node);
+
+    const nodeWordItems = nodeWords.map((item) => {
+      const span = this._DOM.createElement('span');
+      span.innerHTML = item + ' ';
+      return span;
+    })
+
+    const testNode = this.createTestNodeFrom(node);
+    testNode.append(...nodeWordItems)
+    node.append(testNode);
+
+    return {
+      splittedNode,
+      nodeWords,
+      nodeWordItems,
+    }
+  }
+
+  findDeepestChild(element) { // ? not in use
+    let currentElement = element;
+    while (currentElement.firstElementChild) {
+        currentElement = currentElement.firstElementChild;
+    }
+    return currentElement;
+  }
+
+  splitByLinesGreedy(string) {
+    const arr = string.split(/(?<=\n)/); // JOINER = '';
+    return arr
+  }
+
+  splitByWordsGreedy(node) { // ? in prepareSplittedNode
+    // SEE Pages: const WORD_JOINER
+    const arr = node.innerHTML.split(/(?<=\s|-)/); // WORD_JOINER = '';
+    // const arr = node.innerHTML.split(/\s+/); // WORD_JOINER = ' ';
+    // console.log('🔴', arr)
+    return arr
+  }
+
+  splitByWordsGreedyWithSpacesFilter(node) {
+    // SEE Pages: const WORD_JOINER
+    // ** 1 ** add trim() for trailing spaces
+    const arr = node.innerHTML.trim().split(/(?<=\s|-)/); // WORD_JOINER = '';
+    // ** 2 ** filter arr and remove unnecessary spaces (' ') inside text block.
+    // ** A meaningful space character has been added to an array element.
+    const filteredArr = arr.filter(item => item != ' ');
+    // console.log('🔴 filtered word Arr', filteredArr)
+    return filteredArr
+  }
+
+
+
+
+
+  isLineChanged(current, next) {
+    // * (-1): Browser rounding fix (when converting mm to pixels).
+   const delta = this._DOM.getElementRelativeTop(next)
+               - this._DOM.getElementRelativeBottom(current);
+   const vert = delta > (-2);
+   // const gor = this.getElementLeft(current) + this.getElementWidth(current) > this.getElementLeft(next);
+   return vert;
+ }
+ // TODO: isLineChanged vs isLineKept: можно сделать else? они противоположны
+ isLineKept(current, next) {
+   // * (-1): Browser rounding fix (when converting mm to pixels).
+   const delta = this._DOM.getElementRelativeTop(next)
+               - this._DOM.getElementRelativeBottom(current);
+   const vert = delta <= (-2);
+   return vert;
+ }
+
 }

@@ -943,7 +943,7 @@ export default class Pages {
         }
 
         // * If this is the beginning, or if a new line:
-        if(!result.length || this._DOM.isLineChanged(result.at(-1).at(-1), currentElement)) {
+        if(!result.length || this._node.isLineChanged(result.at(-1).at(-1), currentElement)) {
           result.push([currentElement]);
           return result;
         }
@@ -951,7 +951,7 @@ export default class Pages {
         // TODO: isLineChanged vs isLineKept: можно сделать else? они противоположны
         if(
           result.at(-1).length === 0 // the last element was BR
-          || (result.length && this._DOM.isLineKept(result.at(-1).at(-1), currentElement))
+          || (result.length && this._node.isLineKept(result.at(-1).at(-1), currentElement))
         ) {
           result.at(-1).push(currentElement);
           return result;
@@ -1040,7 +1040,7 @@ export default class Pages {
 
     // Split the splittedItem into spans.
     // * array with words:
-    const itemWords = this._DOM.splitByWordsGreedyWithSpacesFilter(splittedItem);
+    const itemWords = this._node.splitByWordsGreedyWithSpacesFilter(splittedItem);
     // * array with words wrapped with the inline tag 'html2pdf-word':
     const itemWrappedWords = itemWords.map((item, index) => {
       const span = this._node.create('html2pdf-word');
@@ -1176,7 +1176,7 @@ export default class Pages {
 
       // * split the text node into lines by \n,
       // * leaving the character \n at the end of the resulting string:
-      const stringsFromNodeText = this._DOM.splitByLinesGreedy(currentNodeText);
+      const stringsFromNodeText = this._node.splitByLinesGreedy(currentNodeText);
 
       if (stringsFromNodeText.length < this._minPreBreakableLines) {
         return []
@@ -1860,7 +1860,7 @@ export default class Pages {
         slices.push(nextWrapper);
         this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('• hasSplitFlag: slices.push(nextWrapper):', [...slices]);
         // find container in new object
-        // currentTargetInSlice = this._DOM.findDeepestChild(nextWrapper);
+        // currentTargetInSlice = this._node.findDeepestChild(nextWrapper);
         currentTargetInSlice = wrappers.at(-1);
         this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('• hasSplitFlag: currentTargetInSlice:', currentTargetInSlice);
       }
@@ -2567,7 +2567,7 @@ export default class Pages {
       splittedNode,
       nodeWords,
       nodeWordItems,
-    } = this._DOM.prepareSplittedNode(node);
+    } = this._node.prepareSplittedNode(node);
 
     // CALCULATE exact split IDs
     const exactSplitters = approximateSplitters.map(
