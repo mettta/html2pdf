@@ -771,4 +771,11 @@ export default class Node {
     // element.style.margin = '0 auto';
   }
 
+
+
+  replaceNodeContentsWith(element, ...payload) {
+    this._DOM.setInnerHTML(element, '');
+    this._DOM.insertAtEnd(element, ...payload)
+  }
+
 }

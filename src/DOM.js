@@ -16,13 +16,9 @@ export default class DocumentObjectModel {
     }
   }
 
-
-
   createDocumentFragment() {
     return this._DOM.createDocumentFragment()
   }
-
-  // -
 
   getElement(selector, target = this._DOM) {
     return target.querySelector(selector);
@@ -31,17 +27,6 @@ export default class DocumentObjectModel {
   getAllElements(selector, target = this._DOM) {
     return target.querySelectorAll(selector);
   }
-
-
-
-
-
-
-
-
-
-
-
 
   getElementById(id, target = this._DOM) {
     return target.getElementById(id);
@@ -59,10 +44,7 @@ export default class DocumentObjectModel {
     return node?.cloneNode(false);
   }
 
-  replaceNodeContentsWith(element, ...payload) {
-    this.setInnerHTML(element, '');
-    element.append(...payload);
-  }
+
 
   insertBefore(element, ...payload) {
     element.before(...payload)
