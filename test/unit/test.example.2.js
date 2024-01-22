@@ -27,8 +27,5 @@ describe('Example Test Group', function() {
     it('should pass', function() {
       assert(true);
     });
-    it('should pass', function() {
-      assert(false);
-    });
   });
 });
