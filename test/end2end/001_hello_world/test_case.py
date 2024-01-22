@@ -9,7 +9,8 @@ index_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "index.html")
 )
 
-class Test_T001_HelloWorld(BaseCase):
+
+class Test(BaseCase):
     def test_001(self):
         helper = Helper(self)
         helper.do_open_and_assert(index_html_file_url, "Hello world!")
