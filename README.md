@@ -64,7 +64,7 @@ To run the web server:
 npm run test_server
 ```
 
-Open server at [http://127.0.0.1:8080](http://127.0.0.1:8080).
+Open server at http://192.168.0.10:8080/test/unit/test.html.
 
 ## HTML2PDF API
 
