@@ -714,7 +714,7 @@ export default class Pages {
         '💚 ComplexTextBlock', node);
       return children = this._splitComplexTextBlockIntoLines(node) || [];
 
-    } else if (this._node.isTextNode(node)) {
+    } else if (this._node.isWrappedTextNode(node)) {
       this._debugMode && this._debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TextNode', node);
       // TODO: Compare performance of _splitComplexTextBlockIntoLines and _splitTextNode!
@@ -1165,7 +1165,7 @@ export default class Pages {
         // FIXME other cases i.e. node and we need recursion
         return []
       }
-      if (this._node.isTextNode(_children[0])) {
+      if (this._node.isWrappedTextNode(_children[0])) {
         // if (textNode.nodeType === 3) // 3 - тип TextNode
         this._debugMode && this._debugToggler._splitPreNode && console.warn(`is TEXT Node: ${_children[0]}`);
         // FIXME other cases i.e. node and we need recursion
@@ -1860,7 +1860,7 @@ export default class Pages {
         slices.push(nextWrapper);
         this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('• hasSplitFlag: slices.push(nextWrapper):', [...slices]);
         // find container in new object
-        // currentTargetInSlice = this._node.findDeepestChild(nextWrapper);
+
         currentTargetInSlice = wrappers.at(-1);
         this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('• hasSplitFlag: currentTargetInSlice:', currentTargetInSlice);
       }

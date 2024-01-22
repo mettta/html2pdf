@@ -268,8 +268,16 @@ export default class DocumentObjectModel {
     return element.nodeType === Node.ELEMENT_NODE;
   }
 
-  isElementHasClass(element, cl) {
+  hasClass(element, cl) {
     return element.classList.contains(cl);
+  }
+
+  hasID(element, id) {
+    return element.id === id;
+  }
+
+  hasAttribute(element, attr) {
+    return element.hasAttribute(attr);
   }
 
 }
