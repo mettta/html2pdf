@@ -65,6 +65,11 @@ def format_readme(context):
 
 
 @task
+def server(context):
+    run_invoke(context, "npm run test_server")
+
+
+@task
 def test_unit(context):
     run_invoke(context, "npm run test")
 
