@@ -17,6 +17,7 @@ export default class Pages {
     config,
     DOM,
     node,
+    splitter,
     selector,
     layout,
     referenceWidth,
@@ -42,6 +43,7 @@ export default class Pages {
     // * Private
     this._selector = selector; // todo one occurrence
     this._node = node;
+    this._splitter = splitter;
 
     // TODO remove from fields:
     // no hanging params:
@@ -102,6 +104,7 @@ export default class Pages {
 
   calculate() {
     this._node.init();
+    this._splitter.init();
 
     this._prepareForcedPageBreakElements();
     this._prepareNoBreakElements();

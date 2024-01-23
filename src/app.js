@@ -9,6 +9,7 @@ import Paper from './paper';
 import Preview from './preview';
 import Toc from './toc';
 import Validator from './validator';
+import NodeSplitter from './nodeSplitter';
 
 export default class HTML2PDF4DOC {
   constructor(params) {
@@ -26,6 +27,12 @@ export default class HTML2PDF4DOC {
     const DOM = new DocumentObjectModel({DOM: window.document, debugMode: this.config.debugMode});
 
     const node = new Node({
+      config: this.config,
+      DOM: DOM,
+      selector: this.selector,
+    });
+
+    const splitter = new NodeSplitter({
       config: this.config,
       DOM: DOM,
       selector: this.selector,
@@ -57,6 +64,7 @@ export default class HTML2PDF4DOC {
       DOM: DOM,
       selector: this.selector,
       node: node,
+      splitter: splitter,
       layout: layout,
       referenceHeight: paper.bodyHeight,
       referenceWidth: paper.bodyWidth,
