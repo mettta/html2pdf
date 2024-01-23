@@ -655,7 +655,7 @@ export default class Pages {
       if (childrenNumber) {
         // * In a fully split node, children replace it,
         // * so we don't take into account the last child bottom margins (parentBottom).
-        const isFullySPlittedParent = this._isFullySPlitted(currentElement);
+        const isFullySPlittedParent = this._node.isFullySPlitted(currentElement);
         // * Process children if exist:
         this._parseNodes({
           array: children,
@@ -690,15 +690,7 @@ export default class Pages {
     this._debugMode && this._debugToggler._parseNode && console.groupEnd();
   }
 
-  _isFullySPlitted(node) {
-    const _style = this._DOM.getComputedStyle(node);
-    return (
-      this._node.isPRE(node, _style) ||
-      this._node.isTableNode(node, _style) ||
-      this._node.isTableLikeNode(node, _style) ||
-      this._node.isGridAutoFlowRow(_style) // todo
-    );
-  }
+
 
   _getProcessedChildren(node, firstPageBottom, fullPageHeight) {
     const consoleMark = ['%c_getProcessedChildren\n', 'color:white',];

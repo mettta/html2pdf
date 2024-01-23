@@ -281,6 +281,18 @@ export default class Node {
     return res1 && res2;
   }
 
+  // ?
+
+  isFullySPlitted(node) {
+    const _style = this._DOM.getComputedStyle(node);
+    return (
+      this.isPRE(node, _style) ||
+      this.isTableNode(node, _style) ||
+      this.isTableLikeNode(node, _style) ||
+      this.isGridAutoFlowRow(_style) // todo
+    );
+  }
+
   // *
 
   isFirstChildOfFirstChild(element, rootElement) {
