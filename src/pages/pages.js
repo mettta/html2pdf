@@ -191,7 +191,6 @@ export default class Pages {
   }
 
   _calculate() {
-    this._debugMode && console.log('%c ▼▼▼ Pages ▼▼▼ ', CONSOLE_CSS_LABEL_PAGES);
 
     this._debugMode && console.groupCollapsed('•• init data ••');
     this._debugMode && console.log(

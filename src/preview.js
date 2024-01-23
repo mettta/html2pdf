@@ -1,9 +1,5 @@
 import addCSSMask from './mask.js';
 
-const CONSOLE_CSS_LABEL_PREVIEW = 'border:1px solid #ee00ee;'
-                                + 'background:#EEEEEE;'
-                                + 'color:#ee00ee;'
-
 export default class Preview {
 
   // TODO SHOW STATS (with close option)
@@ -48,12 +44,9 @@ export default class Preview {
   }
 
   create() {
-    this._debugMode && console.groupCollapsed('%c Preview ', CONSOLE_CSS_LABEL_PREVIEW);
     this._processFirstPage();
     this._processOtherPages();
     (this._config.mask === true || this._config.mask === 'true') && this._addMask();
-    this._debugMode && console.groupEnd('%c Preview ', CONSOLE_CSS_LABEL_PREVIEW);
-
   }
 
   _addMask() {

@@ -11,6 +11,8 @@ import Toc from './toc';
 import Validator from './validator';
 import NodeSplitter from './nodeSplitter';
 
+const CONSOLE_CSS_LABEL = `color:Gray;border:1px solid;`
+
 export default class HTML2PDF4DOC {
   constructor(params) {
     this.params = params;
@@ -22,7 +24,9 @@ export default class HTML2PDF4DOC {
 
     console.time("HTML2PDF4DOC time");
 
+    console.groupCollapsed('%c config ', CONSOLE_CSS_LABEL + 'color:LightGray');
     this.config = config(this.params);
+    console.groupEnd();
 
     const DOM = new DocumentObjectModel({DOM: window.document, debugMode: this.config.debugMode});
 
@@ -38,18 +42,20 @@ export default class HTML2PDF4DOC {
       selector: this.selector,
     });
 
+    this.config.debugMode && console.groupCollapsed('%c Layout ', CONSOLE_CSS_LABEL);
     const layout = new Layout({
       config: this.config,
       DOM: DOM,
       selector: this.selector,
       node: node,
     });
-
     layout.create();
+    this.config.debugMode && console.groupEnd();
+
     if (!layout.success) {
       console.error( 'Failed to create layout.\n\nWe have to interrupt the process of creating PDF preview. ');
       return
-    }
+    };
 
     const paper = new Paper({
       config: this.config,
@@ -59,6 +65,7 @@ export default class HTML2PDF4DOC {
       layout: layout,
     });
 
+    this.config.debugMode && console.groupCollapsed('%c Pages ', CONSOLE_CSS_LABEL);
     const pages = new Pages({
       config: this.config,
       DOM: DOM,
@@ -69,7 +76,9 @@ export default class HTML2PDF4DOC {
       referenceHeight: paper.bodyHeight,
       referenceWidth: paper.bodyWidth,
     }).calculate();
+    this.config.debugMode && console.groupEnd();
 
+    this.config.debugMode && console.groupCollapsed('%c Preview ', CONSOLE_CSS_LABEL);
     new Preview({
       config: this.config,
       DOM: DOM,
@@ -79,6 +88,7 @@ export default class HTML2PDF4DOC {
       paper: paper,
       pages: pages,
     }).create();
+    this.config.debugMode && console.groupEnd();
 
     new Toc({
       config: this.config,

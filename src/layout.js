@@ -1,9 +1,5 @@
 import Style from './style';
 
-const CONSOLE_CSS_LABEL_LAYOUT = 'border:1px solid #8888CC;'
-                               + 'background:#EEEEEE;'
-                               + 'color:#8888CC;'
-
 export default class Layout {
 
   constructor({
@@ -38,7 +34,6 @@ export default class Layout {
   }
 
   create() {
-    this._debugMode && console.group('%c Layout ', CONSOLE_CSS_LABEL_LAYOUT);
 
     this._getTemplates();
 
@@ -66,7 +61,6 @@ export default class Layout {
       return
     }
 
-    this._debugMode && console.groupEnd();
   }
 
   _getTemplates() {
@@ -112,11 +106,7 @@ export default class Layout {
       console.error('Failed to initialize the root element.');
       return
     }
-    this._debugMode && console.log(
-      '%c initial root ',
-      CONSOLE_CSS_LABEL_LAYOUT,
-      this._initialRoot
-    );
+    this._debugMode && console.log('initial root:',this._initialRoot);
 
     // * Create new layout elements.
     const root = this._createRoot();
