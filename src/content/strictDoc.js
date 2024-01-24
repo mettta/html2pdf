@@ -5,9 +5,9 @@ const text = `
 
 <main class="layout_main">
 
-  <div class="content" id="printTHIS">
+  <div class="content" html2pdf>
 
-    <template id="printTHISheader">
+    <template html2pdf-header>
 
       <header class="pdf-header">
 
@@ -31,7 +31,7 @@ const text = `
 
     </template>
 
-    <template id="printTHISfrontpage">
+    <template html2pdf-frontpage>
 
       <div class="frontpage">
         <div class="frontpage__top">
@@ -92,7 +92,7 @@ const text = `
 
     </template>
 
-    <template id="printTHISfooter">
+    <template html2pdf-footer>
 
       <footer class="pdf-footer">
         <div class="pdf-footer__copywrite">© 2021 StrictDoc GmbH</div>

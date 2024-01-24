@@ -95,7 +95,7 @@ a printable page.
 HTML2PDF activates when the window.onload event happens. Users can choose
 specific content for printing, and if nothing is selected, the whole page will
 be prepared for printing. To mark a particular HTML block as printable, add the
-id="printTHIS" attribute to its tag.
+html2pdf attribute to its tag.
 
 ### Two layers
 
@@ -109,9 +109,9 @@ When HTML2PDF processes an HTML page, it creates two layers:
 
 The algorithm does the following:
 
-- If only a specific HTML block/tag is selected for printing with `printTHIS`,
+- If only a specific HTML block/tag is selected for printing with `[html2pdf]`,
   it marks all other HTML tags as "don't print".
-- It takes the inner content of the tag marked with `printTHIS` out of the DOM.
+- It takes the inner content of the tag marked with `[html2pdf]` out of the DOM.
   Let's call this content **printable content**.
 - It processes the printable content and brings the updated content back to the
   DOM, in the form of the Content flow layer.
