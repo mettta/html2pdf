@@ -579,6 +579,7 @@ export default class Node {
   createTable({
     wrapper,
     caption,
+    colgroup,
     thead,
     tfoot,
     tbody,
@@ -586,6 +587,7 @@ export default class Node {
     const table = wrapper ? wrapper : this.create('table');
     const tableBody = this.create('TBODY');
     caption && table.append(caption);
+    colgroup && table.append(colgroup);
     thead && table.append(thead);
     tbody && tableBody.append(...tbody);
     table.append(tableBody);
