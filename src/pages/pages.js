@@ -116,7 +116,7 @@ export default class Pages {
   }
 
   _prepareNoHangingElements() {
-    if (this._noHangingSelectors) {
+    if (this._noHangingSelectors.length) {
       const elements = this._node.getAll(this._noHangingSelectors, this._contentFlow);
       elements.forEach(element => {
         this._node.setFlagNoHanging(element);
@@ -129,17 +129,17 @@ export default class Pages {
   }
 
   _prepareNoBreakElements() {
-    if (this._noBreakSelectors) {
+    if (this._noBreakSelectors.length) {
       const elements = this._node.getAll(this._noBreakSelectors, this._contentFlow);
       elements.forEach(element => this._node.setFlagNoBreak(element));
     }
   }
 
   _prepareForcedPageBreakElements() {
-    const pageStarters = this._pageBreakBeforeSelectors
+    const pageStarters = this._pageBreakBeforeSelectors.length
                        ? this._node.getAll(this._pageBreakBeforeSelectors, this._contentFlow)
                        : [];
-    const pageEnders = this._pageBreakAfterSelectors
+    const pageEnders = this._pageBreakAfterSelectors.length
                      ? this._node.getAll(this._pageBreakAfterSelectors, this._contentFlow)
                      : [];
     // there's at least one element:

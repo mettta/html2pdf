@@ -26,7 +26,7 @@ export default class Node {
       selectors = selectors.split(',').filter(Boolean);
     }
     console.assert(Array.isArray(selectors), 'Selectors must be provided as an array or string (one selector or multiple selectors, separated by commas). Now the selectors are:', selectors);
-    console.assert(selectors.length > 0);
+    console.assert(selectors.length > 0, 'getAll(selectors), selectors:', selectors);
 
     if (selectors.length === 1) {
       return [...this._DOM.getAllElements(selectors[0], target)]
