@@ -3,9 +3,9 @@ const text = `
 
 Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea anim occaecat reprehenderit culpa labore ipsum. Ipsum anim reprehenderit velit nisi excepteur incididunt. Tempor occaecat incididunt tempor dolor officia nostrud anim irure officia reprehenderit cupidatat in occaecat. Laborum eiusmod excepteur velit ex veniam et consequat anim minim ea ex ipsum aliquip. Fugiat non irure et tempor reprehenderit ullamco excepteur sit. Nisi quis commodo aliqua dolor ex consequat consectetur Lorem ipsum deserunt quis esse minim.
 
-  <div id="printTHIS" style="background:red">
+  <div html2pdf style="background:red">
 
-  <template id="printTHISheader">
+  <template html2pdf-header>
     <div data-page-number-root>
       <span data-page-number-current></span>
       of
@@ -14,7 +14,7 @@ Mollit consectetur occaecat sint ut sit velit duis cupidatat ex proident. Ea ani
     <p>header</p>
   </template>
 
-  <template id="printTHISfooter">
+  <template html2pdf-footer>
     <p>footer</p>
   </template>
 

@@ -17,9 +17,9 @@ svg {
 </style>
 
 <h3>Test for printing</h3>
-  <div id="printTHIS">
+  <div html2pdf>
 
-  <template id="printTHISheader">
+  <template html2pdf-header>
     <div data-page-number-root>
       <span data-page-number-current></span>
       of
@@ -28,7 +28,7 @@ svg {
     <p>header</p>
   </template>
 
-  <template id="printTHISfooter">
+  <template html2pdf-footer>
     <p>footer</p>
   </template>
 

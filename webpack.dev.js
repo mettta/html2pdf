@@ -33,6 +33,15 @@ module.exports = merge(common, {
       filename: 'tags.html',
       template: './examples/test/tags.html',
     }),
+
+    new HtmlWebpackPlugin({
+      appMountId: 'app',
+      filename: 'all.html',
+      template: './examples/test/all.html',
+      title: '🧲 all',
+      inject: false,
+    }),
+
     new HtmlWebpackPlugin({
       appMountId: 'app',
       filename: 'current.html',
