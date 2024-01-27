@@ -29,17 +29,17 @@ export default class Pages {
     // * From config:
     this._debugMode = config.debugMode;
     this._debugToggler = {
-      _parseNode: false,
-      _parseNodes: false,
-      _registerPageStart: false,
-      _getProcessedChildren: false,
-      _splitPreNode: false,
-      _splitTableNode: false,
-      _splitTableRow: false,
-      _splitGridNode: false,
-      _createSlicesBySplitFlag: false,
-      _getInternalSplitters: false,
-      _splitComplexTextBlockIntoLines: false,
+      _parseNode: true,
+      _parseNodes: true,
+      _registerPageStart: true,
+      _getProcessedChildren: true,
+      _splitPreNode: true,
+      _splitTableNode: true,
+      _splitTableRow: true,
+      _splitGridNode: true,
+      _createSlicesBySplitFlag: true,
+      _getInternalSplitters: true,
+      _splitComplexTextBlockIntoLines: true,
     }
 
     // * Private
