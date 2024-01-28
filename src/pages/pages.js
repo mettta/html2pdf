@@ -1,5 +1,6 @@
 import calculateSplitters from './calculateSplitters';
 import findSplitId from './findSplitId';
+import arrayFromString from './arrayFromString';
 // import splitArrayBySplitFlag from './splitArrayBySplitFlag';
 
 const CONSOLE_CSS_COLOR_PAGES = '#66CC00';
@@ -49,13 +50,13 @@ export default class Pages {
 
     // TODO remove from fields:
     // no hanging params:
-    this._noHangingSelectors = this._arrayFromString(config.noHangingSelectors);
+    this._noHangingSelectors = arrayFromString(config.noHangingSelectors);
     // forced Page Break params:
-    this._pageBreakBeforeSelectors = this._arrayFromString(config.pageBreakBeforeSelectors);
-    this._pageBreakAfterSelectors = this._arrayFromString(config.pageBreakAfterSelectors);
-    this._forcedPageBreakSelectors = this._arrayFromString(config.forcedPageBreakSelectors);
+    this._pageBreakBeforeSelectors = arrayFromString(config.pageBreakBeforeSelectors);
+    this._pageBreakAfterSelectors = arrayFromString(config.pageBreakAfterSelectors);
+    this._forcedPageBreakSelectors = arrayFromString(config.forcedPageBreakSelectors);
     // do not break params:
-    this._noBreakSelectors = this._arrayFromString(config.noBreakSelectors);
+    this._noBreakSelectors = arrayFromString(config.noBreakSelectors);
 
     // ***:
     this._DOM = DOM;
@@ -2647,11 +2648,6 @@ export default class Pages {
 
       return childrenArr;
     }
-  }
-
-  _arrayFromString(string) {
-    // * The settings may pass an empty string, prevent errors here.
-    return string?.length ? string?.split(/\s+/).filter(Boolean) : [];
   }
 
 }
