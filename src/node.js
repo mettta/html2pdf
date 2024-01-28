@@ -418,6 +418,22 @@ export default class Node {
     return lastSuitableParent;
   }
 
+  isVerticalFlowDisrupted(arrayOfElements) {
+    return arrayOfElements.some(
+
+      (current, currentIndex, array) => {
+        const currentElement = current;
+        const nextElement = array[currentIndex + 1];
+
+        if (!nextElement) {
+          return false
+        };
+        const isTrue = this._DOM.getElementOffsetBottom(currentElement) > this._DOM.getElementOffsetTop(nextElement);
+        return isTrue;
+      }
+    )
+  }
+
   // GET SERVICE ELEMENTS
 
   findAllForcedPageBreakInside(element) {
