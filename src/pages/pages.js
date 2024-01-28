@@ -703,6 +703,66 @@ export default class Pages {
   }
 
 
+  // CHILDREN
+
+  _getChildren(element) {
+    // Check children:
+    // TODO variants
+    // TODO last child
+    // TODO first Li
+
+    // fon display:none / contents
+    // this._DOM.getElementOffsetParent(currentElement)
+
+    // TODO: to do this check more elegant
+    // SEE the context here:
+    // _splitComplexTextBlockIntoLines(node)
+    // ...
+    // const nodeChildren = this._getChildren(node);
+    // * _processInlineChildren (makes ComplexTextBlock) is running extra on complex nodes
+    if (this._node.isComplexTextBlock(element)) {
+      return [...this._DOM.getChildren(element)]
+
+    } else {
+
+      let childrenArr = [...this._DOM.getChildNodes(element)]
+        .reduce(
+          (acc, item) => {
+
+            // * filter STYLE, use element.tagName
+            if (this._node.isSTYLE(item)) {
+              return acc;
+            }
+
+            // * wrap text node, use element.nodeType
+            if (this._node.isSignificantTextNode(item)) {
+              acc.push(this._node.wrapTextNode(item));
+              return acc;
+            }
+
+            // * no offset parent (contains)
+            if (!this._DOM.getElementOffsetParent(item)) {
+              const ch = this._getChildren(item);
+              ch.length > 0 && acc.push(...ch);
+              return acc;
+            }
+
+            // * normal
+            if (this._DOM.isElementNode(item)) {
+              acc.push(item);
+              return acc;
+            };
+
+          }, [])
+
+          if (this._isVerticalFlowDisrupted(childrenArr)) {
+            // * If the vertical flow is disturbed and the elements are side by side:
+            childrenArr = this._processInlineChildren(childrenArr);
+          }
+
+      return childrenArr;
+    }
+  }
 
   _getProcessedChildren(node, firstPageBottom, fullPageHeight) {
     const consoleMark = ['%c_getProcessedChildren\n', 'color:white',];
@@ -2586,65 +2646,6 @@ export default class Pages {
     // последняя единственная строка - как проверять?
     // смотреть, если эта НОДА - единственный или последний потомок своего родителя
 
-  }
-
-  _getChildren(element) {
-    // Check children:
-    // TODO variants
-    // TODO last child
-    // TODO first Li
-
-    // fon display:none / contents
-    // this._DOM.getElementOffsetParent(currentElement)
-
-    // TODO: to do this check more elegant
-    // SEE the context here:
-    // _splitComplexTextBlockIntoLines(node)
-    // ...
-    // const nodeChildren = this._getChildren(node);
-    // * _processInlineChildren (makes ComplexTextBlock) is running extra on complex nodes
-    if (this._node.isComplexTextBlock(element)) {
-      return [...this._DOM.getChildren(element)]
-
-    } else {
-
-      let childrenArr = [...this._DOM.getChildNodes(element)]
-        .reduce(
-          (acc, item) => {
-
-            // * filter STYLE, use element.tagName
-            if (this._node.isSTYLE(item)) {
-              return acc;
-            }
-
-            // * wrap text node, use element.nodeType
-            if (this._node.isSignificantTextNode(item)) {
-              acc.push(this._node.wrapTextNode(item));
-              return acc;
-            }
-
-            // * no offset parent (contains)
-            if (!this._DOM.getElementOffsetParent(item)) {
-              const ch = this._getChildren(item);
-              ch.length > 0 && acc.push(...ch);
-              return acc;
-            }
-
-            // * normal
-            if (this._DOM.isElementNode(item)) {
-              acc.push(item);
-              return acc;
-            };
-
-          }, [])
-
-          if (this._isVerticalFlowDisrupted(childrenArr)) {
-            // * If the vertical flow is disturbed and the elements are side by side:
-            childrenArr = this._processInlineChildren(childrenArr);
-          }
-
-      return childrenArr;
-    }
   }
 
 }
