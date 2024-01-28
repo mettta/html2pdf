@@ -9,7 +9,6 @@ import Paper from './paper';
 import Preview from './preview';
 import Toc from './toc';
 import Validator from './validator';
-import NodeSplitter from './nodeSplitter';
 
 const CONSOLE_CSS_LABEL = `color:Gray;border:1px solid;`
 
@@ -31,12 +30,6 @@ export default class HTML2PDF4DOC {
     const DOM = new DocumentObjectModel({DOM: window.document, debugMode: this.config.debugMode});
 
     const node = new Node({
-      config: this.config,
-      DOM: DOM,
-      selector: this.selector,
-    });
-
-    const splitter = new NodeSplitter({
       config: this.config,
       DOM: DOM,
       selector: this.selector,
@@ -65,13 +58,12 @@ export default class HTML2PDF4DOC {
       layout: layout,
     });
 
-    this.config.debugMode && console.groupCollapsed('%c Pages ', CONSOLE_CSS_LABEL);
+    this.config.debugMode && console.group('%c Pages ', CONSOLE_CSS_LABEL); // Collapsed
     const pages = new Pages({
       config: this.config,
       DOM: DOM,
       selector: this.selector,
       node: node,
-      splitter: splitter,
       layout: layout,
       referenceHeight: paper.bodyHeight,
       referenceWidth: paper.bodyWidth,
