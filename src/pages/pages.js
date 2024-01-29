@@ -52,6 +52,8 @@ export default class Pages {
     this._forcedPageBreakSelectors = arrayFromString(config.forcedPageBreakSelectors);
     // do not break params:
     this._noBreakSelectors = arrayFromString(config.noBreakSelectors);
+    // to be deleted from the DOM params:
+    this._garbageSelectors = arrayFromString(config.garbageSelectors);
 
     // ***:
     this._DOM = DOM;
@@ -104,6 +106,7 @@ export default class Pages {
   calculate() {
     this._node.init();
 
+    this._removeGarbageElements();
     this._prepareForcedPageBreakElements();
     this._prepareNoBreakElements();
     this._prepareNoHangingElements();
@@ -111,6 +114,15 @@ export default class Pages {
     this._debugMode && console.log('%c ✔ Pages.calculate()', CONSOLE_CSS_LABEL_PAGES, this.pages);
 
     return this.pages;
+  }
+
+  _removeGarbageElements() {
+    if (this._garbageSelectors.length) {
+      const elements = this._node.getAll(this._garbageSelectors, this._contentFlow);
+      elements.forEach(element => {
+        this._DOM.removeNode(element)
+      });
+    }
   }
 
   _prepareNoHangingElements() {
