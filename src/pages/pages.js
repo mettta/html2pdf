@@ -26,14 +26,14 @@ export default class Pages {
     // * From config:
     this._debugMode = config.debugMode;
     this._debugToggler = {
-      _parseNode: true,
-      _parseNodes: true,
-      _registerPageStart: true,
-      _getProcessedChildren: true,
-      _splitPreNode: true,
+      _parseNode: false,
+      _parseNodes: false,
+      _registerPageStart: false,
+      _getProcessedChildren: false,
+      _splitPreNode: false,
       _splitTableNode: true,
       _splitTableRow: true,
-      _splitGridNode: true,
+      _splitGridNode: false,
       _createSlicesBySplitFlag: true,
       _getInternalSplitters: true,
       _splitComplexTextBlockIntoLines: true,
@@ -69,8 +69,9 @@ export default class Pages {
     this._minDanglingLines = 2;
     this._minBreakableLines = this._minLeftLines + this._minDanglingLines;
     // Table:
-    this._minLeftRows = 2;
-    this._minDanglingRows = 2;
+    // # can be a single row with long content
+    this._minLeftRows = 0;
+    this._minDanglingRows = 0;
     this._minBreakableRows = this._minLeftRows + this._minDanglingRows;
     // Code:
     this._minPreFirstBlockLines = 3;
@@ -1489,12 +1490,11 @@ export default class Pages {
     // * Split simple tables, without regard to col-span and the like.
     // TODO test more complex tables
 
-    this._node.lockTableWidths(table);
-
     const consoleMark = ['%c_splitTableNode\n', 'color:white',];
-    this._debugMode && this._debugToggler._splitTableNode && console.time('_splitTableNode')
+    this._debugMode && this._debugToggler._splitTableNode && console.time('_splitTableNode');
     this._debugMode && this._debugToggler._splitTableNode && console.group('%c_splitTableNode', 'background:cyan');
-    this._debugMode && this._debugToggler._splitTableNode && console.log(...consoleMark, 'table', table);
+
+    this._node.lockTableWidths(table);
 
     // calculate table wrapper (empty table element) height
     // to calculate the available space for table content
@@ -1504,13 +1504,17 @@ export default class Pages {
     const tableEntries = this._node.getTableEntries(table);
     this._debugMode && this._debugToggler._splitTableNode && console.log(
       ...consoleMark,
-      'tableEntries', tableEntries
+      table,
+      '\ntableEntries', tableEntries
     );
 
-    if (tableEntries.rows.length < this._minBreakableRows) {
-      this._debugMode && this._debugToggler._splitTableNode && console.groupEnd();
-      return []
-    }
+    // TODO # can be a single row with long content ?
+    // ! this._minBreakableRows === 0
+    // if (tableEntries.rows.length < this._minBreakableRows) {
+    //   this._debugMode && this._debugToggler._splitTableNode && console.log('%c END NOT _splitTableNode (tableEntries.rows.length < this._minBreakableRows)', CONSOLE_CSS_END_LABEL);
+    //   this._debugMode && this._debugToggler._splitTableNode && console.groupEnd();
+    //   return []
+    // }
 
     // Prepare node parameters
     const tableTop = this._node.getTop(table, this._root);
@@ -1534,31 +1538,19 @@ export default class Pages {
 
     this._debugMode && this._debugToggler._splitTableNode && console.log(
       ...consoleMark,
-      'pageBottom', pageBottom,
+      '\n   pageBottom', pageBottom,
+      '\n - tableTop', tableTop,
+      '\n - tableWrapperHeight', tableWrapperHeight,
+      '\n - this._signpostHeight', this._signpostHeight,
+      '\n = firstPartHeight', firstPartHeight,
       '\n',
-      '- tableTop', tableTop,
-      '\n',
-      '- tableWrapperHeight', tableWrapperHeight,
-      '\n',
-      '- this._signpostHeight', this._signpostHeight,
-      '\n',
-      '= firstPartHeight', firstPartHeight,
-    );
-    this._debugMode && this._debugToggler._splitTableNode && console.log(
-      ...consoleMark,
-      'fullPageHeight', fullPageHeight,
-      '\n',
-      '- tableCaptionHeight', tableCaptionHeight,
-      '\n',
-      '- tableTheadHeight', tableTheadHeight,
-      '\n',
-      '- tableTfootHeight', tableTfootHeight,
-      '\n',
-      '- 2 * this._signpostHeight', (2 * this._signpostHeight),
-      '\n',
-      '- tableWrapperHeight', tableWrapperHeight,
-      '\n',
-      '= fullPagePartHeight', fullPagePartHeight,
+      '\n   fullPageHeight', fullPageHeight,
+      '\n - tableCaptionHeight', tableCaptionHeight,
+      '\n - tableTheadHeight', tableTheadHeight,
+      '\n - tableTfootHeight', tableTfootHeight,
+      '\n - 2 * this._signpostHeight', (2 * this._signpostHeight),
+      '\n - tableWrapperHeight', tableWrapperHeight,
+      '\n = fullPagePartHeight', fullPagePartHeight,
     );
 
     // * Rows that we distribute across the partitioned table
@@ -1577,9 +1569,9 @@ export default class Pages {
     for (let index = 0; index < distributedRows.length; index++) {
       const currentRow = distributedRows[index];
 
-      const currTop = this._node.getTop(currentRow, table) + captionFirefoxAmendment;
+      const currRowTop = this._node.getTop(currentRow, table) + captionFirefoxAmendment;
 
-      if (currTop > currentPageBottom) {
+      if (currRowTop > currentPageBottom) {
         // * If the beginning of the line is on the second page
 
         if (index === 0) {
@@ -1766,7 +1758,7 @@ export default class Pages {
         // check if next fits
 
       } else {
-        // currTop <= currentPageBottom
+        // currRowTop <= currentPageBottom
         // pass
       }
     }; //? END OF for: distributedRows
