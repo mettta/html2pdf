@@ -945,7 +945,7 @@ export default class Pages {
         const left = this._DOM.getElementOffsetLeft(element);
         const top = this._DOM.getElementOffsetTop(element);
         const lines = ~~(height / lineHeight);
-        const text = element.innerHTML;
+        const text = this._DOM.getInnerHTML(element);
 
         return {
           element,
@@ -1086,12 +1086,14 @@ export default class Pages {
     const itemWrappedWords = itemWords.map((item, index) => {
       const span = this._node.create('html2pdf-word');
       span.dataset.index = index;
-      span.innerHTML = item + WORD_JOINER;
+      // span.innerHTML = item + WORD_JOINER;
+      this._DOM.setInnerHTML(span, item + WORD_JOINER)
       return span;
     });
 
     // Replacing the contents of the splittedItem with a span sequence:
-    splittedItem.innerHTML = '';
+    // splittedItem.innerHTML = '';
+    this._DOM.setInnerHTML(splittedItem, '');
     this._DOM.insertAtEnd(splittedItem, ...itemWrappedWords);
 
     // Split the splittedItem into lines.
@@ -1112,9 +1114,11 @@ export default class Pages {
     const newLines = beginnerNumbers.reduce(
       (result, currentElement, currentIndex) => {
         const line = this._DOM.cloneNodeWrapper(splittedItem);
-        this._node.setFlagNoBreak(line); // TODO ? 
-        line.setAttribute('role', 'line-simplest');
-        line.classList.add('cloned🅱️');
+        this._node.setFlagNoBreak(line); // TODO ?
+
+        this._DOM.setAttribute(line, '[role]', 'line-simplest');
+        this._DOM.setAttribute(line, '.cloned🅱️');
+
         const start = beginnerNumbers[currentIndex];
         const end = beginnerNumbers[currentIndex + 1];
         // need to add safety spaces at both ends of the line:
@@ -1247,7 +1251,7 @@ export default class Pages {
       // *** need to make the getTop work with root = node
       const initPosition = _nodeComputedStyle.position;
       if (initPosition != 'relative') {
-        node.style.position = 'relative';
+        this._DOM.setStyles(node, { position: 'relative' });
       }
 
       for (let index = 0; index < linesFromNode.length; index++) {
@@ -1268,7 +1272,7 @@ export default class Pages {
       }
 
       // *** need to revert back to the original positioning of the node
-      node.style.position = initPosition;
+      this._DOM.setStyles(node, { position: initPosition });
 
       if(!splitters.length) {
         // ** if there is no partitioning, we return an empty array
@@ -1319,9 +1323,9 @@ export default class Pages {
       // * we may need it as a parent in this._parseNode().
       this._node.replaceNodeContentsWith(node, ...newPreElementsArray);
       // * We "open" the slough node, but leave it.
-      node.style.display = 'contents';
-      node.setAttribute('slough-node', '')
-      node.classList = '';
+      this._DOM.setStyles(node, { display: 'contents' });
+      this._DOM.setAttribute(node, '[slough-node]', '');
+      this._DOM.removeAllClasses(node);
 
       this._debugMode && this._debugToggler._splitPreNode && console.log('%c END _splitPreNode', CONSOLE_CSS_END_LABEL);
       this._debugMode && this._debugToggler._splitPreNode && console.groupEnd();
@@ -1406,7 +1410,7 @@ export default class Pages {
     // *** need to make the getTop work with root = node
     const initPosition = _nodeComputedStyle.position;
     if (initPosition != 'relative') {
-      node.style.position = 'relative';
+      this._DOM.setStyles(node, { position: 'relative' });
     }
 
     for (let index = 0; index < distributedRows.length; index++) {
@@ -1427,7 +1431,7 @@ export default class Pages {
     }
 
     // *** need to revert back to the original positioning of the node
-    node.style.position = initPosition;
+    this._DOM.setStyles(node, { position: initPosition });
 
     if(!splitters.length) {
       // ** if there is no partitioning, we return an empty array
@@ -1472,8 +1476,8 @@ export default class Pages {
     this._DOM.removeAllClasses(node);
     // this._DOM.removeAllAttributes(node);
     this._DOM.removeAllStyles(node);
-    node.style.display = 'contents';
-    this._DOM.setAttribute(node, 'slough-node', '')
+    this._DOM.setStyles(node, { display:'contents' });
+    this._DOM.setAttribute(node, '[slough-node]', '')
 
     return newPreElementsArray;
 
@@ -1683,7 +1687,7 @@ export default class Pages {
                   // один раз полностью копируем весь контент из столбца
                   const sliceWrapper = this._node.createWithFlagNoBreak();
                   sliceWrapper.classList.add("🟣");
-                  sliceWrapper.display = 'contents';
+                  this._DOM.setStyles(sliceWrapper, { display: 'contents' });
 
                   const contentElements = el.trail.map(item => item.element);
                   this._DOM.insertAtEnd(sliceWrapper, ...contentElements);
@@ -1825,8 +1829,8 @@ export default class Pages {
     this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.group(`_createSlicesBySplitFlag`);
 
     const sliceWrapper = this._node.createWithFlagNoBreak();
+    this._DOM.setStyles(sliceWrapper, { display: 'contents' });
     sliceWrapper.classList.add("🧰");
-    sliceWrapper.display = 'contents';
 
     // *** иниццируем для первого элемента оболочку sliceWrapper
     const slices = [sliceWrapper];
@@ -1928,7 +1932,8 @@ export default class Pages {
           this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: currentTargetInSlice', 'FALSE, init the first', cloneCurrentElementWrapper);
           // init the first
           cloneCurrentElementWrapper.classList.add('🏁first');
-          cloneCurrentElementWrapper.style.background = 'yellow';
+
+          this._DOM.setStyles(cloneCurrentElementWrapper, { background: 'yellow' });
           slices.push(cloneCurrentElementWrapper);
           this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: slices.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...slices]);
         }
@@ -1990,7 +1995,7 @@ export default class Pages {
     : this._DOM.getComputedStyle(rootNode);
     const initPosition = _rootComputedStyle.position;
     if (initPosition != 'relative') {
-      rootNode.style.position = 'relative';
+      this._DOM.setStyles(rootNode, { position: 'relative' });
     }
 
     this._debugMode && this._debugToggler._getInternalSplitters && console.groupCollapsed('💟 _getInternalSplitters'); // Collapsed
@@ -2267,7 +2272,7 @@ export default class Pages {
     updateIndexTracker();
 
     // *** need to revert back to the original positioning of the rootNode:
-    rootNode.style.position = initPosition;
+    this._DOM.setStyles(rootNode, { position: initPosition });
 
     this._debugMode && this._debugToggler._getInternalSplitters && console.log('%c END _getInternalSplitters', CONSOLE_CSS_END_LABEL);
     this._debugMode && this._debugToggler._getInternalSplitters && console.groupEnd();
