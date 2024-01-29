@@ -112,3 +112,4 @@ class Helper:
         return element.size['height']
 
         # /*[@data-content-flow-end]
+        # /html2pdf-content-flow-end

@@ -210,22 +210,16 @@ export default class Pages {
     );
     this._debugMode && console.groupEnd('•• init data ••');
 
+    // * add a safeguard elements to the start and end of content flow,
+    const {contentFlowStart, contentFlowEnd} = this._node.addContentFlowStartAndEnd(this._contentFlow);
+    // register a FIRST page
+    this._registerPageStart(contentFlowStart);
+
     // IF contentFlow is less than one page,
 
     if (this._node.getBottomWithMargin(this._contentFlow, this._root) < this._referenceHeight) {
       // In the case of a single page,
-      // the markup was inserted BEFORE the contentFlow.
-      // Because our script is lazy and won't go through the children
-      // if it's not necessary.
-      // So we insert the contentFlowStart element and register it
-      // as the start of the page.
-      // In doing so, we still don't examine the contentFlow children.
-
-      // register a FIRST page
-      // todo: make a DOM function
-      const contentFlowStart = this._node.create('[data-content-flow-start]');
-      this._DOM.insertAtStart(this._contentFlow, contentFlowStart);
-      this._registerPageStart(contentFlowStart);
+      // we don't examine the contentFlow children.
 
       // Check for forced page breaks, and if they are, we register these pages.
       // If not - we'll have a single page.
@@ -242,10 +236,6 @@ export default class Pages {
     this._debugMode && console.groupCollapsed('%c🚸 children(contentFlow)', CONSOLE_CSS_LABEL_PAGES);
     this._debugMode && console.log(content);
     this._debugMode && console.groupEnd('%c🚸 children(contentFlow)', CONSOLE_CSS_LABEL_PAGES);
-
-    // TODO put this into main calculations?
-    // FIRST ELEMENT: register the beginning of the first page.
-    this._registerPageStart(content[0]);
 
     this._parseNodes({
       // don't register the parent here,
@@ -363,7 +353,7 @@ export default class Pages {
 
     // THE END of content flow:
     // if there is no next element, then we are in a case
-    // where the [data-content-flow-end] element is current.
+    // where the 'html2pdf-content-flow-end' element is current.
     if (!nextElement) {
       this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (!nextElement)', CONSOLE_CSS_END_LABEL);
       this._debugMode && this._debugToggler._parseNode && console.groupEnd()

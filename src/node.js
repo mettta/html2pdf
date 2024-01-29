@@ -197,6 +197,10 @@ export default class Node {
     return this.isSelectorMatching(element, this._selector.pageStartMarker)
   }
 
+  isContentFlowEnd(element) {
+    return this.isSelectorMatching(element, this._selector.contentFlowEnd)
+  }
+
   isComplexTextBlock(element) {
     return this.isSelectorMatching(element, this._selector.complexTextBlock)
   }
@@ -328,7 +332,7 @@ export default class Node {
       // *** if we're at the root, we move to the right
       if (currentElement.parentElement === rootElement) {
 
-        // ! in layout we inserted an element '[data-content-flow-end]'
+        // ! in Pages we inserted an element 'html2pdf-content-flow-end'
         // ! at the end of the content flow.
         // ! Therefore, in the last step of the check, we should not check the last child,
         // ! but the matchings of the nextSibling.
@@ -340,12 +344,12 @@ export default class Node {
           // *** move to the right
           _next = _next.nextElementSibling;
           // *** and see if we've reached the end
-          if (this.isSelectorMatching(_next, '[data-content-flow-end]')) {
+          if (this.isContentFlowEnd(_next)) {
             return true;
           }
         }
         // *** see if we've reached the end
-        return this.isSelectorMatching(_next, '[data-content-flow-end]');
+        return this.isContentFlowEnd(_next);
       }
 
       // *** and while we're still not at the root, we're moving up
@@ -921,6 +925,16 @@ export default class Node {
     const filteredArr = arr.filter(item => item != ' ');
     // console.log('🔴 filtered word Arr', filteredArr)
     return filteredArr
+  }
+
+  // **********
+
+  addContentFlowStartAndEnd(contentFlow) {
+    const contentFlowStart = this.create(this._selector.contentFlowStart);
+    const contentFlowEnd = this.create(this._selector.contentFlowEnd);
+    this._DOM.insertAtStart(contentFlow, contentFlowStart);
+    this._DOM.insertAtEnd(contentFlow, contentFlowEnd);
+    return {contentFlowStart, contentFlowEnd}
   }
 
   // **********

@@ -121,8 +121,7 @@ export default class Layout {
       this._DOM.setInnerHTML(contentFlow, printedContent);
       // * remove all <template>s, if there are any in the initialRoot,
       // this._node.clearTemplates(contentFlow);
-      // * add an empty div as a safeguard element to the end of content flow,
-      this._DOM.insertAtEnd(contentFlow, this._node.create('[data-content-flow-end]'));
+
     } else {
       console.warn(`It looks like you don't have any printable content.`);
     }
