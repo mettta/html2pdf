@@ -895,10 +895,9 @@ export default class Pages {
 
     // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
 
-    // TODO [html2pdf-splitted] SELECTOR
-    if (this._node.isSelectorMatching(node, '[html2pdf-splitted]')) {
+    if (this._node.isSelectorMatching(node, this._selector.splitted)) {
 
-      this._debugMode && this._debugToggler._parseNode && console.log('%c END [html2pdf-splitted]', CONSOLE_CSS_END_LABEL);
+      this._debugMode && this._debugToggler._parseNode && console.log(`%c END ${this._selector.splitted}`, CONSOLE_CSS_END_LABEL);
       this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.groupEnd();
       return this._getChildren(node);
     }
@@ -1069,7 +1068,7 @@ export default class Pages {
     this._debugMode && this._debugToggler._parseNode && console.log('%c END OK _splitComplexTextBlockIntoLines', CONSOLE_CSS_END_LABEL);
     this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.groupEnd();
 
-    this._DOM.setAttribute(node, '[html2pdf-splitted]');
+    this._DOM.setAttribute(node, this._selector.splitted);
 
     return linedChildren
   }
