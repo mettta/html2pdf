@@ -1510,7 +1510,8 @@ export default class Pages {
 
     // calculate table wrapper (empty table element) height
     // to calculate the available space for table content
-    const tableWrapperHeight = this._node.getEmptyNodeHeight(table);
+    // * 2 times because of Table (empty table tag has only one border spacing)
+    const tableWrapperHeight = 2 * this._node.getEmptyNodeHeight(table);
 
     // tableEntries
     const tableEntries = this._node.getTableEntries(table);
@@ -1538,23 +1539,36 @@ export default class Pages {
     // *** The logical nullish assignment (??=) operator
     const captionFirefoxAmendment = (tableCaptionHeight ?? 0) * (this._isFirefox ?? 0);
 
-    const firstPartHeight = pageBottom
+    const tableFirstPartBottom = pageBottom
       - tableTop
-      - this._signpostHeight - tableWrapperHeight;
+      - tableWrapperHeight
+      - this._signpostHeight;
 
-    const fullPagePartHeight = fullPageHeight
+    const tableFirstPartContentHeight = pageBottom
+      - tableTop
+      - tableCaptionHeight // * copied into each part
+      - tableTheadHeight // * copied into each part
+      - tableWrapperHeight
+      - this._signpostHeight;
+
+    const tableFullPartContentHeight = fullPageHeight
       - tableCaptionHeight // * copied into each part
       - tableTheadHeight // * copied into each part
       - tableTfootHeight // * remains in the last part (in the table)
-      - 2 * this._signpostHeight - tableWrapperHeight;
+      - tableWrapperHeight
+      - 2 * this._signpostHeight;
 
     this._debugMode && this._debugToggler._splitTableNode && console.log(
       ...consoleMark,
+      '\n • tableFirstPartBottom', tableFirstPartBottom,
+      '\n',
       '\n   pageBottom', pageBottom,
       '\n - tableTop', tableTop,
+      '\n - tableCaptionHeight', tableCaptionHeight,
+      '\n - tableTheadHeight', tableTheadHeight,
       '\n - tableWrapperHeight', tableWrapperHeight,
       '\n - this._signpostHeight', this._signpostHeight,
-      '\n = firstPartHeight', firstPartHeight,
+      '\n = tableFirstPartContentHeight', tableFirstPartContentHeight,
       '\n',
       '\n   fullPageHeight', fullPageHeight,
       '\n - tableCaptionHeight', tableCaptionHeight,
@@ -1562,7 +1576,7 @@ export default class Pages {
       '\n - tableTfootHeight', tableTfootHeight,
       '\n - 2 * this._signpostHeight', (2 * this._signpostHeight),
       '\n - tableWrapperHeight', tableWrapperHeight,
-      '\n = fullPagePartHeight', fullPagePartHeight,
+      '\n = tableFullPartContentHeight', tableFullPartContentHeight,
     );
 
     // * Rows that we distribute across the partitioned table
@@ -1576,195 +1590,202 @@ export default class Pages {
     // * Calculate Table Splits Ids
 
     let splitsIds = [];
-    let currentPageBottom = firstPartHeight;
+    let currentPageBottom = tableFirstPartBottom;
+
+    this._debugMode && this._debugToggler._splitTableRow && console.log(
+    this._node.getTop(distributedRows[1], table) - this._node.getBottom(distributedRows[0], table), '(row[1].top - row[0].bottom)',
+    )
+
+    if (this._node.getTop(distributedRows[0], table) > currentPageBottom) {
+      // * If the beginning of the first line is immediately on the second page
+      // * then even the header doesn't fit.
+      // * Go immediately to the second page.
+      currentPageBottom = tableFullPartContentHeight;
+      this._debugMode && this._debugToggler._splitTableRow && console.log(`The Row 0 goes to the 2nd page`);
+    }
 
     for (let index = 0; index < distributedRows.length; index++) {
       const currentRow = distributedRows[index];
+      const currRowBottom = this._node.getBottom(currentRow, table) + captionFirefoxAmendment;
+      const nextRow = distributedRows[index + 1];
+      const nextRowBottomOrTableBottom = nextRow
+        ? this._node.getTop(nextRow, table) + captionFirefoxAmendment
+        : currRowBottom; // for the last row
 
-      const currRowTop = this._node.getTop(currentRow, table) + captionFirefoxAmendment;
+      if (nextRowBottomOrTableBottom > currentPageBottom) {
+        // * If the end of the row is on the second page
+        // * TRY TO SPLIT CURRENT ROW
 
-      if (currRowTop > currentPageBottom) {
-        // * If the beginning of the line is on the second page
+        const splittingRowIndex = index;
+        const splittingRow = currentRow;
+        const splittingRowHeight = this._DOM.getElementOffsetHeight(splittingRow);
+        const splittingMinRowHeight = this._node.getTableRowHeight(splittingRow, this._minBreakableLines); // ? paragraph inside
+        const splittingEmptyRowHeight = this._node.getTableRowHeight(splittingRow);
+        const splittingRowBottom = currRowBottom;
 
-        if (index === 0) {
-          // * If the beginning of the first line is immediately on the second page
-          // * then even the header doesn't fit.
-          // * Go immediately to the second page.
-          currentPageBottom = fullPagePartHeight;
-        } else {
-          // * If the beginning of the line is on the second page
-          // * and it is a row (not [0] element) -
-          // * TRY TO SPLIT PREVIEW ROW
-
-          // * Trying to split table row [index - 1]
-          const splittingRowIndex = index - 1;
-          const splittingRow = tableEntries.rows[splittingRowIndex];
-          const splittingRowHeight = this._DOM.getElementOffsetHeight(splittingRow);
-          const splittingMinRowHeight = this._node.getTableRowHeight(splittingRow, this._minBreakableRows);
-          const splittingEmptyRowHeight = this._node.getTableRowHeight(splittingRow);
-          const splittingRowTop = this._node.getTop(splittingRow, table) + captionFirefoxAmendment;
-
-          const isNoBreak = this._node.isNoBreak(splittingRow);
-          const makesSenseToSplitTheRow = (splittingRowHeight >= splittingMinRowHeight) && (!isNoBreak);
+        const isNoBreak = this._node.isNoBreak(splittingRow);
+        const makesSenseToSplitTheRow = (splittingRowHeight >= splittingMinRowHeight) && (!isNoBreak);
 
 
-          if (makesSenseToSplitTheRow) {
-            // * Let's split table row [index - 1]
+        if (makesSenseToSplitTheRow) {
+          // * Let's split table row [index]
 
-            this._debugMode && this._debugToggler._splitTableRow && console.group(`🟣🟣🟣 Split The Row ${index - 1}`);
-            // this._debugMode && this._debugToggler._splitTableRow && console.log(`🟣🟣🟣 Split The Row ${index - 1}`);
+          this._debugMode && this._debugToggler._splitTableRow && console.group(`🟣🟣🟣 Split The Row ${index}`);
+          // this._debugMode && this._debugToggler._splitTableRow && console.log(`🟣🟣🟣 Split The Row ${index}`);
 
-            const rowFirstPartHeight = firstPartHeight - splittingEmptyRowHeight - splittingRowTop; // TODO
-            const rowFullPageHeight = fullPagePartHeight - splittingEmptyRowHeight;
+          const rowFirstPartHeight = tableFirstPartContentHeight - splittingEmptyRowHeight - splittingRowBottom; // TODO
+          const rowFullPageHeight = tableFullPartContentHeight - splittingEmptyRowHeight;
 
-            const splittingRowTDs = this._DOM.getChildren(splittingRow);
+          const splittingRowTDs = this._DOM.getChildren(splittingRow);
 
-            let theRowContentSlicesByTD;
+          let theRowContentSlicesByTD;
 
+          theRowContentSlicesByTD = [...splittingRowTDs].map(td => {
+            const tdChildren = this._getChildren(td);
+            const tdInternalSplitters = this._getInternalSplitters({
+              rootNode: td,
+              children: tdChildren,
+              pageBottom: pageBottom,
+              firstPartHeight: rowFirstPartHeight,
+              fullPageHeight: rowFullPageHeight,
+            });
+            return tdInternalSplitters
+          });
+
+          this._debugMode && this._debugToggler._splitTableRow && console.log(
+            '🟣 \ntheRowContentSlicesByTD',
+            theRowContentSlicesByTD
+          );
+
+          const shouldFirstPartBeSkipped = theRowContentSlicesByTD.some(obj => {
+            this._debugMode && this._debugToggler._splitTableRow && console.log(
+              '🟣',
+              '\nobj.result.length',
+              obj.result.length,
+              '\nobj.result[0]',
+              obj.result[0]
+            );
+            return (obj.result.length && obj.result[0] === null)
+          });
+
+          this._debugMode && this._debugToggler._splitTableRow && console.log(
+            '🟣',
+            '\nshouldFirstPartBeSkipped',
+            shouldFirstPartBeSkipped
+          );
+
+          if(shouldFirstPartBeSkipped) {
             theRowContentSlicesByTD = [...splittingRowTDs].map(td => {
               const tdChildren = this._getChildren(td);
               const tdInternalSplitters = this._getInternalSplitters({
                 rootNode: td,
                 children: tdChildren,
                 pageBottom: pageBottom,
-                firstPartHeight: rowFirstPartHeight,
+                firstPartHeight: rowFullPageHeight,
                 fullPageHeight: rowFullPageHeight,
               });
               return tdInternalSplitters
             });
-
-            this._debugMode && this._debugToggler._splitTableRow && console.log(
-              '🟣 \ntheRowContentSlicesByTD',
-              theRowContentSlicesByTD
-            );
-
-            const shouldFirstPartBeSkipped = theRowContentSlicesByTD.some(obj => {
-              this._debugMode && this._debugToggler._splitTableRow && console.log(
-                '🟣',
-                '\nobj.result.length',
-                obj.result.length,
-                '\nobj.result[0]',
-                obj.result[0]
-              );
-              return (obj.result.length && obj.result[0] === null)
-            });
-
-            this._debugMode && this._debugToggler._splitTableRow && console.log(
-              '🟣',
-              '\nshouldFirstPartBeSkipped',
-              shouldFirstPartBeSkipped
-            );
-
-            if(shouldFirstPartBeSkipped) {
-              theRowContentSlicesByTD = [...splittingRowTDs].map(td => {
-                const tdChildren = this._getChildren(td);
-                const tdInternalSplitters = this._getInternalSplitters({
-                  rootNode: td,
-                  children: tdChildren,
-                  pageBottom: pageBottom,
-                  firstPartHeight: rowFullPageHeight,
-                  fullPageHeight: rowFullPageHeight,
-                });
-                return tdInternalSplitters
-              });
-            }
-
-            this._debugMode && this._debugToggler._splitTableRow && console.log(
-              '🟣',
-              '\n theRowContentSlicesByTD',
-              theRowContentSlicesByTD
-            );
-
-            const ifThereIsSplit = theRowContentSlicesByTD.some(obj => {
-              return obj.result.length
-            });
-            this._debugMode && this._debugToggler._splitTableRow && console.log('🟣 ifThereIsSplit', ifThereIsSplit);
-
-            // !
-            if (ifThereIsSplit) {
-
-              const theTdContentElements = theRowContentSlicesByTD.map(el => {
-                if(el.result.length) {
-                  return this._createSlicesBySplitFlag(el.trail)
-                } else {
-                  // * el.result === 0
-                  // один раз полностью копируем весь контент из столбца
-                  const sliceWrapper = this._node.createWithFlagNoBreak();
-                  sliceWrapper.classList.add("🟣");
-                  this._DOM.setStyles(sliceWrapper, { display: 'contents' });
-
-                  const contentElements = el.trail.map(item => item.element);
-                  this._DOM.insertAtEnd(sliceWrapper, ...contentElements);
-
-                  return [sliceWrapper]
-                }
-              });
-
-              this._debugMode && this._debugToggler._splitTableRow && console.log('🟣 theTdContentElements', theTdContentElements);
-
-              const theNewTrCount = Math.max(...theTdContentElements.map(arr => arr.length));
-              this._debugMode && this._debugToggler._splitTableRow && console.log('🟣 theNewTrCount', theNewTrCount);
-
-              const theNewRows = [];
-              for (let i = 0; i < theNewTrCount; i++) {
-                const rowWrapper = this._DOM.cloneNodeWrapper(splittingRow);
-                this._node.setFlagNoBreak(rowWrapper);
-
-                [...splittingRowTDs].forEach(
-                  (td, tdID) => {
-                    const tdWrapper = this._DOM.cloneNodeWrapper(td);
-                    const content = theTdContentElements[tdID][i];
-                    content && this._DOM.insertAtEnd(tdWrapper, theTdContentElements[tdID][i]);
-                    this._DOM.insertAtEnd(rowWrapper, tdWrapper);
-                  }
-                );
-
-                theNewRows.push(rowWrapper);
-              }
-
-              this._debugMode && this._debugToggler._splitTableRow && console.log('🟣', '\n theNewRows', theNewRows);
-
-              // добавляем строки в массив и в таблицу
-
-              splittingRow.className = 'splittingRow' // for test
-              this._debugMode && this._debugToggler._splitTableRow && console.log('🟣 splittingRow', splittingRow);
-              this._DOM.insertInsteadOf(splittingRow, ...theNewRows)
-
-              // меняем исходный массив строк таблицы!
-              tableEntries.rows.splice(splittingRowIndex, 1, ...theNewRows);
-              // и обновляем рабочий массив включающий футер
-              distributedRows = getDistributedRows(tableEntries);
-
-              index = index - 1;
-              // При этом шаг цикла возвращается на 1 назад;
-              // и мы проверяем 2 разбитых куска (i & i-1),
-              // но они с флагом "не разбивать"
-
-            } //? END OF ifThereIsSplit
-
-            this._debugMode && this._debugToggler._splitTableRow && console.log(`%c Split The Row ${index - 1} (or ${index})`, CONSOLE_CSS_END_LABEL);
-            this._debugMode && this._debugToggler._splitTableRow && console.groupEnd(`END OF 'if makesSenseToSplitTheRow'`);
-          } //? END OF 'if makesSenseToSplitTheRow'
-          else {
-            // TODO проверять это ТОЛЬКО если мы не можем разбить
-            if (index > this._minLeftRows) {
-              // * avoid < minLeftRows rows on first page
-              // *** If a table row starts in the next part,
-              // *** register the previous one as the beginning of the next part.
-              // *** In the other case, we do not register a page break,
-              // *** and the first small piece will be skipped.
-              splitsIds.push(index - 1);
-            }
-
-            currentPageBottom =
-            this._node.getTop(
-              distributedRows[index - 1], table
-            ) + captionFirefoxAmendment
-            + fullPagePartHeight;
           }
 
+          this._debugMode && this._debugToggler._splitTableRow && console.log(
+            '🟣',
+            '\n theRowContentSlicesByTD',
+            theRowContentSlicesByTD
+          );
 
-        } //? END OF trying to split long TR
+          const ifThereIsSplit = theRowContentSlicesByTD.some(obj => {
+            return obj.result.length
+          });
+          this._debugMode && this._debugToggler._splitTableRow && console.log('🟣 ifThereIsSplit', ifThereIsSplit);
+
+          // !
+          if (ifThereIsSplit) {
+
+            const theTdContentElements = theRowContentSlicesByTD.map(el => {
+              if(el.result.length) {
+                return this._createSlicesBySplitFlag(el.trail)
+              } else {
+                // * el.result === 0
+                // один раз полностью копируем весь контент из столбца
+                const sliceWrapper = this._node.createWithFlagNoBreak();
+                sliceWrapper.classList.add("🟣");
+                this._DOM.setStyles(sliceWrapper, { display: 'contents' });
+
+                const contentElements = el.trail.map(item => item.element);
+                this._DOM.insertAtEnd(sliceWrapper, ...contentElements);
+
+                return [sliceWrapper]
+              }
+            });
+
+            this._debugMode && this._debugToggler._splitTableRow && console.log('🟣 theTdContentElements', theTdContentElements);
+
+            const theNewTrCount = Math.max(...theTdContentElements.map(arr => arr.length));
+            this._debugMode && this._debugToggler._splitTableRow && console.log('🟣 theNewTrCount', theNewTrCount);
+
+            const theNewRows = [];
+            for (let i = 0; i < theNewTrCount; i++) {
+              const rowWrapper = this._DOM.cloneNodeWrapper(splittingRow);
+              this._node.setFlagNoBreak(rowWrapper);
+
+              [...splittingRowTDs].forEach(
+                (td, tdID) => {
+                  const tdWrapper = this._DOM.cloneNodeWrapper(td);
+                  const content = theTdContentElements[tdID][i];
+                  content && this._DOM.insertAtEnd(tdWrapper, theTdContentElements[tdID][i]);
+                  this._DOM.insertAtEnd(rowWrapper, tdWrapper);
+                }
+              );
+
+              theNewRows.push(rowWrapper);
+            }
+
+            this._debugMode && this._debugToggler._splitTableRow && console.log('🟣', '\n theNewRows', theNewRows);
+
+            // добавляем строки в массив и в таблицу
+
+            splittingRow.className = 'splittingRow' // for test
+            this._debugMode && this._debugToggler._splitTableRow && console.log('🟣 splittingRow', splittingRow);
+            this._DOM.insertInsteadOf(splittingRow, ...theNewRows)
+
+            // меняем исходный массив строк таблицы!
+            tableEntries.rows.splice(splittingRowIndex, 1, ...theNewRows);
+            // и обновляем рабочий массив включающий футер
+            distributedRows = getDistributedRows(tableEntries);
+
+            // !!!!!!!!!!!!!!
+            index = index - 1;
+            // При этом шаг цикла возвращается на 1 назад;
+            // и мы проверяем 2 разбитых куска (i & i-1),
+            // но они с флагом "не разбивать"
+
+          } //? END OF ifThereIsSplit
+
+          this._debugMode && this._debugToggler._splitTableRow && console.log(`%c Split The Row ${index} (or ${index - 1})`, CONSOLE_CSS_END_LABEL);
+          this._debugMode && this._debugToggler._splitTableRow && console.groupEnd(`END OF 'if makesSenseToSplitTheRow'`);
+        } //? END OF 'if makesSenseToSplitTheRow'
+        else {
+          // !!!!!!!!!!!!!!
+          // TODO проверять это ТОЛЬКО если мы не можем разбить
+          if (index >= this._minLeftRows) {
+            // * avoid < minLeftRows rows on first page
+            // *** If a table row starts in the next part,
+            // *** register the previous one as the beginning of the next part.
+            // *** In the other case, we do not register a page break,
+            // *** and the first small piece will be skipped.
+            splitsIds.push(index);
+          }
+
+          currentPageBottom =
+          this._node.getTop(
+            distributedRows[index - 1], table
+          ) + captionFirefoxAmendment
+          + tableFullPartContentHeight;
+        }
+
+
+         //? END OF trying to split long TR
 
 
         // check if next fits
