@@ -39,7 +39,7 @@ export default class Node {
 
   getTableEntries(node) {
 
-    const nodeEntries = [...node.children].reduce(function (acc, curr) {
+    const nodeEntries = [...node.children].reduce((acc, curr) => {
 
       const tag = curr.tagName;
 
@@ -54,6 +54,7 @@ export default class Node {
       }
 
       if (tag === 'CAPTION') {
+        this.setFlagNoBreak(curr);
         return {
           ...acc,
           caption: curr
@@ -61,6 +62,7 @@ export default class Node {
       }
 
       if (tag === 'COLGROUP') {
+        this.setFlagNoBreak(curr);
         return {
           ...acc,
           colgroup: curr
@@ -68,6 +70,7 @@ export default class Node {
       }
 
       if (tag === 'THEAD') {
+        this.setFlagNoBreak(curr);
         return {
           ...acc,
           thead: curr
@@ -75,6 +78,7 @@ export default class Node {
       }
 
       if (tag === 'TFOOT') {
+        this.setFlagNoBreak(curr);
         return {
           ...acc,
           tfoot: curr
