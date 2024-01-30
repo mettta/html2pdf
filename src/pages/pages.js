@@ -1355,9 +1355,6 @@ export default class Pages {
 
     // this._debugMode && console.log(`=> _insertTableSplit(${startId}, ${endId})`);
 
-    const colgroup = this._node.get('colgroup', table);
-    console.log(colgroup)
-
     const tableWrapper = this._DOM.cloneNodeWrapper(table);
 
     const partEntries = tableEntries.rows.slice(startId, endId);
@@ -1374,7 +1371,7 @@ export default class Pages {
       part,
       this._node.createTable({
         wrapper: tableWrapper,
-        colgroup: colgroup ? this._DOM.cloneNode(colgroup) : undefined,
+        colgroup: this._DOM.cloneNode(tableEntries.colgroup),
         caption: this._DOM.cloneNode(tableEntries.caption),
         thead: this._DOM.cloneNode(tableEntries.thead),
         // tfoot,
