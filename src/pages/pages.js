@@ -533,6 +533,7 @@ export default class Pages {
 
         this._debugMode && this._debugToggler._parseNode && console.log(
           '\n🥁 currentElementTop', currentElementTop,
+          '\n🥁 newPageBottom', newPageBottom,
           '\n🥁 availableSpace', availableSpace,
           '\n🥁 currentElementContextualHeight', currentElementContextualHeight,
           '\n🥁 availableSpaceFactor', availableSpaceFactor,
@@ -1528,23 +1529,16 @@ export default class Pages {
 
     // Prepare node parameters
     const tableTop = this._node.getTop(table, this._root);
-    const tableHeight = this._DOM.getElementOffsetHeight(table);
+    // const tableHeight = this._DOM.getElementOffsetHeight(table);
     const tableCaptionHeight = this._DOM.getElementOffsetHeight(tableEntries.caption) || 0;
     const tableTheadHeight = this._DOM.getElementOffsetHeight(tableEntries.thead) || 0;
     const tableTfootHeight = this._DOM.getElementOffsetHeight(tableEntries.tfoot) || 0;
-    // *** Convert NULL/Undefined to 0
-    // *** The logical nullish assignment (??=) operator
+    // *** Convert NULL/Undefined to 0.
+    // *** Nullish coalescing assignment (??=), Nullish coalescing operator (??)
     const captionFirefoxAmendment = (tableCaptionHeight ?? 0) * (this._isFirefox ?? 0);
 
     const tableFirstPartBottom = pageBottom
       - tableTop
-      - tableWrapperHeight
-      - this._signpostHeight;
-
-    const tableFirstPartContentHeight = pageBottom
-      - tableTop
-      - tableCaptionHeight // * copied into each part
-      - tableTheadHeight // * copied into each part
       - tableWrapperHeight
       - this._signpostHeight;
 
@@ -1565,7 +1559,6 @@ export default class Pages {
       '\n - tableTheadHeight', tableTheadHeight,
       '\n - tableWrapperHeight', tableWrapperHeight,
       '\n - this._signpostHeight', this._signpostHeight,
-      '\n = tableFirstPartContentHeight', tableFirstPartContentHeight,
       '\n',
       '\n   fullPageHeight', fullPageHeight,
       '\n - tableCaptionHeight', tableCaptionHeight,
@@ -1579,7 +1572,7 @@ export default class Pages {
     // * Rows that we distribute across the partitioned table
     const getDistributedRows = (tableEntries) => [
       ...tableEntries.rows,
-      tableEntries.tfoot || []
+      ...(tableEntries.tfoot || [])
     ];
 
     let distributedRows = getDistributedRows(tableEntries);
@@ -1602,8 +1595,15 @@ export default class Pages {
     }
 
     for (let index = 0; index < distributedRows.length; index++) {
+      this._debugMode && this._debugToggler._splitTableRow && console.log(
+        `%c 🟪 Check the Row # ${index}`, 'color:blueviolet',
+        [ distributedRows[index] ],
+        [...distributedRows]
+      );
+
       const currentRow = distributedRows[index];
       const currRowBottom = this._node.getBottom(currentRow, table) + captionFirefoxAmendment;
+      const currRowTop = this._node.getTop(currentRow, table) + captionFirefoxAmendment;
       const nextRow = distributedRows[index + 1];
       const nextRowBottomOrTableBottom = nextRow
         ? this._node.getTop(nextRow, table) + captionFirefoxAmendment
@@ -1618,7 +1618,7 @@ export default class Pages {
         const splittingRowHeight = this._DOM.getElementOffsetHeight(splittingRow);
         const splittingMinRowHeight = this._node.getTableRowHeight(splittingRow, this._minBreakableLines); // ? paragraph inside
         const splittingEmptyRowHeight = this._node.getTableRowHeight(splittingRow);
-        const splittingRowBottom = currRowBottom;
+        const splittingRowTop = currRowTop;
 
         const isNoBreak = this._node.isNoBreak(splittingRow);
         const makesSenseToSplitTheRow = (splittingRowHeight >= splittingMinRowHeight) && (!isNoBreak);
@@ -1627,18 +1627,20 @@ export default class Pages {
         if (makesSenseToSplitTheRow) {
           // * Let's split table row [index]
 
-          this._debugMode && this._debugToggler._splitTableRow && console.group(`🟣🟣🟣 Split The Row ${index}`);
-          // this._debugMode && this._debugToggler._splitTableRow && console.log(`🟣🟣🟣 Split The Row ${index}`);
+          this._debugMode && this._debugToggler._splitTableRow && console.groupCollapsed(
+            `🟪 🟪 Split The ROW.${splittingRowIndex}`
+          );
 
-          const rowFirstPartHeight = tableFirstPartContentHeight - splittingEmptyRowHeight - splittingRowBottom; // TODO
+          const rowFirstPartHeight = currentPageBottom - splittingRowTop - splittingEmptyRowHeight;
           const rowFullPageHeight = tableFullPartContentHeight - splittingEmptyRowHeight;
 
           const splittingRowTDs = this._DOM.getChildren(splittingRow);
 
           let theRowContentSlicesByTD;
 
-          theRowContentSlicesByTD = [...splittingRowTDs].map(td => {
+          theRowContentSlicesByTD = [...splittingRowTDs].map((td, ind) => {
             const tdChildren = this._getChildren(td);
+            this._debugMode && this._debugToggler._splitTableRow && console.groupCollapsed(`Split TD.${ind} in ROW.${splittingRowIndex}`);
             const tdInternalSplitters = this._getInternalSplitters({
               rootNode: td,
               children: tdChildren,
@@ -1646,6 +1648,7 @@ export default class Pages {
               firstPartHeight: rowFirstPartHeight,
               fullPageHeight: rowFullPageHeight,
             });
+            this._debugMode && this._debugToggler._splitTableRow && console.groupEnd(`Split TD.${ind} in ROW.${splittingRowIndex}`);
             return tdInternalSplitters
           });
 
@@ -1725,6 +1728,7 @@ export default class Pages {
             for (let i = 0; i < theNewTrCount; i++) {
               const rowWrapper = this._DOM.cloneNodeWrapper(splittingRow);
               this._node.setFlagNoBreak(rowWrapper);
+              this._DOM.setAttribute(rowWrapper, `.splitted_row_${splittingRowIndex}_part_${i}`);
 
               [...splittingRowTDs].forEach(
                 (td, tdID) => {
@@ -1742,7 +1746,7 @@ export default class Pages {
 
             // добавляем строки в массив и в таблицу
 
-            splittingRow.className = 'splittingRow' // for test
+            this._DOM.setAttribute(splittingRow, '.🚫_must_be_removed'); // for test, must be removed
             this._debugMode && this._debugToggler._splitTableRow && console.log('🟣 splittingRow', splittingRow);
             this._DOM.insertInsteadOf(splittingRow, ...theNewRows)
 
@@ -1751,15 +1755,12 @@ export default class Pages {
             // и обновляем рабочий массив включающий футер
             distributedRows = getDistributedRows(tableEntries);
 
-            // !!!!!!!!!!!!!!
+            // To check all the split pieces anew:
             index = index - 1;
-            // При этом шаг цикла возвращается на 1 назад;
-            // и мы проверяем 2 разбитых куска (i & i-1),
-            // но они с флагом "не разбивать"
 
           } //? END OF ifThereIsSplit
 
-          this._debugMode && this._debugToggler._splitTableRow && console.log(`%c Split The Row ${index} (or ${index - 1})`, CONSOLE_CSS_END_LABEL);
+          this._debugMode && this._debugToggler._splitTableRow && console.log(`%c END 🟪 Split The ROW.${splittingRowIndex}`, CONSOLE_CSS_END_LABEL);
           this._debugMode && this._debugToggler._splitTableRow && console.groupEnd(`END OF 'if makesSenseToSplitTheRow'`);
         } //? END OF 'if makesSenseToSplitTheRow'
         else {
@@ -1776,7 +1777,7 @@ export default class Pages {
 
           currentPageBottom =
           this._node.getTop(
-            distributedRows[index - 1], table
+            distributedRows[index], table
           ) + captionFirefoxAmendment
           + tableFullPartContentHeight;
         }
@@ -2020,7 +2021,7 @@ export default class Pages {
       this._DOM.setStyles(rootNode, { position: 'relative' });
     }
 
-    this._debugMode && this._debugToggler._getInternalSplitters && console.groupCollapsed('💟 _getInternalSplitters'); // Collapsed
+    this._debugMode && this._debugToggler._getInternalSplitters && console.group('💟 _getInternalSplitters'); // Collapsed
 
     const findFirstNullIDInContinuousChain = (array) => {
       let item = null;
