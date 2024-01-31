@@ -1509,7 +1509,7 @@ export default class Pages {
     // calculate table wrapper (empty table element) height
     // to calculate the available space for table content
     // * 2 times because of Table (empty table tag has only one border spacing)
-    const tableWrapperHeight = 2 * this._node.getEmptyNodeHeight(table);
+    const tableWrapperHeight = this._node.getEmptyNodeHeight(table); // '* 2' 
 
     // tableEntries
     const tableEntries = this._node.getTableEntries(table);
@@ -1528,7 +1528,7 @@ export default class Pages {
     // }
 
     // Prepare node parameters
-    const tableTop = this._node.getTop(table, this._root);
+    const tableTop = this._node.getTopWithMargin(table, this._root);
     // const tableHeight = this._DOM.getElementOffsetHeight(table);
     const tableCaptionHeight = this._DOM.getElementOffsetHeight(tableEntries.caption) || 0;
     const tableTheadHeight = this._DOM.getElementOffsetHeight(tableEntries.thead) || 0;

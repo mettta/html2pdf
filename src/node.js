@@ -596,7 +596,8 @@ export default class Node {
     prefix.style.letterSpacing = '1px';
     prefix.style.textTransform = 'uppercase';
     prefix.style.height = height + 'px';
-    text && (prefix.innerHTML = text);
+    // text && (prefix.innerHTML = text);
+    text && this._DOM.setInnerHTML(prefix, text);
     return prefix
   }
 
@@ -821,6 +822,9 @@ export default class Node {
     const wrapper = this.create();
     margins && (wrapper.style.padding = '0.1px');
     const clone = node.cloneNode(false);
+    if (this._DOM.getElementTagName(node) === 'TABLE') {
+      this._DOM.setInnerHTML(clone, '<tr><td></td></tr>');
+    };
     wrapper.append(clone);
     node.before(wrapper);
     const wrapperHeight = wrapper.offsetHeight;
@@ -832,7 +836,7 @@ export default class Node {
     const testNode = this.createNeutral();
     // if node has padding, this affects so cant be taken bode clone as wrapper // todo comment
     // const testNode = node.cloneNode(false);
-    testNode.innerHTML = '!';
+    this._DOM.setInnerHTML(testNode, '!');
     // ! 'absolute' added extra height to the element:
     // testNode.style.position = 'absolute';
     // testNode.style.left = '-10000px';
@@ -852,7 +856,7 @@ export default class Node {
     const initialTop = tr.offsetTop;
     const clone = tr.cloneNode(true);
     const text = '!<br />'.repeat(num);
-    [...clone.children].forEach(td => td.innerHTML = text);
+    [...clone.children].forEach(td => this._DOM.setInnerHTML(td, text));
     tr.before(clone);
     const endTop = tr.offsetTop;
     clone.remove();
@@ -892,7 +896,7 @@ export default class Node {
 
     const nodeWordItems = nodeWords.map((item) => {
       const span = this._DOM.createElement('span');
-      span.innerHTML = item + ' ';
+      this._DOM.setInnerHTML(span, item + ' ');
       return span;
     })
 
@@ -914,7 +918,8 @@ export default class Node {
 
   splitByWordsGreedy(node) { // ? in prepareSplittedNode
     // SEE Pages: const WORD_JOINER
-    const arr = node.innerHTML.split(/(?<=\s|-)/); // WORD_JOINER = '';
+    const arr = this._DOM.getInnerHTML(node).split(/(?<=\s|-)/); // WORD_JOINER = '';
+    // const arr = node.innerHTML.split(/(?<=\s|-)/); // WORD_JOINER = '';
     // const arr = node.innerHTML.split(/\s+/); // WORD_JOINER = ' ';
     // console.log('🔴', arr)
     return arr
@@ -923,7 +928,8 @@ export default class Node {
   splitByWordsGreedyWithSpacesFilter(node) {
     // SEE Pages: const WORD_JOINER
     // ** 1 ** add trim() for trailing spaces
-    const arr = node.innerHTML.trim().split(/(?<=\s|-)/); // WORD_JOINER = '';
+    const arr = this._DOM.getInnerHTML(node).trim().split(/(?<=\s|-)/); // WORD_JOINER = '';
+    // const arr = node.innerHTML.trim().split(/(?<=\s|-)/); // WORD_JOINER = '';
     // ** 2 ** filter arr and remove unnecessary spaces (' ') inside text block.
     // ** A meaningful space character has been added to an array element.
     const filteredArr = arr.filter(item => item != ' ');
