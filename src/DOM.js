@@ -207,7 +207,32 @@ export default class DocumentObjectModel {
   // REMOVE ATTRIBUTES
 
   removeAttribute(element, selector) {
-    element.removeAttribute(selector);
+    if (!element || !selector) {
+      this._debugMode && this._debugToggler._DOM && console.warn('removeAttribute() must have 2 params');
+      return;
+    }
+    console.assert(first.match(/[a-zA-Z#\[\.]/), `removeAttribute() expects a valid selector, but received ${selector}`)
+
+    const first = selector.charAt(0);
+
+    if (first === '.') {
+      const cl = selector.substring(1);
+      element.classList.remove(cl);
+      return
+    } else if (first === '#') {
+      const id = selector.substring(1);
+      element.removeAttribute(id);
+      return
+    } else if (first === '[') {
+      this._debugMode && this._debugToggler._DOM && console.assert(
+        selector.at(-1) === ']', `the ${selector} selector is not OK.`
+      );
+      const attr = selector.substring(1, selector.length - 1);
+      element.removeAttribute(attr);
+      return
+    } else { // a-zA-Z
+      element.removeAttribute(attr);
+    }
   }
 
   removeAllAttributes(element) {

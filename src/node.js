@@ -574,29 +574,32 @@ export default class Node {
   }
 
   createTestNodeFrom(node) {
-    const testNode = node.cloneNode(false);
-    testNode.classList = 'test-node'
-    testNode.style.position = 'absolute';
-    testNode.style.background = 'rgb(255 239 177)';
-    // testNode.style.left = '-10000px';
-    testNode.style.width = this.getMaxWidth(node) + 'px';
+    const testNode = this._DOM.cloneNodeWrapper(node);
+    this._DOM.setAttribute(testNode, '.test-node');
+    this._DOM.setStyles(testNode, {
+      position: 'absolute',
+      background: 'rgb(255 239 177)',
+      width: this.getMaxWidth(node) + 'px',
+      // left: '-10000px',
+    })
     return testNode;
   }
 
   // todo: move styles to params as optional
   createSignpost(text, height = 24) {
     const prefix = this.create();
-    prefix.style.display = 'flex';
-    prefix.style.flexWrap = 'nowrap';
-    prefix.style.alignItems = 'center';
-    prefix.style.justifyContent = 'center';
-    prefix.style.textAlign = 'center';
-    prefix.style.fontSize = '8px';
-    prefix.style.fontFamily = 'sans-serif';
-    prefix.style.letterSpacing = '1px';
-    prefix.style.textTransform = 'uppercase';
-    prefix.style.height = height + 'px';
-    // text && (prefix.innerHTML = text);
+    this._DOM.setStyles(prefix, {
+      display: 'flex',
+      flexWrap: 'nowrap',
+      alignItems: 'center',
+      justifyContent: 'center',
+      textAlign: 'center',
+      fontSize: '8px',
+      fontFamily: 'sans-serif',
+      letterSpacing: '1px',
+      textTransform: 'uppercase',
+      height: height + 'px',
+    });
     text && this._DOM.setInnerHTML(prefix, text);
     return prefix
   }
@@ -635,26 +638,16 @@ export default class Node {
   }
 
   unmarkPageStartElement(element) {
-    this._DOM.removeAttribute(
-      element,
-      this._selector.pageStartMarker.substring(
-        1,
-        this._selector.pageStartMarker.length - 1
-      )
-    );
+    this._DOM.removeAttribute(element, this._selector.pageStartMarker);
   }
 
   markPartNodesWithClass(nodes) {
     nodes.forEach( node => {
-      // this.setAttribute()
-      // TODO remove Attribute
-      // TODO ???? check what is the purpose
-      // TODO USE Attribute from DOM
-      node.classList.add(this._selector.topCutPart.substring(1));
-      node.classList.add(this._selector.bottomCutPart.substring(1));
+      this._DOM.setAttribute(node, this._selector.topCutPart);
+      this._DOM.setAttribute(node, this._selector.bottomCutPart);
     });
-    nodes.at(0).classList.remove(this._selector.topCutPart.substring(1));
-    nodes.at(-1).classList.remove(this._selector.bottomCutPart.substring(1));
+    this._DOM.removeAttribute(nodes.at(0), this._selector.topCutPart);
+    this._DOM.removeAttribute(nodes.at(-1), this._selector.bottomCutPart);
   }
 
   // WRAP
