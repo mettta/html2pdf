@@ -1528,11 +1528,16 @@ export default class Pages {
     // }
 
     // Prepare node parameters
+    // * getTopWithMargin * The margin must be taken into account,
+    // * because it is included in the calculation of the tableWrapperHeight
+    // * and will be subtracted when calculating the first internal part of the table.
     const tableTop = this._node.getTopWithMargin(table, this._root);
+
     // const tableHeight = this._DOM.getElementOffsetHeight(table);
     const tableCaptionHeight = this._DOM.getElementOffsetHeight(tableEntries.caption) || 0;
     const tableTheadHeight = this._DOM.getElementOffsetHeight(tableEntries.thead) || 0;
     const tableTfootHeight = this._DOM.getElementOffsetHeight(tableEntries.tfoot) || 0;
+
     // *** Convert NULL/Undefined to 0.
     // *** Nullish coalescing assignment (??=), Nullish coalescing operator (??)
     const captionFirefoxAmendment = (tableCaptionHeight ?? 0) * (this._isFirefox ?? 0);
