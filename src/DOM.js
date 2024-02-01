@@ -83,7 +83,8 @@ export default class DocumentObjectModel {
   }
 
   getParentNode(element) {
-    return element.parentNode;
+    return element.parentElement;
+  }
   }
 
   getChildNodes(element) {
