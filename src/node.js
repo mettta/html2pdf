@@ -125,7 +125,7 @@ export default class Node {
   clearTemplates(root) {
     // Remove all <template>s, if there are any in the Root.
     const templates = this.getAll('template', root);
-    templates.forEach((el) => el.remove());
+    templates.forEach((el) => this._DOM.removeNode(el));
   }
 
   // CHECKERS
@@ -166,7 +166,7 @@ export default class Node {
 
   isSignificantTextNode(element) {
     if (this._DOM.isTextNode(element)) {
-      return (element.nodeValue.trim().length > 0) ? true : false;
+      return (this._DOM.getNodeValue(element).trim().length > 0) ? true : false;
     }
     return false;
   }
@@ -304,18 +304,18 @@ export default class Node {
   // *
 
   isFirstChildOfFirstChild(element, rootElement) {
-    if (!element || !element.parentElement) {
+    if (!element || !this._DOM.getParentNode(element)) {
       return false;
     }
 
     let currentElement = element;
 
-    while (currentElement.parentElement && currentElement !== rootElement) {
-      if (currentElement.parentElement.firstElementChild !== currentElement) {
+    while (this._DOM.getParentNode(currentElement) && currentElement !== rootElement) {
+      if (this._DOM.getFirstElementChild(this._DOM.getParentNode(currentElement)) !== currentElement) {
         return false;
       }
 
-      currentElement = currentElement.parentElement;
+      currentElement = this._DOM.getParentNode(currentElement);
     }
 
     // * Making sure we get to the end,
@@ -324,17 +324,17 @@ export default class Node {
   }
 
   isLastChildOfLastChild(element, rootElement) {
-    if (!element || !element.parentElement) {
+    if (!element || !this._DOM.getParentNode(element)) {
       return false;
     }
 
     let currentElement = element;
 
     // *** moving up
-    while (currentElement.parentElement && currentElement !== rootElement) {
+    while (this._DOM.getParentNode(currentElement) && currentElement !== rootElement) {
 
       // *** if we're at the root, we move to the right
-      if (currentElement.parentElement === rootElement) {
+      if (this._DOM.getParentNode(currentElement) === rootElement) {
 
         // ! in Pages we inserted an element 'html2pdf-content-flow-end'
         // ! at the end of the content flow.
@@ -342,11 +342,11 @@ export default class Node {
         // ! but the matchings of the nextSibling.
         // ? ...and some plugins like to insert themselves at the end of the body.
         // ? So let's check that stupidity too..
-        let _next = currentElement.nextElementSibling;
+        let _next = this._DOM.getRightNeighbor(currentElement);
 
-        while (!_next.offsetHeight && !_next.offsetWidth) {
+        while (!this._DOM.getElementOffsetHeight(_next) && !this._DOM.getElementOffsetWidth(_next)) {
           // *** move to the right
-          _next = _next.nextElementSibling;
+          _next = this._DOM.getRightNeighbor(_next);
           // *** and see if we've reached the end
           if (this.isContentFlowEnd(_next)) {
             return true;
@@ -357,11 +357,11 @@ export default class Node {
       }
 
       // *** and while we're still not at the root, we're moving up
-      if (currentElement.parentElement.lastElementChild !== currentElement) {
+      if (this._DOM.getLastElementChild(this._DOM.getParentNode(currentElement)) !== currentElement) {
         return false;
       }
 
-      currentElement = currentElement.parentElement;
+      currentElement = this._DOM.getParentNode(currentElement);
     }
 
     // * Making sure we get to the end,
@@ -389,16 +389,16 @@ export default class Node {
   // GET ELEMENTS
 
   findFirstChildParent(element, rootElement) {
-    let parent = element.parentElement;
+    let parent = this._DOM.getParentNode(element);
     let firstSuitableParent = null;
 
     while (parent && parent !== rootElement) {
-      const firstChild = parent.firstElementChild;
+      const firstChild = this._DOM.getFirstElementChild(parent);
 
       if (element === firstChild) {
         firstSuitableParent = parent;
         element = parent;
-        parent = element.parentElement;
+        parent = this._DOM.getParentNode(element);
       } else {
         return firstSuitableParent;
       }
@@ -408,16 +408,16 @@ export default class Node {
   }
 
   findLastChildParent(element, rootElement) {
-    let parent = element.parentElement;
+    let parent = this._DOM.getParentNode(element);
     let lastSuitableParent = null;
 
     while (parent && parent !== rootElement) {
-      const lastChild = parent.lastElementChild;
+      const lastChild = this._DOM.getLastElementChild(parent);
 
       if (element === lastChild) {
         lastSuitableParent = parent;
         element = parent;
-        parent = element.parentElement;
+        parent = this._DOM.getParentNode(element);
       } else {
         return lastSuitableParent;
       }
@@ -450,7 +450,7 @@ export default class Node {
 
   findPreviousNoHangingsFromPage(element, topFloater, root) {
     let suitableSibling = null;
-    let prev = element.previousElementSibling;
+    let prev = this._DOM.getLeftNeighbor(element);
 
     // while the candidates are within the current page
     // (below the element from which the last registered page starts):
@@ -467,7 +467,7 @@ export default class Node {
           // I'm looking at the previous element:
           suitableSibling = prev;
           element = prev;
-          prev = element.previousElementSibling;
+          prev = this._DOM.getLeftNeighbor(element);
         }
       } else {
         // * !isNoHanging(prev) - return last computed
@@ -487,7 +487,7 @@ export default class Node {
 
   insertForcedPageBreakAfter(element) {
     const div = this.create(this._selector.printForcedPageBreak);
-    this.insertAfter(element, div);
+    this._DOM.insertAfter(element, div);
     return div;
   }
 
@@ -508,13 +508,17 @@ export default class Node {
     const newHeight = Math.trunc(height * ratio);
     const newWidth = Math.trunc(width * ratio);
 
-    element.style.height = newHeight + 'px';
-    element.style.width = newWidth + 'px';
+    this._DOM.setStyles(element, {
+      height: newHeight + 'px',
+      width:  newWidth  + 'px',
+
+      // todo
+      // margin: '0 auto',
+    });
+
     // In SVG width and height of <rect> elements are attributes and not CSS properties
-    element.setAttribute("height", `${newHeight}px`);
-    element.setAttribute("width", `${newWidth}px`);
-    // todo
-    // element.style.margin = '0 auto';
+    this._DOM.setAttribute(element, "height", `${newHeight}px`);
+    this._DOM.setAttribute(element, "width", `${newWidth}px`);
   }
 
   // CREATE
@@ -527,18 +531,9 @@ export default class Node {
     } else {
       const first = selector.charAt(0);
 
-      if (first === '.') {
-        const cl = selector.substring(1);
+      if (first.match(/[#\[\.]/)) {
         element = this._DOM.createElement('div');
-        element.classList.add(cl);
-      } else if (first === '#') {
-        const id = selector.substring(1);
-        element = this._DOM.createElement('div');
-        element.id = id;
-      } else if (first === '[') {
-        const attr = selector.substring(1, selector.length - 1);
-        element = this._DOM.createElement('div');
-        element.setAttribute(attr, '');
+        this._DOM.setAttribute(element, selector);
       } else if (first.match(/[a-zA-Z]/)) {
         element = this._DOM.createElement(selector);
       } else {
@@ -560,7 +555,7 @@ export default class Node {
 
   createWithFlagNoBreak(style) {
     const element = this.create(this._selector.flagNoBreak);
-    style && (element.style = style);
+    style && this._DOM.setStyles(element, style);
     return element;
   }
 
@@ -614,12 +609,12 @@ export default class Node {
   }) {
     const table = wrapper ? wrapper : this.create('table');
     const tableBody = this.create('TBODY');
-    caption && table.append(caption);
-    colgroup && table.append(colgroup);
-    thead && table.append(thead);
-    tbody && tableBody.append(...tbody);
-    table.append(tableBody);
-    tfoot && table.append(tfoot);
+    caption && this._DOM.insertAtEnd(table, caption);
+    colgroup && this._DOM.insertAtEnd(table, colgroup);
+    thead && this._DOM.insertAtEnd(table, thead);
+    tbody && this._DOM.insertAtEnd(tableBody, ...tbody);
+    this._DOM.insertAtEnd(table, tableBody);
+    tfoot && this._DOM.insertAtEnd(table, tfoot);
     return table;
   }
 
@@ -653,15 +648,15 @@ export default class Node {
   // WRAP
 
   wrapNode(node, wrapper) {
-    node.before(wrapper);
-    wrapper.append(node);
+    this._DOM.insertBefore(node, wrapper);
+    this._DOM.insertAtEnd(wrapper, node);
   }
 
   wrapNodeChildren(node) {
     const children = this.getChildren(node);
     const wrapper = this.create();
-    this.insertAtStart(wrapper, ...children);
-    this.insertAtStart(node, wrapper);
+    this._DOM.insertAtStart(wrapper, ...children);
+    this._DOM.insertAtStart(node, wrapper);
     return wrapper
   }
 
@@ -670,8 +665,8 @@ export default class Node {
       return
     }
     const wrapper = this.create(this._selector.textNode);
-    element.before(wrapper);
-    wrapper.append(element);
+    this._DOM.insertBefore(element, wrapper);
+    this._DOM.insertAtEnd(wrapper, element);
     return wrapper;
   }
 
@@ -717,12 +712,12 @@ export default class Node {
     // *** need to make the getTop work with root = node
     // const initPosition = _rootComputedStyle.position;
     // if (initPosition != 'relative') {
-    //   root.style.position = 'relative';
+    //   this._DOM.setStyles(root, {position: 'relative'});
     // }
 
     // *** 3
     // *** need to revert back to the original positioning of the node
-    // root.style.position = initPosition;
+    // this._DOM.setStyles(root, {position: initPosition});
 
     const offsetParent = this._DOM.getElementOffsetParent(element);
 
@@ -805,39 +800,42 @@ export default class Node {
     // So we make a block element that shows
     // the maximum width of the node in the current context:
     const tempDiv = this.create();
-    node.append(tempDiv);
-    const width = this.getElementWidth(tempDiv);
-    tempDiv.remove();
+    this._DOM.insertAtEnd(node, tempDiv);
+    const width = this._DOM.getElementOffsetWidth(tempDiv);
+    this._DOM.removeNode(tempDiv);
     return width;
   }
 
   getEmptyNodeHeight(node, margins = true) {
     const wrapper = this.create();
-    margins && (wrapper.style.padding = '0.1px');
-    const clone = node.cloneNode(false);
+    margins && this._DOM.setStyles(wrapper, {padding: '0.1px'});
+    const clone = this._DOM.cloneNodeWrapper(node);
     if (this._DOM.getElementTagName(node) === 'TABLE') {
       this._DOM.setInnerHTML(clone, '<tr><td></td></tr>');
     };
-    wrapper.append(clone);
-    node.before(wrapper);
-    const wrapperHeight = wrapper.offsetHeight;
-    wrapper.remove();
+    this._DOM.insertAtEnd(wrapper, clone);
+    this._DOM.insertBefore(node, wrapper);
+    const wrapperHeight = this._DOM.getElementOffsetHeight(wrapper);
+    this._DOM.removeNode(wrapper);
     return wrapperHeight;
   }
 
   getLineHeight(node) {
     const testNode = this.createNeutral();
     // if node has padding, this affects so cant be taken bode clone as wrapper // todo comment
-    // const testNode = node.cloneNode(false);
+    // const testNode = this._DOM.cloneNodeWrapper(node);
     this._DOM.setInnerHTML(testNode, '!');
-    // ! 'absolute' added extra height to the element:
-    // testNode.style.position = 'absolute';
-    // testNode.style.left = '-10000px';
-    // testNode.style.width = '100%';
-    testNode.style.display = 'block';
-    node.append(testNode);
-    const lineHeight = testNode.offsetHeight;
-    testNode.remove();
+    this._DOM.setStyles(testNode, {
+      display: 'block',
+      // ! 'absolute' added extra height to the element:
+      // position: 'absolute',
+      // left: '-10000px',
+      // width: '100%',
+    });
+
+    this._DOM.insertAtEnd(node, testNode);
+    const lineHeight = this._DOM.getElementOffsetHeight(testNode);
+    this._DOM.removeNode(testNode);
     return lineHeight;
   }
 
@@ -846,13 +844,13 @@ export default class Node {
     // * add the specified number of lines to it (num),
     // and detect its actual height through the delta
     // of the tops of the TR following it.
-    const initialTop = tr.offsetTop;
-    const clone = tr.cloneNode(true);
+    const initialTop = this._DOM.getElementOffsetTop(tr);
+    const clone = this._DOM.cloneNode(tr);
     const text = '!<br />'.repeat(num);
     [...clone.children].forEach(td => this._DOM.setInnerHTML(td, text));
-    tr.before(clone);
-    const endTop = tr.offsetTop;
-    clone.remove();
+    this._DOM.insertBefore(tr, clone);
+    const endTop = this._DOM.getElementOffsetTop(tr);
+    this._DOM.removeNode(clone);
     return endTop - initialTop; // TODO?
   }
 
@@ -861,7 +859,9 @@ export default class Node {
   copyNodeWidth(clone, node) {
     // TODO check the fix:
     // * (-1): Browser rounding fix (when converting mm to pixels).
-    clone.style.width = `${this._DOM.getElementOffsetWidth(node) - 1}px`;
+    this._DOM.setStyles(clone, {
+      width: `${this._DOM.getElementOffsetWidth(node) - 1}px`
+    });
   }
 
   lockTableWidths(table) {
@@ -894,8 +894,8 @@ export default class Node {
     })
 
     const testNode = this.createTestNodeFrom(node);
-    testNode.append(...nodeWordItems)
-    node.append(testNode);
+    this._DOM.insertAtEnd(testNode, ...nodeWordItems);
+    this._DOM.insertAtEnd(node, testNode);
 
     return {
       splittedNode,
