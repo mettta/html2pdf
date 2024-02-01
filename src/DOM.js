@@ -85,6 +85,17 @@ export default class DocumentObjectModel {
   getParentNode(element) {
     return element.parentElement;
   }
+
+  getNodeValue(element) {
+    return element.nodeValue;
+  }
+
+  getLastElementChild(element) {
+    return element.lastElementChild;
+  }
+
+  getFirstElementChild(element) {
+    return element.firstElementChild;
   }
 
   getChildNodes(element) {
@@ -144,7 +155,7 @@ export default class DocumentObjectModel {
 
   getAttribute(element, selector) {
     if (!element || !selector) {
-      this._debugMode && this._debugToggler._DOM && console.warn('setAttribute() must have 2 params');
+      this._debugMode && this._debugToggler._DOM && console.warn('getAttribute() must have 2 params');
       return;
     }
 
