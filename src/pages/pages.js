@@ -179,11 +179,15 @@ export default class Pages {
 
     // * find all relevant elements and insert forced page break markers before them.
     forcedPageStarters && forcedPageStarters.forEach(element => {
-      const firstChildParent = this._node.findFirstChildParent(element, this._contentFlow)
-      if (firstChildParent) {
-        element = firstChildParent;
+      // ** If it is not a forced page break element inserted by hand into the code:
+      if(!this._node.isForcedPageBreak(element)) {
+        const firstChildParent = this._node.findFirstChildParent(element, this._contentFlow)
+        if (firstChildParent) {
+          element = firstChildParent;
+        }
+        this._node.insertForcedPageBreakBefore(element);
       }
-      this._node.insertForcedPageBreakBefore(element);
+      // ** In other case we leave it as it is.
     });
 
     // * find all relevant elements and insert forced page break markers after them.
