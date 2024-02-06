@@ -58,6 +58,8 @@ const SELECTOR = {
   splitted: '[html2pdf-splitted]',
   neutral: 'html2pdf-neutral',
   textNode: 'html2pdf-text-node',
+  textLine: 'html2pdf-text-line',
+  textGroup: 'html2pdf-text-group',
   complexTextBlock: 'html2pdf-complex-text-block',
   printForcedPageBreak: 'html2pdf-print-forced-page-break',
 

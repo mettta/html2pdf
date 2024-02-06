@@ -197,6 +197,14 @@ export default class Node {
     return this.isSelectorMatching(element, this._selector.textNode)
   }
 
+  isWrappedTextLine(element) {
+    return this.isSelectorMatching(element, this._selector.textLine)
+  }
+
+  isWrappedTextGroup(element) {
+    return this.isSelectorMatching(element, this._selector.textGroup)
+  }
+
   isPageStartElement(element) {
     return this.isSelectorMatching(element, this._selector.pageStartMarker)
   }
@@ -211,6 +219,8 @@ export default class Node {
 
   isNoBreak(element, _style = this._DOM.getComputedStyle(element)) {
     return this.isSelectorMatching(element, this._selector.flagNoBreak)
+        || this.isWrappedTextLine(element)
+        || this.isWrappedTextGroup(element)
         || this.isInlineBlock(_style)
         || this.notSolved(element);
     // TODO
@@ -562,6 +572,14 @@ export default class Node {
 
   createNeutral() {
     return this.create(this._selector.neutral)
+  }
+
+  createTextLine() {
+    return this.create(this._selector.textLine)
+  }
+
+  createTextGroup() {
+    return this.create(this._selector.textGroup)
   }
 
   createWithFlagNoBreak(style) {

@@ -916,41 +916,13 @@ export default class Pages {
       return this._getChildren(node);
     }
 
-    // GET CHILDREN
-
-    // console.log('\n\n\n\n\n\n');
-    // const o = node.cloneNode(true);
-    // console.log('before', o);
-
-    // console.log('\n\nAAAAAAA');
-    // const a = node.cloneNode(true);
-    // const nodeChildrenA = this._getChildren(a).map(
-    //   item => {return [
-    //     item,
-    //     item.innerHTML
-    //   ]}
-    // );
-    // console.log(a, 'nodeChildrenA', nodeChildrenA);
-
-    // console.log('\n\nBBBBBBBBB');
-    // const b = node.cloneNode(true);
-    // const nodeChildrenB = [...this._DOM.getChildren(b)].map(
-    //   item => {return [
-    //     item,
-    //     item.innerHTML
-    //   ]}
-    // );
-    // console.log(b, 'nodeChildrenB', nodeChildrenB);
-
-    // console.log('\n\n\n\n\n\n');
-
-    // Она уже обработана - можно просто взять детей ?? -- так разбивается только первая строка
-    // TODO (вложенные не работают - теряется внутренний 2й как минимум)
-    // const nodeChildren = [...this._DOM.getChildren(node)]; // а так не считывается текстовая нода
-    // const nodeChildren = this._getChildren(node); // а так дважды обрабатывается _processInlineChildren
-    // ? FIX was made in _getChildren(element)
 
     const nodeChildren = this._getChildren(node);
+
+    this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log(
+      '🚸 nodeChildren \n',
+      [...nodeChildren]
+    );
 
     const complexChildren = nodeChildren.map(
       element => {
@@ -1082,25 +1054,30 @@ export default class Pages {
     const linedChildren = newComplexChildrenGroups.map(
       (arr, index) => {
         // * Create a new line
-        const line = this._node.createWithFlagNoBreak();
-        (arr.length > 1) && line.classList.add('group🛗');
-        line.setAttribute('role', 'group〰️');
+        let newLine;
+
+        // const line = this._node.createWithFlagNoBreak();
+        // (arr.length > 1) && line.classList.add('group🛗');
+        // line.setAttribute('role', 'group〰️');
 
         if (arr.length == 0) {
-          line.setAttribute('role', '🚫');
+          newLine = arr[0];
+          newLine.setAttribute('role', '🚫');
           console.assert(arr.length == 0, 'The string cannot be empty (_splitComplexTextBlockIntoLines)')
         } else if (arr.length == 1) {
-          line.setAttribute('role', 'line');
+          newLine = arr[0];
         } else {
-          line.setAttribute('role', 'group');
+          const group = this._node.createTextGroup();
+          newLine = group;
+          // * Replace the array of elements with a line
+          // * that contains all these elements:
+          this._DOM.insertBefore(arr[0], newLine);
+          this._DOM.insertAtEnd(newLine, ...arr);
         }
-        line.dataset.index = index;
-        // * Replace the array of elements with a line
-        // * that contains all these elements:
-        this._DOM.insertBefore(arr[0], line);
-        this._DOM.insertAtEnd(line, ...arr);
+        newLine.dataset.child = index;
+
         // * Return a new unbreakable line.
-        return line;
+        return newLine;
       }
     );
 
@@ -1152,11 +1129,7 @@ export default class Pages {
     // * insert new lines before the source element,
     const newLines = beginnerNumbers.reduce(
       (result, currentElement, currentIndex) => {
-        const line = this._DOM.cloneNodeWrapper(splittedItem);
-        this._node.setFlagNoBreak(line); // TODO ?
-
-        this._DOM.setAttribute(line, '[role]', 'line-simplest');
-        this._DOM.setAttribute(line, '.cloned🅱️');
+        const line = this._node.createTextLine();
 
         const start = beginnerNumbers[currentIndex];
         const end = beginnerNumbers[currentIndex + 1];
