@@ -378,11 +378,22 @@ export default class Node {
     return vert;
   }
   // TODO: isLineChanged vs isLineKept: можно сделать else? они противоположны
-  isLineKept(current, next) {
+  isLineKept(current, next, debug) {
     // * (-1): Browser rounding fix (when converting mm to pixels).
-    const delta = this._DOM.getElementOffsetTop(next)
-                - this._DOM.getElementOffsetBottom(current);
-    const vert = delta <= (-2);
+    const currentBottom = this._DOM.getElementOffsetBottom(current);
+    const nextTop = this._DOM.getElementOffsetTop(next);
+    const delta = currentBottom - nextTop;
+    const vert = delta >= 2;
+    debug && console.group('isLineKept?')
+    debug && console.log(
+      '\n',
+      vert,
+      '\n',
+      '\n currentBottom', currentBottom, [current],
+      '\n nextTop', nextTop, [next],
+'\n delta', delta,
+      );
+      debug && console.groupEnd('isLineKept?')
     return vert;
   }
 

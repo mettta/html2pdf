@@ -29,7 +29,7 @@ export default class Pages {
       _parseNode: false,
       _parseNodes: false,
       _registerPageStart: false,
-      _getProcessedChildren: false,
+      _getProcessedChildren: true,
       _splitPreNode: false,
       _splitTableNode: true,
       _splitTableRow: true,
@@ -972,6 +972,11 @@ export default class Pages {
       }
     );
 
+    this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log(
+      '🚸 complexChildren \n',
+      [...complexChildren]
+    );
+
     // !!!
     // ? break it all down into lines
 
@@ -988,6 +993,11 @@ export default class Pages {
       return item.element;
     });
 
+    this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log(
+      '🚸 newComplexChildren \n',
+      [...newComplexChildren]
+    );
+
     // * Prepare an array of arrays containing references to elements
     // * that fit into the same row:
     const newComplexChildrenGroups = newComplexChildren.reduce(
@@ -997,20 +1007,27 @@ export default class Pages {
         if(this._DOM.getElementTagName(currentElement) === 'BR' ) {
           result.at(-1).push(currentElement);
           result.push([]); // => will be: result.at(-1).length === 0;
+          this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines
+            && console.log('br; push:', currentElement);
           return result;
         }
 
         // * If this is the beginning, or if a new line:
         if(!result.length || this._node.isLineChanged(result.at(-1).at(-1), currentElement)) {
           result.push([currentElement]);
+          this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines
+            && console.log('start new line:', currentElement);
           return result;
         }
 
         // TODO: isLineChanged vs isLineKept: можно сделать else? они противоположны
         if(
           result.at(-1).length === 0 // the last element was BR
-          || (result.length && this._node.isLineKept(result.at(-1).at(-1), currentElement))
+          || (result.length && this._node.isLineKept(result.at(-1).at(-1), currentElement, true))
         ) {
+          this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines
+            && console.log('⬆ add to line:', currentElement
+            );
           result.at(-1).push(currentElement);
           return result;
         }
@@ -1026,15 +1043,16 @@ export default class Pages {
       }, []
     );
 
+    this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log(
+      '🟡🟡🟡 newComplexChildrenGroups \n',
+      newComplexChildrenGroups.length,
+      [...newComplexChildrenGroups]
+    );
+
     // Consider the paragraph partitioning settings:
     // * this._minBreakableLines
     // * this._minLeftLines
     // * this._minDanglingLines
-
-    this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log(
-      '🟡🟡🟡 newComplexChildrenGroups',
-      newComplexChildrenGroups
-    );
 
     if (newComplexChildrenGroups.length < this._minBreakableLines) {
       this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log(
@@ -1049,6 +1067,13 @@ export default class Pages {
 
     const firstUnbreakablePart = newComplexChildrenGroups.slice(0, this._minLeftLines).flat();
     const lastUnbreakablePart = newComplexChildrenGroups.slice(-this._minDanglingLines).flat();
+    console.log('⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️',
+    [...newComplexChildrenGroups],
+    '\n',
+     this._minLeftLines, firstUnbreakablePart,
+    '\n',
+     this._minDanglingLines, lastUnbreakablePart
+     )
     newComplexChildrenGroups.splice(0, this._minLeftLines, firstUnbreakablePart);
     newComplexChildrenGroups.splice(-this._minDanglingLines, this._minDanglingLines, lastUnbreakablePart);
 
@@ -1602,7 +1627,7 @@ export default class Pages {
       this._debugMode && this._debugToggler._splitTableRow && console.log(
         `%c 🟪 Check the Row # ${index}`, 'color:blueviolet',
         [ distributedRows[index] ],
-        [...distributedRows]
+        // [...distributedRows]
       );
 
       const currentRow = distributedRows[index];
@@ -1632,7 +1657,7 @@ export default class Pages {
           // * Let's split table row [index]
 
           this._debugMode && this._debugToggler._splitTableRow && console.groupCollapsed(
-            `🟪 🟪 Split The ROW.${splittingRowIndex}`
+            `Split The ROW.${splittingRowIndex}`
           );
 
           const rowFirstPartHeight = currentPageBottom - splittingRowTop - splittingEmptyRowHeight;
@@ -2196,7 +2221,7 @@ export default class Pages {
       } else { // nextElementTop > floater
               // currentElement ?
 
-        this._debugMode && this._debugToggler._getInternalSplitters && console.log('💟💟', `nextElementTop > floater \n ${nextElementTop} > ${floater} `,);
+        this._debugMode && this._debugToggler._getInternalSplitters && console.log('💟💟', currentElement, `nextElementTop > floater \n ${nextElementTop} > ${floater} `,);
 
         if (this._node.isSVG(currentElement) || this._node.isIMG(currentElement)) {
           // TODO needs testing
