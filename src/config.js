@@ -13,8 +13,8 @@ export default function createConfig(params) {
 
     // Register option to print for informational purposes:
     preloader: false,
-    preloaderTarget: false,
-    preloaderBackground: false,
+    preloaderTarget: '',
+    preloaderBackground: '',
 
     mask: false,
 
@@ -26,11 +26,11 @@ export default function createConfig(params) {
     // * Left for code navigation purposes.
     // initialRoot: '[html2pdf]', // TODO: make the config dependent on SELECTOR
 
-    noHangingSelectors: false,
-    forcedPageBreakSelectors: false,
-    pageBreakBeforeSelectors: false,
-    pageBreakAfterSelectors: false,
-    noBreakSelectors: false,
+    noHangingSelectors: '',
+    forcedPageBreakSelectors: '',
+    pageBreakBeforeSelectors: '',
+    pageBreakAfterSelectors: '',
+    noBreakSelectors: '',
 
     // toc
     tocPageNumberSelector: 'html2pdf-toc-page-number', // TODO: make the config dependent on SELECTOR
@@ -137,7 +137,15 @@ export default function createConfig(params) {
     ...measurement
   };
 
-  // console.info('HTML2PDF4DOC config with converted units:', config);
+  // * Add default page-breaking selectors selectors
+  // * for to nicely divide the elements of a document:
+  config.noHangingSelectors = config.noHangingSelectors + ' H1 H2 H3 H4 H5 H6';
+  config.forcedPageBreakSelectors = config.forcedPageBreakSelectors + ' ' + SELECTOR.printForcedPageBreak;
+  // config.pageBreakBeforeSelectors = '';
+  // config.pageBreakAfterSelectors = '';
+  // config.noBreakSelectors = '';
+
+  console.info('HTML2PDF4DOC config with converted units:', config);
 
   return config;
 }

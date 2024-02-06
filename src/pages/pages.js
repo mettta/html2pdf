@@ -1,12 +1,12 @@
-import calculateSplitters from './calculateSplitters';
-import findSplitId from './findSplitId';
-// import splitArrayBySplitFlag from './splitArrayBySplitFlag';
+import arrayFromString from './arrayFromString';
 
 const CONSOLE_CSS_COLOR_PAGES = '#66CC00';
 const CONSOLE_CSS_PRIMARY_PAGES = `color: ${CONSOLE_CSS_COLOR_PAGES};font-weight:bold`;
 const CONSOLE_CSS_LABEL_PAGES = `border:1px solid ${CONSOLE_CSS_COLOR_PAGES};`
                               + `background:#EEEEEE;`
                               + `color:${CONSOLE_CSS_COLOR_PAGES};`
+
+const CONSOLE_CSS_END_LABEL = `background:#999;color:#FFF;padding: 0 4px;`;
 
 // SEE splitByWordsGreedyWithSpacesFilter(node) in DOM
 const WORD_JOINER = '';
@@ -24,8 +24,8 @@ export default class Pages {
   }) {
 
     // * From config:
-    this.debugMode = config.debugMode;
-    this.debugToggler = {
+    this._debugMode = config.debugMode;
+    this._debugToggler = {
       _parseNode: false,
       _parseNodes: false,
       _registerPageStart: false,
@@ -39,54 +39,56 @@ export default class Pages {
       _splitComplexTextBlockIntoLines: false,
     }
 
-    this.selector = selector;
-    this.node = node;
+    // * Private
+    this._selector = selector; // todo one occurrence
+    this._node = node;
 
     // TODO remove from fields:
     // no hanging params:
-    this.noHangingSelectors = this._prepareNoHangingSelector(config.noHangingSelectors);
+    this._noHangingSelectors = arrayFromString(config.noHangingSelectors);
     // forced Page Break params:
-    this.pageBreakBeforeSelectors = this._arrayFromString(config.pageBreakBeforeSelectors);
-    this.pageBreakAfterSelectors = this._arrayFromString(config.pageBreakAfterSelectors);
-    this.forcedPageBreakSelectors = this._prepareForcedPageBreakSelector(config.forcedPageBreakSelectors);
+    this._pageBreakBeforeSelectors = arrayFromString(config.pageBreakBeforeSelectors);
+    this._pageBreakAfterSelectors = arrayFromString(config.pageBreakAfterSelectors);
+    this._forcedPageBreakSelectors = arrayFromString(config.forcedPageBreakSelectors);
     // do not break params:
-    this.noBreakSelectors = this._arrayFromString(config.noBreakSelectors);
+    this._noBreakSelectors = arrayFromString(config.noBreakSelectors);
+    // to be deleted from the DOM params:
+    this._garbageSelectors = arrayFromString(config.garbageSelectors);
 
     // ***:
-    this.DOM = DOM;
+    this._DOM = DOM;
 
-    this.root = layout.root;
-    this.contentFlow = layout.contentFlow;
+    this._root = layout.root;
+    this._contentFlow = layout.contentFlow;
 
-    this.referenceWidth = referenceWidth;
-    this.referenceHeight = referenceHeight;
+    this._referenceWidth = referenceWidth;
+    this._referenceHeight = referenceHeight;
 
     // todo
     // 1) move to config
     // Paragraph:
-    this.minLeftLines = 2;
-    this.minDanglingLines = 2;
-    this.minBreakableLines = this.minLeftLines + this.minDanglingLines;
+    this._minLeftLines = 2;
+    this._minDanglingLines = 2;
+    this._minBreakableLines = this._minLeftLines + this._minDanglingLines;
     // Table:
-    this.minLeftRows = 2;
-    this.minDanglingRows = 2;
-    this.minBreakableRows = this.minLeftRows + this.minDanglingRows;
+    // # can be a single row with long content
+    this._minLeftRows = 0;
+    this._minDanglingRows = 0;
+    this._minBreakableRows = this._minLeftRows + this._minDanglingRows;
     // Code:
-    this.minPreFirstBlockLines = 3;
-    this.minPreLastBlockLines = 3;
-    this.minPreBreakableLines = this.minPreFirstBlockLines + this.minPreLastBlockLines;
+    this._minPreFirstBlockLines = 3;
+    this._minPreLastBlockLines = 3;
+    this._minPreBreakableLines = this._minPreFirstBlockLines + this._minPreLastBlockLines;
     // Grid:
-    this.minBreakableGridRows = 4;
+    this._minBreakableGridRows = 4;
 
-    this.imageReductionRatio = 0.8;
+    this._imageReductionRatio = 0.8;
 
     // TODO move to config
-    this.signpostHeight = 24;
+    this._signpostHeight = 24;
 
-    this.pages = [];
-
-    this.commonLineHeight = this.DOM.getLineHeight(this.root);
-    this.minimumBreakableHeight = this.commonLineHeight * this.minBreakableLines;
+    this._commonLineHeight = this._node.getLineHeight(this._root);
+    this._minimumBreakableHeight = this._commonLineHeight * this._minBreakableLines;
 
     // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browsers
     // Firefox 1.0+
@@ -94,137 +96,144 @@ export default class Pages {
     // * Reason: caption is considered as an external element
     // * and is not taken into account in calculation
     // * of offset parameters of table rows.
-    this.isFirefox = typeof InstallTrigger !== 'undefined';
+    this._isFirefox = typeof InstallTrigger !== 'undefined';
+
+    // * Public
+
+    this.pages = [];
   }
 
   calculate() {
-    this.node.init();
+    this._node.init();
 
+    this._removeGarbageElements();
     this._prepareForcedPageBreakElements();
     this._prepareNoBreakElements();
     this._prepareNoHangingElements();
     this._calculate();
-    this.debugMode && console.log('%c ✔ Pages.calculate()', CONSOLE_CSS_LABEL_PAGES, this.pages);
+    this._debugMode && console.log('%c ✔ Pages.calculate()', CONSOLE_CSS_LABEL_PAGES, this.pages);
 
     return this.pages;
   }
 
-  _prepareNoHangingElements() {
-    if (this.noHangingSelectors) {
-      const elements = this.DOM.findAllSelectorsInside(this.contentFlow, this.noHangingSelectors);
+  _removeGarbageElements() {
+    if (this._garbageSelectors.length) {
+      const elements = this._node.getAll(this._garbageSelectors, this._contentFlow);
       elements.forEach(element => {
-        this.DOM.setFlagNoHanging(element);
-        const lastChildParent = this.DOM.findLastChildParent(element, this.contentFlow)
+        this._DOM.removeNode(element)
+      });
+    }
+  }
+
+  _prepareNoHangingElements() {
+    if (this._noHangingSelectors.length) {
+      const elements = this._node.getAll(this._noHangingSelectors, this._contentFlow);
+      elements.forEach(element => {
+        this._node.setFlagNoHanging(element);
+        const lastChildParent = this._node.findLastChildParent(element, this._contentFlow)
         if (lastChildParent) {
-          this.DOM.setFlagNoHanging(lastChildParent);
+          this._node.setFlagNoHanging(lastChildParent);
         }
       });
     }
   }
 
   _prepareNoBreakElements() {
-    if (this.noBreakSelectors) {
-      const elements = this.DOM.findAllSelectorsInside(this.contentFlow, this.noBreakSelectors);
-      elements.forEach(element => this.DOM.setFlagNoBreak(element));
+    if (this._noBreakSelectors.length) {
+      const elements = this._node.getAll(this._noBreakSelectors, this._contentFlow);
+      elements.forEach(element => this._node.setFlagNoBreak(element));
     }
   }
 
   _prepareForcedPageBreakElements() {
-    const pageStarters = this.pageBreakBeforeSelectors
-                       ? this.DOM.findAllSelectorsInside(this.contentFlow, this.pageBreakBeforeSelectors)
+    const pageStarters = this._pageBreakBeforeSelectors.length
+                       ? this._node.getAll(this._pageBreakBeforeSelectors, this._contentFlow)
                        : [];
-    const pageEnders = this.pageBreakAfterSelectors
-                     ? this.DOM.findAllSelectorsInside(this.contentFlow, this.pageBreakAfterSelectors)
+    const pageEnders = this._pageBreakAfterSelectors.length
+                     ? this._node.getAll(this._pageBreakAfterSelectors, this._contentFlow)
                      : [];
     // there's at least one element:
-    const forcedPageStarters = this.DOM.findAllSelectorsInside(this.contentFlow, this.forcedPageBreakSelectors);
+    const forcedPageStarters = this._node.getAll(this._forcedPageBreakSelectors, this._contentFlow);
 
     // ** If the element is the FIRST child of nested FIRST children of a content flow,
     // ** we do not process it further for page breaks.
     // ** This ensures that page breaks are only made where they have not already been made for other reasons.
-    if (this.DOM.isFirstChildOfFirstChild(pageStarters[0], this.contentFlow)) {
+    if (this._node.isFirstChildOfFirstChild(pageStarters[0], this._contentFlow)) {
       pageStarters.shift()
     };
     // ** If the element is the LAST child of nested LAST children of a content flow,
     // ** we do not process it further for page breaks.
     // ** This ensures that page breaks are only made where they have not already been made for other reasons.
-    if (this.DOM.isLastChildOfLastChild(pageEnders.at(-1), this.contentFlow)) {
+    if (this._node.isLastChildOfLastChild(pageEnders.at(-1), this._contentFlow)) {
       pageEnders.pop()
     };
 
     // * find all relevant elements and insert forced page break markers before them.
     pageStarters.length && pageStarters.forEach(element => {
-      const firstChildParent = this.DOM.findFirstChildParent(element, this.contentFlow);
+      const firstChildParent = this._node.findFirstChildParent(element, this._contentFlow);
       if (firstChildParent) {
         element = firstChildParent;
       };
-      this.DOM.insertForcedPageBreakBefore(element);
+      this._node.insertForcedPageBreakBefore(element);
     });
 
     // * find all relevant elements and insert forced page break markers before them.
     forcedPageStarters && forcedPageStarters.forEach(element => {
-      const firstChildParent = this.DOM.findFirstChildParent(element, this.contentFlow)
+      const firstChildParent = this._node.findFirstChildParent(element, this._contentFlow)
       if (firstChildParent) {
         element = firstChildParent;
       }
-      this.DOM.insertForcedPageBreakBefore(element);
+      this._node.insertForcedPageBreakBefore(element);
     });
 
     // * find all relevant elements and insert forced page break markers after them.
     pageEnders.length && pageEnders.forEach(element => {
-      const lastChildParent = this.DOM.findLastChildParent(element, this.contentFlow)
+      const lastChildParent = this._node.findLastChildParent(element, this._contentFlow)
       if (lastChildParent) {
         element = lastChildParent;
       }
       // If there are AFTER and BEFORE breaks - insert only one.
-      if (!this.DOM.isForcedPageBreak(element.nextElementSibling)) {
-        this.DOM.insertForcedPageBreakAfter(element);
+      if (!this._node.isForcedPageBreak(element.nextElementSibling)) {
+        this._node.insertForcedPageBreakAfter(element);
       } // else pass
     });
 
   }
 
   _calculate() {
-    this.debugMode && console.log('%c ▼▼▼ Pages ▼▼▼ ', CONSOLE_CSS_LABEL_PAGES);
 
-    this.debugMode && console.groupCollapsed('•• init data ••');
-    this.debugMode && console.log(
-      'this.referenceHeight', this.referenceHeight,
+    this._debugMode && console.groupCollapsed('•• init data ••');
+    this._debugMode && console.log(
+      'this._referenceHeight', this._referenceHeight,
       '\n',
-      'this.noHangingSelectors', this.noHangingSelectors,
+      'this._noHangingSelectors', this._noHangingSelectors,
       '\n',
-      'this.pageBreakBeforeSelectors', this.pageBreakBeforeSelectors,
+      'this._pageBreakBeforeSelectors', this._pageBreakBeforeSelectors,
       '\n',
-      'this.pageBreakAfterSelectors', this.pageBreakAfterSelectors,
+      'this._pageBreakAfterSelectors', this._pageBreakAfterSelectors,
       '\n',
-      'this.forcedPageBreakSelectors', this.forcedPageBreakSelectors,
+      'this._forcedPageBreakSelectors', this._forcedPageBreakSelectors,
       '\n',
-      'this.noBreakSelectors', this.noBreakSelectors,
+      'this._noBreakSelectors', this._noBreakSelectors,
       '\n',
-      'isFirefox', this.isFirefox,
+      'isFirefox', this._isFirefox,
     );
-    this.debugMode && console.groupEnd();
+    this._debugMode && console.groupEnd('•• init data ••');
+
+    // * add a safeguard elements to the start and end of content flow,
+    const {contentFlowStart, contentFlowEnd} = this._node.addContentFlowStartAndEnd(this._contentFlow);
+    // register a FIRST page
+    this._registerPageStart(contentFlowStart);
 
     // IF contentFlow is less than one page,
 
-    if (this.DOM.getElementRootedRealBottom(this.contentFlow, this.root) < this.referenceHeight) {
+    if (this._node.getBottomWithMargin(this._contentFlow, this._root) < this._referenceHeight) {
       // In the case of a single page,
-      // the markup was inserted BEFORE the contentFlow.
-      // Because our script is lazy and won't go through the children
-      // if it's not necessary.
-      // So we insert the contentFlowStart element and register it
-      // as the start of the page.
-      // In doing so, we still don't examine the contentFlow children.
-
-      // register a FIRST page
-      // todo: make a DOM function
-      const contentFlowStart = this.DOM.create('[data-content-flow-start]');
-      this.DOM.insertAtStart(this.contentFlow, contentFlowStart);
-      this._registerPageStart(contentFlowStart);
+      // we don't examine the contentFlow children.
 
       // Check for forced page breaks, and if they are, we register these pages.
       // If not - we'll have a single page.
-      this.DOM.findAllForcedPageBreakInside(this.contentFlow).forEach(
+      this._node.findAllForcedPageBreakInside(this._contentFlow).forEach(
         element => this._registerPageStart(element)
       );
 
@@ -233,14 +242,10 @@ export default class Pages {
 
     // ELSE:
 
-    const content = this._getChildren(this.contentFlow);
-    this.debugMode && console.groupCollapsed('%c🚸 children(contentFlow)', CONSOLE_CSS_LABEL_PAGES);
-    this.debugMode && console.log(content);
-    this.debugMode && console.groupEnd();
-
-    // TODO put this into main calculations?
-    // FIRST ELEMENT: register the beginning of the first page.
-    this._registerPageStart(content[0]);
+    const content = this._getChildren(this._contentFlow);
+    this._debugMode && console.groupCollapsed('%c🚸 children(contentFlow)', CONSOLE_CSS_LABEL_PAGES);
+    this._debugMode && console.log(content);
+    this._debugMode && console.groupEnd('%c🚸 children(contentFlow)', CONSOLE_CSS_LABEL_PAGES);
 
     this._parseNodes({
       // don't register the parent here,
@@ -252,25 +257,25 @@ export default class Pages {
 
   _registerPageStart(pageStart, improveResult = false) {
     if (improveResult) {
-      const firstChildParent = this.DOM.findFirstChildParent(pageStart, this.contentFlow);
+      const firstChildParent = this._node.findFirstChildParent(pageStart, this._contentFlow);
       pageStart = firstChildParent || pageStart;
 
-      const previousCandidate = this.DOM.findPreviousNoHangingsFromPage(
+      const previousCandidate = this._node.findPreviousNoHangingsFromPage(
         pageStart,
         // * limited to the element from which the last registered page starts:
-        this.DOM.getElementRootedTop(this.pages.at(-1)?.pageStart, this.root),
-        this.root
+        this._node.getTop(this.pages.at(-1)?.pageStart, this._root),
+        this._root
       );
       pageStart = previousCandidate || pageStart;
     }
 
-    const pageBottom = this.DOM.getElementRootedRealTop(pageStart, this.root) + this.referenceHeight;
+    const pageBottom = this._node.getTopWithMargin(pageStart, this._root) + this._referenceHeight;
     this.pages.push({
       pageStart: pageStart,
       pageBottom: pageBottom,
     });
-    this.DOM.markPageStartElement(pageStart, this.pages.length);
-    this.debugMode && this.debugToggler._registerPageStart && console.log(
+    this._node.markPageStartElement(pageStart, this.pages.length);
+    this._debugMode && this._debugToggler._registerPageStart && console.log(
       `📍 %c register page ${this.pages.length} \n`, "background:yellow; color:red",
       pageBottom, pageStart,
     )
@@ -283,14 +288,13 @@ export default class Pages {
     parent,
     parentBottom,
   }) {
-    this.debugMode && this.debugToggler._parseNodes && console.log(
+    this._debugMode && this._debugToggler._parseNodes && console.log(
       '🔵 _parseNodes',
       '\narray:', [...array],
       '\ntracedParent:', parent
     );
 
     for (let i = 0; i < array.length; i++) {
-
       this._parseNode({
         previousElement: array[i - 1] || previous,
         currentElement: array[i],
@@ -320,12 +324,12 @@ export default class Pages {
   }) {
     const consoleMark = ['%c_parseNode\n', 'color:white',]
 
-    this.debugMode && this.debugToggler._parseNode && console.group(
+    this._debugMode && this._debugToggler._parseNode && console.group(
       `%c_parseNode`, CONSOLE_CSS_PRIMARY_PAGES,
       `${parentBottom ? '★last★' : ''}`
       );
 
-    this.debugMode && this.debugToggler._parseNode && console.log(
+    this._debugMode && this._debugToggler._parseNode && console.log(
       ...consoleMark,
       '3 nodes: ',
       {
@@ -343,43 +347,47 @@ export default class Pages {
     // * If we want to start a new page from the current node,
     // * which is the first child (i == 0),
     // * we want to register its parent as the start of the page.
-    const currentOrParentElement = (isCurrentFirst && parent) ? parent : currentElement;
+    //// const currentOrParentElement = (isCurrentFirst && parent) ? parent : currentElement;
 
-    this.debugMode && this.debugToggler._parseNode && console.log(
+    this._debugMode && this._debugToggler._parseNode && console.log(
       ...consoleMark,
       'parent:', parent,
       '\n',
       'parentBottom:', parentBottom,
       '\n',
-      'currentOrParentElement:', currentOrParentElement,
+      'isCurrentFirst:', isCurrentFirst,
+      '\n',
+      'parent:', parent,
       '\n'
     );
 
     // THE END of content flow:
     // if there is no next element, then we are in a case
-    // where the [data-content-flow-end] element is current.
+    // where the 'html2pdf-content-flow-end' element is current.
     if (!nextElement) {
-      this.debugMode && this.debugToggler._parseNode && console.groupEnd()
+      this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (!nextElement)', CONSOLE_CSS_END_LABEL);
+      this._debugMode && this._debugToggler._parseNode && console.groupEnd()
       return
     }
 
     // FORCED BREAK
-    if (this.DOM.isForcedPageBreak(currentElement)) {
+    if (this._node.isForcedPageBreak(currentElement)) {
       // TODO I've replaced the 'next' with the 'current' - need to test it out
       this._registerPageStart(currentElement)
-      this.debugMode && this.debugToggler._parseNode && console.groupEnd();
+      this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (isForcedPageBreak)', CONSOLE_CSS_END_LABEL);
+      this._debugMode && this._debugToggler._parseNode && console.groupEnd();
       return
     }
 
-    this.debugMode
+    this._debugMode
       && console.assert( // is filtered in the function _gerChildren()
-      this.DOM.getElementOffsetParent(currentElement),
+      this._DOM.getElementOffsetParent(currentElement),
       'it is expected that the element has an offset parent',
       currentElement);
 
     const newPageBottom = this.pages.at(-1).pageBottom;
-    const nextElementTop = this.DOM.getElementRootedTop(nextElement, this.root);
-    this.debugMode && this.debugToggler._parseNode && console.log(...consoleMark,
+    const nextElementTop = this._node.getTop(nextElement, this._root);
+    this._debugMode && this._debugToggler._parseNode && console.log(...consoleMark,
       '• newPageBottom', newPageBottom,
       '\n',
       '• nextElementTop',nextElementTop,
@@ -388,7 +396,7 @@ export default class Pages {
     // TODO if next elem is SVG it has no offset Top!
 
     if (nextElementTop <= newPageBottom) {
-      this.debugMode && this.debugToggler._parseNode && console.log(
+      this._debugMode && this._debugToggler._parseNode && console.log(
         'nextElementTop <= newPageBottom', nextElementTop, '<=', newPageBottom
       )
       // * IF: nextElementTop <= newPageBottom,
@@ -396,7 +404,7 @@ export default class Pages {
 
       // ** Check for page break markers inside.
       // ** If there are - register new page starts.
-      this.DOM.findAllForcedPageBreakInside(currentElement).forEach(
+      this._node.findAllForcedPageBreakInside(currentElement).forEach(
         element => this._registerPageStart(element)
       );
       // TODO: это может быть внутри таблицы или другого элемента,
@@ -405,7 +413,7 @@ export default class Pages {
 
       // * ... then continue.
     } else {
-      this.debugMode && this.debugToggler._parseNode && console.log(
+      this._debugMode && this._debugToggler._parseNode && console.log(
         'nextElementTop > newPageBottom', nextElementTop, '>', newPageBottom
       )
       // * ELSE IF: nextElementTop > newPageBottom,
@@ -416,8 +424,8 @@ export default class Pages {
       // *** (2) must be split
 
       // * Check the possibility of (0)
-      if (this._isNoHanging(currentElement)) {
-        this.debugMode && this.debugToggler._parseNode && console.log(
+      if (this._node.isNoHanging(currentElement)) {
+        this._debugMode && this._debugToggler._parseNode && console.log(
           'currentElement _isNoHanging => move it to the next page'
         )
         // ** if currentElement can't be the last element on the page,
@@ -427,7 +435,8 @@ export default class Pages {
         // this._registerPageStart(currentElement);
         // ** And if it's the first child, move the parent node to the next page.
         this._registerPageStart(currentElement, true);
-        this.debugMode && this.debugToggler._parseNode && console.groupEnd();
+        this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (isNoHanging)', CONSOLE_CSS_END_LABEL);
+        this._debugMode && this._debugToggler._parseNode && console.groupEnd();
         return
       }
 
@@ -436,25 +445,25 @@ export default class Pages {
       // IMAGE with optional resizing
       // TODO float images
 
-      if (this._isSVG(currentElement) || this._isIMG(currentElement)) {
+      if (this._node.isSVG(currentElement) || this._node.isIMG(currentElement)) {
 
         // TODO needs testing
 
         // svg has not offset props
-        const currentImage = this._isSVG(currentElement)
+        const currentImage = this._node.isSVG(currentElement)
         // TODO replace with setFlag... and remove wrapper function
         // TODO process at the beginning, find all SVG and set Flag
-          ? this.DOM.wrapWithFlagNoBreak(currentElement)
+          ? this._node.createSignpost(currentElement)
           : currentElement;
 
-        const availableSpace = newPageBottom - this.DOM.getElementRootedTop(currentImage, this.root);
-        const currentImageHeight = this.DOM.getElementHeight(currentImage);
-        const currentImageWidth = this.DOM.getElementWidth(currentImage);
+        const availableSpace = newPageBottom - this._node.getTop(currentImage, this._root);
+        const currentImageHeight = this._DOM.getElementOffsetHeight(currentImage);
+        const currentImageWidth = this._DOM.getElementOffsetWidth(currentImage);
 
         // TODO !!! page width overflow for SVG
-        if (currentImageHeight < this.referenceWidth) {
+        if (currentImageHeight < this._referenceWidth) {
           // just leave it on the current page
-          this.debugMode && this.debugToggler._parseNode
+          this._debugMode && this._debugToggler._parseNode
           && console.warn('%c IMAGE is too wide', 'color: red');
         }
 
@@ -462,25 +471,27 @@ export default class Pages {
         if (currentImageHeight < availableSpace) {
           // just leave it on the current page
           this._registerPageStart(nextElement);
-          this.debugMode && this.debugToggler._parseNode && console.groupEnd();
+          this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode IMG fits', CONSOLE_CSS_END_LABEL);
+          this._debugMode && this._debugToggler._parseNode && console.groupEnd();
           return
         }
 
         // if not, try to fit it
         const ratio = availableSpace / currentImageHeight;
 
-        if (ratio > this.imageReductionRatio) {
+        if (ratio > this._imageReductionRatio) {
           // leave it on the current page
           this._registerPageStart(nextElement);
           // and reduce it a bit
-          this.DOM.fitElementWithinBoundaries({
+          this._node.fitElementWithinBoundaries({
             element: currentElement,
             height: currentImageHeight,
             width: currentImageWidth,
             vspace: availableSpace,
-            hspace: this.referenceWidth
+            hspace: this._referenceWidth
           });
-          this.debugMode && this.debugToggler._parseNode && console.groupEnd();
+          this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode IMG scaled', CONSOLE_CSS_END_LABEL);
+          this._debugMode && this._debugToggler._parseNode && console.groupEnd();
           return
         }
 
@@ -490,37 +501,39 @@ export default class Pages {
         // *** if it's the first child
         this._registerPageStart(currentImage, true);
         // and avoid page overflow if the picture is too big to fit on the page as a whole
-        if (currentImageHeight > this.referenceHeight) {
-          this.DOM.fitElementWithinBoundaries({
+        if (currentImageHeight > this._referenceHeight) {
+          this._node.fitElementWithinBoundaries({
             element: currentElement,
             height: currentImageHeight,
             width: currentImageWidth,
-            vspace: this.referenceHeight,
-            hspace: this.referenceWidth
+            vspace: this._referenceHeight,
+            hspace: this._referenceWidth
           });
         }
-        this.debugMode && this.debugToggler._parseNode && console.groupEnd();
+        this._debugMode && this._debugToggler._parseNode && console.log('%c END', CONSOLE_CSS_END_LABEL);
+        this._debugMode && this._debugToggler._parseNode && console.groupEnd();
         return
       }
 
       // ... in case nextElementTop > newPageBottom
       if(currentElement.style.height) {
         // TODO: create test
-        this.debugMode && this.debugToggler._parseNode && console.log(
+        this._debugMode && this._debugToggler._parseNode && console.log(
           '🥁 currentElement has HEIGHT', currentElement.style.height
         );
         // * If a node has its height set with styles, we handle it as a non-breaking object,
         // * and can just scale it if it doesn't fit on the page.
 
-        const currentElementTop = this.DOM.getElementRootedTop(currentElement, this.root);
+        const currentElementTop = this._node.getTop(currentElement, this._root);
         const availableSpace = newPageBottom - currentElementTop;
         const currentElementContextualHeight = nextElementTop - currentElementTop;
 
         const availableSpaceFactor = availableSpace / currentElementContextualHeight;
-        const fullPageFactor = this.referenceHeight / currentElementContextualHeight;
+        const fullPageFactor = this._referenceHeight / currentElementContextualHeight;
 
-        this.debugMode && this.debugToggler._parseNode && console.log(
+        this._debugMode && this._debugToggler._parseNode && console.log(
           '\n🥁 currentElementTop', currentElementTop,
+          '\n🥁 newPageBottom', newPageBottom,
           '\n🥁 availableSpace', availableSpace,
           '\n🥁 currentElementContextualHeight', currentElementContextualHeight,
           '\n🥁 availableSpaceFactor', availableSpaceFactor,
@@ -532,15 +545,16 @@ export default class Pages {
         // Try to fit currentElement into the remaining space
         // on the current(last) page (availableSpace).
         if(availableSpaceFactor > 0.8) {
-          this.debugMode && this.debugToggler._parseNode && console.log(
+          this._debugMode && this._debugToggler._parseNode && console.log(
             '🥁 availableSpaceFactor > 0.8: ', availableSpaceFactor
           );
           // If, in order for it to fit, it needs to be scaled by no more than 20%,
           // we can afford to scale:
-          this.DOM.setStyles(currentElement, { transform: `scale(${availableSpaceFactor})` });
+          this._DOM.setStyles(currentElement, { transform: `scale(${availableSpaceFactor})` });
           // and start a new page with the next element:
           this._registerPageStart(nextElement);
-          this.debugMode && this.debugToggler._parseNode && console.groupEnd();
+          this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (has height & scale)', CONSOLE_CSS_END_LABEL);
+          this._debugMode && this._debugToggler._parseNode && console.groupEnd();
           return
         }
 
@@ -548,26 +562,27 @@ export default class Pages {
         // And now we'll scale it anyway if it doesn't fit in its entirety.
 
         if(fullPageFactor < 1) {
-          this.debugMode && this.debugToggler._parseNode && console.log(
+          this._debugMode && this._debugToggler._parseNode && console.log(
             '🥁 fullPageFactor < 1: ', fullPageFactor
           );
-          this.DOM.setStyles(currentElement, { transform: `scale(${fullPageFactor})` });
+          this._DOM.setStyles(currentElement, { transform: `scale(${fullPageFactor})` });
         }
 
-        this.debugMode && this.debugToggler._parseNode && console.log(
+        this._debugMode && this._debugToggler._parseNode && console.log(
           '🥁 _registerPageStart', currentElement
         );
         this._registerPageStart(currentElement);
-        this.debugMode && this.debugToggler._parseNode && console.groupEnd();
+        this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (has height & put on next page)', CONSOLE_CSS_END_LABEL);
+        this._debugMode && this._debugToggler._parseNode && console.groupEnd();
         return
       }
 
       // * Check the possibility of (1) or (2): split or not?
 
 
-      const currentElementBottom = parentBottom || this.DOM.getElementRootedRealBottom(currentElement, this.root);
+      const currentElementBottom = parentBottom || this._node.getBottomWithMargin(currentElement, this._root);
 
-      this.debugMode && this.debugToggler._parseNode && console.log(
+      this._debugMode && this._debugToggler._parseNode && console.log(
         'split or not? \n',
         'currentElementBottom', currentElementBottom
       );
@@ -575,7 +590,7 @@ export default class Pages {
       // IF currentElement does fit
       // in the remaining space on the page,
       if (currentElementBottom <= newPageBottom) {
-        this.debugMode && this.debugToggler._parseNode && console.log(
+        this._debugMode && this._debugToggler._parseNode && console.log(
           'currentElementBottom <= newPageBottom', currentElementBottom, '<=', newPageBottom,
           '\n register nextElement as pageStart'
         );
@@ -587,20 +602,21 @@ export default class Pages {
         // * because the previous element surely ends before this one begins,
         // * and so is its previous neighbor, not its parent.
         this._registerPageStart(nextElement);
-        this.debugMode && this.debugToggler._parseNode && console.groupEnd();
+        this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (currentElement fits)', CONSOLE_CSS_END_LABEL);
+        this._debugMode && this._debugToggler._parseNode && console.groupEnd();
         return
       }
 
-      this.debugMode && this.debugToggler._parseNode && console.log(
+      this._debugMode && this._debugToggler._parseNode && console.log(
         'currentElementBottom > newPageBottom', currentElementBottom, '>', newPageBottom
       );
 
       // see if this node is worth paying attention to, based on its height
       // TODO: need to rearrange the order of the condition checks
-      if (this.DOM.getElementHeight(currentElement) + 2 < this.minimumBreakableHeight) {
-        this.debugMode && this.debugToggler._parseNode && console.log(
-          'this.DOM.getElementHeight(currentElement) + 2 < this.minimumBreakableHeight',
-          this.DOM.getElementHeight(currentElement),
+      if (this._DOM.getElementOffsetHeight(currentElement) + 2 < this._minimumBreakableHeight) {
+        this._debugMode && this._debugToggler._parseNode && console.log(
+          'this._DOM.getElementOffsetHeight(currentElement) + 2 < this._minimumBreakableHeight',
+          this._DOM.getElementOffsetHeight(currentElement),
         );
 
         // todo #fewLines
@@ -609,19 +625,20 @@ export default class Pages {
         // ! and the rounding of 1 line will be rougher than 4 -->
         // ! we will get a smaller number than the actual 4 lines, at least by a 2 pixel.
         // todo #mm-px convert mm to px before all calculations and rendering
-        // console.log('??????????????????????????? \n getElementHeight(currentElement) <= this.minimumBreakableHeight',
-        // this.DOM.getElementHeight(currentElement),
+        // console.log('??????????????????????????? \n getElementHeight(currentElement) <= this._minimumBreakableHeight',
+        // this._DOM.getElementOffsetHeight(currentElement),
         //  '<',
-        //  this.minimumBreakableHeight,
+        //  this._minimumBreakableHeight,
         //   currentElement)
         this._registerPageStart(currentElement, true);
-        this.debugMode && this.debugToggler._parseNode && console.groupEnd();
+        this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode #fewLines', CONSOLE_CSS_END_LABEL);
+        this._debugMode && this._debugToggler._parseNode && console.groupEnd();
         return
       }
 
       // otherwise try to break it and loop the children:
-      const children = this._getProcessedChildren(currentElement, newPageBottom, this.referenceHeight);
-      this.debugMode && this.debugToggler._parseNode && console.log(
+      const children = this._getProcessedChildren(currentElement, newPageBottom, this._referenceHeight);
+      this._debugMode && this._debugToggler._parseNode && console.log(
         'try to break it and loop the children:', children
       );
 
@@ -630,9 +647,9 @@ export default class Pages {
       // * Depending on the number of children:
 
       const childrenNumber = children.length;
-      this.debugMode && this.debugToggler._parseNode && console.log(...consoleMark,
+      this._debugMode && this._debugToggler._parseNode && console.log(...consoleMark,
         'childrenNumber ', childrenNumber);
-      this.debugMode && this.debugToggler._parseNode && console.log(...consoleMark,
+      this._debugMode && this._debugToggler._parseNode && console.log(...consoleMark,
         'currentElement ', currentElement);
 
       // TODO #tracedParent
@@ -650,7 +667,7 @@ export default class Pages {
       if (childrenNumber) {
         // * In a fully split node, children replace it,
         // * so we don't take into account the last child bottom margins (parentBottom).
-        const isFullySPlittedParent = this._isFullySPlitted(currentElement);
+        const isFullySPlittedParent = this._node.isFullySPlitted(currentElement);
         // * Process children if exist:
         this._parseNodes({
           array: children,
@@ -663,7 +680,7 @@ export default class Pages {
         // * If no children,
         // * move element to the next page.
         // ** But,
-        if (this._isNoHanging(previousElement)) {
+        if (this._node.isNoHanging(previousElement)) {
           // ** if previousElement can't be the last element on the page,
           // ** move it to the next page.
           this._registerPageStart(previousElement, true);
@@ -671,10 +688,10 @@ export default class Pages {
         } else {
           // TODO #tracedParent
           // this._registerPageStart(currentElement);
-          this.debugMode && this.debugToggler._parseNode && console.log(
+          this._debugMode && this._debugToggler._parseNode && console.log(
             ...consoleMark,
             '_registerPageStart (from _parseNode): \n',
-            currentOrParentElement
+            currentElement
           );
           this._registerPageStart(currentElement, true);
 
@@ -682,17 +699,70 @@ export default class Pages {
       }
     }
 
-    this.debugMode && this.debugToggler._parseNode && console.groupEnd();
+    this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode', CONSOLE_CSS_END_LABEL);
+    this._debugMode && this._debugToggler._parseNode && console.groupEnd();
   }
 
-  _isFullySPlitted(node) {
-    const _style = this.DOM.getComputedStyle(node);
-    return (
-      this._isPRE(node, _style) ||
-      this._isTableNode(node, _style) ||
-      this._isTableLikeNode(node, _style) ||
-      this.DOM.isGridAutoFlowRow(_style) // todo
-    );
+
+  // CHILDREN
+
+  _getChildren(element) {
+    // Check children:
+    // TODO variants
+    // TODO last child
+    // TODO first Li
+
+    // fon display:none / contents
+    // this._DOM.getElementOffsetParent(currentElement)
+
+    // TODO: to do this check more elegant
+    // SEE the context here:
+    // _splitComplexTextBlockIntoLines(node)
+    // ...
+    // const nodeChildren = this._getChildren(node);
+    // * _processInlineChildren (makes ComplexTextBlock) is running extra on complex nodes
+    if (this._node.isComplexTextBlock(element)) {
+      return [...this._DOM.getChildren(element)]
+
+    } else {
+
+      let childrenArr = [...this._DOM.getChildNodes(element)]
+        .reduce(
+          (acc, item) => {
+
+            // * filter STYLE, use element.tagName
+            if (this._node.isSTYLE(item)) {
+              return acc;
+            }
+
+            // * wrap text node, use element.nodeType
+            if (this._node.isSignificantTextNode(item)) {
+              acc.push(this._node.wrapTextNode(item));
+              return acc;
+            }
+
+            // * no offset parent (contains)
+            if (!this._DOM.getElementOffsetParent(item)) {
+              const ch = this._getChildren(item);
+              ch.length > 0 && acc.push(...ch);
+              return acc;
+            }
+
+            // * normal
+            if (this._DOM.isElementNode(item)) {
+              acc.push(item);
+              return acc;
+            };
+
+          }, [])
+
+          if (this._node.isVerticalFlowDisrupted(childrenArr)) {
+            // * If the vertical flow is disturbed and the elements are side by side:
+            childrenArr = this._processInlineChildren(childrenArr);
+          }
+
+      return childrenArr;
+    }
   }
 
   _getProcessedChildren(node, firstPageBottom, fullPageHeight) {
@@ -700,35 +770,32 @@ export default class Pages {
 
     let children = [];
 
-    if (this._isNoBreak(node)) {
+    if (this._node.isNoBreak(node)) {
       // don't break apart, thus keep an empty children array
-      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+      this._debugMode && this._debugToggler._getProcessedChildren && console.info(...consoleMark,
         '🧡 isNoBreak', node);
       return children = [];
 
-    } else if (this.DOM.isComplexTextBlock(node)) {
-      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+    } else if (this._node.isComplexTextBlock(node)) {
+      this._debugMode && this._debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 ComplexTextBlock', node);
       return children = this._splitComplexTextBlockIntoLines(node) || [];
 
-    } else if (this._isTextNode(node)) {
-      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+    } else if (this._node.isWrappedTextNode(node)) {
+      this._debugMode && this._debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TextNode', node);
-      // TODO: Compare performance of _splitComplexTextBlockIntoLines and _splitTextNode!
-      // temporarily use the less productive function.
 
-      // children = this._splitTextNode(node, firstPageBottom, fullPageHeight) || [];
       return children = this._splitComplexTextBlockIntoLines(node) || [];
 
     }
 
-    const nodeComputedStyle = this.DOM.getComputedStyle(node);
+    const nodeComputedStyle = this._DOM.getComputedStyle(node);
 
     // ? TABLE now has conditions that overlap with PRE (except for the tag name),
     // ? so let's check it first.
     // FIXME the order of checks
-    if (this._isTableLikeNode(node, nodeComputedStyle)) {
-      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+    if (this._node.isTableLikeNode(node, nodeComputedStyle)) {
+      this._debugMode && this._debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TABLE like', node);
       children = this._splitTableLikeNode(
         node,
@@ -737,8 +804,8 @@ export default class Pages {
         nodeComputedStyle
       ) || [];
 
-    } else if (this._isTableNode(node, nodeComputedStyle)) {
-      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+    } else if (this._node.isTableNode(node, nodeComputedStyle)) {
+      this._debugMode && this._debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 TABLE', node);
       children = this._splitTableNode(
         node,
@@ -747,8 +814,8 @@ export default class Pages {
         nodeComputedStyle
       ) || [];
 
-    } else if (this._isPRE(node, nodeComputedStyle)) {
-      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+    } else if (this._node.isPRE(node, nodeComputedStyle)) {
+      this._debugMode && this._debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 PRE', node);
       children = this._splitPreNode(
         node,
@@ -756,14 +823,14 @@ export default class Pages {
         fullPageHeight,
       ) || [];
 
-    } else if (this.DOM.isGridAutoFlowRow(this.DOM.getComputedStyle(node))) {
+    } else if (this._node.isGridAutoFlowRow(this._DOM.getComputedStyle(node))) {
       // ** If it is a grid element.
       // ????? Process only some modifications of grids!
       // ***** There's an inline grid check here, too.
       // ***** But since the check for inline is below and real inline children don't get here,
       // ***** it is expected that the current element is either block or actually
       // ***** behaves as a block element in the flow thanks to its content.
-      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+      this._debugMode && this._debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💜 GRID');
       children = this._splitGridNode(
         node,
@@ -773,12 +840,12 @@ export default class Pages {
 
 
       // TODO LI: если в LI есть UL, маркер может оставаться на прежней странице - см. скрин в телеге.
-      // } else if (this._isLiNode(node)) {
+      // } else if (this._node.isLiNode(node)) {
       //   // todo
       //   // now make all except UL unbreakable
       //   const liChildren = this._getChildren(node)
       //     .reduce((acc, child) => {
-      //       if (this.DOM.getElementTagName(child) === 'UL') {
+      //       if (this._DOM.getElementTagName(child) === 'UL') {
       //         acc.push(child);
       //       } else {
       //         // TODO сразу собирать в нейтральный объект
@@ -793,11 +860,11 @@ export default class Pages {
       //     }, []);
 
     } else {
-      this.debugMode && this.debugToggler._getProcessedChildren && console.info(...consoleMark,
+      this._debugMode && this._debugToggler._getProcessedChildren && console.info(...consoleMark,
         '💚 some node', node);
       children = this._getChildren(node);
 
-      this.debugMode && this.debugToggler._getProcessedChildren && console.info(
+      this._debugMode && this._debugToggler._getProcessedChildren && console.info(
         ...consoleMark,
         '🚸 get element children ',
         children
@@ -813,15 +880,15 @@ export default class Pages {
     const newChildren = [];
 
     children.forEach(child => {
-      if (this.DOM.isInline(this.DOM.getComputedStyle(child))) {
+      if (this._node.isInline(this._DOM.getComputedStyle(child))) {
         if (!complexTextBlock) {
           // the first inline child
-          complexTextBlock = this.DOM.createComplexTextBlock();
-          this.DOM.wrapNode(child, complexTextBlock);
+          complexTextBlock = this._node.createComplexTextBlock();
+          this._node.wrapNode(child, complexTextBlock);
           newChildren.push(complexTextBlock);
         }
         // not the first inline child
-        this.DOM.insertAtEnd(complexTextBlock, child)
+        this._DOM.insertAtEnd(complexTextBlock, child)
       } else {
         // A block child is encountered,
         // so interrupt the collection of elements in the complexTextBlock:
@@ -837,68 +904,40 @@ export default class Pages {
 
     // TODO "complexTextBlock"
 
-    this.debugMode
-      && this.debugToggler._splitComplexTextBlockIntoLines
-      && console.group('_splitComplexTextBlockIntoLines');
-    this.debugMode
-      && this.debugToggler._splitComplexTextBlockIntoLines
-      && console.log('_splitComplexTextBlockIntoLines (node)', node);
+    this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.group('_splitComplexTextBlockIntoLines');
+    this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log('_splitComplexTextBlockIntoLines (node)', node);
 
     // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
+    // FIXME Now nodes inside this function are not processed a second time,
+    // FIXME this is fixed via this._DOM.getChildren(node),
+    // FIXME but the check should be moved to the call level,
+    // FIXME this is the _getProcessedChildren() function.
 
-    // TODO [html2pdf-splitted] SELECTOR
-    if (this.DOM.isSelectorMatching(node, '[html2pdf-splitted]')) {
+    if (this._node.isSelectorMatching(node, this._selector.splitted)) {
+      // * This node has already been processed and has lines and groups of lines inside it,
 
-      this.debugMode
-      && this.debugToggler._splitComplexTextBlockIntoLines
-      && console.groupEnd();
-      return this._getChildren(node);
+      this._debugMode && this._debugToggler._parseNode && console.log(`%c END ${this._selector.splitted}`, CONSOLE_CSS_END_LABEL);
+      this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.groupEnd();
+
+      // * so we just return those child elements:
+      return this._DOM.getChildren(node);
     }
-
-    // GET CHILDREN
-
-    // console.log('\n\n\n\n\n\n');
-    // const o = node.cloneNode(true);
-    // console.log('before', o);
-
-    // console.log('\n\nAAAAAAA');
-    // const a = node.cloneNode(true);
-    // const nodeChildrenA = this._getChildren(a).map(
-    //   item => {return [
-    //     item,
-    //     item.innerHTML
-    //   ]}
-    // );
-    // console.log(a, 'nodeChildrenA', nodeChildrenA);
-
-    // console.log('\n\nBBBBBBBBB');
-    // const b = node.cloneNode(true);
-    // const nodeChildrenB = [...this.DOM.getChildren(b)].map(
-    //   item => {return [
-    //     item,
-    //     item.innerHTML
-    //   ]}
-    // );
-    // console.log(b, 'nodeChildrenB', nodeChildrenB);
-
-    // console.log('\n\n\n\n\n\n');
-
-    // Она уже обработана - можно просто взять детей ?? -- так разбивается только первая строка
-    // TODO (вложенные не работают - теряется внутренний 2й как минимум)
-    // const nodeChildren = [...this.DOM.getChildren(node)]; // а так не считывается текстовая нода
-    // const nodeChildren = this._getChildren(node); // а так дважды обрабатывается _processInlineChildren
-    // ? FIX was made in _getChildren(element)
 
     const nodeChildren = this._getChildren(node);
 
+    this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log(
+      '🚸 nodeChildren \n',
+      [...nodeChildren]
+    );
+
     const complexChildren = nodeChildren.map(
       element => {
-        const lineHeight = this.DOM.getLineHeight(element);
-        const height = this.DOM.getElementHeight(element);
-        const left = this.DOM.getElementLeft(element);
-        const top = this.DOM.getElementTop(element);
+        const lineHeight = this._node.getLineHeight(element);
+        const height = this._DOM.getElementOffsetHeight(element);
+        const left = this._DOM.getElementOffsetLeft(element);
+        const top = this._DOM.getElementOffsetTop(element);
         const lines = ~~(height / lineHeight);
-        const text = element.innerHTML;
+        const text = this._DOM.getInnerHTML(element);
 
         return {
           element,
@@ -911,21 +950,31 @@ export default class Pages {
       }
     );
 
+    this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log(
+      '🚸 complexChildren \n',
+      [...complexChildren]
+    );
+
     // !!!
     // ? break it all down into lines
 
     // * Process the children of the block:
     const newComplexChildren = complexChildren.flatMap((item) => {
       // * Break it down as needed:
-      if ((item.lines > 1) && !this._isNoBreak(item.element)) {
+      if ((item.lines > 1) && !this._node.isNoBreak(item.element)) {
         // TODO: add GROUP to no-break elements?
         item.element.classList.add('newComplexChildren🅱️');
         return this._breakItIntoLines(item.element); // array
       }
-      // this.debugMode && console.log('%c no break ', 'color:red', item);
+      // this._debugMode && console.log('%c no break ', 'color:red', item);
       // * otherwise keep the original element:
       return item.element;
     });
+
+    this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log(
+      '🚸 newComplexChildren \n',
+      [...newComplexChildren]
+    );
 
     // * Prepare an array of arrays containing references to elements
     // * that fit into the same row:
@@ -933,29 +982,36 @@ export default class Pages {
       (result, currentElement, currentIndex, array) => {
 
         // * If BR is encountered, we start a new empty line:
-        if(this.DOM.getElementTagName(currentElement) === 'BR' ) {
+        if(this._DOM.getElementTagName(currentElement) === 'BR' ) {
           result.at(-1).push(currentElement);
           result.push([]); // => will be: result.at(-1).length === 0;
+          this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines
+            && console.log('br; push:', currentElement);
           return result;
         }
 
         // * If this is the beginning, or if a new line:
-        if(!result.length || this.DOM.isLineChanged(result.at(-1).at(-1), currentElement)) {
+        if(!result.length || this._node.isLineChanged(result.at(-1).at(-1), currentElement)) {
           result.push([currentElement]);
+          this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines
+            && console.log('start new line:', currentElement);
           return result;
         }
 
         // TODO: isLineChanged vs isLineKept: можно сделать else? они противоположны
         if(
           result.at(-1).length === 0 // the last element was BR
-          || (result.length && this.DOM.isLineKept(result.at(-1).at(-1), currentElement))
+          || (result.length && this._node.isLineKept(result.at(-1).at(-1), currentElement))
         ) {
+          this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines
+            && console.log('⬆ add to line:', currentElement
+            );
           result.at(-1).push(currentElement);
           return result;
         }
 
-        this.debugMode
-          // && this.debugToggler._parseNode
+        this._debugMode
+          // && this._debugToggler._parseNode
           && console.assert(
             true,
             'newComplexChildrenGroups: An unexpected case of splitting a complex paragraph into lines.',
@@ -965,90 +1021,102 @@ export default class Pages {
       }, []
     );
 
+    this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log(
+      '🟡🟡🟡 newComplexChildrenGroups \n',
+      newComplexChildrenGroups.length,
+      [...newComplexChildrenGroups]
+    );
+
     // Consider the paragraph partitioning settings:
-    // * this.minBreakableLines
-    // * this.minLeftLines
-    // * this.minDanglingLines
+    // * this._minBreakableLines
+    // * this._minLeftLines
+    // * this._minDanglingLines
 
-    this.debugMode
-        && this.debugToggler._splitComplexTextBlockIntoLines
-        && console.log('🟡🟡🟡 newComplexChildrenGroups', newComplexChildrenGroups);
-
-    if (newComplexChildrenGroups.length < this.minBreakableLines) {
-      this.debugMode
-        && this.debugToggler._splitComplexTextBlockIntoLines
-        && console.log(
-          'newComplexChildrenGroups.length < this.minBreakableLines',
-          newComplexChildrenGroups.length, '<', this.minBreakableLines
+    if (newComplexChildrenGroups.length < this._minBreakableLines) {
+      this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log(
+          'newComplexChildrenGroups.length < this._minBreakableLines',
+          newComplexChildrenGroups.length, '<', this._minBreakableLines
         );
-      this.debugMode
-        && this.debugToggler._splitComplexTextBlockIntoLines
-        && console.groupEnd();
+      this._debugMode && this._debugToggler._parseNode && console.log('%c END NOT _splitComplexTextBlockIntoLines', CONSOLE_CSS_END_LABEL);
+      this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.groupEnd();
       // Not to break it up
       return []
     }
 
-    const firstUnbreakablePart = newComplexChildrenGroups.slice(0, this.minLeftLines).flat();
-    const lastUnbreakablePart = newComplexChildrenGroups.slice(-this.minDanglingLines).flat();
-    newComplexChildrenGroups.splice(0, this.minLeftLines, firstUnbreakablePart);
-    newComplexChildrenGroups.splice(-this.minDanglingLines, this.minDanglingLines, lastUnbreakablePart);
+    const firstUnbreakablePart = newComplexChildrenGroups.slice(0, this._minLeftLines).flat();
+    const lastUnbreakablePart = newComplexChildrenGroups.slice(-this._minDanglingLines).flat();
+    this._debugMode && this._debugToggler._parseNode && console.log(
+      'newComplexChildrenGroups', [...newComplexChildrenGroups],
+      '\n', 'minLeftLines =', this._minLeftLines,
+      '\n', firstUnbreakablePart,
+      '\n', 'minDanglingLines =', this._minDanglingLines,
+      '\n', lastUnbreakablePart
+    );
+    newComplexChildrenGroups.splice(0, this._minLeftLines, firstUnbreakablePart);
+    newComplexChildrenGroups.splice(-this._minDanglingLines, this._minDanglingLines, lastUnbreakablePart);
 
     // * Then collect the resulting children into rows
     // * which are not to be split further.
     const linedChildren = newComplexChildrenGroups.map(
       (arr, index) => {
         // * Create a new line
-        const line = this.DOM.createWithFlagNoBreak();
-        (arr.length > 1) && line.classList.add('group🛗');
-        line.setAttribute('role', 'group〰️');
+        let newLine;
+
+        // const line = this._node.createWithFlagNoBreak();
+        // (arr.length > 1) && line.classList.add('group🛗');
+        // line.setAttribute('role', 'group〰️');
 
         if (arr.length == 0) {
-          line.setAttribute('role', '🚫');
+          newLine = arr[0];
+          newLine.setAttribute('role', '🚫');
           console.assert(arr.length == 0, 'The string cannot be empty (_splitComplexTextBlockIntoLines)')
         } else if (arr.length == 1) {
-          line.setAttribute('role', 'line');
+          newLine = arr[0];
         } else {
-          line.setAttribute('role', 'group');
+          const group = this._node.createTextGroup();
+          newLine = group;
+          // * Replace the array of elements with a line
+          // * that contains all these elements:
+          this._DOM.insertBefore(arr[0], newLine);
+          this._DOM.insertAtEnd(newLine, ...arr);
         }
-        line.dataset.index = index;
-        // * Replace the array of elements with a line
-        // * that contains all these elements:
-        this.DOM.insertBefore(arr[0], line);
-        this.DOM.insertAtEnd(line, ...arr);
+        newLine.dataset.child = index;
+
         // * Return a new unbreakable line.
-        return line;
+        return newLine;
       }
     );
 
-    this.debugMode
-      && this.debugToggler._splitComplexTextBlockIntoLines
-      && console.groupEnd();
+    this._debugMode && this._debugToggler._parseNode && console.log('%c END OK _splitComplexTextBlockIntoLines', CONSOLE_CSS_END_LABEL);
+    this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.groupEnd();
 
-    this.DOM.setAttribute(node, '[html2pdf-splitted]');
+    this._DOM.setAttribute(node, this._selector.splitted);
 
     return linedChildren
   }
 
   _breakItIntoLines(splittedItem) {
 
-    if (this._isNoBreak(splittedItem)) {
+    if (this._node.isNoBreak(splittedItem)) {
       return splittedItem
     }
 
     // Split the splittedItem into spans.
     // * array with words:
-    const itemWords = this.DOM.splitByWordsGreedyWithSpacesFilter(splittedItem);
+    const itemWords = this._node.splitByWordsGreedyWithSpacesFilter(splittedItem);
     // * array with words wrapped with the inline tag 'html2pdf-word':
     const itemWrappedWords = itemWords.map((item, index) => {
-      const span = this.DOM.create('html2pdf-word');
+      const span = this._node.create('html2pdf-word');
       span.dataset.index = index;
-      span.innerHTML = item + WORD_JOINER;
+      // span.innerHTML = item + WORD_JOINER;
+      this._DOM.setInnerHTML(span, item + WORD_JOINER)
       return span;
     });
 
     // Replacing the contents of the splittedItem with a span sequence:
-    splittedItem.innerHTML = '';
-    this.DOM.insertAtEnd(splittedItem, ...itemWrappedWords);
+    // splittedItem.innerHTML = '';
+    this._DOM.setInnerHTML(splittedItem, '');
+    this._DOM.insertAtEnd(splittedItem, ...itemWrappedWords);
 
     // Split the splittedItem into lines.
     // Let's find the elements that start a new line.
@@ -1067,16 +1135,14 @@ export default class Pages {
     // * insert new lines before the source element,
     const newLines = beginnerNumbers.reduce(
       (result, currentElement, currentIndex) => {
-        const line = this.DOM.cloneNodeWrapper(splittedItem);
-        this.DOM.setFlagNoBreak(line); // TODO ? 
-        line.setAttribute('role', 'line-simplest');
-        line.classList.add('cloned🅱️');
+        const line = this._node.createTextLine();
+
         const start = beginnerNumbers[currentIndex];
         const end = beginnerNumbers[currentIndex + 1];
         // need to add safety spaces at both ends of the line:
         const text = ' ' + itemWords.slice(start, end).join(WORD_JOINER) + WORD_JOINER + ' ';
-        this.DOM.setInnerHTML(line, text);
-        this.DOM.insertBefore(splittedItem, line);
+        this._DOM.setInnerHTML(line, text);
+        this._DOM.insertBefore(splittedItem, line);
         // Keep the ID only on the first clone
         (currentIndex > 0) && line.removeAttribute("id");
 
@@ -1089,22 +1155,6 @@ export default class Pages {
     splittedItem.remove();
 
     return newLines;
-  }
-
-  _isVerticalFlowDisrupted(arrayOfElements) {
-    return arrayOfElements.some(
-
-      (current, currentIndex, array) => {
-        const currentElement = current;
-        const nextElement = array[currentIndex + 1];
-
-        if (!nextElement) {
-          return false
-        };
-        const isTrue = this.DOM.getElementRelativeBottom(currentElement) > this.DOM.getElementRelativeTop(nextElement);
-        return isTrue;
-      }
-    )
   }
 
 
@@ -1122,49 +1172,53 @@ export default class Pages {
     // * it will be passed in the nodeComputedStyle variable.
     const _nodeComputedStyle = nodeComputedStyle
       ? nodeComputedStyle
-      : this.DOM.getComputedStyle(node);
+      : this._DOM.getComputedStyle(node);
 
     const consoleMark = ['%c_splitPreNode\n', 'color:white',]
-    this.debugMode && this.debugToggler._splitPreNode && console.group('%c_splitPreNode', 'background:cyan');
-    this.debugMode && this.debugToggler._splitPreNode && console.log(...consoleMark, 'node', node);
+    this._debugMode && this._debugToggler._splitPreNode && console.group('%c_splitPreNode', 'background:cyan');
+    this._debugMode && this._debugToggler._splitPreNode && console.log(...consoleMark, 'node', node);
 
     // Prepare node parameters
-    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
-    const nodeHeight = this.DOM.getElementHeight(node);
-    const nodeLineHeight = this.DOM.getLineHeight(node);
-    const preWrapperHeight = this.DOM.getEmptyNodeHeight(node, false);
+    const nodeTop = this._node.getTop(node, this._root);
+    const nodeHeight = this._DOM.getElementOffsetHeight(node);
+    const nodeLineHeight = this._node.getLineHeight(node);
+    const preWrapperHeight = this._node.getEmptyNodeHeight(node, false);
 
     // * Let's check the probable number of rows in the simplest case,
     // * as if the element had the style.whiteSpace=='pre'
     // * and the line would occupy exactly one line.
-    const minNodeHeight = preWrapperHeight + nodeLineHeight * this.minPreBreakableLines;
+    const minNodeHeight = preWrapperHeight + nodeLineHeight * this._minPreBreakableLines;
     if (nodeHeight < minNodeHeight) {
+      this._debugMode && this._debugToggler._splitPreNode && console.log('%c END _splitPreNode (small node)', CONSOLE_CSS_END_LABEL);
       return []
     }
 
-    const _children = this.DOM.getChildNodes(node);
-    this.debugMode && this.debugToggler._splitPreNode && console.log('_children:', _children.length);
+    const _children = this._DOM.getChildNodes(node);
+    this._debugMode && this._debugToggler._splitPreNode && console.log('_children:', _children.length);
     if (_children.length == 0) {
       // ??? empty tag => not breakable
+      this._debugMode && this._debugToggler._splitPreNode && console.log('%c END _splitPreNode (not breakable)', CONSOLE_CSS_END_LABEL);
       return []
     } else if (_children.length > 1) {
       // ! if _children.length > 1
       // TODO check if there are NODES except text nodes
       // ! TODO
+      this._debugMode && this._debugToggler._splitPreNode && console.log('%c END _splitPreNode TODO!', CONSOLE_CSS_END_LABEL);
       return []
     } else { // * if _children.length == 1
       // * then it is a TEXT node and has only `\n` as a line breaker
-      if (this.DOM.isElementNode(_children[0])) {
+      if (this._DOM.isElementNode(_children[0])) {
         // element node
         // TODO check if there are NODES except text nodes
         const currentElementNode = _children[0];
-        this.debugMode && this.debugToggler._splitPreNode && console.warn("is Element Node", currentElementNode)
+        this._debugMode && this._debugToggler._splitPreNode && console.warn("is Element Node", currentElementNode)
         // FIXME other cases i.e. node and we need recursion
+        this._debugMode && this._debugToggler._splitPreNode && console.log('%c END _splitPreNode ???????', CONSOLE_CSS_END_LABEL);
         return []
       }
-      if (this.DOM.isTextNode(_children[0])) {
+      if (this._node.isWrappedTextNode(_children[0])) {
         // if (textNode.nodeType === 3) // 3 - тип TextNode
-        this.debugMode && this.debugToggler._splitPreNode && console.warn(`is TEXT Node: ${_children[0]}`);
+        this._debugMode && this._debugToggler._splitPreNode && console.warn(`is TEXT Node: ${_children[0]}`);
         // FIXME other cases i.e. node and we need recursion
       }
 
@@ -1173,31 +1227,32 @@ export default class Pages {
 
       // * split the text node into lines by \n,
       // * leaving the character \n at the end of the resulting string:
-      const stringsFromNodeText = this.DOM.splitByLinesGreedy(currentNodeText);
+      const stringsFromNodeText = this._node.splitByLinesGreedy(currentNodeText);
 
-      if (stringsFromNodeText.length < this.minPreBreakableLines) {
+      if (stringsFromNodeText.length < this._minPreBreakableLines) {
+        this._debugMode && this._debugToggler._splitPreNode && console.log('%c END _splitPreNode few lines', CONSOLE_CSS_END_LABEL);
         return []
       }
 
       // * Strings array normalization.
-      // ** Get the first this.minPreFirstBlockLines elements
+      // ** Get the first this._minPreFirstBlockLines elements
       // ** and concatenate them into a string
-      const startString = stringsFromNodeText.splice(0, this.minPreFirstBlockLines).join('');
-      // ** Get the first this.minPreLastBlockLines elements
+      const startString = stringsFromNodeText.splice(0, this._minPreFirstBlockLines).join('');
+      // ** Get the first this._minPreLastBlockLines elements
       // ** and concatenate them into a string
-      const endString = stringsFromNodeText.splice(-this.minPreLastBlockLines).join('');
+      const endString = stringsFromNodeText.splice(-this._minPreLastBlockLines).join('');
       // ** Insert new rows into the array stringsFromNodeText
       stringsFromNodeText.unshift(startString);
       stringsFromNodeText.push(endString);
 
       // * Modifying DOM
       const linesFromNode = stringsFromNodeText.map(string => {
-        const line = this.DOM.createWithFlagNoBreak();
-        this.DOM.setInnerHTML(line, string);
+        const line = this._node.createWithFlagNoBreak();
+        this._DOM.setInnerHTML(line, string);
         return line
       });
-      this.debugMode && this.debugToggler._splitPreNode && console.log('linesFromNode', linesFromNode);
-      this.DOM.replaceNodeContentsWith(node, ...linesFromNode);
+      this._debugMode && this._debugToggler._splitPreNode && console.log('linesFromNode', linesFromNode);
+      this._node.replaceNodeContentsWith(node, ...linesFromNode);
 
       // * calculate parts
 
@@ -1211,15 +1266,15 @@ export default class Pages {
       let splitters = [];
       let floater = firstPartSpace;
 
-      // *** need to make the getElementRootedTop work with root = node
+      // *** need to make the getTop work with root = node
       const initPosition = _nodeComputedStyle.position;
       if (initPosition != 'relative') {
-        node.style.position = 'relative';
+        this._DOM.setStyles(node, { position: 'relative' });
       }
 
       for (let index = 0; index < linesFromNode.length; index++) {
         const current = linesFromNode[index];
-        const currentBottom = this.DOM.getElementRootedBottom(current, node);
+        const currentBottom = this._node.getBottom(current, node);
 
         // TODO move to DOM
         if (currentBottom > floater) {
@@ -1230,16 +1285,17 @@ export default class Pages {
           // * move the floater down:
           // ** if this is the very first element,
           // ** we just assume that the first part can take up the whole page.
-          floater = index ? this.DOM.getElementRootedTop(current, node) + fullPageSpace : fullPageSpace;
+          floater = index ? this._node.getTop(current, node) + fullPageSpace : fullPageSpace;
         } // end for
       }
 
       // *** need to revert back to the original positioning of the node
-      node.style.position = initPosition;
+      this._DOM.setStyles(node, { position: initPosition });
 
       if(!splitters.length) {
         // ** if there is no partitioning, we return an empty array
         // ** and the original node will be taken in its entirety.
+        this._debugMode && this._debugToggler._splitPreNode && console.log('%c END _splitPreNode NO SPLIITERS', CONSOLE_CSS_END_LABEL);
         return []
       }
 
@@ -1249,7 +1305,7 @@ export default class Pages {
 
       // * The last part end is registered automatically.
       splitters.push(null);
-      this.debugMode && this.debugToggler._splitPreNode && console.log(
+      this._debugMode && this._debugToggler._splitPreNode && console.log(
         ...consoleMark,
         'splitters', splitters
       );
@@ -1259,37 +1315,38 @@ export default class Pages {
         // We can't wrap in createWithFlagNoBreak()
         // because PRE may have margins and that will affect the height of the wrapper.
         // So we will give the PRE itself this property.
-        const part = this.DOM.cloneNodeWrapper(node);
-        this.DOM.setFlagNoBreak(part);
+        const part = this._DOM.cloneNodeWrapper(node);
+        this._node.setFlagNoBreak(part);
 
         // id = the beginning of the next part
         const start = splitters[index - 1] || 0;
         const end = id || splitters[splitters.length];
 
-        this.DOM.insertAtEnd(part, ...linesFromNode.slice(start, end));
+        this._DOM.insertAtEnd(part, ...linesFromNode.slice(start, end));
 
         return part;
       });
 
       // * Mark nodes as parts
-      this.DOM.markPartNodesWithClass(newPreElementsArray);
+      this._node.markPartNodesWithClass(newPreElementsArray);
 
-      this.debugMode && this.debugToggler._splitPreNode && console.log(
+      this._debugMode && this._debugToggler._splitPreNode && console.log(
         ...consoleMark,
         'newPreElementsArray',
         newPreElementsArray
       );
 
-      //// this.DOM.insertInsteadOf(node, ...newPreElementsArray);
+      //// this._DOM.insertInsteadOf(node, ...newPreElementsArray);
       // * We need to keep the original node,
       // * we may need it as a parent in this._parseNode().
-      this.DOM.replaceNodeContentsWith(node, ...newPreElementsArray);
+      this._node.replaceNodeContentsWith(node, ...newPreElementsArray);
       // * We "open" the slough node, but leave it.
-      node.style.display = 'contents';
-      node.setAttribute('slough-node', '')
-      node.classList = '';
+      this._DOM.setStyles(node, { display: 'contents' });
+      this._DOM.setAttribute(node, '[slough-node]', '');
+      this._DOM.removeAllClasses(node);
 
-      this.debugMode && this.debugToggler._splitPreNode && console.groupEnd();
+      this._debugMode && this._debugToggler._splitPreNode && console.log('%c END _splitPreNode', CONSOLE_CSS_END_LABEL);
+      this._debugMode && this._debugToggler._splitPreNode && console.groupEnd();
 
       return newPreElementsArray;
 
@@ -1301,30 +1358,31 @@ export default class Pages {
 
   _insertTableSplit({ startId, endId, table, tableEntries }) {
 
-    // this.debugMode && console.log(`=> _insertTableSplit(${startId}, ${endId})`);
+    // this._debugMode && console.log(`=> _insertTableSplit(${startId}, ${endId})`);
 
-    const tableWrapper = this.DOM.cloneNodeWrapper(table);
+    const tableWrapper = this._DOM.cloneNodeWrapper(table);
 
     const partEntries = tableEntries.rows.slice(startId, endId);
 
-    const part = this.DOM.createWithFlagNoBreak();
+    const part = this._node.createWithFlagNoBreak();
     table.before(part);
 
     if (startId) {
       // if is not first part
-      this.DOM.insertAtEnd(part, this.DOM.createSignpost('(table continued)', this.signpostHeight));
+      this._DOM.insertAtEnd(part, this._node.createSignpost('(table continued)', this._signpostHeight));
     }
 
-    this.DOM.insertAtEnd(
+    this._DOM.insertAtEnd(
       part,
-      this.DOM.createTable({
+      this._node.createTable({
         wrapper: tableWrapper,
-        caption: this.DOM.cloneNode(tableEntries.caption),
-        thead: this.DOM.cloneNode(tableEntries.thead),
+        colgroup: this._DOM.cloneNode(tableEntries.colgroup),
+        caption: this._DOM.cloneNode(tableEntries.caption),
+        thead: this._DOM.cloneNode(tableEntries.thead),
         // tfoot,
         tbody: partEntries,
       }),
-      this.DOM.createSignpost('(table continues on the next page)', this.signpostHeight)
+      this._node.createSignpost('(table continues on the next page)', this._signpostHeight)
     );
 
     return part
@@ -1343,12 +1401,12 @@ export default class Pages {
     // * it will be passed in the nodeComputedStyle variable.
     const _nodeComputedStyle = nodeComputedStyle
       ? nodeComputedStyle
-      : this.DOM.getComputedStyle(node);
+      : this._DOM.getComputedStyle(node);
 
     const sortOfLines = this._getChildren(node);
 
-    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
-    const nodeWrapperHeight = this.DOM.getEmptyNodeHeight(node);
+    const nodeTop = this._node.getTop(node, this._root);
+    const nodeWrapperHeight = this._node.getEmptyNodeHeight(node);
 
     // ** Prepare parameters for splitters calculation
     const firstPartSpace = pageBottom - nodeTop - nodeWrapperHeight;
@@ -1364,15 +1422,15 @@ export default class Pages {
     let splitters = [];
     let floater = firstPartSpace;
 
-    // *** need to make the getElementRootedTop work with root = node
+    // *** need to make the getTop work with root = node
     const initPosition = _nodeComputedStyle.position;
     if (initPosition != 'relative') {
-      node.style.position = 'relative';
+      this._DOM.setStyles(node, { position: 'relative' });
     }
 
     for (let index = 0; index < distributedRows.length; index++) {
       const current = distributedRows[index];
-      const currentBottom = this.DOM.getElementRootedBottom(current, node);
+      const currentBottom = this._node.getBottom(current, node);
 
       // TODO move to DOM
       if (currentBottom > floater) {
@@ -1383,12 +1441,12 @@ export default class Pages {
         // * move the floater down:
         // ** if this is the very first element,
         // ** we just assume that the first part can take up the whole page.
-        floater = index ? this.DOM.getElementRootedTop(current, node) + fullPageSpace : fullPageSpace;
+        floater = index ? this._node.getTop(current, node) + fullPageSpace : fullPageSpace;
       } // end for
     }
 
     // *** need to revert back to the original positioning of the node
-    node.style.position = initPosition;
+    this._DOM.setStyles(node, { position: initPosition });
 
     if(!splitters.length) {
       // ** if there is no partitioning, we return an empty array
@@ -1409,32 +1467,32 @@ export default class Pages {
       // We can't wrap in createWithFlagNoBreak()
       // because PRE may have margins and that will affect the height of the wrapper.
       // So we will give the PRE itself this property.
-      const part = this.DOM.cloneNodeWrapper(node);
-      this.DOM.setFlagNoBreak(part);
+      const part = this._DOM.cloneNodeWrapper(node);
+      this._node.setFlagNoBreak(part);
       // TODO make the same with other splitted nodes
-      this.DOM.unmarkPageStartElement(part);
+      this._node.unmarkPageStartElement(part);
 
       // id = the beginning of the next part
       const start = splitters[index - 1] || 0;
       const end = id || splitters[splitters.length];
 
-      this.DOM.insertAtEnd(part, ...distributedRows.slice(start, end));
+      this._DOM.insertAtEnd(part, ...distributedRows.slice(start, end));
 
       return part;
     });
 
     // * Mark nodes as parts
-    this.DOM.markPartNodesWithClass(newPreElementsArray);
+    this._node.markPartNodesWithClass(newPreElementsArray);
 
     // * We need to keep the original node,
     // * we may need it as a parent in this._parseNode().
-    this.DOM.replaceNodeContentsWith(node, ...newPreElementsArray);
+    this._node.replaceNodeContentsWith(node, ...newPreElementsArray);
     // * We "open" the slough node, but leave it.
-    this.DOM.removeAllClasses(node);
-    // this.DOM.removeAllAttributes(node);
-    this.DOM.removeAllStyles(node);
-    node.style.display = 'contents';
-    this.DOM.setAttribute(node, 'slough-node', '')
+    this._DOM.removeAllClasses(node);
+    // this._DOM.removeAllAttributes(node);
+    this._DOM.removeAllStyles(node);
+    this._DOM.setStyles(node, { display:'contents' });
+    this._DOM.setAttribute(node, '[slough-node]', '')
 
     return newPreElementsArray;
 
@@ -1446,82 +1504,83 @@ export default class Pages {
     // * Split simple tables, without regard to col-span and the like.
     // TODO test more complex tables
 
-    this.DOM.lockTableWidths(table);
-
     const consoleMark = ['%c_splitTableNode\n', 'color:white',];
-    this.debugMode && this.debugToggler._splitTableNode && console.time('_splitTableNode')
-    this.debugMode && this.debugToggler._splitTableNode && console.group('%c_splitTableNode', 'background:cyan');
-    this.debugMode && this.debugToggler._splitTableNode && console.log(...consoleMark, 'table', table);
+    this._debugMode && this._debugToggler._splitTableNode && console.time('_splitTableNode');
+    this._debugMode && this._debugToggler._splitTableNode && console.group('%c_splitTableNode', 'background:cyan');
+
+    this._node.lockTableWidths(table);
 
     // calculate table wrapper (empty table element) height
     // to calculate the available space for table content
-    const tableWrapperHeight = this.DOM.getEmptyNodeHeight(table);
+    const tableWrapperHeight = this._node.getEmptyNodeHeight(table);
 
     // tableEntries
-    const tableEntries = this.DOM.getTableEntries(table);
-    this.debugMode && this.debugToggler._splitTableNode && console.log(
+    const tableEntries = this._node.getTableEntries(table);
+    this._debugMode && this._debugToggler._splitTableNode && console.log(
       ...consoleMark,
-      'tableEntries', tableEntries
+      table,
+      '\ntableEntries', tableEntries
     );
 
-    if (tableEntries.rows.length < this.minBreakableRows) {
-      this.debugMode && this.debugToggler._splitTableNode && console.groupEnd();
-      return []
-    }
+    // TODO # can be a single row with long content ?
+    // ! this._minBreakableRows === 0
+    // if (tableEntries.rows.length < this._minBreakableRows) {
+    //   this._debugMode && this._debugToggler._splitTableNode && console.log('%c END NOT _splitTableNode (tableEntries.rows.length < this._minBreakableRows)', CONSOLE_CSS_END_LABEL);
+    //   this._debugMode && this._debugToggler._splitTableNode && console.groupEnd();
+    //   return []
+    // }
 
     // Prepare node parameters
-    const tableTop = this.DOM.getElementRootedTop(table, this.root);
-    const tableHeight = this.DOM.getElementHeight(table);
-    const tableCaptionHeight = this.DOM.getElementHeight(tableEntries.caption) || 0;
-    const tableTheadHeight = this.DOM.getElementHeight(tableEntries.thead) || 0;
-    const tableTfootHeight = this.DOM.getElementHeight(tableEntries.tfoot) || 0;
-    // *** Convert NULL/Undefined to 0
-    // *** The logical nullish assignment (??=) operator
-    const captionFirefoxAmendment = (tableCaptionHeight ?? 0) * (this.isFirefox ?? 0);
+    // * getTopWithMargin * The margin must be taken into account,
+    // * because it is included in the calculation of the tableWrapperHeight
+    // * and will be subtracted when calculating the first internal part of the table.
+    const tableTop = this._node.getTopWithMargin(table, this._root);
 
-    const firstPartHeight = pageBottom
+    // const tableHeight = this._DOM.getElementOffsetHeight(table);
+    const tableCaptionHeight = this._DOM.getElementOffsetHeight(tableEntries.caption) || 0;
+    const tableTheadHeight = this._DOM.getElementOffsetHeight(tableEntries.thead) || 0;
+    const tableTfootHeight = this._DOM.getElementOffsetHeight(tableEntries.tfoot) || 0;
+
+    // *** Convert NULL/Undefined to 0.
+    // *** Nullish coalescing assignment (??=), Nullish coalescing operator (??)
+    const captionFirefoxAmendment = (tableCaptionHeight ?? 0) * (this._isFirefox ?? 0);
+
+    const tableFirstPartBottom = pageBottom
       - tableTop
-      - this.signpostHeight - tableWrapperHeight;
+      - tableWrapperHeight
+      - this._signpostHeight;
 
-    const fullPagePartHeight = fullPageHeight
+    const tableFullPartContentHeight = fullPageHeight
       - tableCaptionHeight // * copied into each part
       - tableTheadHeight // * copied into each part
       - tableTfootHeight // * remains in the last part (in the table)
-      - 2 * this.signpostHeight - tableWrapperHeight;
+      - tableWrapperHeight
+      - 2 * this._signpostHeight;
 
-    this.debugMode && this.debugToggler._splitTableNode && console.log(
+    this._debugMode && this._debugToggler._splitTableNode && console.log(
       ...consoleMark,
-      'pageBottom', pageBottom,
+      '\n • tableFirstPartBottom', tableFirstPartBottom,
       '\n',
-      '- tableTop', tableTop,
+      '\n   pageBottom', pageBottom,
+      '\n - tableTop', tableTop,
+      '\n - tableCaptionHeight', tableCaptionHeight,
+      '\n - tableTheadHeight', tableTheadHeight,
+      '\n - tableWrapperHeight', tableWrapperHeight,
+      '\n - this._signpostHeight', this._signpostHeight,
       '\n',
-      '- tableWrapperHeight', tableWrapperHeight,
-      '\n',
-      '- this.signpostHeight', this.signpostHeight,
-      '\n',
-      '= firstPartHeight', firstPartHeight,
-    );
-    this.debugMode && this.debugToggler._splitTableNode && console.log(
-      ...consoleMark,
-      'fullPageHeight', fullPageHeight,
-      '\n',
-      '- tableCaptionHeight', tableCaptionHeight,
-      '\n',
-      '- tableTheadHeight', tableTheadHeight,
-      '\n',
-      '- tableTfootHeight', tableTfootHeight,
-      '\n',
-      '- 2 * this.signpostHeight', (2 * this.signpostHeight),
-      '\n',
-      '- tableWrapperHeight', tableWrapperHeight,
-      '\n',
-      '= fullPagePartHeight', fullPagePartHeight,
+      '\n   fullPageHeight', fullPageHeight,
+      '\n - tableCaptionHeight', tableCaptionHeight,
+      '\n - tableTheadHeight', tableTheadHeight,
+      '\n - tableTfootHeight', tableTfootHeight,
+      '\n - 2 * this._signpostHeight', (2 * this._signpostHeight),
+      '\n - tableWrapperHeight', tableWrapperHeight,
+      '\n = tableFullPartContentHeight', tableFullPartContentHeight,
     );
 
     // * Rows that we distribute across the partitioned table
     const getDistributedRows = (tableEntries) => [
       ...tableEntries.rows,
-      tableEntries.tfoot || []
+      ...([tableEntries.tfoot] || [])
     ];
 
     let distributedRows = getDistributedRows(tableEntries);
@@ -1529,218 +1588,234 @@ export default class Pages {
     // * Calculate Table Splits Ids
 
     let splitsIds = [];
-    let currentPageBottom = firstPartHeight;
+    let currentPageBottom = tableFirstPartBottom;
+
+    this._debugMode && this._debugToggler._splitTableRow && console.log(
+    this._node.getTop(distributedRows[1], table) - this._node.getBottom(distributedRows[0], table), '(row[1].top - row[0].bottom)',
+    )
+
+    if (this._node.getTop(distributedRows[0], table) > currentPageBottom) {
+      // * If the beginning of the first line is immediately on the second page
+      // * then even the header doesn't fit.
+      // * Go immediately to the second page.
+      currentPageBottom = tableFullPartContentHeight;
+      this._debugMode && this._debugToggler._splitTableRow && console.log(`The Row 0 goes to the 2nd page`);
+    }
 
     for (let index = 0; index < distributedRows.length; index++) {
+      this._debugMode && this._debugToggler._splitTableRow && console.log(
+        `%c 🟪 Check the Row # ${index}`, 'color:blueviolet',
+        [ distributedRows[index] ],
+        // [...distributedRows]
+      );
+
       const currentRow = distributedRows[index];
+      const currRowBottom = this._node.getBottom(currentRow, table) + captionFirefoxAmendment;
+      const currRowTop = this._node.getTop(currentRow, table) + captionFirefoxAmendment;
+      const nextRow = distributedRows[index + 1];
+      const nextRowBottomOrTableBottom = nextRow
+        ? this._node.getTop(nextRow, table) + captionFirefoxAmendment
+        : currRowBottom; // for the last row
 
-      const currTop = this.DOM.getElementRootedTop(currentRow, table) + captionFirefoxAmendment;
+      if (nextRowBottomOrTableBottom > currentPageBottom) {
+        // * If the end of the row is on the second page
+        // * TRY TO SPLIT CURRENT ROW
 
-      if (currTop > currentPageBottom) {
-        // * If the beginning of the line is on the second page
+        const splittingRowIndex = index;
+        const splittingRow = currentRow;
+        const splittingRowHeight = this._DOM.getElementOffsetHeight(splittingRow);
+        const splittingMinRowHeight = this._node.getTableRowHeight(splittingRow, this._minBreakableLines); // ? paragraph inside
+        const splittingEmptyRowHeight = this._node.getTableRowHeight(splittingRow);
+        const splittingRowTop = currRowTop;
 
-        if (index === 0) {
-          // * If the beginning of the first line is immediately on the second page
-          // * then even the header doesn't fit.
-          // * Go immediately to the second page.
-          currentPageBottom = fullPagePartHeight;
-        } else {
-          // * If the beginning of the line is on the second page
-          // * and it is a row (not [0] element) -
-          // * TRY TO SPLIT PREVIEW ROW
-
-          // * Trying to split table row [index - 1]
-          const splittingRowIndex = index - 1;
-          const splittingRow = tableEntries.rows[splittingRowIndex];
-          const splittingRowHeight = this.DOM.getElementHeight(splittingRow);
-          const splittingMinRowHeight = this.DOM.getTableRowHeight(splittingRow, this.minBreakableRows);
-          const splittingEmptyRowHeight = this.DOM.getTableRowHeight(splittingRow);
-          const splittingRowTop = this.DOM.getElementRootedTop(splittingRow, table) + captionFirefoxAmendment;
-
-          const isNoBreak = this.DOM.isNoBreak(splittingRow);
-          const makesSenseToSplitTheRow = (splittingRowHeight >= splittingMinRowHeight) && (!isNoBreak);
+        const isNoBreak = this._node.isNoBreak(splittingRow);
+        const makesSenseToSplitTheRow = (splittingRowHeight >= splittingMinRowHeight) && (!isNoBreak);
 
 
-          if (makesSenseToSplitTheRow) {
-            // * Let's split table row [index - 1]
+        if (makesSenseToSplitTheRow) {
+          // * Let's split table row [index]
 
-            this.debugMode
-              && this.debugToggler._splitTableRow
-              && console.group(`🟣🟣🟣 Split The Row ${index - 1}`);
+          this._debugMode && this._debugToggler._splitTableRow && console.groupCollapsed(
+            `Split The ROW.${splittingRowIndex}`
+          );
 
-            const rowFirstPartHeight = firstPartHeight - splittingEmptyRowHeight - splittingRowTop; // TODO
-            const rowFullPageHeight = fullPagePartHeight - splittingEmptyRowHeight;
+          const rowFirstPartHeight = currentPageBottom - splittingRowTop - splittingEmptyRowHeight;
+          const rowFullPageHeight = tableFullPartContentHeight - splittingEmptyRowHeight;
 
-            const splittingRowTDs = this.DOM.getChildren(splittingRow);
+          const splittingRowTDs = this._DOM.getChildren(splittingRow);
 
-            let theRowContentSlicesByTD;
+          let theRowContentSlicesByTD;
 
+          theRowContentSlicesByTD = [...splittingRowTDs].map((td, ind) => {
+            const tdChildren = this._getChildren(td);
+            this._debugMode && this._debugToggler._splitTableRow && console.groupCollapsed(`Split TD.${ind} in ROW.${splittingRowIndex}`);
+            const tdInternalSplitters = this._getInternalSplitters({
+              rootNode: td,
+              children: tdChildren,
+              pageBottom: pageBottom,
+              firstPartHeight: rowFirstPartHeight,
+              fullPageHeight: rowFullPageHeight,
+            });
+            this._debugMode && this._debugToggler._splitTableRow && console.groupEnd(`Split TD.${ind} in ROW.${splittingRowIndex}`);
+            return tdInternalSplitters
+          });
+
+          this._debugMode && this._debugToggler._splitTableRow && console.log(
+            '🟣 \ntheRowContentSlicesByTD',
+            theRowContentSlicesByTD
+          );
+
+          const shouldFirstPartBeSkipped = theRowContentSlicesByTD.some(obj => {
+            this._debugMode && this._debugToggler._splitTableRow && console.log(
+              '🟣',
+              '\nobj.result.length',
+              obj.result.length,
+              '\nobj.result[0]',
+              obj.result[0]
+            );
+            return (obj.result.length && obj.result[0] === null)
+          });
+
+          this._debugMode && this._debugToggler._splitTableRow && console.log(
+            '🟣',
+            '\nshouldFirstPartBeSkipped',
+            shouldFirstPartBeSkipped
+          );
+
+          if(shouldFirstPartBeSkipped) {
             theRowContentSlicesByTD = [...splittingRowTDs].map(td => {
               const tdChildren = this._getChildren(td);
               const tdInternalSplitters = this._getInternalSplitters({
                 rootNode: td,
                 children: tdChildren,
                 pageBottom: pageBottom,
-                firstPartHeight: rowFirstPartHeight,
+                firstPartHeight: rowFullPageHeight,
                 fullPageHeight: rowFullPageHeight,
               });
               return tdInternalSplitters
             });
-
-            this.debugMode
-              && this.debugToggler._splitTableRow
-              && console.log('🟣 \ntheRowContentSlicesByTD', theRowContentSlicesByTD);
-
-            const shouldFirstPartBeSkipped = theRowContentSlicesByTD.some(obj => {
-              this.debugMode
-                && this.debugToggler._splitTableRow
-                && console.log('🟣', '\nobj.result.length', obj.result.length, '\nobj.result[0]', obj.result[0]);
-              return (obj.result.length && obj.result[0] === null)
-            });
-
-            this.debugMode
-              && this.debugToggler._splitTableRow
-              && console.log('🟣', '\nshouldFirstPartBeSkipped', shouldFirstPartBeSkipped);
-
-            if(shouldFirstPartBeSkipped) {
-              theRowContentSlicesByTD = [...splittingRowTDs].map(td => {
-                const tdChildren = this._getChildren(td);
-                const tdInternalSplitters = this._getInternalSplitters({
-                  rootNode: td,
-                  children: tdChildren,
-                  pageBottom: pageBottom,
-                  firstPartHeight: rowFullPageHeight,
-                  fullPageHeight: rowFullPageHeight,
-                });
-                return tdInternalSplitters
-              });
-            }
-
-            this.debugMode
-              && this.debugToggler._splitTableRow
-              && console.log('🟣', '\n theRowContentSlicesByTD', theRowContentSlicesByTD);
-
-            const ifThereIsSplit = theRowContentSlicesByTD.some(obj => {
-              return obj.result.length
-            });
-            this.debugMode
-              && this.debugToggler._splitTableRow
-              && console.log('🟣 ifThereIsSplit', ifThereIsSplit);
-
-            // !
-            if (ifThereIsSplit) {
-
-              const theTdContentElements = theRowContentSlicesByTD.map(el => {
-                if(el.result.length) {
-                  return this._createSlicesBySplitFlag(el.trail)
-                } else {
-                  // * el.result === 0
-                  // один раз полностью копируем весь контент из столбца
-                  const sliceWrapper = this.DOM.createWithFlagNoBreak();
-                  sliceWrapper.classList.add("🟣");
-                  sliceWrapper.display = 'contents';
-
-                  const contentElements = el.trail.map(item => item.element);
-                  this.DOM.insertAtEnd(sliceWrapper, ...contentElements);
-
-                  return [sliceWrapper]
-                }
-              });
-
-              this.debugMode
-                && this.debugToggler._splitTableRow
-                && console.log('🟣 theTdContentElements', theTdContentElements);
-
-              const theNewTrCount = Math.max(...theTdContentElements.map(arr => arr.length));
-              this.debugMode
-                && this.debugToggler._splitTableRow
-                && console.log('🟣 theNewTrCount', theNewTrCount);
-
-              const theNewRows = [];
-              for (let i = 0; i < theNewTrCount; i++) {
-                const rowWrapper = this.DOM.cloneNodeWrapper(splittingRow);
-                this.DOM.setFlagNoBreak(rowWrapper);
-
-                [...splittingRowTDs].forEach(
-                  (td, tdID) => {
-                    const tdWrapper = this.DOM.cloneNodeWrapper(td);
-                    const content = theTdContentElements[tdID][i];
-                    content && this.DOM.insertAtEnd(tdWrapper, theTdContentElements[tdID][i]);
-                    this.DOM.insertAtEnd(rowWrapper, tdWrapper);
-                  }
-                );
-
-                theNewRows.push(rowWrapper);
-              }
-
-              this.debugMode
-                && this.debugToggler._splitTableRow
-                && console.log('🟣', '\n theNewRows', theNewRows);
-
-              // добавляем строки в массив и в таблицу
-
-              splittingRow.className = 'splittingRow' // for test
-              this.debugMode
-                && this.debugToggler._splitTableRow
-                && console.log('🟣 splittingRow', splittingRow);
-              this.DOM.insertInsteadOf(splittingRow, ...theNewRows)
-
-              // меняем исходный массив строк таблицы!
-              tableEntries.rows.splice(splittingRowIndex, 1, ...theNewRows);
-              // и обновляем рабочий массив включающий футер
-              distributedRows = getDistributedRows(tableEntries);
-
-              index = index - 1;
-              // При этом шаг цикла возвращается на 1 назад;
-              // и мы проверяем 2 разбитых куска (i & i-1),
-              // но они с флагом "не разбивать"
-
-            } //? END OF ifThereIsSplit
-
-            this.debugMode
-              && this.debugToggler._splitTableRow
-              && console.groupEnd();
-
-          } //? END OF 'if makesSenseToSplitTheRow'
-          else {
-            // TODO проверять это ТОЛЬКО если мы не можем разбить
-            if (index > this.minLeftRows) {
-              // * avoid < minLeftRows rows on first page
-              // *** If a table row starts in the next part,
-              // *** register the previous one as the beginning of the next part.
-              // *** In the other case, we do not register a page break,
-              // *** and the first small piece will be skipped.
-              splitsIds.push(index - 1);
-            }
-
-            currentPageBottom =
-            this.DOM.getElementRootedTop(
-              distributedRows[index - 1], table
-            ) + captionFirefoxAmendment
-            + fullPagePartHeight;
           }
 
-        } //? END OF trying to split long TR
+          this._debugMode && this._debugToggler._splitTableRow && console.log(
+            '🟣',
+            '\n theRowContentSlicesByTD',
+            theRowContentSlicesByTD
+          );
+
+          const ifThereIsSplit = theRowContentSlicesByTD.some(obj => {
+            return obj.result.length
+          });
+          this._debugMode && this._debugToggler._splitTableRow && console.log('🟣 ifThereIsSplit', ifThereIsSplit);
+
+          // !
+          if (ifThereIsSplit) {
+
+            const theTdContentElements = theRowContentSlicesByTD.map(el => {
+              if(el.result.length) {
+                return this._createSlicesBySplitFlag(el.trail)
+              } else {
+                // * el.result === 0
+                // один раз полностью копируем весь контент из столбца
+                const sliceWrapper = this._node.createWithFlagNoBreak();
+                sliceWrapper.classList.add("🟣");
+                this._DOM.setStyles(sliceWrapper, { display: 'contents' });
+
+                const contentElements = el.trail.map(item => item.element);
+                this._DOM.insertAtEnd(sliceWrapper, ...contentElements);
+
+                return [sliceWrapper]
+              }
+            });
+
+            this._debugMode && this._debugToggler._splitTableRow && console.log('🟣 theTdContentElements', theTdContentElements);
+
+            const theNewTrCount = Math.max(...theTdContentElements.map(arr => arr.length));
+            this._debugMode && this._debugToggler._splitTableRow && console.log('🟣 theNewTrCount', theNewTrCount);
+
+            const theNewRows = [];
+            for (let i = 0; i < theNewTrCount; i++) {
+              const rowWrapper = this._DOM.cloneNodeWrapper(splittingRow);
+              this._node.setFlagNoBreak(rowWrapper);
+              this._DOM.setAttribute(rowWrapper, `.splitted_row_${splittingRowIndex}_part_${i}`);
+
+              [...splittingRowTDs].forEach(
+                (td, tdID) => {
+                  const tdWrapper = this._DOM.cloneNodeWrapper(td);
+                  const content = theTdContentElements[tdID][i];
+                  content && this._DOM.insertAtEnd(tdWrapper, theTdContentElements[tdID][i]);
+                  this._DOM.insertAtEnd(rowWrapper, tdWrapper);
+                }
+              );
+
+              theNewRows.push(rowWrapper);
+            }
+
+            this._debugMode && this._debugToggler._splitTableRow && console.log('🟣', '\n theNewRows', theNewRows);
+
+            // добавляем строки в массив и в таблицу
+
+            this._DOM.setAttribute(splittingRow, '.🚫_must_be_removed'); // for test, must be removed
+            this._debugMode && this._debugToggler._splitTableRow && console.log('🟣 splittingRow', splittingRow);
+            this._DOM.insertInsteadOf(splittingRow, ...theNewRows)
+
+            // меняем исходный массив строк таблицы!
+            tableEntries.rows.splice(splittingRowIndex, 1, ...theNewRows);
+            // и обновляем рабочий массив включающий футер
+            distributedRows = getDistributedRows(tableEntries);
+
+            // To check all the split pieces anew:
+            index = index - 1;
+
+          } //? END OF ifThereIsSplit
+
+          this._debugMode && this._debugToggler._splitTableRow && console.log(`%c END 🟪 Split The ROW.${splittingRowIndex}`, CONSOLE_CSS_END_LABEL);
+          this._debugMode && this._debugToggler._splitTableRow && console.groupEnd(`END OF 'if makesSenseToSplitTheRow'`);
+        } //? END OF 'if makesSenseToSplitTheRow'
+        else {
+          // !!!!!!!!!!!!!!
+          // TODO проверять это ТОЛЬКО если мы не можем разбить
+          if (index >= this._minLeftRows) {
+            // * avoid < minLeftRows rows on first page
+            // *** If a table row starts in the next part,
+            // *** register the previous one as the beginning of the next part.
+            // *** In the other case, we do not register a page break,
+            // *** and the first small piece will be skipped.
+            splitsIds.push(index);
+          }
+
+          currentPageBottom =
+          this._node.getTop(
+            distributedRows[index], table
+          ) + captionFirefoxAmendment
+          + tableFullPartContentHeight;
+        }
+
+
+         //? END OF trying to split long TR
 
 
         // check if next fits
 
+      } else {
+        // currRowTop <= currentPageBottom
+        // pass
       }
     }; //? END OF for: distributedRows
 
-    this.debugMode && this.debugToggler._splitTableNode && console.log(
+    this._debugMode && this._debugToggler._splitTableNode && console.log(
       ...consoleMark,
       'splitsIds', splitsIds
     );
 
     if (!splitsIds.length) {
-      this.debugMode && this.debugToggler._splitTableNode && console.groupEnd();
+      this._debugMode && this._debugToggler._splitTableNode && console.log('%c END _splitTableNode !splitsIds.length', CONSOLE_CSS_END_LABEL);
+      this._debugMode && this._debugToggler._splitTableNode && console.groupEnd();
       return []
     }
 
     // * avoid < minDanglingRows rows on last page
     // ! distributedRows модифицировано
-    const maxSplittingId = (distributedRows.length - 1) - this.minDanglingRows;
+    const maxSplittingId = (distributedRows.length - 1) - this._minDanglingRows;
     if (splitsIds[splitsIds.length - 1] > maxSplittingId) {
       splitsIds[splitsIds.length - 1] = maxSplittingId;
     }
@@ -1752,22 +1827,23 @@ export default class Pages {
       tableEntries,
     }))
 
-    this.debugMode && this.debugToggler._splitTableNode && console.log(
+    this._debugMode && this._debugToggler._splitTableNode && console.log(
       ...consoleMark,
       'splits', splits
     );
 
     // create LAST PART
-    const lastPart = this.DOM.createWithFlagNoBreak();
+    const lastPart = this._node.createWithFlagNoBreak();
     table.before(lastPart);
-    this.DOM.insertAtEnd(
+    this._DOM.insertAtEnd(
       lastPart,
-      this.DOM.createSignpost('(table continued)', this.signpostHeight),
+      this._node.createSignpost('(table continued)', this._signpostHeight),
       table
     );
 
-    this.debugMode && this.debugToggler._splitTableNode && console.timeEnd('_splitTableNode');
-    this.debugMode && this.debugToggler._splitTableNode && console.groupEnd();
+    this._debugMode && this._debugToggler._splitTableNode && console.timeEnd('_splitTableNode');
+    this._debugMode && this._debugToggler._splitTableNode && console.log('%c END _splitTableNode', CONSOLE_CSS_END_LABEL);
+    this._debugMode && this._debugToggler._splitTableNode && console.groupEnd();
 
     return [...splits, lastPart]
   }
@@ -1781,9 +1857,11 @@ export default class Pages {
     //   split: true | false,
     // }
 
-    const sliceWrapper = this.DOM.createWithFlagNoBreak();
+    this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.group(`_createSlicesBySplitFlag`);
+
+    const sliceWrapper = this._node.createWithFlagNoBreak();
+    this._DOM.setStyles(sliceWrapper, { display: 'contents' });
     sliceWrapper.classList.add("🧰");
-    sliceWrapper.display = 'contents';
 
     // *** иниццируем для первого элемента оболочку sliceWrapper
     const slices = [sliceWrapper];
@@ -1800,34 +1878,35 @@ export default class Pages {
 
       for (let i = 1; i < array.length; i++) {
         const child = array[i];
-        this.DOM.insertAtEnd(currentWrapper, child);
+        this._DOM.insertAtEnd(currentWrapper, child);
         currentWrapper = child;
       }
 
-      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log(' createWrapperFromArray:', wrapper);
+      this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log(' createWrapperFromArray:', wrapper);
       return wrapper;
     }
 
     const processChildren = (children, parent = null) => {
-      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.group('processChildren');
-      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('*start* children', children)
+      this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.group('processChildren');
+      this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('*start* children', children)
 
       for (let i = 0; i < children.length; i++) {
         processObj(children[i]);
       }
 
-      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('- wrappers BEFORE pop:', [...wrappers]);
+      this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('- wrappers BEFORE pop:', [...wrappers]);
       const a = wrappers.pop();
-      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('- wrappers.pop()', a);
-      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('- parent', parent);
-      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('- wrappers AFTER pop:', [...wrappers]);
+      this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('- wrappers.pop()', a);
+      this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('- parent', parent);
+      this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('- wrappers AFTER pop:', [...wrappers]);
 
       currentTargetInSlice = wrappers.at(-1);
       // TODO сделать функцию
-      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('🎯🎯 currentTargetInSlice', currentTargetInSlice)
-      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('🎯 wrappers.at(-1)', wrappers.at(-1))
-      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('*END* children', children)
-      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.groupEnd();
+      this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('🎯🎯 currentTargetInSlice', currentTargetInSlice)
+      this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('🎯 wrappers.at(-1)', wrappers.at(-1))
+      this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('*END* children', children)
+      this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('%c END processChildren', CONSOLE_CSS_END_LABEL);
+      this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.groupEnd();
     }
 
     const processObj = (obj) => {
@@ -1837,60 +1916,61 @@ export default class Pages {
       const currentElement = obj.element;
       const id = obj.id;
 
-      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.group(`processObj # ${id}`); // Collapsed
-      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('currentElement', currentElement);
-      currentElement && this.DOM.removeNode(currentElement);
+      this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.group(`processObj # ${id}`); // Collapsed
+      this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('currentElement', currentElement);
+      currentElement && this._DOM.removeNode(currentElement);
 
       if(hasSplitFlag) {
-        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('••• hasSplitFlag');
+        this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('••• hasSplitFlag');
         // start new object
         // const currentWrapper = slices.at(-1);
-        // const nextWrapper = this.DOM.cloneNode(currentWrapper);
+        // const nextWrapper = this._DOM.cloneNode(currentWrapper);
         wrappers = wrappers.map(wrapper => {
-          const clone = this.DOM.cloneNodeWrapper(wrapper); // ???? может делать клоны не тут а при создании?
+          const clone = this._DOM.cloneNodeWrapper(wrapper); // ???? может делать клоны не тут а при создании?
           clone.classList.add("🚩");
           return clone
         });
-        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasSplitFlag: NEW wrappers.map:', [...wrappers]);
+        this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('• hasSplitFlag: NEW wrappers.map:', [...wrappers]);
         const nextWrapper = createWrapperFromArray(wrappers);
 
         slices.push(nextWrapper);
-        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasSplitFlag: slices.push(nextWrapper):', [...slices]);
+        this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('• hasSplitFlag: slices.push(nextWrapper):', [...slices]);
         // find container in new object
-        // currentTargetInSlice = this.DOM.findDeepestChild(nextWrapper);
+
         currentTargetInSlice = wrappers.at(-1);
-        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasSplitFlag: currentTargetInSlice:', currentTargetInSlice);
+        this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('• hasSplitFlag: currentTargetInSlice:', currentTargetInSlice);
       }
 
       // TODO проверить, когда есть оба флага
 
       if(hasChildren) {
-        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('••• hasChildren');
+        this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('••• hasChildren');
         // make new wrapper
-        const cloneCurrentElementWrapper = this.DOM.cloneNodeWrapper(currentElement);
+        const cloneCurrentElementWrapper = this._DOM.cloneNodeWrapper(currentElement);
 
         // add cloneCurrentElementWrapper to wrappers
         wrappers.push(cloneCurrentElementWrapper); // ???????????
 
-        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: wrappers.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...wrappers]);
+        this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: wrappers.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...wrappers]);
         // add cloneCurrentElementWrapper to slice
-        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: currentTargetInSlice (check):', currentTargetInSlice);
+        this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: currentTargetInSlice (check):', currentTargetInSlice);
 
         if(currentTargetInSlice) {
-          this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: currentTargetInSlice', 'TRUE, add to existing', cloneCurrentElementWrapper);
+          this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: currentTargetInSlice', 'TRUE, add to existing', cloneCurrentElementWrapper);
           // add to existing as a child
-          this.DOM.insertAtEnd(currentTargetInSlice, cloneCurrentElementWrapper);
+          this._DOM.insertAtEnd(currentTargetInSlice, cloneCurrentElementWrapper);
         } else {
-          this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: currentTargetInSlice', 'FALSE, init the first', cloneCurrentElementWrapper);
+          this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: currentTargetInSlice', 'FALSE, init the first', cloneCurrentElementWrapper);
           // init the first
           cloneCurrentElementWrapper.classList.add('🏁first');
-          cloneCurrentElementWrapper.style.background = 'yellow';
+
+          this._DOM.setStyles(cloneCurrentElementWrapper, { background: 'yellow' });
           slices.push(cloneCurrentElementWrapper);
-          this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: slices.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...slices]);
+          this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('• hasChildren: slices.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...slices]);
         }
         // update wrapper bookmark
         currentTargetInSlice = wrappers.at(-1) // = cloneCurrentElementWrapper
-        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('• hasChildren:  currentTargetInSlice (=):', currentTargetInSlice);
+        this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('• hasChildren:  currentTargetInSlice (=):', currentTargetInSlice);
 
 
         processChildren(obj.children, currentElement);
@@ -1899,22 +1979,24 @@ export default class Pages {
 
         // insert current Element
         currentTargetInSlice = wrappers.at(-1);
-        this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('insert currentElement', currentElement, 'to target', currentTargetInSlice);
-        this.DOM.insertAtEnd(currentTargetInSlice, currentElement);
+        this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('insert currentElement', currentElement, 'to target', currentTargetInSlice);
+        this._DOM.insertAtEnd(currentTargetInSlice, currentElement);
       }
 
 
-      this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.groupEnd();
+      this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log(`%c END processObj # ${id}`, CONSOLE_CSS_END_LABEL);
+      this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.groupEnd();
     }
 
-    this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('#######  currentTargetInSlice (=):', currentTargetInSlice);
+    this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('#######  currentTargetInSlice (=):', currentTargetInSlice);
 
     processChildren(inputArray);
 
-    this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.log('slices:', slices)
-    this.debugMode && this.debugToggler._createSlicesBySplitFlag && slices.forEach(slice => console.log('slice:', slice))
+    this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log('slices:', slices)
+    this._debugMode && this._debugToggler._createSlicesBySplitFlag && slices.forEach(slice => console.log('slice:', slice))
 
-    this.debugMode && this.debugToggler._createSlicesBySplitFlag && console.groupEnd()
+    this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.log(`%c END _createSlicesBySplitFlag`, CONSOLE_CSS_END_LABEL);
+    this._debugMode && this._debugToggler._createSlicesBySplitFlag && console.groupEnd()
     return slices
   }
 
@@ -1931,7 +2013,7 @@ export default class Pages {
     stack = [],
   }) {
 
-    // * Need to make the getElementRootedTop work with root = rootNode.
+    // * Need to make the getTop work with root = rootNode.
     // * A positioned ancestor is either:
     // * - an element with a non-static position, or
     // * - td, th, table in case the element itself is static positioned.
@@ -1941,15 +2023,13 @@ export default class Pages {
     // * and then TD without positioning wouldn't work for it as a offset parent.
     const _rootComputedStyle = rootComputedStyle
     ? rootComputedStyle
-    : this.DOM.getComputedStyle(rootNode);
+    : this._DOM.getComputedStyle(rootNode);
     const initPosition = _rootComputedStyle.position;
     if (initPosition != 'relative') {
-      rootNode.style.position = 'relative';
+      this._DOM.setStyles(rootNode, { position: 'relative' });
     }
 
-    this.debugMode
-      && this.debugToggler._getInternalSplitters
-      && console.groupCollapsed('💟 _getInternalSplitters'); // Collapsed
+    this._debugMode && this._debugToggler._getInternalSplitters && console.group('💟 _getInternalSplitters'); // Collapsed
 
     const findFirstNullIDInContinuousChain = (array) => {
       let item = null;
@@ -1974,16 +2054,14 @@ export default class Pages {
     }
 
     const registerResult = (element, id) => {
-      this.debugMode && this.debugToggler._getInternalSplitters && console.assert((id >= 0), `registerResult: ID mast be provided`, element);
+      this._debugMode && this._debugToggler._getInternalSplitters && console.assert((id >= 0), `registerResult: ID mast be provided`, element);
 
       let theElementObject = trail[id]; // * contender without special cases
       let theElementIndexInStack; // ***
 
-      this.debugMode && this.debugToggler._getInternalSplitters && console.groupCollapsed('💜💜💜 registerResult(element, id)');
+      this._debugMode && this._debugToggler._getInternalSplitters && console.groupCollapsed('💜💜💜 registerResult(element, id)');
 
-      this.debugMode
-        && this.debugToggler._getInternalSplitters
-        && console.log(
+      this._debugMode && this._debugToggler._getInternalSplitters && console.log(
           '\n element', element,
           '\n id', id,
           '\n theElementObject (trail[id])', theElementObject,
@@ -1996,9 +2074,7 @@ export default class Pages {
 
         const topParentElementFromStack = findFirstNullIDInContinuousChain(stack);
 
-        this.debugMode
-          && this.debugToggler._getInternalSplitters
-          && console.log(
+        this._debugMode && this._debugToggler._getInternalSplitters && console.log(
             '💜💜 id == 0',
             '\n💜 [...stack]', [...stack],
             '\n💜 topParentElementFromStack', topParentElementFromStack,
@@ -2011,9 +2087,7 @@ export default class Pages {
 
       }
 
-      this.debugMode
-        && this.debugToggler._getInternalSplitters
-        && console.log('💜',
+      this._debugMode && this._debugToggler._getInternalSplitters && console.log('💜',
         '\n theElementObject', theElementObject,
         '\n theElementIndexInStack', theElementIndexInStack,
         '\n [...indexTracker]', [...indexTracker],
@@ -2028,9 +2102,7 @@ export default class Pages {
 
         result.push(null); // * it is used to calculate the height of a piece
 
-        this.debugMode
-          && this.debugToggler._getInternalSplitters
-          && console.log(
+        this._debugMode && this._debugToggler._getInternalSplitters && console.log(
             'result.push(null)',
             '\n\n💜💜💜',
           );
@@ -2038,9 +2110,7 @@ export default class Pages {
         result.push(theElementObject.element); // * it is used to calculate the height of a piece
         theElementObject && (theElementObject.split = true);
 
-        this.debugMode
-          && this.debugToggler._getInternalSplitters
-          && console.log(
+        this._debugMode && this._debugToggler._getInternalSplitters && console.log(
             '\n theElementObject', theElementObject,
             '\n theElementObject.element', theElementObject.element,
             '\n result.push(theElementObject.element)',
@@ -2048,12 +2118,11 @@ export default class Pages {
           );
       }
 
-      this.debugMode && this.debugToggler._getInternalSplitters && console.groupEnd();
+      this._debugMode && this._debugToggler._getInternalSplitters && console.log('%c END _getInternalSplitters registerResult', CONSOLE_CSS_END_LABEL);
+      this._debugMode && this._debugToggler._getInternalSplitters && console.groupEnd();
     }
 
-    this.debugMode
-      && this.debugToggler._getInternalSplitters
-      && console.log(
+    this._debugMode && this._debugToggler._getInternalSplitters && console.log(
         '💟 result 💟', result,
         '\n\n',
         `\n rootNode:`, rootNode,
@@ -2070,11 +2139,11 @@ export default class Pages {
       const previousElement = children[i - 1];
       const currentElement = children[i];
       const nextElement = children[i + 1];
-      const nextElementTop = nextElement ? this.DOM.getElementRootedTop(nextElement, rootNode): undefined;
+      const nextElementTop = nextElement ? this._node.getTop(nextElement, rootNode): undefined;
 
       // nextElement && console.log(
       //   'ddddd',
-      //   this.DOM.getElementRootedTop(nextElement, rootNode),
+      //   this._node.getTop(nextElement, rootNode),
       //   nextElement,
       //   rootNode
       // )
@@ -2099,16 +2168,14 @@ export default class Pages {
       : (
           (result.at(-1) === null) // * case with empty first slice
           ? fullPageHeight
-          : fullPageHeight + this.DOM.getElementRootedTop(result.at(-1), rootNode)
+          : fullPageHeight + this._node.getTop(result.at(-1), rootNode)
         );
 
-      if (this.DOM.isForcedPageBreak(currentElement)) {
+      if (this._node.isForcedPageBreak(currentElement)) {
         //register
 
         // TODO #ForcedPageBreak
-        this.debugMode
-          && this.debugToggler._getInternalSplitters
-          && console.warn(
+        this._debugMode && this._debugToggler._getInternalSplitters && console.warn(
             currentElement, '💟 is isForcedPageBreak'
           );
       }
@@ -2120,16 +2187,12 @@ export default class Pages {
       if (nextElementTop <= floater) {
         // -- current fits
 
-        // this.debugMode
-        //     && this.debugToggler._getInternalSplitters
-        //     && console.log('💟💟 nextElementTop <= floater // current fits');
+        // this._debugMode && this._debugToggler._getInternalSplitters && console.log('💟💟 nextElementTop <= floater // current fits');
 
-        if (this._isNoHanging(currentElement)) {
+        if (this._node.isNoHanging(currentElement)) {
           // -- current fits but it can't be the last
 
-          this.debugMode
-            && this.debugToggler._getInternalSplitters
-            && console.log('💟💟 currentElement _isNoHanging');
+          this._debugMode && this._debugToggler._getInternalSplitters && console.log('💟💟 currentElement _isNoHanging');
 
           registerResult(currentElement, i);
         }
@@ -2137,22 +2200,17 @@ export default class Pages {
       } else { // nextElementTop > floater
               // currentElement ?
 
-        this.debugMode
-          && this.debugToggler._getInternalSplitters
-          && console.log('💟💟', `nextElementTop > floater \n ${nextElementTop} > ${floater} `,);
+        this._debugMode && this._debugToggler._getInternalSplitters && console.log('💟💟', currentElement, `nextElementTop > floater \n ${nextElementTop} > ${floater} `,);
 
-        if (this._isSVG(currentElement) || this._isIMG(currentElement)) {
+        if (this._node.isSVG(currentElement) || this._node.isIMG(currentElement)) {
           // TODO needs testing
-          this.debugMode
-            && this.debugToggler._getInternalSplitters
-            && console.log('%cIMAGE 💟💟', 'color:red;text-weight:bold')
+          this._debugMode && this._debugToggler._getInternalSplitters && console.log('%cIMAGE 💟💟', 'color:red;text-weight:bold')
         }
 
-        const currentElementBottom = this.DOM.getElementRootedRealBottom(currentElement, rootNode);
+        const currentElementBottom = this._node.getBottomWithMargin(currentElement, rootNode);
 
-        this.debugMode
-          && this.debugToggler._getInternalSplitters
-          && console.log('💟💟 current ???',
+        this._debugMode && this._debugToggler._getInternalSplitters && console.log(
+          '💟💟 current ???',
           '\n currentElement', currentElement,
           '\n currentElementBottom', currentElementBottom,
           '\n floater', floater
@@ -2162,15 +2220,11 @@ export default class Pages {
         // in the remaining space on the page,
         if (currentElementBottom <= floater) {
 
-          this.debugMode
-            && this.debugToggler._getInternalSplitters
-            && console.log('💟💟💟 currentElementBottom <= floater');
+          this._debugMode && this._debugToggler._getInternalSplitters && console.log('💟💟💟 currentElementBottom <= floater');
 
           // ** add nextElement check (undefined as end)
           if(nextElement) {
-            this.debugMode
-            && this.debugToggler._getInternalSplitters
-            && console.log('💟💟💟💟 register nextElement');
+            this._debugMode && this._debugToggler._getInternalSplitters && console.log('💟💟💟💟 register nextElement');
             trail.push(newObjectFromNext);
             registerResult(nextElement, i + 1);
           } // else - this is the end of element list
@@ -2178,9 +2232,10 @@ export default class Pages {
         } else {
           // currentElementBottom > floater
           // try to split
-          this.debugMode
-            && this.debugToggler._getInternalSplitters
-            && console.log('💟💟💟 currentElementBottom > floater, \ntry to split', currentElement);
+          this._debugMode && this._debugToggler._getInternalSplitters && console.log(
+            '💟💟💟 currentElementBottom > floater,\ntry to split',
+            currentElement
+          );
 
           const currentElementChildren = this._getProcessedChildren(currentElement, pageBottom, fullPageHeight);
 
@@ -2208,16 +2263,14 @@ export default class Pages {
 
             stack.pop();
 
-            this.debugMode
-              && this.debugToggler._getInternalSplitters
-              && console.log('🟪 back from _getInternalSplitters;\n trail[i]', trail[i]);
+            this._debugMode && this._debugToggler._getInternalSplitters && console.log('🟪 back from _getInternalSplitters;\n trail[i]', trail[i]);
             // *** END of 'has children'
 
           } else {
             // * If no children,
             // * move element to the next page.
             // ** But,
-            if (previousElement && this._isNoHanging(previousElement)) {
+            if (previousElement && this._node.isNoHanging(previousElement)) {
               // ** if previousElement can't be the last element on the page,
               // ** move it to the next page.
               // TODO #_canNotBeLast
@@ -2226,22 +2279,18 @@ export default class Pages {
               console.warn('tst improveResult', previousElement)
               // if (improveResult) {
               let result = previousElement;
-              const firstChildParent = this.DOM.findFirstChildParent(result, this.contentFlow);
+              const firstChildParent = this._node.findFirstChildParent(result, this._contentFlow);
               result = firstChildParent || result;
 
-              const previousCandidate = this.DOM.findPreviousNoHangingsFromPage(result, this.pages.at(-2)?.pageBottom, this.root)
+              const previousCandidate = this._node.findPreviousNoHangingsFromPage(result, this.pages.at(-2)?.pageBottom, this._root)
               result = previousCandidate || result;
 
 
-              this.debugMode && this.debugToggler._getInternalSplitters && console.log('previousElement _isNoHanging')
+              this._debugMode && this._debugToggler._getInternalSplitters && console.log('previousElement _isNoHanging')
               registerResult(result, i - 1);
             } else {
               // TODO #tracedParent
-              // this._registerPageStart(currentElement);
-              // this._registerPageStart(currentOrParentElement);
-              this.debugMode
-                && this.debugToggler._getInternalSplitters
-                && console.log(currentElement, 'currentElement has no children')
+              this._debugMode && this._debugToggler._getInternalSplitters && console.log(currentElement, 'currentElement has no children')
               registerResult(currentElement, i);
             }
           } // *** END of 'no children'
@@ -2254,11 +2303,10 @@ export default class Pages {
     updateIndexTracker();
 
     // *** need to revert back to the original positioning of the rootNode:
-    rootNode.style.position = initPosition;
+    this._DOM.setStyles(rootNode, { position: initPosition });
 
-    this.debugMode
-      && this.debugToggler._getInternalSplitters
-      && console.groupEnd();
+    this._debugMode && this._debugToggler._getInternalSplitters && console.log('%c END _getInternalSplitters', CONSOLE_CSS_END_LABEL);
+    this._debugMode && this._debugToggler._getInternalSplitters && console.groupEnd();
 
     return {result, trail}
   }
@@ -2270,16 +2318,16 @@ export default class Pages {
     // TODO (shall we scale?).
 
     const consoleMark = ['%c_splitGridNode\n', 'color:white',];
-    this.debugMode && this.debugToggler._splitGridNode && console.group('_splitGridNode');
+    this._debugMode && this._debugToggler._splitGridNode && console.group('_splitGridNode');
 
-    // this.debugMode && this.debugToggler._splitGridNode && console.log(
+    // this._debugMode && this._debugToggler._splitGridNode && console.log(
     //   ...consoleMark,
-    //   'node', this.DOM.getComputedStyle(node)
+    //   'node', this._DOM.getComputedStyle(node)
     // );
 
     // ** Take the node children.
     const children = this._getChildren(node);
-    this.debugMode && this.debugToggler._splitGridNode && console.log(
+    this._debugMode && this._debugToggler._splitGridNode && console.log(
       ...consoleMark,
       'children', children
     );
@@ -2288,8 +2336,8 @@ export default class Pages {
     const childrenGroups = children.reduce(
       (result, currentElement, currentIndex, array) => {
 
-        const currentStyle = this.DOM.getComputedStyle(currentElement);
-        // this.debugMode && this.debugToggler._splitGridNode && console.log(
+        const currentStyle = this._DOM.getComputedStyle(currentElement);
+        // this._debugMode && this._debugToggler._splitGridNode && console.log(
         //   ...consoleMark,
         //   'currentStyle', currentStyle
         // );
@@ -2304,10 +2352,10 @@ export default class Pages {
           element: currentElement,
           start: currentColumnStart,
           end: currentColumnEnd,
-          top: this.DOM.getElementTop(currentElement)
+          top: this._DOM.getElementOffsetTop(currentElement)
         };
 
-        this.debugMode && this.debugToggler._splitGridNode && console.log(
+        this._debugMode && this._debugToggler._splitGridNode && console.log(
           ...consoleMark,
           '{ ???', currentElement, result
         );
@@ -2321,19 +2369,17 @@ export default class Pages {
           // * If this is the beginning, or if a new line.
           if (
             result.at(-1)
-            && this._isNoHanging(result.at(-1).at(-1).element)
+            && this._node.isNoHanging(result.at(-1).at(-1).element)
           ) {
             // ** If the previous last element cannot be the last element,
             // ** add to the previous group.
-            this.debugMode
-              && this.debugToggler._splitGridNode
-              && console.log('%cLAST','color:red')
+            this._debugMode && this._debugToggler._splitGridNode && console.log('%cLAST','color:red')
             result.at(-1).push(newItem);
           } else {
             // * Add a new group and a new item in it:
             result.push([newItem]);
           }
-          this.debugMode && this.debugToggler._splitGridNode && console.log(
+          this._debugMode && this._debugToggler._splitGridNode && console.log(
             ...consoleMark,
             'IF new:', newItem, [...result]
           );
@@ -2342,14 +2388,14 @@ export default class Pages {
           // * If the order number is increasing, it is a grid row continuation.
           // * Add a new element to the end of the last group:
           result.at(-1).push(newItem);
-          this.debugMode && this.debugToggler._splitGridNode && console.log(
+          this._debugMode && this._debugToggler._splitGridNode && console.log(
             ...consoleMark,
             'IF new:', newItem, [...result]
           );
           return result
         }
 
-        this.debugMode
+        this._debugMode
           && console.assert(
             true,
             '_splitGridNode: An unexpected case of splitting a grid.',
@@ -2358,19 +2404,21 @@ export default class Pages {
         );
       }, []
     );
-    this.debugMode && this.debugToggler._splitGridNode && console.log(
+    this._debugMode && this._debugToggler._splitGridNode && console.log(
       ...consoleMark,
       'childrenGroups', childrenGroups
     );
 
     const nodeRows = childrenGroups.length;
-    const nodeHeight = this.DOM.getElementHeight(node);
+    const nodeHeight = this._DOM.getElementOffsetHeight(node);
 
     // ** If there are enough rows for the split to be readable,
     // ** and the node is not too big (because of the content),
     // ** then we will split it.
-    if (nodeRows < this.minBreakableGridRows && nodeHeight < fullPageHeight) {
+    if (nodeRows < this._minBreakableGridRows && nodeHeight < fullPageHeight) {
       // ** Otherwise, we don't split it.
+      this._debugMode && this._debugToggler._splitGridNode && console.log(`%c END DONT _splitGridNode`, CONSOLE_CSS_END_LABEL);
+      this._debugMode && this._debugToggler._splitGridNode && console.groupEnd()
       return []
     }
 
@@ -2387,10 +2435,10 @@ export default class Pages {
       nodeHeight
     ];
       // ,
-      // this.DOM.getElementRootedTop(nodeEntries.tfoot, node) || nodeHeight
+      // this._node.getTop(nodeEntries.tfoot, node) || nodeHeight
 
 
-    this.debugMode && this.debugToggler._splitGridNode && console.log(
+    this._debugMode && this._debugToggler._splitGridNode && console.log(
       ...consoleMark,
       'topRowPoints', topRowPoints
     );
@@ -2399,18 +2447,18 @@ export default class Pages {
     // TODO: same as the table
 
     // ** Prepare node parameters
-    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
-    const nodeWrapperHeight = this.DOM.getEmptyNodeHeight(node);
+    const nodeTop = this._node.getTop(node, this._root);
+    const nodeWrapperHeight = this._node.getEmptyNodeHeight(node);
     const firstPartHeight = pageBottom
       - nodeTop
-      // - this.signpostHeight
+      // - this._signpostHeight
       - nodeWrapperHeight;
     const fullPagePartHeight = fullPageHeight
-      // - 2 * this.signpostHeight
+      // - 2 * this._signpostHeight
       - nodeWrapperHeight;
 
-      this.debugMode && this.debugToggler._splitGridNode && console.log('firstPartHeight', firstPartHeight);
-      this.debugMode && this.debugToggler._splitGridNode && console.log('fullPagePartHeight', fullPagePartHeight);
+      this._debugMode && this._debugToggler._splitGridNode && console.log('firstPartHeight', firstPartHeight);
+      this._debugMode && this._debugToggler._splitGridNode && console.log('fullPagePartHeight', fullPagePartHeight);
 
     // TODO 1267 -  как в таблице
 
@@ -2428,7 +2476,7 @@ export default class Pages {
         // TODO split long TR
         // когда много диаграмм, или очень длинный текст
 
-        if (index > this.minLeftRows) {
+        if (index > this._minLeftRows) {
           // * avoid < minLeftRows rows on first page
           // *** If a table row starts in the next part,
           // *** register the previous one as the beginning of the next part.
@@ -2442,13 +2490,13 @@ export default class Pages {
       }
     };
 
-    this.debugMode && this.debugToggler._splitGridNode && console.log('splitsIds', splitsIds);
+    this._debugMode && this._debugToggler._splitGridNode && console.log('splitsIds', splitsIds);
 
     const insertGridSplit = (startId, endId) => {
       // * The function is called later.
       // TODO Put it in a separate method: THIS AND TABLE
 
-      this.debugMode && this.debugToggler._splitGridNode && console.log(
+      this._debugMode && this._debugToggler._splitGridNode && console.log(
         ...consoleMark, `=> insertGridSplit(${startId}, ${endId})`
       );
 
@@ -2457,22 +2505,22 @@ export default class Pages {
         .slice(startId, endId)
         .flat()
         .map(obj => obj.element);
-      this.debugMode && this.debugToggler._splitGridNode && console.log(
+      this._debugMode && this._debugToggler._splitGridNode && console.log(
         ...consoleMark, `partEntries`, partEntries
       );
 
-      // const part = this.DOM.createWithFlagNoBreak();
+      // const part = this._node.createWithFlagNoBreak();
       // ! Do not wrap nodes so as not to break styles.
       // TODO - Check for other uses of createWithFlagNoBreak to see if the wrapper can be avoided.
 
-      const part = this.DOM.cloneNodeWrapper(node);
-      this.DOM.copyNodeWidth(part, node);
-      this.DOM.setFlagNoBreak(part);
+      const part = this._DOM.cloneNodeWrapper(node);
+      this._node.copyNodeWidth(part, node);
+      this._node.setFlagNoBreak(part);
       node.before(part);
 
       if (startId) {
         // if is not first part
-        // this.DOM.insertAtEnd(part, this.DOM.createSignpost('(table continued)', this.signpostHeight));
+        // this._DOM.insertAtEnd(part, this._node.createSignpost('(table continued)', this._signpostHeight));
 
         // TODO: insertions between parts will not disturb the original layout & CSS.
         // Therefore, it is possible to insert an element after and before the parts
@@ -2480,19 +2528,19 @@ export default class Pages {
       }
 
       // в таблице другое
-      // this.DOM.insertAtEnd(
+      // this._DOM.insertAtEnd(
       //   part,
-      //   this.DOM.createTable({
+      //   this._node.createTable({
       //     wrapper: nodeWrapper,
-      //     caption: this.DOM.cloneNode(nodeEntries.caption),
-      //     thead: this.DOM.cloneNode(nodeEntries.thead),
+      //     caption: this._DOM.cloneNode(nodeEntries.caption),
+      //     thead: this._DOM.cloneNode(nodeEntries.thead),
       //     // tfoot,
       //     tbody: partEntries,
       //   }),
-      //   this.DOM.createSignpost('(table continues on the next page)', this.signpostHeight)
+      //   this._node.createSignpost('(table continues on the next page)', this._signpostHeight)
       // );
-      // this.DOM.insertAtEnd(part, nodeWrapper);
-      this.DOM.insertAtEnd(part, ...partEntries);
+      // this._DOM.insertAtEnd(part, nodeWrapper);
+      this._DOM.insertAtEnd(part, ...partEntries);
 
       return part
     };
@@ -2500,273 +2548,28 @@ export default class Pages {
 
     const splits = splitsIds.map((value, index, array) => insertGridSplit(array[index - 1] || 0, value))
 
-    this.debugMode && this.debugToggler._splitGridNode && console.log(
+    this._debugMode && this._debugToggler._splitGridNode && console.log(
       ...consoleMark,
       'splits', splits
     );
 
     // create LAST PART
     // TODO ??? is that really needed?
-    // const lastPart = this.DOM.createWithFlagNoBreak();
+    // const lastPart = this._node.createWithFlagNoBreak();
     // node.before(lastPart);
-    // this.DOM.insertAtEnd(
+    // this._DOM.insertAtEnd(
     //   lastPart,
-    //   // this.DOM.createSignpost('(table continued)', this.signpostHeight),
+    //   // this._node.createSignpost('(table continued)', this._signpostHeight),
     //   node
     // );
 
     // LAST PART handling
-    this.DOM.setFlagNoBreak(node);
+    this._node.setFlagNoBreak(node);
 
-    this.debugMode && this.debugToggler._splitGridNode && console.groupEnd()
+    this._debugMode && this._debugToggler._splitGridNode && console.log(`%c END _splitGridNode`, CONSOLE_CSS_END_LABEL);
+    this._debugMode && this._debugToggler._splitGridNode && console.groupEnd()
     // return children;
     return [...splits, node]
   }
-
-  // TODO split text with BR
-  // TODO split text with A (long, splitted) etc.
-
-  _splitTextNode(node, pageBottom, fullPageHeight) {
-
-    // Prepare node parameters
-    const nodeTop = this.DOM.getElementRootedTop(node, this.root);
-    const nodeHeight = this.DOM.getElementHeight(node);
-    const nodeLineHeight = this.DOM.getLineHeight(node);
-
-    // Prepare parameters for splitters calculation
-    const availableSpace = pageBottom - nodeTop;
-
-    const nodeLines = ~~(nodeHeight / nodeLineHeight);
-    const pageLines = ~~(fullPageHeight / nodeLineHeight);
-    const firstPartLines = ~~(availableSpace / nodeLineHeight);
-
-    // calculate approximate splitters
-    const approximateSplitters = calculateSplitters({
-      nodeLines: nodeLines,
-      pageLines: pageLines,
-      firstPartLines: firstPartLines,
-      // const
-      minBreakableLines: this.minBreakableLines,
-      minLeftLines: this.minLeftLines,
-      minDanglingLines: this.minDanglingLines,
-    });
-
-    // this.debugMode && console.log('approximateSplitters', approximateSplitters);
-
-    if (approximateSplitters.length < 2) {
-      // this.debugMode && console.log(' ... do not break', node);
-      return []
-    }
-
-    // Split this node:
-
-    const {
-      splittedNode,
-      nodeWords,
-      nodeWordItems,
-    } = this.DOM.prepareSplittedNode(node);
-
-    // CALCULATE exact split IDs
-    const exactSplitters = approximateSplitters.map(
-      ({ endLine, splitter }) =>
-        splitter
-          ? findSplitId({
-            arr: nodeWordItems,
-            floater: splitter,
-            topRef: endLine * nodeLineHeight,
-            getElementTop: this.DOM.getElementRelativeTop, // we are inside the 'absolute' test node
-            root: this.root
-          })
-          : null
-    );
-
-    const splitsArr = exactSplitters.map((id, index, exactSplitters) => {
-      // Avoid trying to break this node: createWithFlagNoBreak()
-      const part = this.DOM.createWithFlagNoBreak();
-
-      const start = exactSplitters[index - 1] || 0;
-      const end = id || exactSplitters[exactSplitters.length];
-
-      this.DOM.setInnerHTML(part, nodeWords.slice(start, end).join(WORD_JOINER) + WORD_JOINER);
-
-      return part;
-    });
-
-    this.DOM.insertInsteadOf(splittedNode, ...splitsArr);
-
-    return splitsArr;
-
-    // todo
-    // последняя единственная строка - как проверять?
-    // смотреть, если эта НОДА - единственный или последний потомок своего родителя
-
-  }
-
-  _getChildren(element) {
-    // Check children:
-    // TODO variants
-    // TODO last child
-    // TODO first Li
-
-    // fon display:none / contents
-    // this.DOM.getElementOffsetParent(currentElement)
-
-    // TODO: to do this check more elegant
-    // SEE the context here:
-    // _splitComplexTextBlockIntoLines(node)
-    // ...
-    // const nodeChildren = this._getChildren(node);
-    // * _processInlineChildren (makes ComplexTextBlock) is running extra on complex nodes
-    if (this.DOM.isComplexTextBlock(element)) {
-      return [...this.DOM.getChildren(element)]
-
-    } else {
-
-      let childrenArr = [...this.DOM.getChildNodes(element)]
-        .reduce(
-          (acc, item) => {
-
-            // * filter STYLE, use element.tagName
-            if (this._isSTYLE(item)) {
-              return acc;
-            }
-
-            // * wrap text node, use element.nodeType
-            if (this.DOM.isSignificantTextNode(item)) {
-              acc.push(this.DOM.wrapTextNode(item));
-              return acc;
-            }
-
-            // * no offset parent (contains)
-            if (!this.DOM.getElementOffsetParent(item)) {
-              const ch = this._getChildren(item);
-              ch.length > 0 && acc.push(...ch);
-              return acc;
-            }
-
-            // * normal
-            if (this.DOM.isElementNode(item)) {
-              acc.push(item);
-              return acc;
-            };
-
-          }, [])
-
-          if (this._isVerticalFlowDisrupted(childrenArr)) {
-            // * If the vertical flow is disturbed and the elements are side by side:
-            childrenArr = this._processInlineChildren(childrenArr);
-          }
-
-      return childrenArr;
-    }
-  }
-
-  _isSignificantChild(child) {
-    const tag = this.DOM.getElementTagName(child);
-
-    // TODO isSignificantChild
-    // If my nodeName is #text, my height is always undefined
-    return (tag !== 'A' && tag !== 'TT' && this.DOM.getElementHeight(child) > 0);
-  }
-
-  _prepareNoHangingSelector(string) {
-    const arr = string?.length ? string?.split(/\s+/) : [];
-    return ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', ...arr]
-  }
-
-  _prepareForcedPageBreakSelector(string) {
-    return [...this._arrayFromString(string), this.selector.printForcedPageBreak];
-  }
-
-  _arrayFromString(string) {
-    // * The settings may pass an empty string, prevent errors here.
-    return string?.length ? string?.split(/\s+/) : [];
-  }
-
-  _isSTYLE(element) {
-    return this.DOM.getElementTagName(element) === 'STYLE'
-  }
-
-  _isPRE(element, _style = this.DOM.getComputedStyle(element)) {
-    // this.DOM.getElementTagName(element) === 'PRE'
-    return [
-      'block'
-    ].includes(_style.display)
-    && [
-      'pre',
-      'pre-wrap',
-      'pre-line',
-      'break-spaces',
-      'nowrap'
-    ].includes(_style.whiteSpace);
-  }
-
-  _isIMG(element) {
-    return this.DOM.getElementTagName(element) === 'IMG'
-  }
-
-  _isSVG(element) {
-    return this.DOM.getElementTagName(element) === 'svg'
-  }
-
-  _isTextNode(element) {
-    return this.DOM.isWrappedTextNode(element);
-  }
-
-  _isTableNode(element, _style = this.DOM.getComputedStyle(element)) {
-    //*** STRICTDOC specific
-    //*** add scroll for wide tables */
-    //* issue#1370 https://css-tricks.com/preventing-a-grid-blowout/ */
-    // so table can has 'block' and 'nowrap'.
-    return this.DOM.getElementTagName(element) === 'TABLE'
-    || // ! &&
-    ['table'].includes(_style.display);
-  }
-
-  _isTableLikeNode(element, _style = this.DOM.getComputedStyle(element)) {
-    return this.DOM.getElementTagName(element) !== 'TABLE'
-    && [
-      'table'
-    ].includes(_style.display);
-  }
-
-  _isLiNode(element) {
-    return this.DOM.getElementTagName(element) === 'LI';
-  }
-
-  _isNoBreak(element, _style = this.DOM.getComputedStyle(element)) {
-    return this.DOM.isNoBreak(element)
-        || this.DOM.isInlineBlock(_style)
-        || this._notSolved(element);
-  }
-
-  _isNoHanging(element) {
-    return this.DOM.isNoHanging(element);
-  }
-
-  _notSolved(element) {
-    // TODO !!!
-    // помещать такой объект просто на отдельную страницу
-    // проверить, если объект больше - как печатаются номера и разрывы
-    const tag = this.DOM.getElementTagName(element);
-    return (tag === 'OBJECT')
-  }
-
-  // _isUnbreakable(element) {
-  //   // IF currentElement is specific,
-  //   // process as a whole:
-  //   const tag = this.DOM.getElementTagName(element);
-
-  //   // BUG WITH OBJECT: in FF is ignored, in Chrome get wrong height
-  //   // if (tag === 'OBJECT') {
-  //   //   this.debugMode && console.log('i am object');
-  //   //   resizeObserver.observe(currentElement)
-  //   // }
-
-  //   // this.DOM.isNeutral(element) || 
-
-  //   const takeAsWhole = (tag === 'IMG' || tag === 'svg' || tag === 'TABLE' || this.DOM.isNoBreak(element) || tag === 'OBJECT')
-  //   return takeAsWhole;
-  // }
 
 }

@@ -67,6 +67,8 @@ ${SELECTOR.root} {
   padding-bottom: calc(2 * ${this.config.virtualPagesGap});
 }
 
+${SELECTOR.contentFlowStart},
+${SELECTOR.contentFlowEnd},
 ${SELECTOR.pageDivider} {
   display: block;
 }
@@ -164,10 +166,13 @@ ${SELECTOR.contentFlow} {
 
 ${SELECTOR.runningSafety} {
   display: block;
-  /* firefox ignores 0.1px size, so it's necessary to make a full-size pixel
-     and take it into account in the calculations
+  /*  ? should be checked and updated,
+        but in the meantime, bring back the common solution:
+     firefox ignores 0.1px size, so it's necessary to make a full-size pixel
+     and take it into account in the calculations:
+     padding-top: 1px;
   */
-  padding-top: 1px;
+  padding-top: .1px;
 }
 
 ${SELECTOR.virtualPaperTopMargin} {
@@ -210,6 +215,8 @@ ${SELECTOR.frontpageContent} {
 }
 
 ${SELECTOR.textNode},
+${SELECTOR.textLine},
+${SELECTOR.textGroup},
 ${SELECTOR.neutral},
 ${SELECTOR.neutral} span {
   display: inline;
@@ -220,6 +227,19 @@ ${SELECTOR.neutral} span {
   line-height: inherit;
   background: none;
   background-color: transparent;
+}
+
+${SELECTOR.textGroup} {
+  display: block;
+}
+
+${SELECTOR.textLine} {
+  /* Firefox and inconsistent values of offset top for inline element */
+  display: inline-block;
+}
+
+${SELECTOR.textGroup} ${SELECTOR.textLine} {
+  display: inline;
 }
 
 ${SELECTOR.complexTextBlock} {
@@ -334,6 +354,11 @@ ${SELECTOR.neutral} {
 
 ${SELECTOR.textNode} {
   background: #00ff0010;
+}
+
+${SELECTOR.textGroup},
+${SELECTOR.textLine} {
+  background: #0000ff08;
 }
 
 [filler] {

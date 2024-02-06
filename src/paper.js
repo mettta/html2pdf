@@ -3,6 +3,7 @@ export default class Paper {
   constructor({
     config,
     DOM,
+    node,
     selector,
     layout,
   }) {
@@ -10,6 +11,7 @@ export default class Paper {
     this._debugMode = config.debugMode;
     this._DOM = DOM;
     this._selector = selector;
+    this._node = node;
 
     // templates
     this._frontpageTemplate = layout.frontpageTemplate;
@@ -76,10 +78,10 @@ export default class Paper {
   }
 
   createVirtualTopMargin() {
-    return this._DOM.create(this._virtualPaperTopMarginSelector);
+    return this._node.create(this._virtualPaperTopMarginSelector);
   }
   createVirtualBottomMargin() {
-    return this._DOM.create(this._virtualPaperBottomMarginSelector);
+    return this._node.create(this._virtualPaperBottomMarginSelector);
   }
 
   // TODO make createPaper() dependent on templates and parameters:
@@ -93,7 +95,7 @@ export default class Paper {
     totalPages,
   }) {
 
-    const paper = this._DOM.create(this._virtualPaperSelector);
+    const paper = this._node.create(this._virtualPaperSelector);
 
     this._DOM.insertAtEnd(
       paper,
@@ -113,7 +115,7 @@ export default class Paper {
   }
 
   _createFrontpageContent(template, factor) {
-    const _node = this._DOM.create(this._frontpageContentSelector);
+    const _node = this._node.create(this._frontpageContentSelector);
     template && this._DOM.setInnerHTML(_node, template);
     factor && this._DOM.setStyles(_node, { transform: `scale(${factor})` });
 
@@ -121,7 +123,7 @@ export default class Paper {
   }
 
   _createPaperBody(height, content) {
-    const _node = this._DOM.create(this._paperBodySelector);
+    const _node = this._node.create(this._paperBodySelector);
     // Lock the height of the paperBody for the content area.
     // This affects the correct printing of the paper layer.
     this._DOM.setStyles(_node, { height: height + 'px' });
@@ -131,10 +133,10 @@ export default class Paper {
   }
 
   _createPaperHeader(template) {
-    const _node = this._DOM.create(this._paperHeaderSelector);
+    const _node = this._node.create(this._paperHeaderSelector);
 
     if (template) {
-      const content = this._DOM.create(this._headerContentSelector);
+      const content = this._node.create(this._headerContentSelector);
       this._DOM.setInnerHTML(content, template);
       this._DOM.insertAtEnd(_node, content);
     }
@@ -142,10 +144,10 @@ export default class Paper {
   }
 
   _createPaperFooter(template) {
-    const _node = this._DOM.create(this._paperFooterSelector);
+    const _node = this._node.create(this._paperFooterSelector);
 
     if (template) {
-      const content = this._DOM.create(this._footerContentSelector);
+      const content = this._node.create(this._footerContentSelector);
       this._DOM.setInnerHTML(content, template);
       this._DOM.insertAtEnd(_node, content);
     }
@@ -180,7 +182,7 @@ export default class Paper {
     });
 
     // CREATE TEMP CONTAINER
-    const workbench = this._DOM.create('#workbench')
+    const workbench = this._node.create('#workbench')
     this._DOM.setStyles(
       workbench,
       {
@@ -193,15 +195,15 @@ export default class Paper {
 
     // get heights for an blank page
     const paperHeight = this._DOM.getElementBCR(testPaper).height;
-    const headerHeight = this._DOM.getElementHeight(headerElement) || 0;
-    const footerHeight = this._DOM.getElementHeight(footerElement) || 0;
-    const bodyHeight = this._DOM.getElementHeight(bodyElement);
-    const bodyWidth = this._DOM.getElementWidth(bodyElement);
+    const headerHeight = this._DOM.getElementOffsetHeight(headerElement) || 0;
+    const footerHeight = this._DOM.getElementOffsetHeight(footerElement) || 0;
+    const bodyHeight = this._DOM.getElementOffsetHeight(bodyElement);
+    const bodyWidth = this._DOM.getElementOffsetWidth(bodyElement);
 
     // add frontpage text
     this._DOM.insertAtStart(bodyElement, frontpageElement);
     // get height for the frontpage content
-    const filledBodyHeight = this._DOM.getElementHeight(bodyElement);
+    const filledBodyHeight = this._DOM.getElementOffsetHeight(bodyElement);
 
     const frontpageFactor = (filledBodyHeight > bodyHeight)
       ? bodyHeight / filledBodyHeight

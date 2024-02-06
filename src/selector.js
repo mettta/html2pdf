@@ -9,6 +9,10 @@ const SELECTOR = {
   // *** page-beginning element:
   pageStartMarker: '[html2pdf-page-start]',
 
+  // *** content-flow inner markers:
+  contentFlowStart: 'html2pdf-content-flow-start',
+  contentFlowEnd: 'html2pdf-content-flow-end',
+
   // * STYLE element
   style: '[html2pdf-style]',
 
@@ -51,8 +55,11 @@ const SELECTOR = {
   printHide: '[html2pdf-print-hide]',
 
   // * Service elements (are created in the process):
+  splitted: '[html2pdf-splitted]',
   neutral: 'html2pdf-neutral',
   textNode: 'html2pdf-text-node',
+  textLine: 'html2pdf-text-line',
+  textGroup: 'html2pdf-text-group',
   complexTextBlock: 'html2pdf-complex-text-block',
   printForcedPageBreak: 'html2pdf-print-forced-page-break',
 

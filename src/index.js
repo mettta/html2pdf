@@ -4,10 +4,6 @@ import Preloader from './preloader';
 const HTML2PDF4DOC_VERSION = '0.0.1';
 console.info(`HTML2PDF4DOC v${HTML2PDF4DOC_VERSION}`);
 
-const CONSOLE_CSS_LABEL_IND = 'border:1px solid #aa0000;'
-                            + 'background:#EEEEEE;'
-                            + 'color:#aa0000;'
-
 // test
 // import _emulateContent from './content';
 

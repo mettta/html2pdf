@@ -4,44 +4,40 @@ export default class Toc {
     config,
     DOM,
     selector,
+    node,
     layout,
   }) {
-    this.config = config;
-    this.debugMode = config.debugMode;
-    this.tocPageNumberSelector = config.tocPageNumberSelector;
 
-    this.selector = selector;
-    this.DOM = DOM;
-    this.layout = layout;
+    this._debugMode = config.debugMode;
+    this._DOM = DOM;
+    this._node = node;
+    this._tocPageNumberSelector = config.tocPageNumberSelector;
+    this._root = layout.root;
+    this._contentFlow = layout.contentFlow;
+    this._pageDividerSelector = selector.pageDivider;
 
-    this.contentFlow = layout.contentFlow;
-    this.root = layout.root;
-
-    this.pageDividerSelector = selector.pageDivider;
-
-    // local
-    this.debugToggler = {
+    this._debugToggler = {
       _: false,
     }
   }
 
   render() {
-    this.config.debugMode && console.time("Processing TOC");
+    this._debugMode && console.time("Processing TOC");
 
-    this.debugMode && this.debugToggler._ && console.log(`
+    this._debugMode && this._debugToggler._ && console.log(`
 📑 TOC: I am here!
 
 tocPageNumberSelector:
- • ${this.tocPageNumberSelector}
+ • ${this._tocPageNumberSelector}
  pageDividerSelector:
- • ${this.pageDividerSelector}
+ • ${this._pageDividerSelector}
       `);
 
-    const tocPageNumberBoxes = this.DOM.findAllSelectorsInside(this.contentFlow, this.tocPageNumberSelector);
-    this.debugMode && this.debugToggler._ && console.log('📑 tocPageNumberBoxes', tocPageNumberBoxes.length);
+    const tocPageNumberBoxes = this._node.getAll(this._tocPageNumberSelector, this._contentFlow);
+    this._debugMode && this._debugToggler._ && console.log('📑 tocPageNumberBoxes', tocPageNumberBoxes.length);
 
     if (!tocPageNumberBoxes.length) {
-      this.debugMode && this.debugToggler._ && console.log('📑 no valid toc');
+      this._debugMode && this._debugToggler._ && console.log('📑 no valid toc');
       return
     }
 
@@ -51,7 +47,7 @@ tocPageNumberSelector:
     //    which have their 'targetTop' positions as keys
     // 3) merge the dictionaries.
 
-    const dataFromPagesMarkers = this.DOM.findAllSelectorsInside(this.contentFlow, this.pageDividerSelector)
+    const dataFromPagesMarkers = this._node.getAll(this._pageDividerSelector, this._contentFlow)
     .reduce((acc, marker, index) => {
       // * The conditions for the following code snippet are as follows:
       // - It should be executed after the preview is rendered.
@@ -69,18 +65,18 @@ tocPageNumberSelector:
       // * That's how we get the {-1 : 1} object,
       // * which means page 1 has a negative top.
       // * We ignore it, as described above.
-      const pageTop = this.DOM.getElementRootedTop(marker, this.root) - 1;
+      const pageTop = this._node.getTop(marker, this._root) - 1;
 
-      const pageNum = this.DOM.getAttribute(marker, '[page]');
+      const pageNum = this._DOM.getAttribute(marker, '[page]');
       acc[pageTop] = pageNum;
       return acc;
     }, {});
-    this.debugMode && this.debugToggler._ && console.log('📑 dataFromPagesMarkers', dataFromPagesMarkers);
+    this._debugMode && this._debugToggler._ && console.log('📑 dataFromPagesMarkers', dataFromPagesMarkers);
 
     const dataFromTOC = tocPageNumberBoxes.reduce((acc, box) => {
-      const id = this.DOM.getDataId(box);
-      const target = this.DOM.getElementById(id);
-      const targetTop = this.DOM.getElementRootedTop(target, this.root);
+      const id = this._DOM.getDataId(box);
+      const target = this._DOM.getElementById(id);
+      const targetTop = this._node.getTop(target, this._root);
       acc[targetTop] = {
         box: box,
         id: id,
@@ -88,7 +84,7 @@ tocPageNumberSelector:
       };
       return acc;
     }, {});
-    this.debugMode && this.debugToggler._ && console.log('📑 dataFromTOC', dataFromTOC);
+    this._debugMode && this._debugToggler._ && console.log('📑 dataFromTOC', dataFromTOC);
 
     const tocObject = {
       ...dataFromPagesMarkers,
@@ -97,22 +93,22 @@ tocPageNumberSelector:
 
     let pageAcc = 0;
 
-    this.debugMode && this.debugToggler._ && console.groupCollapsed('Processing obj');
+    this._debugMode && this._debugToggler._ && console.groupCollapsed('Processing obj');
     for (const key in tocObject) {
       const value = tocObject[key];
-      this.debugMode && this.debugToggler._ && console.log(`Processing ${key}: ${value}`);
+      this._debugMode && this._debugToggler._ && console.log(`Processing ${key}: ${value}`);
 
       if (typeof value === 'string') {
         pageAcc = value;
       } else {
         value.page = pageAcc;
-        this.DOM.setInnerHTML(value.box, pageAcc)
+        this._DOM.setInnerHTML(value.box, pageAcc)
       }
     }
-    this.debugMode && this.debugToggler._ && console.groupEnd('Processing obj');
+    this._debugMode && this._debugToggler._ && console.groupEnd('Processing obj');
 
-    this.debugMode && this.debugToggler._ && console.log('📑 tocObject', tocObject);
+    this._debugMode && this._debugToggler._ && console.log('📑 tocObject', tocObject);
 
-    this.config.debugMode && console.timeEnd("Processing TOC");
+    this._debugMode && console.timeEnd("Processing TOC");
   }
 }

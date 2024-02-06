@@ -8,7 +8,7 @@ export default function findTableSplitId(
     firefoxAmendment,
     minLeftRows,
     minDanglingRows,
-    DOM,
+    node,
     debugMode = false,
   }
 ) {
@@ -16,9 +16,9 @@ export default function findTableSplitId(
 
   const topsArr = [
     ...nodeEntries.rows.map(
-      row => DOM.getElementRootedTop(row, node) + firefoxAmendment
+      row => node.getTop(row, node) + firefoxAmendment
     ),
-    DOM.getElementRootedTop(nodeEntries.tfoot, node) || nodeHeight
+    node.getTop(nodeEntries.tfoot, node) || nodeHeight
   ];
 
   debugMode && console.log('• topsArr', topsArr);
@@ -73,5 +73,5 @@ export default function findTableSplitId(
 //   minLeftRows: this.minLeftRows,
 //   minDanglingRows: this.minDanglingRows,
 //   debugMode: this.debugMode,
-//   DOM: this.DOM,
+//   node: this.node,
 // });
