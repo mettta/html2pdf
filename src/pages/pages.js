@@ -1508,8 +1508,7 @@ export default class Pages {
 
     // calculate table wrapper (empty table element) height
     // to calculate the available space for table content
-    // * 2 times because of Table (empty table tag has only one border spacing)
-    const tableWrapperHeight = this._node.getEmptyNodeHeight(table); // '* 2' 
+    const tableWrapperHeight = this._node.getEmptyNodeHeight(table);
 
     // tableEntries
     const tableEntries = this._node.getTableEntries(table);
