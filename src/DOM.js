@@ -223,9 +223,9 @@ export default class DocumentObjectModel {
       this._debugMode && this._debugToggler._DOM && console.warn('removeAttribute() must have 2 params');
       return;
     }
-    console.assert(first.match(/[a-zA-Z#\[\.]/), `removeAttribute() expects a valid selector, but received ${selector}`)
 
     const first = selector.charAt(0);
+    console.assert(first.match(/[a-zA-Z#\[\.]/), `removeAttribute() expects a valid selector, but received ${selector}`)
 
     if (first === '.') {
       const cl = selector.substring(1);
