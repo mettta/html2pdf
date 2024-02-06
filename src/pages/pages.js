@@ -908,14 +908,20 @@ export default class Pages {
     this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log('_splitComplexTextBlockIntoLines (node)', node);
 
     // TODO ЭТА ШТУКА ЗАПУСКАЕТСЯ ДВАЖДЫ!
+    // FIXME Now nodes inside this function are not processed a second time,
+    // FIXME this is fixed via this._DOM.getChildren(node),
+    // FIXME but the check should be moved to the call level,
+    // FIXME this is the _getProcessedChildren() function.
 
     if (this._node.isSelectorMatching(node, this._selector.splitted)) {
+      // * This node has already been processed and has lines and groups of lines inside it,
 
       this._debugMode && this._debugToggler._parseNode && console.log(`%c END ${this._selector.splitted}`, CONSOLE_CSS_END_LABEL);
       this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.groupEnd();
-      return this._getChildren(node);
-    }
 
+      // * so we just return those child elements:
+      return this._DOM.getChildren(node);
+    }
 
     const nodeChildren = this._getChildren(node);
 
