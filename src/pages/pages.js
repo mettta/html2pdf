@@ -29,14 +29,14 @@ export default class Pages {
       _parseNode: false,
       _parseNodes: false,
       _registerPageStart: false,
-      _getProcessedChildren: true,
+      _getProcessedChildren: false,
       _splitPreNode: false,
-      _splitTableNode: true,
-      _splitTableRow: true,
+      _splitTableNode: false,
+      _splitTableRow: false,
       _splitGridNode: false,
-      _createSlicesBySplitFlag: true,
-      _getInternalSplitters: true,
-      _splitComplexTextBlockIntoLines: true,
+      _createSlicesBySplitFlag: false,
+      _getInternalSplitters: false,
+      _splitComplexTextBlockIntoLines: false,
     }
 
     // * Private
@@ -1001,7 +1001,7 @@ export default class Pages {
         // TODO: isLineChanged vs isLineKept: можно сделать else? они противоположны
         if(
           result.at(-1).length === 0 // the last element was BR
-          || (result.length && this._node.isLineKept(result.at(-1).at(-1), currentElement, true))
+          || (result.length && this._node.isLineKept(result.at(-1).at(-1), currentElement))
         ) {
           this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines
             && console.log('⬆ add to line:', currentElement
@@ -1045,13 +1045,13 @@ export default class Pages {
 
     const firstUnbreakablePart = newComplexChildrenGroups.slice(0, this._minLeftLines).flat();
     const lastUnbreakablePart = newComplexChildrenGroups.slice(-this._minDanglingLines).flat();
-    console.log('⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️',
-    [...newComplexChildrenGroups],
-    '\n',
-     this._minLeftLines, firstUnbreakablePart,
-    '\n',
-     this._minDanglingLines, lastUnbreakablePart
-     )
+    this._debugMode && this._debugToggler._parseNode && console.log(
+      'newComplexChildrenGroups', [...newComplexChildrenGroups],
+      '\n', 'minLeftLines =', this._minLeftLines,
+      '\n', firstUnbreakablePart,
+      '\n', 'minDanglingLines =', this._minDanglingLines,
+      '\n', lastUnbreakablePart
+    );
     newComplexChildrenGroups.splice(0, this._minLeftLines, firstUnbreakablePart);
     newComplexChildrenGroups.splice(-this._minDanglingLines, this._minDanglingLines, lastUnbreakablePart);
 
