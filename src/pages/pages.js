@@ -677,7 +677,7 @@ export default class Pages {
           array: children,
           previous: previousElement,
           next: nextElement,
-          parent: tracedParent,
+          parent: isFullySPlittedParent ? undefined : tracedParent,
           parentBottom: isFullySPlittedParent ? undefined : currentElementBottom,
         })
       } else {
