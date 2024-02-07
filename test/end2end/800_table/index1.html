@@ -249,7 +249,7 @@
 
     data-print-height='200mm'
     data-print-font-size='12pt'
-    src="bundle.js"></script>
+    src="../../../dist/bundle.js"></script>
 
 </head>
 
@@ -308,14 +308,11 @@
 
 <div html2pdf="" class="content">
 
-  <!-- 'integrated to the parent project as an off-the-shelf solution.' should be in 2 lines! -->
+    <!-- 400px: table should start at 2nd page -->
 
-  <div filler style="height:400px"></div>
+    <div filler style="height:400px"></div>
 
-  <div>
   <sdoc-autogen>
-    <div class="document">
-
     <table border="1" class="docutils">
       <colgroup>
       <col width="25%">
@@ -359,10 +356,7 @@
       </tr>
       </tbody>
     </table>
-
-  </div>
   </sdoc-autogen>
-</div>
 
 </div>
 

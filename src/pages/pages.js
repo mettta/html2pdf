@@ -72,8 +72,8 @@ export default class Pages {
     this._minBreakableLines = this._minLeftLines + this._minDanglingLines;
     // Table:
     // # can be a single row with long content
-    this._minLeftRows = 0;
-    this._minDanglingRows = 0;
+    this._minLeftRows = 1; //! min 1!
+    this._minDanglingRows = 1;  //! min 1!
     this._minBreakableRows = this._minLeftRows + this._minDanglingRows;
     // Code:
     this._minPreFirstBlockLines = 3;
