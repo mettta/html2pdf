@@ -936,7 +936,7 @@ export default class Pages {
     if (this._node.isSelectorMatching(node, this._selector.splitted)) {
       // * This node has already been processed and has lines and groups of lines inside it,
 
-      this._debugMode && this._debugToggler._parseNode && console.log(`%c END ${this._selector.splitted}`, CONSOLE_CSS_END_LABEL);
+      this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log(`%c END ${this._selector.splitted}`, CONSOLE_CSS_END_LABEL);
       this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.groupEnd();
 
       // * so we just return those child elements:
@@ -1057,7 +1057,7 @@ export default class Pages {
           'newComplexChildrenGroups.length < this._minBreakableLines',
           newComplexChildrenGroups.length, '<', this._minBreakableLines
         );
-      this._debugMode && this._debugToggler._parseNode && console.log('%c END NOT _splitComplexTextBlockIntoLines', CONSOLE_CSS_END_LABEL);
+      this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log('%c END NOT _splitComplexTextBlockIntoLines', CONSOLE_CSS_END_LABEL);
       this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.groupEnd();
       // Not to break it up
       return []
@@ -1065,7 +1065,7 @@ export default class Pages {
 
     const firstUnbreakablePart = newComplexChildrenGroups.slice(0, this._minLeftLines).flat();
     const lastUnbreakablePart = newComplexChildrenGroups.slice(-this._minDanglingLines).flat();
-    this._debugMode && this._debugToggler._parseNode && console.log(
+    this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log(
       'newComplexChildrenGroups', [...newComplexChildrenGroups],
       '\n', 'minLeftLines =', this._minLeftLines,
       '\n', firstUnbreakablePart,
@@ -1107,7 +1107,7 @@ export default class Pages {
       }
     );
 
-    this._debugMode && this._debugToggler._parseNode && console.log('%c END OK _splitComplexTextBlockIntoLines', CONSOLE_CSS_END_LABEL);
+    this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.log('%c END OK _splitComplexTextBlockIntoLines', CONSOLE_CSS_END_LABEL);
     this._debugMode && this._debugToggler._splitComplexTextBlockIntoLines && console.groupEnd();
 
     this._DOM.setAttribute(node, this._selector.splitted);
@@ -1610,7 +1610,7 @@ export default class Pages {
     let splitsIds = [];
     let currentPageBottom = tableFirstPartBottom;
 
-    this._debugMode && this._debugToggler._splitTableRow && console.log(
+    this._debugMode && this._debugToggler._splitTableNode && console.log(
     this._node.getTop(distributedRows[1], table) - this._node.getBottom(distributedRows[0], table), '(row[1].top - row[0].bottom)',
     )
 
@@ -1619,11 +1619,11 @@ export default class Pages {
       // * then even the header doesn't fit.
       // * Go immediately to the second page.
       currentPageBottom = tableFullPartContentHeight;
-      this._debugMode && this._debugToggler._splitTableRow && console.log(`The Row 0 goes to the 2nd page`);
+      this._debugMode && this._debugToggler._splitTableNode && console.log(`The Row 0 goes to the 2nd page`);
     }
 
     for (let index = 0; index < distributedRows.length; index++) {
-      this._debugMode && this._debugToggler._splitTableRow && console.log(
+      this._debugMode && this._debugToggler._splitTableNode && console.log(
         `%c 🟪 Check the Row # ${index}`, 'color:blueviolet',
         [ distributedRows[index] ],
         // [...distributedRows]
@@ -1650,6 +1650,10 @@ export default class Pages {
 
         const isNoBreak = this._node.isNoBreak(splittingRow);
         const makesSenseToSplitTheRow = (splittingRowHeight >= splittingMinRowHeight) && (!isNoBreak);
+
+        this._debugMode && this._debugToggler._splitTableNode && console.log(
+          `%c • Row # ${index}: try to split`, 'color:blueviolet',
+        );
 
 
         if (makesSenseToSplitTheRow) {
@@ -1792,7 +1796,12 @@ export default class Pages {
           this._debugMode && this._debugToggler._splitTableRow && console.groupEnd(`END OF 'if makesSenseToSplitTheRow'`);
         } //? END OF 'if makesSenseToSplitTheRow'
         else {
+
           // !!!!!!!!!!!!!!
+          this._debugMode && this._debugToggler._splitTableNode && console.log(
+            `%c • Row # ${index}: small or noBreak`, 'color:blueviolet',
+          );
+
           // TODO проверять это ТОЛЬКО если мы не можем разбить
           if (index >= this._minLeftRows) {
             // * avoid < minLeftRows rows on first page
@@ -1801,6 +1810,9 @@ export default class Pages {
             // *** In the other case, we do not register a page break,
             // *** and the first small piece will be skipped.
             splitsIds.push(index);
+            this._debugMode && this._debugToggler._splitTableNode && console.log(
+              `%c • Row # ${index}: REGISTER as start, index >= ${this._minLeftRows} (_minLeftRows) `, 'color:blueviolet',
+            );
           }
 
           currentPageBottom =
@@ -1819,6 +1831,9 @@ export default class Pages {
       } else {
         // currRowTop <= currentPageBottom
         // pass
+        this._debugMode && this._debugToggler._splitTableNode && console.log(
+          `%c • Row # ${index}: PASS ...`, 'color:blueviolet',
+        );
       }
     }; //? END OF for: distributedRows
 
