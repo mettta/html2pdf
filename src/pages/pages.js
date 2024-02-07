@@ -2352,13 +2352,12 @@ export default class Pages {
     // * If something unclear is encountered - do not split at all.
     // TODO (shall we scale?).
 
-    const consoleMark = ['%c_splitGridNode\n', 'color:white',];
-    this._debugMode && this._debugToggler._splitGridNode && console.group('_splitGridNode');
+    this._debugMode && this._debugToggler._splitGridNode && console.group('%c_splitGridNode', 'background:#00FFFF');
 
     // ** Take the node children.
     const children = this._getChildren(node);
     this._debugMode && this._debugToggler._splitGridNode && console.log(
-      'children', children
+      '💠 children', children
     );
 
     this._debugMode && this._debugToggler._splitGridNode && console.groupCollapsed('make childrenGroups');
