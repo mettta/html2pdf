@@ -72,8 +72,8 @@ export default class Pages {
     this._minBreakableLines = this._minLeftLines + this._minDanglingLines;
     // Table:
     // # can be a single row with long content
-    this._minLeftRows = 1; //! min 1!
-    this._minDanglingRows = 1;  //! min 1!
+    this._minLeftRows = 1; // ! min 1!
+    this._minDanglingRows = 1;  // ! min 1!
     this._minBreakableRows = this._minLeftRows + this._minDanglingRows;
     // Code:
     this._minPreFirstBlockLines = 3;
@@ -224,10 +224,9 @@ export default class Pages {
     );
     this._debugMode && console.groupEnd('•• init data ••');
 
-    // * add a safeguard elements to the start and end of content flow,
-    const {contentFlowStart, contentFlowEnd} = this._node.addContentFlowStartAndEnd(this._contentFlow);
     // register a FIRST page
-    this._registerPageStart(contentFlowStart);
+    // TODO: make a service function
+    this._registerPageStart(this._node.get(this._selector.contentFlowStart, this._contentFlow));
 
     // IF contentFlow is less than one page,
 

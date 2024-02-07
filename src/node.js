@@ -965,16 +965,6 @@ export default class Node {
 
   // **********
 
-  addContentFlowStartAndEnd(contentFlow) {
-    const contentFlowStart = this.create(this._selector.contentFlowStart);
-    const contentFlowEnd = this.create(this._selector.contentFlowEnd);
-    this._DOM.insertAtStart(contentFlow, contentFlowStart);
-    this._DOM.insertAtEnd(contentFlow, contentFlowEnd);
-    return {contentFlowStart, contentFlowEnd}
-  }
-
-  // **********
-
   notSolved(element) {
     // TODO !!!
     // помещать такой объект просто на отдельную страницу

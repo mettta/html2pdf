@@ -131,8 +131,19 @@ export default class Layout {
     this._DOM.insertAtEnd(initialRoot, root);
     this._DOM.insertAtEnd(root, paperFlow, contentFlow);
 
+    this._insertContentFlowStartAndEnd(contentFlow);
+
     // disable printing the root environment
     this._ignoreUnprintableEnvironment(root);
+  }
+
+  _insertContentFlowStartAndEnd(contentFlow) {
+    // * add a safeguard elements to the start and end of content flow
+    const contentFlowStart = this._node.create(this._selector.contentFlowStart);
+    const contentFlowEnd = this._node.create(this._selector.contentFlowEnd);
+    this._DOM.insertAtStart(contentFlow, contentFlowStart);
+    this._DOM.insertAtEnd(contentFlow, contentFlowEnd);
+    return {contentFlowStart, contentFlowEnd}
   }
 
   _getInitialRoot() {
