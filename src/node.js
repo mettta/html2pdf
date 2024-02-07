@@ -887,7 +887,13 @@ export default class Node {
 
   copyNodeWidth(clone, node) {
     this._DOM.setStyles(clone, {
-      width: `${this._DOM.getElementOffsetWidth(node)}px`
+      'width': `${this._DOM.getElementOffsetWidth(node)}px`,
+      // * if in COLGROUP/COL were set 'width',
+      // * it defines a minimum width for the columns within the column group,
+      // * as if min-width were set.
+      // * And this COLGROUP/COL rule has precedence in CSS rules,
+      // * so just 'width' in TD won't be able to override the one set in COL.
+      'min-width': `${this._DOM.getElementOffsetWidth(node)}px`,
     });
   }
 
