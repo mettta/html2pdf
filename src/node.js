@@ -886,10 +886,8 @@ export default class Node {
   // ***
 
   copyNodeWidth(clone, node) {
-    // TODO check the fix:
-    // * (-1): Browser rounding fix (when converting mm to pixels).
     this._DOM.setStyles(clone, {
-      width: `${this._DOM.getElementOffsetWidth(node) - 1}px`
+      width: `${this._DOM.getElementOffsetWidth(node)}px`
     });
   }
 
