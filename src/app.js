@@ -97,6 +97,9 @@ export default class HTML2PDF4DOC {
       layout: layout,
     }).init();
 
+    // FIXME
+    DOM.setAttribute(layout.root, '[success]');
+
     console.timeEnd("HTML2PDF4DOC time");
   }
 }

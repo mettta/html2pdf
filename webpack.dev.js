@@ -85,6 +85,7 @@ module.exports = merge(common, {
     new CopyWebpackPlugin({
       patterns: [
         { from: './examples/strictdoc/css', to: 'css' },
+        { from: './examples/assets', to: 'assets' },
       ],
     }),
   ],

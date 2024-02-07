@@ -245,11 +245,11 @@
     data-page-break-before-selectors='H2'
     data-page-break-after-selectors='.pdf-toc .free_text'
     data-no-break-selectors='sdoc-meta sdoc-section-title .pdf-toc-row'
-    data-no-hanging-selectors='sdoc-section-title sdoc-requirement-title sdoc-requirement-field-label'
+    data-no-hanging-selectors='sdoc-section-title sdoc-requirement-field-label'
 
     data-print-height='200mm'
     data-print-font-size='12pt'
-    src="bundle.js"></script>
+    src="../../../dist/bundle.js"></script>
 
 </head>
 
@@ -308,73 +308,17 @@
 
 <div html2pdf="" class="content">
 
-  <!-- extra page: 449 - 471 -->
-  <!-- hangling title: 472 - ... -->
-  <div filler style="height:472px"></div>
 
-  <sdoc-requirement requirement-view="simple" data-level="2.1" data-status="active" data-testid="requirement-style-simple">
-    <sdoc-requirement-title id="2.1-SDOC-SSS-3">
-            2.1.&nbsp;Documents (CRUD)</sdoc-requirement-title>
-    <sdoc-requirement-field-label>MID:</sdoc-requirement-field-label>
-    <sdoc-requirement-field data-field-type="singleline" data-field-label="MID">
-    <sdoc-autogen>72d0dd23dedd4907b4a8924debe7343b</sdoc-autogen></sdoc-requirement-field>
-        <sdoc-requirement-field-label>UID:</sdoc-requirement-field-label>
-      <sdoc-requirement-field data-field-type="singleline" data-field-label="UID">
-    <sdoc-autogen>SDOC-SSS-3</sdoc-autogen></sdoc-requirement-field>
-      <sdoc-requirement-field-label>STATUS:</sdoc-requirement-field-label>
-      <sdoc-requirement-field data-field-type="singleline" data-field-label="STATUS">
-    <sdoc-autogen>Active</sdoc-autogen></sdoc-requirement-field>
-      <sdoc-requirement-field-label>child relations:</sdoc-requirement-field-label>
-      <sdoc-requirement-field data-field-label="child relations">
-        <ul class="requirement__link">
-          <li>
-            <a data-turbo="false" class="requirement__link-child" href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements-PDF.html#5.2.2-SDOC-SRS-107">
-              <span class="requirement__child-uid">SDOC-SRS-107</span>
-              Create document
-            </a>
-          </li>
-          <li>
-            <a data-turbo="false" class="requirement__link-child" href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements-PDF.html#5.2.3-SDOC-SRS-108">
-              <span class="requirement__child-uid">SDOC-SRS-108</span>
-              Delete document
-            </a>
-          </li>
-          <li>
-            <a data-turbo="false" class="requirement__link-child" href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements-PDF.html#5.3.1-SDOC-SRS-54">
-              <span class="requirement__child-uid">SDOC-SRS-54</span>
-              Read document
-            </a>
-          </li>
-          <li>
-            <a data-turbo="false" class="requirement__link-child" href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements-PDF.html#5.3.2-SDOC-SRS-106">
-              <span class="requirement__child-uid">SDOC-SRS-106</span>
-              Update document
-            </a>
-          </li>
-        </ul>
-      </sdoc-requirement-field>
-      <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
-      <sdoc-requirement-field data-field-label="statement">
-    <sdoc-autogen><div class="document">
-  <p>The Requirements Tool shall provide the CRUD operations for document management:</p>
-  <ul class="simple">
-  <li>Create document</li>
-  <li>Read document</li>
-  <li>Update document</li>
-  <li>Delete document.</li>
-  </ul>
-  </div>
-  </sdoc-autogen></sdoc-requirement-field>
-    <sdoc-requirement-field-label>rationale:</sdoc-requirement-field-label>
-    <sdoc-requirement-field data-field-label="rationale">
-    <sdoc-autogen><div class="document">
-  <p>The CRUD operations are essential operations of document management. They are at the core of a documentation management tool.</p>
-  </div>
-  </sdoc-autogen></sdoc-requirement-field>
-  </sdoc-requirement>
+    <div class="free_text"
+         data-testid="pdf-abstract"
+    ><sdoc-autogen><div class="document">
+<object class="image" data="_assets/file.svg" style="width: 100%;" type="image/svg+xml">Test image</object>
+</div>
+</sdoc-autogen>
+    </div>
+
 
 </div>
-
 
 
 

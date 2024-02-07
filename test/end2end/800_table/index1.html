@@ -245,11 +245,11 @@
     data-page-break-before-selectors='H2'
     data-page-break-after-selectors='.pdf-toc .free_text'
     data-no-break-selectors='sdoc-meta sdoc-section-title .pdf-toc-row'
-    data-no-hanging-selectors='sdoc-section-title sdoc-requirement-title sdoc-requirement-field-label'
+    data-no-hanging-selectors='sdoc-section-title sdoc-requirement-field-label'
 
     data-print-height='200mm'
     data-print-font-size='12pt'
-    src="bundle.js"></script>
+    src="../../../dist/bundle.js"></script>
 
 </head>
 
@@ -308,73 +308,57 @@
 
 <div html2pdf="" class="content">
 
-  <!-- extra page: 449 - 471 -->
-  <!-- hangling title: 472 - ... -->
-  <div filler style="height:472px"></div>
+    <!-- 400px: table should start at 2nd page -->
 
-  <sdoc-requirement requirement-view="simple" data-level="2.1" data-status="active" data-testid="requirement-style-simple">
-    <sdoc-requirement-title id="2.1-SDOC-SSS-3">
-            2.1.&nbsp;Documents (CRUD)</sdoc-requirement-title>
-    <sdoc-requirement-field-label>MID:</sdoc-requirement-field-label>
-    <sdoc-requirement-field data-field-type="singleline" data-field-label="MID">
-    <sdoc-autogen>72d0dd23dedd4907b4a8924debe7343b</sdoc-autogen></sdoc-requirement-field>
-        <sdoc-requirement-field-label>UID:</sdoc-requirement-field-label>
-      <sdoc-requirement-field data-field-type="singleline" data-field-label="UID">
-    <sdoc-autogen>SDOC-SSS-3</sdoc-autogen></sdoc-requirement-field>
-      <sdoc-requirement-field-label>STATUS:</sdoc-requirement-field-label>
-      <sdoc-requirement-field data-field-type="singleline" data-field-label="STATUS">
-    <sdoc-autogen>Active</sdoc-autogen></sdoc-requirement-field>
-      <sdoc-requirement-field-label>child relations:</sdoc-requirement-field-label>
-      <sdoc-requirement-field data-field-label="child relations">
-        <ul class="requirement__link">
-          <li>
-            <a data-turbo="false" class="requirement__link-child" href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements-PDF.html#5.2.2-SDOC-SRS-107">
-              <span class="requirement__child-uid">SDOC-SRS-107</span>
-              Create document
-            </a>
-          </li>
-          <li>
-            <a data-turbo="false" class="requirement__link-child" href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements-PDF.html#5.2.3-SDOC-SRS-108">
-              <span class="requirement__child-uid">SDOC-SRS-108</span>
-              Delete document
-            </a>
-          </li>
-          <li>
-            <a data-turbo="false" class="requirement__link-child" href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements-PDF.html#5.3.1-SDOC-SRS-54">
-              <span class="requirement__child-uid">SDOC-SRS-54</span>
-              Read document
-            </a>
-          </li>
-          <li>
-            <a data-turbo="false" class="requirement__link-child" href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements-PDF.html#5.3.2-SDOC-SRS-106">
-              <span class="requirement__child-uid">SDOC-SRS-106</span>
-              Update document
-            </a>
-          </li>
-        </ul>
-      </sdoc-requirement-field>
-      <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
-      <sdoc-requirement-field data-field-label="statement">
-    <sdoc-autogen><div class="document">
-  <p>The Requirements Tool shall provide the CRUD operations for document management:</p>
-  <ul class="simple">
-  <li>Create document</li>
-  <li>Read document</li>
-  <li>Update document</li>
-  <li>Delete document.</li>
-  </ul>
-  </div>
-  </sdoc-autogen></sdoc-requirement-field>
-    <sdoc-requirement-field-label>rationale:</sdoc-requirement-field-label>
-    <sdoc-requirement-field data-field-label="rationale">
-    <sdoc-autogen><div class="document">
-  <p>The CRUD operations are essential operations of document management. They are at the core of a documentation management tool.</p>
-  </div>
-  </sdoc-autogen></sdoc-requirement-field>
-  </sdoc-requirement>
+    <div filler style="height:400px"></div>
+
+  <sdoc-autogen>
+    <table border="1" class="docutils">
+      <colgroup>
+      <col width="25%">
+      <col width="75%">
+      </colgroup>
+      <thead valign="bottom">
+      <tr><th class="head"><strong>Workflow</strong></th>
+      <th class="head"><strong>Description</strong></th>
+      </tr>
+      </thead>
+      <tbody valign="top">
+      <tr><td>Requirements analysis and prototyping</td>
+      <td>Early phases of the project. Requirements are drafted out quickly. The higher-level picture and coverage of all topics may be more important than specific details.</td>
+      </tr>
+      <tr><td>Requirements compliance, traceability and justification</td>
+      <td>Demonstrating the correctness of specification, also for contractual purposes. Every aspect shall be traceable.</td>
+      </tr>
+      <tr><td>Requirements implementation</td>
+      <td>Assisting software engineers in implementing requirements in source code. Making links between requirements and source code implementation units, e.g., files, functions, code fragments. Linking source code implementation units to requirements using special markers left in source code.</td>
+      </tr>
+      <tr><td>Requirements validation/verification workflow (RAIT)</td>
+      <td>Verifying the correctness of requirements themselves and the validity of the information they communicate.</td>
+      </tr>
+      <tr><td>Configuration management, change management</td>
+      <td>Time machine and Diff functions. Maintaining requirements baselines (v1, v1.1, v2, etc.).</td>
+      </tr>
+      <tr><td>Reporting</td>
+      <td>Progress reports, statistics, metrication.</td>
+      </tr>
+      <tr><td>Collaboration on requirements</td>
+      <td>Supporting multiple users to collaborate on a documentation tree.</td>
+      </tr>
+      <tr><td>Requirements exchange</td>
+      <td>Integration between distinct projects requirements trees. Example: An embedded software project has its own requirements. The developers want to integrate a requirements subtree of another product that is integrated to the parent project as an off-the-shelf solution.</td>
+      </tr>
+      <tr><td>Formal reviews</td>
+      <td>Formal review of documentation. Walkthroughs, inspections. Version control of delivered documentation packages. Assessment of progress reports achieved.</td>
+      </tr>
+      <tr><td>Interoperability with industry standards.</td>
+      <td>Supporting seamless integration between a project documentation tree and applicable standards.</td>
+      </tr>
+      </tbody>
+    </table>
+  </sdoc-autogen>
 
 </div>
-
 
 
 

@@ -886,10 +886,14 @@ export default class Node {
   // ***
 
   copyNodeWidth(clone, node) {
-    // TODO check the fix:
-    // * (-1): Browser rounding fix (when converting mm to pixels).
     this._DOM.setStyles(clone, {
-      width: `${this._DOM.getElementOffsetWidth(node) - 1}px`
+      'width': `${this._DOM.getElementOffsetWidth(node)}px`,
+      // * if in COLGROUP/COL were set 'width',
+      // * it defines a minimum width for the columns within the column group,
+      // * as if min-width were set.
+      // * And this COLGROUP/COL rule has precedence in CSS rules,
+      // * so just 'width' in TD won't be able to override the one set in COL.
+      'min-width': `${this._DOM.getElementOffsetWidth(node)}px`,
     });
   }
 
@@ -957,16 +961,6 @@ export default class Node {
     const filteredArr = arr.filter(item => item != ' ');
     // console.log('🔴 filtered word Arr', filteredArr)
     return filteredArr
-  }
-
-  // **********
-
-  addContentFlowStartAndEnd(contentFlow) {
-    const contentFlowStart = this.create(this._selector.contentFlowStart);
-    const contentFlowEnd = this.create(this._selector.contentFlowEnd);
-    this._DOM.insertAtStart(contentFlow, contentFlowStart);
-    this._DOM.insertAtEnd(contentFlow, contentFlowEnd);
-    return {contentFlowStart, contentFlowEnd}
   }
 
   // **********
