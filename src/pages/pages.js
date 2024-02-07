@@ -330,7 +330,7 @@ export default class Pages {
 
     this._debugMode && this._debugToggler._parseNode && console.group(
       `%c_parseNode`, CONSOLE_CSS_PRIMARY_PAGES,
-      `${parentBottom ? '★last★' : ''}`
+      `${parentBottom ? '★last★' : 'regular'}`
       );
 
     this._debugMode && this._debugToggler._parseNode && console.log(
@@ -374,6 +374,26 @@ export default class Pages {
       return
     }
 
+    // * Case after the next element has been registered
+    // * and we are looking at it again
+    // * (e.g. it is the height of the entire next page and falls under inspection).
+    const currentElementBottom = parentBottom || this._node.getBottomWithMargin(currentElement, this._root);
+    const newPageBottom = this.pages.at(-1).pageBottom;
+    if (
+      // * already registered:
+      this.pages.at(-1).pageStart === currentElement
+      &&
+      // * fits in the next page:
+      (
+        this._node.isNoBreak(currentElement)
+        || currentElementBottom <= newPageBottom
+      )
+    ) {
+      this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (node is already registered and fits in the next page)', CONSOLE_CSS_END_LABEL);
+      this._debugMode && this._debugToggler._parseNode && console.groupEnd();
+      return
+    }
+
     // FORCED BREAK
     if (this._node.isForcedPageBreak(currentElement)) {
       // TODO I've replaced the 'next' with the 'current' - need to test it out
@@ -389,7 +409,6 @@ export default class Pages {
       'it is expected that the element has an offset parent',
       currentElement);
 
-    const newPageBottom = this.pages.at(-1).pageBottom;
     const nextElementTop = this._node.getTop(nextElement, this._root);
     this._debugMode && this._debugToggler._parseNode && console.log(...consoleMark,
       '• newPageBottom', newPageBottom,
@@ -583,9 +602,6 @@ export default class Pages {
 
       // * Check the possibility of (1) or (2): split or not?
 
-
-      const currentElementBottom = parentBottom || this._node.getBottomWithMargin(currentElement, this._root);
-
       this._debugMode && this._debugToggler._parseNode && console.log(
         'split or not? \n',
         'currentElementBottom', currentElementBottom
@@ -606,7 +622,7 @@ export default class Pages {
         // * because the previous element surely ends before this one begins,
         // * and so is its previous neighbor, not its parent.
         this._registerPageStart(nextElement);
-        this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (currentElement fits)', CONSOLE_CSS_END_LABEL);
+        this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (currentElement fits, register the next element)', CONSOLE_CSS_END_LABEL);
         this._debugMode && this._debugToggler._parseNode && console.groupEnd();
         return
       }
