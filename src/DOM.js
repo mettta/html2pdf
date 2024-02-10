@@ -54,6 +54,13 @@ export default class DocumentObjectModel {
     element.remove();
   }
 
+  moveContent(source, target) {
+    while (source.firstChild) {
+      target.append(source.firstChild);
+    }
+    console.assert(this.getInnerHTML(source) === "");
+  }
+
   // REMOVE
 
   removeNode(element) {
