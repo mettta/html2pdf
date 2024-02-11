@@ -230,9 +230,12 @@ export default class Pages {
 
     // IF contentFlow is less than one page,
 
-    if (this._node.getBottomWithMargin(this._contentFlow, this._root) < this._referenceHeight) {
+    const contentFlowBottom = this._node.getBottomWithMargin(this._contentFlow, this._root);
+    if (contentFlowBottom < this._referenceHeight) {
       // In the case of a single page,
       // we don't examine the contentFlow children.
+
+      this._debugMode && console.log(`contentFlow (${contentFlowBottom}) fits on the page (${this._referenceHeight})`);
 
       // Check for forced page breaks, and if they are, we register these pages.
       // If not - we'll have a single page.
@@ -279,9 +282,10 @@ export default class Pages {
     });
     this._node.markPageStartElement(pageStart, this.pages.length);
     this._debugMode && this._debugToggler._registerPageStart && console.log(
-      `📍 %c register page ${this.pages.length} \n`, "background:yellow; color:red",
-      pageBottom, pageStart,
-    )
+      `%c📍register page ${this.pages.length}`, "background:yellow;font-weight:bold",
+      '\n  pageBottom:', pageBottom,
+      '\n  pageStart:',pageStart,
+    );
   }
 
   _parseNodes({
