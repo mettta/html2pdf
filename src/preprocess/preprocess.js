@@ -5,6 +5,7 @@ export default class Preprocess {
   }
 
   run() {
+
     let objects = [...document.querySelectorAll('object')];
     this._debugMode && console.log(objects);
 
@@ -12,12 +13,12 @@ export default class Preprocess {
 
     objects.forEach((object) => {
       if (object.contentDocument.readyState === 'complete') {
-        this._debugMode && console.log('I was loaded', object);
+        this._debugMode && console.log('I was loaded', object.clientHeight, object.clientWidth, object);
         return;
       }
       const promise = new Promise(resolve => {
         object.addEventListener("load", (event) => {
-          this._debugMode && console.log("EVENT: object load", object);
+          this._debugMode && console.log("EVENT: object load", object.clientHeight, object.clientWidth, object);
           resolve();
         });
       });
