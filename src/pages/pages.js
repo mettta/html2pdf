@@ -32,6 +32,7 @@ export default class Pages {
       _getProcessedChildren: false,
       _splitPreNode: false,
       _splitTableNode: false,
+      _splitTableLikeNode: false,
       _splitTableRow: false,
       _splitGridNode: false,
       _createSlicesBySplitFlag: false,
@@ -471,7 +472,10 @@ export default class Pages {
       // IMAGE with optional resizing
       // TODO float images
 
-      if (this._node.isSVG(currentElement) || this._node.isIMG(currentElement)) {
+      if (this._node.isSVG(currentElement)
+       || this._node.isIMG(currentElement)
+       || this._node.isOBJECT(currentElement)
+      ) {
 
         // TODO needs testing
 
@@ -485,6 +489,11 @@ export default class Pages {
         const availableSpace = newPageBottom - this._node.getTop(currentImage, this._root);
         const currentImageHeight = this._DOM.getElementOffsetHeight(currentImage);
         const currentImageWidth = this._DOM.getElementOffsetWidth(currentImage);
+        this._debugMode && this._debugToggler._parseNode && console.log(
+          '🖼️🖼️🖼️🖼️🖼️🖼️\n',
+          `H-space: ${availableSpace}, Height: ${currentImageHeight}, Width: ${currentImageWidth}`,
+          currentElement,
+        );
 
         // TODO !!! page width overflow for SVG
         if (currentImageHeight < this._referenceWidth) {
@@ -497,7 +506,8 @@ export default class Pages {
         if (currentImageHeight < availableSpace) {
           // just leave it on the current page
           this._registerPageStart(nextElement);
-          this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode IMG fits', CONSOLE_CSS_END_LABEL);
+          this._debugMode && this._debugToggler._parseNode && console.log('Register next elements; 🖼️🖼️🖼️ IMG fits:', currentElement);
+          this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode 🖼️ IMG fits', CONSOLE_CSS_END_LABEL);
           this._debugMode && this._debugToggler._parseNode && console.groupEnd();
           return
         }
@@ -506,9 +516,8 @@ export default class Pages {
         const ratio = availableSpace / currentImageHeight;
 
         if (ratio > this._imageReductionRatio) {
-          // leave it on the current page
-          this._registerPageStart(nextElement);
-          // and reduce it a bit
+          this._debugMode && this._debugToggler._parseNode && console.log('Register next elements; 🖼️🖼️🖼️ IMG RESIZE to availableSpace:', availableSpace, currentElement);
+          // reduce it a bit
           this._node.fitElementWithinBoundaries({
             element: currentElement,
             height: currentImageHeight,
@@ -516,7 +525,9 @@ export default class Pages {
             vspace: availableSpace,
             hspace: this._referenceWidth
           });
-          this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode IMG scaled', CONSOLE_CSS_END_LABEL);
+          // and leave it on the current page
+          this._registerPageStart(nextElement);
+          this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode 🖼️ IMG scaled', CONSOLE_CSS_END_LABEL);
           this._debugMode && this._debugToggler._parseNode && console.groupEnd();
           return
         }
@@ -526,6 +537,7 @@ export default class Pages {
         // *** add the possibility of moving it with the wrap tag
         // *** if it's the first child
         this._registerPageStart(currentImage, true);
+        this._debugMode && this._debugToggler._parseNode && console.log('🖼️ register Page Start', currentElement);
         // and avoid page overflow if the picture is too big to fit on the page as a whole
         if (currentImageHeight > this._referenceHeight) {
           this._node.fitElementWithinBoundaries({
@@ -535,6 +547,7 @@ export default class Pages {
             vspace: this._referenceHeight,
             hspace: this._referenceWidth
           });
+          this._debugMode && this._debugToggler._parseNode && console.log('🖼️ ..and fit it to full page', currentElement);
         }
         this._debugMode && this._debugToggler._parseNode && console.log('%c END', CONSOLE_CSS_END_LABEL);
         this._debugMode && this._debugToggler._parseNode && console.groupEnd();
@@ -634,30 +647,31 @@ export default class Pages {
         'currentElementBottom > newPageBottom', currentElementBottom, '>', newPageBottom
       );
 
-      // see if this node is worth paying attention to, based on its height
-      // TODO: need to rearrange the order of the condition checks
-      if (this._DOM.getElementOffsetHeight(currentElement) + 2 < this._minimumBreakableHeight) {
-        this._debugMode && this._debugToggler._parseNode && console.log(
-          'this._DOM.getElementOffsetHeight(currentElement) + 2 < this._minimumBreakableHeight',
-          this._DOM.getElementOffsetHeight(currentElement),
-        );
+      // TODO #fewLines
+      // // see if this node is worth paying attention to, based on its height
+      // // TODO: need to rearrange the order of the condition checks
+      // if (this._DOM.getElementOffsetHeight(currentElement) + 2 < this._minimumBreakableHeight) {
+      //   this._debugMode && this._debugToggler._parseNode && console.log(
+      //     'this._DOM.getElementOffsetHeight(currentElement) + 2 < this._minimumBreakableHeight',
+      //     this._DOM.getElementOffsetHeight(currentElement),
+      //   );
 
-        // todo #fewLines
-        // ! add 2 compensation pixels, because when converting millimeters to pixels,
-        // ! there's a rounding off, and with a rough calculation (like now)
-        // ! and the rounding of 1 line will be rougher than 4 -->
-        // ! we will get a smaller number than the actual 4 lines, at least by a 2 pixel.
-        // todo #mm-px convert mm to px before all calculations and rendering
-        // console.log('??????????????????????????? \n getElementHeight(currentElement) <= this._minimumBreakableHeight',
-        // this._DOM.getElementOffsetHeight(currentElement),
-        //  '<',
-        //  this._minimumBreakableHeight,
-        //   currentElement)
-        this._registerPageStart(currentElement, true);
-        this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode #fewLines', CONSOLE_CSS_END_LABEL);
-        this._debugMode && this._debugToggler._parseNode && console.groupEnd();
-        return
-      }
+      //   // todo #fewLines
+      //   // ! add 2 compensation pixels, because when converting millimeters to pixels,
+      //   // ! there's a rounding off, and with a rough calculation (like now)
+      //   // ! and the rounding of 1 line will be rougher than 4 -->
+      //   // ! we will get a smaller number than the actual 4 lines, at least by a 2 pixel.
+      //   // todo #mm-px convert mm to px before all calculations and rendering
+      //   // console.log('??????????????????????????? \n getElementHeight(currentElement) <= this._minimumBreakableHeight',
+      //   // this._DOM.getElementOffsetHeight(currentElement),
+      //   //  '<',
+      //   //  this._minimumBreakableHeight,
+      //   //   currentElement)
+      //   this._registerPageStart(currentElement, true);
+      //   this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode #fewLines', CONSOLE_CSS_END_LABEL);
+      //   this._debugMode && this._debugToggler._parseNode && console.groupEnd();
+      //   return
+      // }
 
       // otherwise try to break it and loop the children:
       const children = this._getProcessedChildren(currentElement, newPageBottom, this._referenceHeight);
@@ -1474,7 +1488,7 @@ export default class Pages {
     if(!splitters.length) {
       // ** if there is no partitioning, we return an empty array
       // ** and the original node will be taken in its entirety.
-      console.log('splitters.length', splitters.length)
+      this._debugMode && this._debugToggler._splitTableLikeNode && console.log('splitters.length', splitters.length)
       return []
     }
 
