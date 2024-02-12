@@ -21,6 +21,7 @@ export default class Layout {
 
     // * private
     this._initialRoot;
+    this._contentRoot;
 
     this._config = config;
     this._debugMode = config.debugMode;
@@ -101,7 +102,7 @@ export default class Layout {
   _createLayout() {
 
     // * Get initial root element.
-    const initialRoot = this._getInitialRoot();
+    this._getInitialRoot();
     if (!this._initialRoot) {
       console.error('Failed to initialize the root element.');
       return
@@ -109,32 +110,22 @@ export default class Layout {
     this._debugMode && console.log('initial root:',this._initialRoot);
 
     // * Create new layout elements.
-    const root = this._createRoot();
-    const paperFlow = this._createPaperFlow();
-    const contentFlow = this._createContentFlow();
+    this._createRoot();
+    this._createPaperFlow();
+    this._createContentFlow();
 
-    // * Move content to be printed in the contentFlow.
-    const printedContent = this._DOM.getInnerHTML(initialRoot);
-    const significantPrintedContent = (printedContent.trim().length > 0) ? true : false;
-    if (significantPrintedContent) {
-      // * Copy the content from initialRoot into contentFlow,
-      this._DOM.setInnerHTML(contentFlow, printedContent);
-      // * remove all <template>s, if there are any in the initialRoot,
-      // this._node.clearTemplates(contentFlow);
+    // console.time("moveContent");
+    this._DOM.moveContent(this._initialRoot, this.contentFlow);
+    // console.timeEnd("moveContent");
 
-    } else {
-      console.warn(`It looks like you don't have any printable content.`);
-    }
-    // clean up the initial Root before append new layout elements.
-    this._DOM.setInnerHTML(initialRoot, '');
-    // put new layout elements into DOM
-    this._DOM.insertAtEnd(initialRoot, root);
-    this._DOM.insertAtEnd(root, paperFlow, contentFlow);
+    // * Put new layout elements into DOM.
+    this._DOM.insertAtEnd(this._initialRoot, this.root);
+    this._DOM.insertAtEnd(this.root, this.paperFlow, this.contentFlow);
 
-    this._insertContentFlowStartAndEnd(contentFlow);
+    this._insertContentFlowStartAndEnd(this.contentFlow);
 
-    // disable printing the root environment
-    this._ignoreUnprintableEnvironment(root);
+    // * Disable printing the root environment.
+    this._ignoreUnprintableEnvironment(this.root);
   }
 
   _insertContentFlowStartAndEnd(contentFlow) {

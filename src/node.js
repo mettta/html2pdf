@@ -183,6 +183,10 @@ export default class Node {
     return this._DOM.getElementTagName(element) === 'svg'
   }
 
+  isOBJECT(element) {
+    return this._DOM.getElementTagName(element) === 'OBJECT'
+  }
+
   isLiNode(element) {
     return this._DOM.getElementTagName(element) === 'LI';
   }
@@ -970,7 +974,8 @@ export default class Node {
     // помещать такой объект просто на отдельную страницу
     // проверить, если объект больше - как печатаются номера и разрывы
     const tag = this._DOM.getElementTagName(element);
-    return (tag === 'OBJECT')
+    // return (tag === 'OBJECT')
+    return false
   }
 
 }

@@ -241,15 +241,17 @@
     data-preloader='true'
     data-preloader-target='[html2pdf-preloader]'
     data-preloader-background='#F2F5F9'
+
+    data-print-height='200mm'
+    data-print-font-size='12pt'
+    src="bundle.js"></script>
+  <!--
     data-forced-page-break-selectors=''
     data-page-break-before-selectors='H2'
     data-page-break-after-selectors='.pdf-toc .free_text'
     data-no-break-selectors='sdoc-meta sdoc-section-title .pdf-toc-row'
     data-no-hanging-selectors='sdoc-section-title sdoc-requirement-title sdoc-requirement-field-label'
-
-    data-print-height='200mm'
-    data-print-font-size='12pt'
-    src="bundle.js"></script>
+  -->
 
 </head>
 
@@ -306,13 +308,55 @@
 
 
 
-<div html2pdf="" class="content">
+<div html2pdf="" class="content" style="opacity:1">
 
   <!-- extra page: 449 - 471 -->
   <!-- hangling title: 472 - ... -->
-  <div filler style="height:472px"></div>
+  <!-- <div filler style="height:472px"></div> -->
 
-  <sdoc-requirement requirement-view="simple" data-level="2.1" data-status="active" data-testid="requirement-style-simple">
+  <!-- <style>sdoc-autogen{display:contents;}</style> -->
+
+  <div class="free_text" data-testid="pdf-abstract">
+    <sdoc-autogen><div class="document">
+      <object class="image" data="assets/file.svg" type="image/svg+xml"
+      style="width: 100%;"
+      >Test image</object>
+    </div></sdoc-autogen>
+  </div>
+
+  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
+    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
+  </div></sdoc-autogen></div>
+  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
+    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
+  </div></sdoc-autogen></div>
+  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
+    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
+  </div></sdoc-autogen></div>
+  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
+    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
+  </div></sdoc-autogen></div>
+  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
+    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
+  </div></sdoc-autogen></div>
+  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
+    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
+  </div></sdoc-autogen></div>
+  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
+    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
+  </div></sdoc-autogen></div>
+  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
+    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
+  </div></sdoc-autogen></div>
+  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
+    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
+  </div></sdoc-autogen></div>
+
+
+
+  <div filler style="height:200px"></div>
+
+  <!-- <sdoc-requirement requirement-view="simple" data-level="2.1" data-status="active" data-testid="requirement-style-simple">
     <sdoc-requirement-title id="2.1-SDOC-SSS-3">
             2.1.&nbsp;Documents (CRUD)</sdoc-requirement-title>
     <sdoc-requirement-field-label>MID:</sdoc-requirement-field-label>
@@ -371,7 +415,7 @@
   <p>The CRUD operations are essential operations of document management. They are at the core of a documentation management tool.</p>
   </div>
   </sdoc-autogen></sdoc-requirement-field>
-  </sdoc-requirement>
+  </sdoc-requirement> -->
 
 </div>
 
