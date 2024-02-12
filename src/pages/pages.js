@@ -486,13 +486,29 @@ export default class Pages {
           ? this._node.createSignpost(currentElement)
           : currentElement;
 
-        const availableSpace = newPageBottom - this._node.getTop(currentImage, this._root);
+        // if parent: the node is first,
+        // so let's include the parent's top margins:
+        let availableImageNodeSpace = parent
+        ? (newPageBottom - this._node.getTop(currentImage, this._root))
+        : (newPageBottom - this._node.getTop(parent, this._root));
+        // if parentBottom: the node is last,
+        // so let's subtract the probable margins at the bottom of the node,
+        // which take away the available space for image-node placement:
+        availableImageNodeSpace -= (
+           parentBottom
+            ? (parentBottom - this._node.getBottom(currentImage, this._root))
+            : 0
+        );
+
         const currentImageHeight = this._DOM.getElementOffsetHeight(currentImage);
         const currentImageWidth = this._DOM.getElementOffsetWidth(currentImage);
+
         this._debugMode && this._debugToggler._parseNode && console.log(
           '🖼️🖼️🖼️🖼️🖼️🖼️\n',
-          `H-space: ${availableSpace}, Height: ${currentImageHeight}, Width: ${currentImageWidth}`,
+          `H-space: ${availableImageNodeSpace}, image Height: ${currentImageHeight}, image Width: ${currentImageWidth}`,
           currentElement,
+          '\n parent', parent,
+          'parentBottom', parentBottom,
         );
 
         // TODO !!! page width overflow for SVG
@@ -503,7 +519,7 @@ export default class Pages {
         }
 
         // if it fits
-        if (currentImageHeight < availableSpace) {
+        if (currentImageHeight < availableImageNodeSpace) {
           // just leave it on the current page
           this._registerPageStart(nextElement);
           this._debugMode && this._debugToggler._parseNode && console.log('Register next elements; 🖼️🖼️🖼️ IMG fits:', currentElement);
@@ -513,16 +529,16 @@ export default class Pages {
         }
 
         // if not, try to fit it
-        const ratio = availableSpace / currentImageHeight;
+        const ratio = availableImageNodeSpace / currentImageHeight;
 
         if (ratio > this._imageReductionRatio) {
-          this._debugMode && this._debugToggler._parseNode && console.log('Register next elements; 🖼️🖼️🖼️ IMG RESIZE to availableSpace:', availableSpace, currentElement);
+          this._debugMode && this._debugToggler._parseNode && console.log('Register next elements; 🖼️🖼️🖼️ IMG RESIZE to availableImageNodeSpace:', availableImageNodeSpace, currentElement);
           // reduce it a bit
           this._node.fitElementWithinBoundaries({
             element: currentElement,
             height: currentImageHeight,
             width: currentImageWidth,
-            vspace: availableSpace,
+            vspace: availableImageNodeSpace,
             hspace: this._referenceWidth
           });
           // and leave it on the current page
