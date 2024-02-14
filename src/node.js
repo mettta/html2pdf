@@ -806,6 +806,13 @@ export default class Node {
     return this.getTop(element, root) + this._DOM.getElementOffsetHeight(element);
   }
 
+  getHeightWithMargin(element) {
+    const topMargin = parseInt(this._DOM.getComputedStyle(element).marginTop);
+    const bottomMargin = parseInt(this._DOM.getComputedStyle(element).marginBottom);
+    const height = this._DOM.getElementOffsetHeight(element);
+    return height + topMargin + bottomMargin;
+  }
+
   getBottomWithMargin(element, root) {
     // TODO : performance
     // * Because of the possible bottom margin
