@@ -8,7 +8,7 @@ export default class Node {
     this._DOM = DOM;
     this._selector = selector;
     this._debugMode = this._config.debugMode;
-    this._markupDebugMode = true;
+    this._markupDebugMode = this._config.markupDebugMode;
   }
 
   init() {

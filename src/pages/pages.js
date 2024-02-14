@@ -459,22 +459,8 @@ export default class Pages {
       // *** (2) must be split
 
       // * Check the possibility of (0)
-      if (this._node.isNoHanging(currentElement)) {
-        this._debugMode && this._debugToggler._parseNode && console.log(
-          'currentElement _isNoHanging => move it to the next page'
-        )
-        // ** if currentElement can't be the last element on the page,
-        // ** immediately move it to the next page:
 
-        // TODO #tracedParent
-        // this._registerPageStart(currentElement);
-        // ** And if it's the first child, move the parent node to the next page.
-        this._node.markProcessed(currentElement, 'register page start as NoHanging *** ');
-        this._registerPageStart(currentElement, true);
-        this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (isNoHanging)', CONSOLE_CSS_END_LABEL);
-        this._debugMode && this._debugToggler._parseNode && console.groupEnd();
-        return
-      }
+      // TODO перемещаем ниже отсюда кейс "Проверка на isNoHanging(currentElement)"" - это нужно тестировать!
 
       // * Check the possibility of (1) or (0): on current or next page in one piece?
 
@@ -672,6 +658,21 @@ export default class Pages {
           '\n register nextElement as pageStart'
         );
         // we need <= because splitted elements often get equal height // todo comment
+
+        // ? The currentElement has a chance to be the last one on the page.
+        if (this._node.isNoHanging(currentElement)) {
+          this._debugMode && this._debugToggler._parseNode && console.log(
+            'currentElement fits / last, and _isNoHanging => move it to the next page'
+          )
+          // ** if currentElement can't be the last element on the page,
+          // ** immediately move it to the next page:
+          this._node.markProcessed(currentElement, 'it fits & last & _isNoHanging => move it to the next page');
+          this._registerPageStart(currentElement, true);
+
+          this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (isNoHanging)', CONSOLE_CSS_END_LABEL);
+          this._debugMode && this._debugToggler._parseNode && console.groupEnd();
+          return
+        }
 
         // * AND it's being fulfilled:
         // *** nextElementTop > newPageBottom
