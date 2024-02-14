@@ -373,6 +373,7 @@ export default class Pages {
     // if there is no next element, then we are in a case
     // where the 'html2pdf-content-flow-end' element is current.
     if (!nextElement) {
+      this._node.markProcessed(currentElement, 'content-flow-end');
       this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (!nextElement)', CONSOLE_CSS_END_LABEL);
       this._debugMode && this._debugToggler._parseNode && console.groupEnd()
       return
@@ -393,6 +394,7 @@ export default class Pages {
         || currentElementBottom <= newPageBottom
       )
     ) {
+      this._node.markProcessed(currentElement, 'node is already registered and fits in the page');
       this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (node is already registered and fits in the next page)', CONSOLE_CSS_END_LABEL);
       this._debugMode && this._debugToggler._parseNode && console.groupEnd();
       return
@@ -401,7 +403,8 @@ export default class Pages {
     // FORCED BREAK
     if (this._node.isForcedPageBreak(currentElement)) {
       // TODO I've replaced the 'next' with the 'current' - need to test it out
-      this._registerPageStart(currentElement)
+      this._registerPageStart(currentElement);
+      this._node.markProcessed(currentElement, 'node is ForcedPageBreak');
       this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (isForcedPageBreak)', CONSOLE_CSS_END_LABEL);
       this._debugMode && this._debugToggler._parseNode && console.groupEnd();
       return
@@ -429,10 +432,15 @@ export default class Pages {
       // * IF: nextElementTop <= newPageBottom,
       // * then currentElement fits.
 
+      this._node.markProcessed(currentElement, 'node fits');
+
       // ** Check for page break markers inside.
       // ** If there are - register new page starts.
       this._node.findAllForcedPageBreakInside(currentElement).forEach(
-        element => this._registerPageStart(element)
+        element => {
+          this._node.markProcessed(element, 'node is ForcedPageBreak (inside a node that fits)');
+          this._registerPageStart(element);
+        }
       );
       // TODO: это может быть внутри таблицы или другого элемента,
       // который мы не хотим / не можем разбить обычным образом!
@@ -461,6 +469,7 @@ export default class Pages {
         // TODO #tracedParent
         // this._registerPageStart(currentElement);
         // ** And if it's the first child, move the parent node to the next page.
+        this._node.markProcessed(currentElement, 'register page start as NoHanging *** ');
         this._registerPageStart(currentElement, true);
         this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (isNoHanging)', CONSOLE_CSS_END_LABEL);
         this._debugMode && this._debugToggler._parseNode && console.groupEnd();
@@ -499,6 +508,14 @@ export default class Pages {
             ? (parentBottom - this._node.getBottom(currentImage, this._root))
             : 0
         );
+        // if parent: the node is first,
+        // so let's include the parent's top margins:
+        let fullPageImageNodeSpace = this._referenceHeight - (
+           parent
+            ? (this._node.getTop(currentImage, this._root) - this._node.getTop(parent, this._root))
+            : 0
+        );
+        // TODO: replace this._referenceWidth  with an padding/margin-dependent value
 
         const currentImageHeight = this._DOM.getElementOffsetHeight(currentImage);
         const currentImageWidth = this._DOM.getElementOffsetWidth(currentImage);
@@ -521,6 +538,7 @@ export default class Pages {
         // if it fits
         if (currentImageHeight < availableImageNodeSpace) {
           // just leave it on the current page
+          this._node.markProcessed(currentElement, 'IMG that fits, and next starts on next');
           this._registerPageStart(nextElement);
           this._debugMode && this._debugToggler._parseNode && console.log('Register next elements; 🖼️🖼️🖼️ IMG fits:', currentElement);
           this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode 🖼️ IMG fits', CONSOLE_CSS_END_LABEL);
@@ -533,6 +551,7 @@ export default class Pages {
 
         if (ratio > this._imageReductionRatio) {
           this._debugMode && this._debugToggler._parseNode && console.log('Register next elements; 🖼️🖼️🖼️ IMG RESIZE to availableImageNodeSpace:', availableImageNodeSpace, currentElement);
+          this._node.markProcessed(currentElement, `IMG with ratio ${ratio}, and next starts on next`);
           // reduce it a bit
           this._node.fitElementWithinBoundaries({
             element: currentElement,
@@ -552,17 +571,19 @@ export default class Pages {
         // *** 'true':
         // *** add the possibility of moving it with the wrap tag
         // *** if it's the first child
+        this._node.markProcessed(currentElement, `IMG starts on next`);
         this._registerPageStart(currentImage, true);
         this._debugMode && this._debugToggler._parseNode && console.log('🖼️ register Page Start', currentElement);
         // and avoid page overflow if the picture is too big to fit on the page as a whole
-        if (currentImageHeight > this._referenceHeight) {
+        if (currentImageHeight > fullPageImageNodeSpace) {
           this._node.fitElementWithinBoundaries({
             element: currentElement,
             height: currentImageHeight,
             width: currentImageWidth,
-            vspace: this._referenceHeight,
+            vspace: fullPageImageNodeSpace,
             hspace: this._referenceWidth
           });
+          this._node.markProcessed(currentElement, `IMG starts on next and resized`);
           this._debugMode && this._debugToggler._parseNode && console.log('🖼️ ..and fit it to full page', currentElement);
         }
         this._debugMode && this._debugToggler._parseNode && console.log('%c END', CONSOLE_CSS_END_LABEL);
@@ -608,6 +629,8 @@ export default class Pages {
           this._DOM.setStyles(currentElement, { transform: `scale(${availableSpaceFactor})` });
           // and start a new page with the next element:
           this._registerPageStart(nextElement);
+          this._node.markProcessed(currentElement, `processed as a image, has been scaled down within 20%, the next one starts a new page`);
+          this._node.markProcessed(nextElement, `the previous one was scaled down within 20%, and this one starts a new page.`);
           this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (has height & scale)', CONSOLE_CSS_END_LABEL);
           this._debugMode && this._debugToggler._parseNode && console.groupEnd();
           return
@@ -620,6 +643,7 @@ export default class Pages {
           this._debugMode && this._debugToggler._parseNode && console.log(
             '🥁 fullPageFactor < 1: ', fullPageFactor
           );
+          this._node.markProcessed(currentElement, `processed as a image, has been scaled down, and starts new page`);
           this._DOM.setStyles(currentElement, { transform: `scale(${fullPageFactor})` });
         }
 
@@ -627,6 +651,7 @@ export default class Pages {
           '🥁 _registerPageStart', currentElement
         );
         this._registerPageStart(currentElement);
+        this._node.markProcessed(currentElement, `processed as a image, starts new page`);
         this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (has height & put on next page)', CONSOLE_CSS_END_LABEL);
         this._debugMode && this._debugToggler._parseNode && console.groupEnd();
         return
@@ -654,6 +679,8 @@ export default class Pages {
         // * because the previous element surely ends before this one begins,
         // * and so is its previous neighbor, not its parent.
         this._registerPageStart(nextElement);
+        this._node.markProcessed(currentElement, `fits, its bottom falls exactly on the cut`);
+        this._node.markProcessed(nextElement, `starts new page, its top is exactly on the cut`);
         this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode (currentElement fits, register the next element)', CONSOLE_CSS_END_LABEL);
         this._debugMode && this._debugToggler._parseNode && console.groupEnd();
         return
@@ -728,7 +755,8 @@ export default class Pages {
           next: nextElement,
           parent: isFullySPlittedParent ? undefined : tracedParent,
           parentBottom: isFullySPlittedParent ? undefined : currentElementBottom,
-        })
+        });
+        this._node.markProcessed(currentElement, `getProcessedChildren and _parseNodes`);
       } else {
         // * If no children,
         // * move element to the next page.
@@ -737,7 +765,8 @@ export default class Pages {
           // ** if previousElement can't be the last element on the page,
           // ** move it to the next page.
           this._registerPageStart(previousElement, true);
-
+          this._node.markProcessed(currentElement, `doesn't fit, has no children, isNoHanging(previousElement)`);
+          this._node.markProcessed(previousElement, `isNoHanging - register it or parents`);
         } else {
           // TODO #tracedParent
           // this._registerPageStart(currentElement);
@@ -747,7 +776,7 @@ export default class Pages {
             currentElement
           );
           this._registerPageStart(currentElement, true);
-
+          this._node.markProcessed(currentElement, `doesn't fit, has no children, register it or parents`);
         }
       }
     }
