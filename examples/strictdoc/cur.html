@@ -241,16 +241,16 @@
     data-preloader='true'
     data-preloader-target='[html2pdf-preloader]'
     data-preloader-background='#F2F5F9'
-
-    data-print-height='200mm'
-    data-print-font-size='12pt'
-    src="bundle.js"></script>
-  <!--
     data-forced-page-break-selectors=''
     data-page-break-before-selectors='H2'
     data-page-break-after-selectors='.pdf-toc .free_text'
     data-no-break-selectors='sdoc-meta sdoc-section-title .pdf-toc-row'
-    data-no-hanging-selectors='sdoc-section-title sdoc-requirement-title sdoc-requirement-field-label'
+    data-no-hanging-selectors='sdoc-meta sdoc-section-title sdoc-requirement-title sdoc-requirement-field-label strong:only-child'
+
+    src="bundle.js"></script>
+  <!--
+    data-print-height='200mm'
+    data-print-font-size='12pt'
   -->
 
 </head>
@@ -258,174 +258,314 @@
 <body data-viewtype="html2pdf" data-turbo="false">
 <div id="connection_status" class="connection_status"></div>
 <div class="layout" id="layout">
-<nav class="layout_nav">
-<div class="nav">
-<a data-link="index" class="nav_button" href="http://127.0.0.1:5111/index.html" title="Project index">
-<svg class="svg_icon" width="16" height="16" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<line x1="9" y1="4" x2="7" y2="4"></line>
-<line x1="12" y1="9" x2="12" y2="7"></line>
-<line x1="6" y1="10" x2="10" y2="6"></line>
-<circle cx="4" cy="12" r="2.25"></circle>
-<circle cx="12" cy="4" r="2.25"></circle>
-<circle cx="4" cy="4" r="2.25"></circle>
-<circle cx="12" cy="12" r="2.25"></circle>
-</svg>
-</a>
-</div>
-</nav>
-<aside class="layout_tree">
-<div js-resizable_bar="tree" data-state="closed" data-position="left" data-testid="tree-bar" style="width: 20vw;"><div js-resizable_bar-scroll="y" data-content="tree"></div>
-<div js-resizable_bar-handler="" data-content="tree" style="left: unset;"><div js-resizable_bar-border="" data-content="tree" title="Resize tree" data-testid="tree-handler-border"></div><div js-resizable_bar-button="" data-content="tree" title="Toggle tree" data-testid="tree-handler-button"></div></div></div>
-</aside>
-<aside data-position="right" class="layout_toc">
-<div js-resizable_bar="toc" data-state="closed" data-position="right" data-testid="toc-bar" style="width: 20vw;"><div js-resizable_bar-scroll="y" data-content="toc"></div>
-<div js-resizable_bar-handler="" data-content="toc" style="right: unset;"><div js-resizable_bar-border="" data-content="toc" title="Resize toc" data-testid="toc-handler-border"></div><div js-resizable_bar-button="" data-content="toc" title="Toggle toc" data-testid="toc-handler-button"></div></div></div>
-</aside>
-<header class="layout_header">
-<div class="header">
-<svg class="svg_icon" width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<polyline points="14 5 14 10.5 8 15 2 10.5 2 5 8 1 14 5 8 9.5"></polyline>
-<polyline points="2.5 5.5 8 9.5 8 15"></polyline>
-</svg>
-<div class="header__project_name" title="StrictDoc Documentation">StrictDoc Documentation</div>
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" class="sc-gLvsXj bpkaBy"><path stroke="currentColor" d="M12.5 4.5l-5 11" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-<turbo-frame id="header_document_title">
-<svg class="svg_icon" width="16" height="16" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d=" M13,13 L13,8 C13,7.5 12.6,7 12,7 L9,7 C8.5,7 8,6.5 8,6 L8,3 C8,2.5 7.5,2 7,2 L4,2 C3.5,2 3,2.5 3,3 L3,13 C3,13.5 3.5,14 4,14 L12,14 C12.6,14 13,13.5 13,13 Z M13,9 L13,8 C13,7.5 13,7 12.5,6.5 L8.5,2.5 C8,2 7.5,2 7,2 L6,2"></path></svg>
-<div class="header__document_title" title="User Guide">User Guide</div>
-</turbo-frame>
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" class="sc-gLvsXj bpkaBy"><path stroke="currentColor" d="M12.5 4.5l-5 11" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-<div class="viewtype">
-<div id="viewtype_handler" class="viewtype__handler" aria-expanded="false" aria-controls="viewtype_menu"><span>PDF</span><svg class="svg_icon" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M5 10l3 3 3-3M5 6l3-3 3 3"></path></svg></div>
-</div>
-</div>
-</header>
+
+<div style='display:contents'><!-- TEST GROUPING -->
+  <nav class="layout_nav">
+  <div class="nav">
+  <a data-link="index" class="nav_button" href="http://127.0.0.1:5111/index.html" title="Project index">
+  <svg class="svg_icon" width="16" height="16" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <line x1="9" y1="4" x2="7" y2="4"></line>
+  <line x1="12" y1="9" x2="12" y2="7"></line>
+  <line x1="6" y1="10" x2="10" y2="6"></line>
+  <circle cx="4" cy="12" r="2.25"></circle>
+  <circle cx="12" cy="4" r="2.25"></circle>
+  <circle cx="4" cy="4" r="2.25"></circle>
+  <circle cx="12" cy="12" r="2.25"></circle>
+  </svg>
+  </a>
+  </div>
+  </nav>
+  <aside class="layout_tree">
+  <div js-resizable_bar="tree" data-state="closed" data-position="left" data-testid="tree-bar" style="width: 20vw;"><div js-resizable_bar-scroll="y" data-content="tree"></div>
+  <div js-resizable_bar-handler="" data-content="tree" style="left: unset;"><div js-resizable_bar-border="" data-content="tree" title="Resize tree" data-testid="tree-handler-border"></div><div js-resizable_bar-button="" data-content="tree" title="Toggle tree" data-testid="tree-handler-button"></div></div></div>
+  </aside>
+  <aside data-position="right" class="layout_toc">
+  <div js-resizable_bar="toc" data-state="closed" data-position="right" data-testid="toc-bar" style="width: 20vw;"><div js-resizable_bar-scroll="y" data-content="toc"></div>
+  <div js-resizable_bar-handler="" data-content="toc" style="right: unset;"><div js-resizable_bar-border="" data-content="toc" title="Resize toc" data-testid="toc-handler-border"></div><div js-resizable_bar-button="" data-content="toc" title="Toggle toc" data-testid="toc-handler-button"></div></div></div>
+  </aside>
+  <header class="layout_header">
+  <div class="header">
+  <svg class="svg_icon" width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <polyline points="14 5 14 10.5 8 15 2 10.5 2 5 8 1 14 5 8 9.5"></polyline>
+  <polyline points="2.5 5.5 8 9.5 8 15"></polyline>
+  </svg>
+  <div class="header__project_name" title="StrictDoc Documentation">StrictDoc Documentation</div>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" class="sc-gLvsXj bpkaBy"><path stroke="currentColor" d="M12.5 4.5l-5 11" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+  <turbo-frame id="header_document_title">
+  <svg class="svg_icon" width="16" height="16" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d=" M13,13 L13,8 C13,7.5 12.6,7 12,7 L9,7 C8.5,7 8,6.5 8,6 L8,3 C8,2.5 7.5,2 7,2 L4,2 C3.5,2 3,2.5 3,3 L3,13 C3,13.5 3.5,14 4,14 L12,14 C12.6,14 13,13.5 13,13 Z M13,9 L13,8 C13,7.5 13,7 12.5,6.5 L8.5,2.5 C8,2 7.5,2 7,2 L6,2"></path></svg>
+  <div class="header__document_title" title="User Guide">User Guide</div>
+  </turbo-frame>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" class="sc-gLvsXj bpkaBy"><path stroke="currentColor" d="M12.5 4.5l-5 11" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+  <div class="viewtype">
+  <div id="viewtype_handler" class="viewtype__handler" aria-expanded="false" aria-controls="viewtype_menu"><span>PDF</span><svg class="svg_icon" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M5 10l3 3 3-3M5 6l3-3 3 3"></path></svg></div>
+  </div>
+  </div>
+  </header>
+</div><!-- // TEST GROUPING -->
+
 <main class="layout_main">
 <div html2pdf-preloader="" class="main">
 <!-- START of content -->
-
-
-
-
-
-
 <div html2pdf="" class="content" style="opacity:1">
 
   <!-- extra page: 449 - 471 -->
   <!-- hangling title: 472 - ... -->
   <!-- <div filler style="height:472px"></div> -->
 
-  <!-- <style>sdoc-autogen{display:contents;}</style> -->
 
-  <div class="free_text" data-testid="pdf-abstract">
+  <sdoc-section>
+  
+  
+    <sdoc-section-title
+      data-level="6.2.4"
+    >
+      
+      <h4
+        id="6.2.4-Composite-requirement"
+      >6.2.4.&nbsp;Composite requirement</h4>
+    </sdoc-section-title>
+      
+      <sdoc-section-text>
+    
     <sdoc-autogen><div class="document">
-      <object class="image" data="assets/file.svg" type="image/svg+xml"
-      style="width: 100%;"
-      >Test image</object>
-    </div></sdoc-autogen>
-  </div>
+    <p>A <tt class="docutils literal">[COMPOSITE_REQUIREMENT]</tt> is a requirement that combines requirement
+    properties of a <tt class="docutils literal">[REQUIREMENT]</tt> element and grouping features of a <tt class="docutils literal">[SECTION]</tt>
+    element. This element can be useful in lower-level specifications documents
+    where a given section of a document has to describe a single feature and the
+    description requires a one or more levels of nesting. In this case, it might be
+    natural to use a composite requirement that is tightly connected to a few
+    related sub-requirements.</p>
+<pre class="code text literal-block">
+[COMPOSITE_REQUIREMENT]
+STATEMENT: Statement
 
-  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
-    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
-  </div></sdoc-autogen></div>
-  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
-    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
-  </div></sdoc-autogen></div>
-  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
-    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
-  </div></sdoc-autogen></div>
-  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
-    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
-  </div></sdoc-autogen></div>
-  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
-    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
-  </div></sdoc-autogen></div>
-  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
-    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
-  </div></sdoc-autogen></div>
-  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
-    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
-  </div></sdoc-autogen></div>
-  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
-    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
-  </div></sdoc-autogen></div>
-  <div class="free_text" data-testid="pdf-abstract"><sdoc-autogen><div class="document">
-    <object class="image" data="assets/file.svg" type="image/svg+xml">Test image</object>
-  </div></sdoc-autogen></div>
+[REQUIREMENT]
+STATEMENT: Substatement #1
 
+[REQUIREMENT]
+STATEMENT: Substatement #2
 
+[REQUIREMENT]
+STATEMENT: Substatement #3
 
-  <div filler style="height:200px"></div>
-
-  <!-- <sdoc-requirement requirement-view="simple" data-level="2.1" data-status="active" data-testid="requirement-style-simple">
-    <sdoc-requirement-title id="2.1-SDOC-SSS-3">
-            2.1.&nbsp;Documents (CRUD)</sdoc-requirement-title>
-    <sdoc-requirement-field-label>MID:</sdoc-requirement-field-label>
-    <sdoc-requirement-field data-field-type="singleline" data-field-label="MID">
-    <sdoc-autogen>72d0dd23dedd4907b4a8924debe7343b</sdoc-autogen></sdoc-requirement-field>
-        <sdoc-requirement-field-label>UID:</sdoc-requirement-field-label>
-      <sdoc-requirement-field data-field-type="singleline" data-field-label="UID">
-    <sdoc-autogen>SDOC-SSS-3</sdoc-autogen></sdoc-requirement-field>
-      <sdoc-requirement-field-label>STATUS:</sdoc-requirement-field-label>
-      <sdoc-requirement-field data-field-type="singleline" data-field-label="STATUS">
-    <sdoc-autogen>Active</sdoc-autogen></sdoc-requirement-field>
-      <sdoc-requirement-field-label>child relations:</sdoc-requirement-field-label>
-      <sdoc-requirement-field data-field-label="child relations">
-        <ul class="requirement__link">
-          <li>
-            <a data-turbo="false" class="requirement__link-child" href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements-PDF.html#5.2.2-SDOC-SRS-107">
-              <span class="requirement__child-uid">SDOC-SRS-107</span>
-              Create document
-            </a>
-          </li>
-          <li>
-            <a data-turbo="false" class="requirement__link-child" href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements-PDF.html#5.2.3-SDOC-SRS-108">
-              <span class="requirement__child-uid">SDOC-SRS-108</span>
-              Delete document
-            </a>
-          </li>
-          <li>
-            <a data-turbo="false" class="requirement__link-child" href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements-PDF.html#5.3.1-SDOC-SRS-54">
-              <span class="requirement__child-uid">SDOC-SRS-54</span>
-              Read document
-            </a>
-          </li>
-          <li>
-            <a data-turbo="false" class="requirement__link-child" href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements-PDF.html#5.3.2-SDOC-SRS-106">
-              <span class="requirement__child-uid">SDOC-SRS-106</span>
-              Update document
-            </a>
-          </li>
-        </ul>
-      </sdoc-requirement-field>
-      <sdoc-requirement-field-label>statement:</sdoc-requirement-field-label>
-      <sdoc-requirement-field data-field-label="statement">
+[/COMPOSITE_REQUIREMENT]
+</pre>
+    <p>Special feature of <tt class="docutils literal">[COMPOSITE_REQUIREMENT]</tt>: like <tt class="docutils literal">[SECTION]</tt> element, the
+    <tt class="docutils literal">[COMPOSITE_REQUIREMENT]</tt> elements can be nested within each other. However,
+    <tt class="docutils literal">[COMPOSITE_REQUIREMENT]</tt> cannot nest sections.</p>
+    <p><strong>Note:</strong> Composite requirements should not be used in every document. Most
+    often, a more basic combination of nested <tt class="docutils literal">[SECTION]</tt> and <tt class="docutils literal">[REQUIREMENT]</tt>
+    elements should do the job.</p>
+    </div>
+    </sdoc-autogen></sdoc-section-text>
+    </sdoc-section>
+              
+    
+    <sdoc-section>
+      
+      
+    <sdoc-section-title
+      data-level="6.2.5"
+    >
+      
+      <h4
+        id="6.2.5-Include-files"
+      >6.2.5.&nbsp;Include files</h4>
+    </sdoc-section-title>
+      
+      <sdoc-section-text>
+    
     <sdoc-autogen><div class="document">
-  <p>The Requirements Tool shall provide the CRUD operations for document management:</p>
-  <ul class="simple">
-  <li>Create document</li>
-  <li>Read document</li>
-  <li>Update document</li>
-  <li>Delete document.</li>
-  </ul>
-  </div>
-  </sdoc-autogen></sdoc-requirement-field>
-    <sdoc-requirement-field-label>rationale:</sdoc-requirement-field-label>
-    <sdoc-requirement-field data-field-label="rationale">
+    <p>StrictDoc <tt class="docutils literal">.sdoc</tt> files can be built-up from including other fragment documents.</p>
+    <p>The <tt class="docutils literal">[FRAGMENT_FROM_FILE]</tt> element can be used anywhere body elements can be
+    used ( e.g. <tt class="docutils literal">[SECTION]</tt>, <tt class="docutils literal">[REQUIREMENT</tt>, <tt class="docutils literal">[COMPOSITE_REQUIREMENT]</tt> etc.) and will
+    evaluate by inserting its contents from the file referenced by its <tt class="docutils literal">FILE:</tt> property
+    where it was used in the parent document. The files included must start with a <tt class="docutils literal">[FRAGMENT]</tt>
+    directive and cannot contain <tt class="docutils literal">[FREETEXT]</tt> elements but are otherwise identical to
+    <tt class="docutils literal">*.sdoc</tt> files. They can have any filename except a <tt class="docutils literal">.sdoc</tt> extension.</p>
+    <p>Here is an example pair of files similar to examples above. First the
+    <tt class="docutils literal">.sdoc</tt> file has a <tt class="docutils literal">[FRAGMENT_FROM_FILE]</tt> that references the latter file.</p>
+<pre class="code text literal-block">
+[DOCUMENT]
+TITLE: StrictDoc
+
+[FREETEXT]
+...
+[/FREETEXT]
+
+[FRAGMENT_FROM_FILE]
+FILE: include.ssec
+
+[REQUIREMENT]
+</pre>
+    <p>Then the referenced file, <tt class="docutils literal">include.ssec</tt>:</p>
+<pre class="code text literal-block">
+[FRAGMENT]
+
+[REQUIREMENT]
+
+[SECTION]
+TITLE: Sub section
+[/SECTION]
+
+[COMPOSITE_REQUIREMENT]
+
+[REQUIREMENT]
+
+[/COMPOSITE_REQUIREMENT]
+</pre>
+    <p>Which will resolve to the following document after inclusion:</p>
+<pre class="code text literal-block">
+[DOCUMENT]
+TITLE: StrictDoc
+
+[FREETEXT]
+...
+[/FREETEXT]
+
+[REQUIREMENT]
+
+[SECTION]
+TITLE: Sub section
+[/SECTION]
+
+[COMPOSITE_REQUIREMENT]
+
+[REQUIREMENT]
+
+[/COMPOSITE_REQUIREMENT]
+
+[REQUIREMENT]
+</pre>
+    </div>
+    </sdoc-autogen></sdoc-section-text>
+    </sdoc-section>
+              
+    
+    <sdoc-section>
+      
+      
+    <sdoc-section-title
+      data-level="6.3"
+    >
+      
+      <h3
+        id="6.3-Machine-identifiers-MID"
+      >6.3.&nbsp;Machine identifiers (MID)</h3>
+    </sdoc-section-title>
+      <sdoc-meta>
+      <sdoc-meta-label>UID:</sdoc-meta-label>
+      <sdoc-meta-field>
+    
+    <sdoc-autogen>SECTION-UG-Machine-identifiers-MID</sdoc-autogen></sdoc-meta-field>
+    </sdoc-meta>
+      <sdoc-section-text>
+    
     <sdoc-autogen><div class="document">
-  <p>The CRUD operations are essential operations of document management. They are at the core of a documentation management tool.</p>
-  </div>
-  </sdoc-autogen></sdoc-requirement-field>
-  </sdoc-requirement> -->
+    <p>StrictDoc supports the automatic generation of machine identifiers (MIDs). This optional feature can be enabled individually for each document through the document-level <tt class="docutils literal">ENABLE_MID</tt> config option:</p>
+<pre class="code literal-block">
+[DOCUMENT]
+TITLE: Hello World!
+OPTIONS:
+  ENABLE_MID: True
+</pre>
+    <p>When the <tt class="docutils literal">ENABLE_MID</tt> option is enabled, StrictDoc automatically generates MID fields whenever the document is written back to the file system. On the web server, MIDs are generated automatically when a document, section, or requirement is saved. In the command-line interface, the generation of <tt class="docutils literal">MID</tt> can be initiated with a <tt class="docutils literal">passthrough</tt> command. Executing <tt class="docutils literal">strictdoc passthrough</tt> on a document with <tt class="docutils literal">ENABLE_MID: True</tt> results in all nodes having auto-generated MIDs. Implementing the ENABLE_MID option on a per-document basis allows for the integration of MID-enabled documents alongside third-party documents where the MID feature may not be necessary or desired.</p>
+    <p>Machine identifiers (MIDs) differ from and do not replace unique identifiers (UIDs). A requirement, section, or document node may have both <tt class="docutils literal">MID</tt> and <tt class="docutils literal">UID</tt> fields defined. For example:</p>
+<pre class="code literal-block">
+[REQUIREMENT]
+MID: 06ab121d3c0f4d8c94652323b8f735c6
+UID: SDOC-SSS-70
+STATUS: Active
+TITLE: Move nodes between documents
+STATEMENT: &gt;&gt;&gt;
+The Requirements Tool shall allow moving nodes (sections, requirements) between documents.
+&lt;&lt;&lt;
+</pre>
+    <p>Advantages of using machine identifiers:</p>
+    <ol class="arabic simple">
+    <li>Machine identifiers provide a robust means of identifying documents, sections, requirements, or custom nodes. An MID can uniquely identify a given node, independent of other fields like UID or TITLE.</li>
+    <li>The unique identification of nodes via MIDs enhances the effectiveness of StrictDoc's Diff/Changelog functionality. It allows the algorithm to accurately match requirements, sections, or document nodes, even if they are moved, renamed, or undergo metadata changes.</li>
+    <li>MIDs increase the portability of requirements data. Even when UID naming conventions change or nodes are relocated, the MID continues to uniquely identify the original node.</li>
+    </ol>
+    <p>For larger projects, particularly those with extended maintenance cycles, we strongly recommend activating machine identifiers early in the project lifecycle. This proactive approach ensures robust tracking and management of documentation throughout the project's duration.</p>
+    </div>
+    </sdoc-autogen></sdoc-section-text>
+    </sdoc-section>
+              
+    
+    <sdoc-section>
+      
+      
+    <sdoc-section-title
+      data-level="6.4"
+    >
+      
+      <h3
+        id="6.4-Custom-grammars"
+      >6.4.&nbsp;Custom grammars</h3>
+    </sdoc-section-title>
+      <sdoc-meta>
+      <sdoc-meta-label>UID:</sdoc-meta-label>
+      <sdoc-meta-field>
+    
+    <sdoc-autogen>SECTION-CUSTOM-GRAMMARS</sdoc-autogen></sdoc-meta-field>
+    </sdoc-meta>
+      <sdoc-section-text>
+    
+    <sdoc-autogen><div class="document">
+    <p><strong>Observation:</strong> Different industries have their own types of requirements
+    documents with specialized meta information.
+    Examples: <tt class="docutils literal">ASIL</tt> in the automotive industry or
+    <tt class="docutils literal">HERITAGE</tt> field in some of the requirements documents by NASA.</p>
+    <p>StrictDoc allows declaration of custom grammars with custom fields that are
+    specific to a particular document.</p>
+    <p>First, such fields have to be registered on a document level using the
+    <tt class="docutils literal">[GRAMMAR]</tt> field. The following example demonstrates a declaration of
+    a grammar with four fields including a custom <tt class="docutils literal">VERIFICATION</tt> field.</p>
+<pre class="code text literal-block">
+[DOCUMENT]
+TITLE: How to declare a custom grammar
+
+[GRAMMAR]
+ELEMENTS:
+- TAG: REQUIREMENT
+  FIELDS:
+  - TITLE: UID
+    TYPE: String
+    REQUIRED: True
+  - TITLE: VERIFICATION
+    TYPE: String
+    REQUIRED: True
+  - TITLE: TITLE
+    TYPE: String
+    REQUIRED: True
+  - TITLE: STATEMENT
+    TYPE: String
+    REQUIRED: True
+  - TITLE: COMMENT
+    TYPE: String
+    REQUIRED: True
+</pre>
+    <p>This declaration configures the parser to recognize the declared fields as
+    defined by a user. Declaring a special field as <tt class="docutils literal">REQUIRED: True</tt> makes this
+    field mandatory for each and every requirement in the document.</p>
+    <p>When the fields are registered on the document level, it becomes possible to
+    declare them as the <tt class="docutils literal">[REQUIREMENT]</tt> special fields:</p>
+<pre class="code text literal-block">
+[REQUIREMENT]
+UID: ABC-123
+VERIFICATION: Test
+STATEMENT: System A shall do B.
+COMMENT: Test comment.
+</pre>
+    <p><strong>Note:</strong> The order of fields must match the order of their declaration in the
+    grammar.</p>
+    </div>
+    </sdoc-autogen></sdoc-section-text>
+    </sdoc-section>
+
 
 </div>
-
-
-
-
-
-
-
-
 <!-- END of content -->
 </div><!-- / main -->
 

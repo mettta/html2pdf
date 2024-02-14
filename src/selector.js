@@ -55,6 +55,7 @@ const SELECTOR = {
   printHide: '[html2pdf-print-hide]',
 
   // * Service elements (are created in the process):
+  processed: '[html2pdf-processed]',
   splitted: '[html2pdf-splitted]',
   neutral: 'html2pdf-neutral',
   textNode: 'html2pdf-text-node',

@@ -7,6 +7,8 @@ export default class Node {
     this._config = config;
     this._DOM = DOM;
     this._selector = selector;
+    this._debugMode = this._config.debugMode;
+    this._markupDebugMode = this._config.markupDebugMode;
   }
 
   init() {
@@ -113,7 +115,7 @@ export default class Node {
     });
 
     if (nodeEntries.unexpected.length > 0) {
-      this._debugMode && this._debugToggler._DOM
+      this._debugMode
         && console.warn(`something unexpected is found in the table ${node}`);
     }
 
@@ -132,7 +134,7 @@ export default class Node {
 
   isSelectorMatching(element, selector) {
     if (!element || !selector) {
-      this._debugMode && this._debugToggler._DOM && console.warn('isSelectorMatching() must have 2 params',
+      this._debugMode && console.warn('isSelectorMatching() must have 2 params',
       '\n element: ', element,
       '\n selector: ', selector);
       return;
@@ -149,7 +151,7 @@ export default class Node {
       return this._DOM.hasID(element, id);
 
     } else if (first === '[') {
-      this._debugMode && this._debugToggler._DOM && console.assert(
+      this._debugMode && console.assert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);
@@ -653,6 +655,10 @@ export default class Node {
 
   // SET FLAG
 
+  markProcessed(element, value) {
+    this._markupDebugMode && this._DOM.setAttribute(element, this._selector.processed, '🏷️ ' + value)
+  }
+
   setFlagNoBreak(element) {
     this._DOM.setAttribute(element, this._selector.flagNoBreak)
   }
@@ -756,7 +762,7 @@ export default class Node {
 
     // TODO element == document.body
     if (!offsetParent) {
-      this._debugMode && this._debugToggler._DOM && console.warn(
+      this._debugMode && console.warn(
         'Element has no offset parent.',
         '\n element:', [element],
         '\n offsetParent:', offsetParent,
@@ -798,6 +804,13 @@ export default class Node {
     }
 
     return this.getTop(element, root) + this._DOM.getElementOffsetHeight(element);
+  }
+
+  getHeightWithMargin(element) {
+    const topMargin = parseInt(this._DOM.getComputedStyle(element).marginTop);
+    const bottomMargin = parseInt(this._DOM.getComputedStyle(element).marginBottom);
+    const height = this._DOM.getElementOffsetHeight(element);
+    return height + topMargin + bottomMargin;
   }
 
   getBottomWithMargin(element, root) {

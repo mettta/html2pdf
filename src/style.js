@@ -233,6 +233,10 @@ ${SELECTOR.textGroup} {
   display: block;
 }
 
+${SELECTOR.splitted} ${SELECTOR.textGroup} {
+  display: inline;
+}
+
 ${SELECTOR.textLine} {
   /* Firefox and inconsistent values of offset top for inline element */
   display: inline-block;
