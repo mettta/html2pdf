@@ -17,3 +17,4 @@ class Test_T000_(BaseCase):
     def test_001(self):
         helper = Helper(self)
         helper.do_open(index_html_file_url)
+        helper.assert_html2pdf_success()
