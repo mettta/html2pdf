@@ -1,12 +1,24 @@
 from selenium.webdriver.common.by import By
 from seleniumbase import BaseCase
 
-# _content_flow_ = '//*[@id="contentFlow"]'
+# Elements should appear in the DOM on success:
+# only once
+_root_ = '//html2pdf-root'
 _content_flow_ = '//html2pdf-content-flow'
+_content_flow_start_ = '//html2pdf-content-flow-start'
+_content_flow_end_ = '//html2pdf-content-flow-end'
 _paper_flow_ = '//html2pdf-paper-flow'
-_paper_ = '//html2pdf-paper-flow/html2pdf-virtual-paper'
-_paper_body_ = '//html2pdf-paper-body'
-_page_top_point_ = '(//html2pdf-content-flow//html2pdf-page)'
+# in number of printed pages
+_page_start_ = _content_flow_ + '//html2pdf-page'
+_paper_ = _paper_flow_ + '/html2pdf-virtual-paper'
+_paper_body_ = _paper_ + '/html2pdf-paper-body'
+_paper_header_ = _paper_ + '/html2pdf-paper-header'
+_paper_footer_ = _paper_ + '/html2pdf-paper-footer'
+
+# Elements with content, empty ones don't appear
+_frontpage_content_ = _paper_flow_ + '//html2pdf-frontpage'
+_header_content_ = _paper_flow_ + '//html2pdf-header'
+_footer_content_ = _paper_flow_ + '//html2pdf-footer'
 
 class Helper:
     def __init__(self, test_case: BaseCase) -> None:
@@ -25,6 +37,24 @@ class Helper:
     def do_open_and_assert_title(self, file: str, title: str) -> None:
         self.do_open(file)
         self.test_case.assert_title(title)
+
+    # html2pdf elements
+
+    def assert_html2pdf_success(self) -> None:
+        self.test_case.assert_element_present(_root_, by=By.XPATH)
+
+        self.test_case.assert_element_present(_content_flow_, by=By.XPATH)
+        self.test_case.assert_element_present(_content_flow_start_, by=By.XPATH)
+        self.test_case.assert_element_present(_content_flow_end_, by=By.XPATH)
+        self.test_case.assert_element_present(_page_start_, by=By.XPATH)
+
+        self.test_case.assert_element_present(_paper_flow_, by=By.XPATH)
+        self.test_case.assert_element_present(_paper_, by=By.XPATH)
+        self.test_case.assert_element_present(_paper_body_, by=By.XPATH)
+        self.test_case.assert_element_present(_paper_header_, by=By.XPATH)
+        self.test_case.assert_element_present(_paper_footer_, by=By.XPATH)
+
+        self.test_case.assert_attribute(_root_, 'success')
 
     # Pages & Paper
 
@@ -52,7 +82,7 @@ class Helper:
 
     def _get_amount_of_virtual_pages(self) -> int:
         all_pages = self.test_case.find_elements(
-            f'{_page_top_point_}',
+            f'{_page_start_}',
             by=By.XPATH,
         )
         return len(all_pages)
@@ -76,7 +106,7 @@ class Helper:
             by=By.XPATH,
         )
         page_top_point = self.test_case.find_element(
-            f'{_page_top_point_}[@page="{page_number}"]',
+            f'{_page_start_}[@page="{page_number}"]',
             by=By.XPATH,
         )
         if report:
