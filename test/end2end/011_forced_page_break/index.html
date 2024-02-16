@@ -8,30 +8,31 @@
   <title>Test page</title>
   <!-- todo: add config to set top/bottom margins -->
   <script src="../../../dist/bundle.js"></script>
+<link rel="stylesheet" href="../../shared/css/main.css">
 </head>
 
 <body>
   <!-- Expected blank 1st page -->
 
-  <div data-print-forced-page-break>
+  <html2pdf-print-forced-page-break>
     <!-- At the very start of the document -->
-  </div>
+  </html2pdf-print-forced-page-break>
   <!-- Expected start of the 2nd page -->
   <span data-testid="testPoint1">
     I want to be on the 2nd page
   </span>
 
-  <div data-print-forced-page-break>
+  <html2pdf-print-forced-page-break>
     <!-- In the middle between the content elements -->
-  </div>
+  </html2pdf-print-forced-page-break>
   <!-- Expected start of the 3st -->
   <span data-testid="testPoint2">
     I want to be on the 3rd page
   </span>
 
-  <div data-print-forced-page-break>
+  <html2pdf-print-forced-page-break>
     <!-- At the very end of the document -->
-  </div>
+  </html2pdf-print-forced-page-break>
   <!-- Expected start of the 4st -->
 
   <!--

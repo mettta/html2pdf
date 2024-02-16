@@ -21,6 +21,7 @@
       4 lines: 242 - 72 = 170px -
       5 lines: 242 - 90 = 152px -
   -->
+  <link rel="stylesheet" href="../../shared/css/main.css">
   <script
     defer
     data-print-height='88mm'
@@ -33,12 +34,12 @@
   <!--
     The paragraph has 6 lines and with a filler for 3 lines ("height:188px")
     should have been split into 2 parts.
-    The attribute `data-print-no-break` prevents this element from being split.
+    The attribute `html2pdf-flag-no-break` prevents this element from being split.
     The element `data-testid="testPoint"` will end up on the second page,
     without trying to split it.
   -->
   <div filler style="height:188px"></div>
-  <div data-print-no-break data-testid="testPoint">
+  <div html2pdf-flag-no-break data-testid="testPoint">
     Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
     Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
     Proident do duis minim sit officia duis occaecat.

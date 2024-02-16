@@ -1,11 +1,12 @@
 from selenium.webdriver.common.by import By
 from seleniumbase import BaseCase
 
-_content_flow_ = '//*[@id="contentFlow"]'
-_paper_flow_ = '//*[@id="paperFlow"]'
-_paper_ = '//*[@id="paperFlow"]/*[@class="virtualPaper"]'
-_paper_body_ = '//*[@class="paperBody"]'
-_page_top_point_ = '(//*[@id="contentFlow"]//*[@class="virtualPaperTopMargin"])'
+# _content_flow_ = '//*[@id="contentFlow"]'
+_content_flow_ = '//html2pdf-content-flow'
+_paper_flow_ = '//html2pdf-paper-flow'
+_paper_ = '//html2pdf-paper-flow/html2pdf-virtual-paper'
+_paper_body_ = '//html2pdf-paper-body'
+_page_top_point_ = '(//html2pdf-content-flow//html2pdf-page)'
 
 class Helper:
     def __init__(self, test_case: BaseCase) -> None:
@@ -75,7 +76,7 @@ class Helper:
             by=By.XPATH,
         )
         page_top_point = self.test_case.find_element(
-            f'{_page_top_point_}[{page_number}]',
+            f'{_page_top_point_}[@page="{page_number}"]',
             by=By.XPATH,
         )
         if report:
