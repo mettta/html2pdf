@@ -40,7 +40,7 @@ class Helper:
 
     # html2pdf elements
 
-    def assert_html2pdf_success(self) -> None:
+    def assert_html2pdf_elements(self) -> None:
         self.test_case.assert_element_present(_root_, by=By.XPATH)
 
         self.test_case.assert_element_present(_content_flow_, by=By.XPATH)
@@ -54,6 +54,7 @@ class Helper:
         self.test_case.assert_element_present(_paper_header_, by=By.XPATH)
         self.test_case.assert_element_present(_paper_footer_, by=By.XPATH)
 
+    def assert_html2pdf_success(self) -> None:
         self.test_case.assert_attribute(_root_, 'success')
 
     # Pages & Paper

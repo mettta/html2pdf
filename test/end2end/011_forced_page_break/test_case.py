@@ -12,11 +12,16 @@ index_html_file_url = (
 test_element1 = '//*[@data-testid="testPoint1"]'
 test_element2 = '//*[@data-testid="testPoint2"]'
 
-class Test_T011_ForcedPageBreak(BaseCase):
-    def test_01(self):
-        helper= Helper(self)
-        helper.do_open(index_html_file_url)
 
-        helper.assert_document_has_pages(4, True)
-        helper.assert_element_on_the_page(test_element1, 2, True)
-        helper.assert_element_on_the_page(test_element2, 3, True)
+# T011_forced_page_break
+class Test(BaseCase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = Helper(self)
+
+    def test_01(self):
+        self.helper.do_open(index_html_file_url)
+
+        self.helper.assert_document_has_pages(4, True)
+        self.helper.assert_element_on_the_page(test_element1, 2, True)
+        self.helper.assert_element_on_the_page(test_element2, 3, True)

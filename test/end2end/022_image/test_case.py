@@ -24,7 +24,9 @@ test_image_horizontal = '//*[@data-testid="testImageHorizontal"]'
 test_element1 = '//*[@data-testid="testPoint1"]'
 test_element2 = '//*[@data-testid="testPoint2"]'
 
-class Test_T022_Image(BaseCase):
+
+# T022_image
+class Test(BaseCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = Helper(self)

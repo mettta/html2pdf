@@ -25,7 +25,9 @@ case5_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "case5.html")
 )
 
-class Test_T031_ParagraphSplit(BaseCase):
+
+# T031_paragraph_split
+class Test(BaseCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = Helper(self)
