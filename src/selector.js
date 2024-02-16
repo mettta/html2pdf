@@ -55,14 +55,15 @@ const SELECTOR = {
   printHide: '[html2pdf-print-hide]',
 
   // * Service elements (are created in the process):
-  processed: '[html2pdf-processed]',
-  splitted: '[html2pdf-splitted]',
   neutral: 'html2pdf-neutral',
   textNode: 'html2pdf-text-node',
   textLine: 'html2pdf-text-line',
   textGroup: 'html2pdf-text-group',
   complexTextBlock: 'html2pdf-complex-text-block',
   printForcedPageBreak: 'html2pdf-print-forced-page-break',
+  // * Service flags (are created in the process):
+  splitted: '[html2pdf-splitted]',
+  processed: '[html2pdf-processed]',
 
   // * FLAGS (have no styles):
   flagNoBreak: '[html2pdf-flag-no-break]',
@@ -72,6 +73,7 @@ const SELECTOR = {
   topCutPart: '.html2pdf-top-cut',
   bottomCutPart: '.html2pdf-bottom-cut',
 
+  // * TOC
   tocPageNumber: 'html2pdf-toc-page-number'
 
 };
