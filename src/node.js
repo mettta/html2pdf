@@ -11,10 +11,6 @@ export default class Node {
     this._markupDebugMode = this._config.markupDebugMode;
   }
 
-  init() {
-    this._config.debugMode && console.log('🍄 i am Node!')
-  }
-
   // GET NODE
 
   get(selector, target = this._DOM) {

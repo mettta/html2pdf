@@ -105,8 +105,6 @@ export default class Pages {
   }
 
   calculate() {
-    this._node.init();
-
     this._removeGarbageElements();
     this._prepareForcedPageBreakElements();
     this._prepareNoBreakElements();
