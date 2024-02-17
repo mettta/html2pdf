@@ -9,7 +9,9 @@ index_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "index.html")
 )
 
-class Test_T000_(BaseCase):
+
+# 071_pagebreak
+class Test(BaseCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = Helper(self)

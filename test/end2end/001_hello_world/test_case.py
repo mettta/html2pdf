@@ -11,6 +11,11 @@ index_html_file_url = (
 
 
 class Test(BaseCase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = Helper(self)
+
     def test_001(self):
-        helper = Helper(self)
-        helper.do_open_and_assert(index_html_file_url, "Hello world!")
+        self.helper.do_open_and_assert(index_html_file_url, "Hello world!")
+        self.helper.assert_html2pdf_elements()
+        self.helper.assert_html2pdf_success()

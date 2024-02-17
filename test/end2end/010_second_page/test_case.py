@@ -12,11 +12,14 @@ index_html_file_url = (
 test_text = "I want to be on page 2."
 test_element = '//*[@data-testid="testPoint"]'
 
-class Test_T010_SecondPage(BaseCase):
-    def test_01(self):
-        helper= Helper(self)
-        helper.do_open_and_assert(index_html_file_url, test_text)
 
-        helper.assert_document_has_pages(2, True)
-        helper.assert_element_on_the_page(test_element, 2, True)
+class Test(BaseCase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = Helper(self)
+
+    def test_01(self):
+        self.helper.do_open_and_assert(index_html_file_url, test_text)
+        self.helper.assert_document_has_pages(2, True)
+        self.helper.assert_element_on_the_page(test_element, 2, True)
         # f'//*[contains(., "{test_text}")]', 2, True
