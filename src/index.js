@@ -1,6 +1,16 @@
-import HTML2PDF4DOC from './app';
+import App from './app';
 
 const HTML2PDF4DOC_VERSION = '0.0.1';
 console.info(`HTML2PDF4DOC v${HTML2PDF4DOC_VERSION}`);
 
-new HTML2PDF4DOC(document.currentScript.dataset).render();
+const dataset = document.currentScript.dataset;
+const app = new App(dataset);
+
+const isManualInit = dataset.init === "manual";
+isManualInit && console.info(`HTML2PDF4DOC in manual initialization mode`);
+
+!isManualInit && app.render();
+
+export function init() {
+  isManualInit && app.render();
+}

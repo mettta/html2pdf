@@ -14,7 +14,7 @@ import Preprocess from './preprocess';
 
 const CONSOLE_CSS_LABEL = `color:Gray;border:1px solid;`
 
-export default class HTML2PDF4DOC {
+export default class App {
   constructor(params) {
     this.params = params;
     this.debugMode = params.debugMode;
