@@ -17,6 +17,10 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
+    library: {
+      name: 'HTML2PDF4DOC',
+      type: 'var',
+    },
     clean: true,
   },
   // https://stackoverflow.com/questions/64818489/webpack-omit-creation-of-license-txt-files
