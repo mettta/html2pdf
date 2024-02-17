@@ -6,9 +6,13 @@
   <meta name="keywords" content="HTML2PDF, end2end" />
   <meta name="description" content="HTML2PDF end2end test" />
   <title>Test page</title>
-  <!-- todo: add config to set top/bottom margins -->
-  <script src="../../../dist/bundle.js"></script>
-<link rel="stylesheet" href="../../shared/css/main.css">
+
+  <link rel="stylesheet" href="../../shared/css/main.css">
+  <script
+    defer
+    data-debug-mode="true"
+    data-print-height='44mm'
+  src="../../../dist/bundle.js"></script>
 </head>
 
 <body>
@@ -18,7 +22,7 @@
     <!-- At the very start of the document -->
   </html2pdf-print-forced-page-break>
   <!-- Expected start of the 2nd page -->
-  <span data-testid="testPoint1">
+  <span data-testid="testPoint2">
     I want to be on the 2nd page
   </span>
 
@@ -26,23 +30,39 @@
     <!-- In the middle between the content elements -->
   </html2pdf-print-forced-page-break>
   <!-- Expected start of the 3st -->
-  <span data-testid="testPoint2">
-    I want to be on the 3rd page
-  </span>
+  <div>
+    <div>
+      div
+      <span data-testid="testPoint3">
+        I want to be on the 3rd page
+      </span>
+    </div>
+    <div>
+      <div>
+        <html2pdf-print-forced-page-break>
+          <!-- In the middle inside the content element that fits:
+          markers are deeper in the element tree -->
+        </html2pdf-print-forced-page-break>
+      </div>
+    </div>
+    <div>
+      div
+      <span data-testid="testPoint4">
+        I want to be on the 4rd page
+      </span>
+    </div>
+  </div>
+
 
   <html2pdf-print-forced-page-break>
     <!-- At the very end of the document -->
   </html2pdf-print-forced-page-break>
   <!-- Expected start of the 4st -->
 
-  <!--
-    todo: data-print-forced-page-break
-    only works if the forced page break markers are direct children
-    of the root element.
+  <span data-testid="testPoint5">
+    I want to be on the 5rd page
+  </span>
 
-    We have to improve the code
-    and write a test when the markers are deeper in the element tree.
-  -->
 </body>
 
 </html>
