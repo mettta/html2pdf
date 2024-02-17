@@ -1661,7 +1661,7 @@ export default class Pages {
     // * Rows that we distribute across the partitioned table
     const getDistributedRows = (tableEntries) => [
       ...tableEntries.rows,
-      ...([tableEntries.tfoot] || [])
+      ...(tableEntries.tfoot ? [tableEntries.tfoot] : [])
     ];
 
     let distributedRows = getDistributedRows(tableEntries);
