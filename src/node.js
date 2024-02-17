@@ -477,7 +477,7 @@ export default class Node {
 
     // while the candidates are within the current page
     // (below the element from which the last registered page starts):
-    while (this.getTop(prev, root) > topFloater) {
+    while (prev && this.getTop(prev, root) > topFloater) {
       // if it can't be left
       if (this.isNoHanging(prev)) {
         // and it's the Start of the page
