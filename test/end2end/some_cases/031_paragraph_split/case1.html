@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <!--
+    * data-print-paper-size='a4' // default, 1032px
+    * data-print-height='88mm'      => 242px
+    * data-print-font-size='12pt' => 1 line:  18px
+    *                                2 lines: 36px
+    *                                3 lines: 54px
+    *                                4 lines: 72px
+    *                                5 lines: 90px
+    ? filler sizes:
+      1 line:  242 - 18 = 224-
+      2 lines: 242 - 36 = 206-
+      3 lines: 242 - 54 = 188-
+      4 lines: 242 - 72 = 170-
+      5 lines: 242 - 90 = 152-
+  -->
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+  <script
+    defer
+    data-print-height='88mm'
+    data-print-font-size='12pt'
+    src="../../../../dist/bundle.js"></script>
+</head>
+
+<body>
+  <!--
+      There are 5 lines in this text.
+      We are testing 5 cases.
+      *1 filler = 152px
+      all five lines remain on the first page;
+      *2 filler = 170px
+      will leave 3 lines on the first page and move 2 lines to the next page,
+      because one last line of the paragraph does not go to the beginning of the page;
+      *3 filler = 188px
+      will leave 3 lines on the first page and move 2 lines to the next page;
+      *4 filler = 206px
+      will leave 2 lines on the first page and move 3 lines to the next page;
+      *5 filler = 224px
+      will move all the text to the second page,
+      because one line is not left at the end of the page;
+  -->
+
+  <!-- Case #1 -->
+  <div filler style="height:152px"></div>
+  <div>
+    <!-- <span data-testid="testPoint1">*</span> -->
+    Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
+    Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+    Proident do duis minim sit officia duis occaecat.
+    Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
+    Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+    Proident do duis minim sit officia duis occaecat.
+    <!-- <span data-testid="testPoint2">*</span> -->
+  </div>
+</body>
+
+</html>

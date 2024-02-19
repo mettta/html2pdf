@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <!--
+    * data-print-paper-size='a4' // default, 1032px
+    * data-print-height='88mm'      => 242px
+    * data-print-font-size='12pt' => 1 line:  18px
+    *                                2 lines: 36px
+    *                                3 lines: 54px
+    *                                4 lines: 72px
+    *                                5 lines: 90px
+    ? filler sizes for Paragraph cases (without margin-block):
+      1 line:  242 - 18 = 224px -
+      2 lines: 242 - 36 = 206px -
+      3 lines: 242 - 54 = 188px -
+      4 lines: 242 - 72 = 170px -
+      5 lines: 242 - 90 = 152px -
+  -->
+  <style>
+    div { border:1px solid green; margin: 10px; }
+    div div { border:1px solid orange; margin: 10px; }
+    div div div { border: 1px solid red; }
+    .after { border-bottom-width:4px; border-style: dashed; }
+    .before { border: 1px solid red; border-top-width:4px; border-style: dashed; }
+    .forced { border: 1px solid red; border-top-width:4px; }
+  </style>
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+
+  <script
+    defer
+    data-debug-mode="true"
+    data-print-height='100mm'
+    data-print-font-size='12pt'
+    data-page-break-after-selectors='.after'
+    data-page-break-before-selectors='.before'
+    data-forced-page-break-selectors='.forced'
+    src="../../../../dist/bundle.js"></script>
+</head>
+
+<body>
+  <!-- ⬇️⬆️ -->
+
+  <!-- <div filler style="height:111px"></div> -->
+  <div>
+    I am on the 1st page
+    <div>string</div>
+    <div>string</div>
+    <div>string</div>
+    <div>
+      <div class="after">
+        ⬇️ I am on 1st page the last
+      </div>
+    </div>
+  </div>
+  <!-- 2 -->
+  <div>
+    <div>
+      <div class="before">
+        ⬆️ I am on 2st page the first
+      </div>
+    </div>
+  </div>
+  <div>
+    <div>
+      <div class="after">
+        ⬇️ I am on 2nd page the last
+      </div>
+    </div>
+  </div>
+  <!-- 3 -->
+  <div>
+    <div>
+      <div class="before">
+        ⬆️ I am on 3rd page the first
+      </div>
+    </div>
+  </div>
+  <!-- 4 -->
+  <div>
+    <div>
+      <div class="before">
+        ⬆️ I am on 4th page the first
+      </div>
+    </div>
+  </div>
+  <div>
+    <div>
+      <div class="after">
+        ⬇️ I am on 4th page the last
+      </div>
+    </div>
+  </div>
+  <!-- 5 -->
+  <div>
+    <div>
+      <div class="after">
+        ⬇️ I am on 5th page the last
+      </div>
+    </div>
+  </div>
+  <!-- 6 -->
+  <div>
+    <div>
+      <div class="forced">
+        ⬆️⬆️ I am on 6th page the FIRST
+      </div>
+    </div>
+  </div>
+  <!-- 7 -->
+  <div>
+    <div>
+      <div class="forced">
+        ⬆️⬆️ I am on 7th page the FIRST
+      </div>
+    </div>
+  </div>
+  <div>
+    <div>
+      <div class="after">
+        ⬇️: I am on 7th page the last
+        <b>and this is the LAST PAGE</b>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>
