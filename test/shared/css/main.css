@@ -1,9 +1,48 @@
 [filler] {
   background:repeating-linear-gradient(
     -45deg,
+    rgba(100, 100, 100, .1),
+    rgba(100, 100, 100, .1) 10px,
+    rgba(100, 100, 100, .15) 10px,
+    rgba(100, 100, 100, .15) 20px
+  );
+}
+
+[filler='blue'] {
+  background:repeating-linear-gradient(
+    -45deg,
     rgba(0, 175, 255, .1),
     rgba(0, 175, 255, .1) 10px,
     rgba(0, 175, 255, .15) 10px,
     rgba(0, 175, 255, .15) 20px
   );
+}
+
+[filler='red'] {
+  background:repeating-linear-gradient(
+    -45deg,
+    rgba(255, 25, 0, .1),
+    rgba(255, 25, 0, .1) 10px,
+    rgba(255, 25, 0, .15) 10px,
+    rgba(255, 25, 0, .15) 20px
+  );
+}
+
+[filler='green'] {
+  background:repeating-linear-gradient(
+    -45deg,
+    rgba(0, 175, 0, .1),
+    rgba(0, 175, 0, .1) 10px,
+    rgba(0, 175, 0, .15) 10px,
+    rgba(0, 175, 0, .15) 20px
+  );
+}
+
+[floater] {
+  outline: rgba(255, 0, 200, 0.2) 1px solid;
+}
+
+[floater='solid'] {
+  outline: rgba(255, 0, 55, 0.55) 1px solid;
+  overflow: auto;
 }

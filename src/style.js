@@ -365,15 +365,6 @@ ${SELECTOR.textLine} {
   background: #0000ff08;
 }
 
-[filler] {
-  background:repeating-linear-gradient(
-    -45deg,
-    rgba(0, 175, 255, .1),
-    rgba(0, 175, 255, .1) 10px,
-    rgba(0, 175, 255, .15) 10px,
-    rgba(0, 175, 255, .15) 20px
-  );
-}
     ` : '';
   }
 }
