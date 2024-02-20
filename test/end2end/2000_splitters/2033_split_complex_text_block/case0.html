@@ -6,26 +6,11 @@
   <meta name="keywords" content="HTML2PDF, end2end" />
   <meta name="description" content="HTML2PDF end2end test" />
   <title>Test page</title>
-  <!--
-    * data-print-paper-size='a4' // default, 1032px
-    * data-print-height='88mm'      => 242px
-    * data-print-font-size='12pt' => 1 line:  18px
-    *                                2 lines: 36px
-    *                                3 lines: 54px
-    *                                4 lines: 72px
-    *                                5 lines: 90px
-    ? filler sizes for Paragraph cases (without margin-block):
-      1 line:  242 - 18 = 224px -
-      2 lines: 242 - 36 = 206px -
-      3 lines: 242 - 54 = 188px -
-      4 lines: 242 - 72 = 170px -
-      5 lines: 242 - 90 = 152px -
-  -->
   <link rel="stylesheet" href="../../../shared/css/main.css">
-
   <script
     defer
     data-debug-mode="true"
+    data-markup-debug-mode="true"
     data-print-height='300px'
     data-print-width='600px'
     data-print-left-margin= '50px'
@@ -37,17 +22,19 @@
 </head>
 
 <body>
-
-  <div filler style="height:111px"></div>
-  <div>
-    <!-- <span data-testid="testPoint1">*</span> -->
+  <!-- line-height = 1.25 (20) -->
+  <!-- 1 step to shift by 1 line is 20 pixels -->
+  <!-- Case #1 -->
+  <div filler style="height:160px"></div>
+  <div data-testid="paragraph">
     Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
-    Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+    Esse dolor tempor minim exercitation occaecat
+    <!-- laboris aliqua mollit duis ea. -->
+    <span style="color:red">laboris <b>aliqua mollit</b> duis ea</span>.
     Proident do duis minim sit officia duis occaecat.
     Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
     Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
     Proident do duis minim sit officia duis occaecat.
-    <!-- <span data-testid="testPoint2">*</span> -->
   </div>
 </body>
 
