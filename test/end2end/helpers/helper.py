@@ -110,10 +110,27 @@ class Helper:
             f'{_page_start_}[@page="{page_number}"]',
             by=By.XPATH,
         )
-        if report:
-            print('-> page_top_point: ', page_top_point.location["y"])
-            print('-> element: ', element.location["y"])
-        assert page_top_point.location["y"] <= element.location["y"]
+        pages = self._get_amount_of_virtual_pages()
+
+        if page_number < pages:
+            next_page_top_point = self.test_case.find_element(
+                f'{_page_start_}[@page="{page_number + 1}"]',
+                by=By.XPATH,
+            )
+            cond1 = page_top_point.location["y"] <= element.location["y"]
+            cond2 = next_page_top_point.location["y"] >= element.location["y"]
+            if report:
+                print('-> page_top_point: ', page_top_point.location["y"])
+                print('-> element: ', element.location["y"])
+                print('-> next_page_top_point: ', next_page_top_point.location["y"])
+            assert cond1 & cond2
+        else:
+            # The last page
+            cond1 = page_top_point.location["y"] <= element.location["y"]
+            if report:
+                print('-> page_top_point: ', page_top_point.location["y"])
+                print('-> element: ', element.location["y"])
+            assert cond1
 
     # Element dimensions
 
