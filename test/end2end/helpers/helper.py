@@ -115,6 +115,8 @@ class Helper:
             print('-> element: ', element.location["y"])
         assert page_top_point.location["y"] <= element.location["y"]
 
+    # Element dimensions
+
     def assert_element_fit_height(self, element_xpath) -> None:
         # Check if the element fits in the printable area in height
         element = self.test_case.find_element(
