@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+  <script
+    defer
+    data-debug-mode="true"
+    data-markup-debug-mode="true"
+    data-print-height='300px'
+    data-print-width='600px'
+    data-print-left-margin= '50px'
+    data-print-right-margin= '50px'
+    data-print-top-margin= '50px'
+    data-print-bottom-margin= '50px'
+    data-print-font-size='16px'
+    src="../../../../dist/bundle.js"></script>
+</head>
+
+<body>
+  <!-- line-height = 1.25 (20) -->
+  <!-- 1 step to shift by 1 line is 20 pixels -->
+  <!--
+    There are 6 lines in this text.
+    We are testing 6 cases.
+    *1 filler = 80px
+    all 6 lines remain on the first page;
+    *2 filler = 100px
+    will leave 4 lines on the first page and move 2 lines to the next page,
+    because one last line of the paragraph does not go to the beginning of the page;
+    *3 filler = 120px
+    will leave 4 lines on the first page and move 2 lines to the next page;
+    *4 filler = 140px
+    will leave 3 lines on the first page and move 3 lines to the next page;
+    *5 filler = 160px
+    will leave 2 lines on the first page and move 4 lines to the next page;
+    *6 filler = 180px
+    will move all the text to the second page,
+    because one line is not left at the end of the page;
+  -->
+  <!-- Case #5 -->
+  <div filler style="height:180px"></div>
+  <div data-testid="paragraph">
+    Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
+    Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+    Proident do duis minim sit officia duis occaecat.
+    Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
+    Esse dolor tempor minim exercitation occaecat laboris aliqua mollit duis ea.
+    Proident do duis minim sit officia duis occaecat.
+  </div>
+</body>
+
+</html>

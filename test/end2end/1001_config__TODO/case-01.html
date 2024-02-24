@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <link rel="stylesheet" href="../../shared/css/main.css">
+
+  <script
+    defer
+    data-debug-mode="true"
+    data-print-height='100mm'
+    data-print-width='200mm'
+    data-print-left-margin= '10mm'
+    data-print-right-margin= '10mm'
+    data-print-top-margin= '10mm'
+    data-print-bottom-margin= '10mm'
+    data-print-font-size='12pt'
+    src="../../../dist/bundle.js"></script>
+</head>
+
+<body>
+  <!-- printed body = 303 ('377 - 37 - 37') -->
+  <div style="padding-top:303px;" filler></div>
+</body>
+
+</html>

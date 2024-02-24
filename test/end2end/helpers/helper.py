@@ -99,6 +99,13 @@ class Helper:
 
     # Element
 
+    def assert_element_contains(self, element_xpath, text: str) -> None:
+        self.test_case.assert_element(
+            f"{element_xpath}"
+            f"//*[contains(., '{text}')]",
+            by=By.XPATH,
+        )
+
     def assert_element_on_the_page(self, element_xpath, page_number, report: bool = False) -> None:
         # Check that the Test object is shifted to the specific page.
         # That is, it is lower than the top of the specific page.
@@ -110,10 +117,29 @@ class Helper:
             f'{_page_start_}[@page="{page_number}"]',
             by=By.XPATH,
         )
-        if report:
-            print('-> page_top_point: ', page_top_point.location["y"])
-            print('-> element: ', element.location["y"])
-        assert page_top_point.location["y"] <= element.location["y"]
+        pages = self._get_amount_of_virtual_pages()
+
+        if page_number < pages:
+            next_page_top_point = self.test_case.find_element(
+                f'{_page_start_}[@page="{page_number + 1}"]',
+                by=By.XPATH,
+            )
+            cond1 = page_top_point.location["y"] <= element.location["y"]
+            cond2 = next_page_top_point.location["y"] >= element.location["y"]
+            if report:
+                print('-> page_top_point: ', page_top_point.location["y"])
+                print('-> element: ', element.location["y"])
+                print('-> next_page_top_point: ', next_page_top_point.location["y"])
+            assert cond1 & cond2
+        else:
+            # The last page
+            cond1 = page_top_point.location["y"] <= element.location["y"]
+            if report:
+                print('-> page_top_point: ', page_top_point.location["y"])
+                print('-> element: ', element.location["y"])
+            assert cond1
+
+    # Element dimensions
 
     def assert_element_fit_height(self, element_xpath) -> None:
         # Check if the element fits in the printable area in height

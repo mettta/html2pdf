@@ -11,10 +11,6 @@ export default class Node {
     this._markupDebugMode = this._config.markupDebugMode;
   }
 
-  init() {
-    this._config.debugMode && console.log('🍄 i am Node!')
-  }
-
   // GET NODE
 
   get(selector, target = this._DOM) {
@@ -120,6 +116,91 @@ export default class Node {
     }
 
     return nodeEntries
+  }
+
+  getPreparedChildren(element) {
+    // Check children:
+    // TODO variants
+    // TODO last child
+    // TODO first Li
+
+    // fon display:none / contents
+    // this._DOM.getElementOffsetParent(currentElement)
+
+    // TODO: to do this check more elegant
+    // SEE the context here:
+    // this._paragraph.split(node)
+    // ...
+    // const nodeChildren = this.getPreparedChildren(node);
+    // * _processInlineChildren (makes ComplexTextBlock) is running extra on complex nodes
+    if (this.isComplexTextBlock(element)) {
+      return [...this._DOM.getChildren(element)]
+
+    } else {
+
+      let childrenArr = [...this._DOM.getChildNodes(element)]
+        .reduce(
+          (acc, item) => {
+
+            // * filter STYLE, use element.tagName
+            if (this.isSTYLE(item)) {
+              return acc;
+            }
+
+            // * wrap text node, use element.nodeType
+            if (this.isSignificantTextNode(item)) {
+              acc.push(this.wrapTextNode(item));
+              return acc;
+            }
+
+            // * no offset parent (contains)
+            if (!this._DOM.getElementOffsetParent(item)) {
+              const ch = this.getPreparedChildren(item);
+              ch.length > 0 && acc.push(...ch);
+              return acc;
+            }
+
+            // * normal
+            if (this._DOM.isElementNode(item)) {
+              acc.push(item);
+              return acc;
+            };
+
+          }, [])
+
+          if (this.isVerticalFlowDisrupted(childrenArr)) {
+            // * If the vertical flow is disturbed and the elements are side by side:
+            childrenArr = this._processInlineChildren(childrenArr);
+          }
+
+      return childrenArr;
+    }
+  }
+
+  _processInlineChildren(children) {
+
+    let complexTextBlock = null;
+    const newChildren = [];
+
+    children.forEach(child => {
+      if (this.isInline(this._DOM.getComputedStyle(child))) {
+        if (!complexTextBlock) {
+          // the first inline child
+          complexTextBlock = this.createComplexTextBlock();
+          this.wrapNode(child, complexTextBlock);
+          newChildren.push(complexTextBlock);
+        }
+        // not the first inline child
+        this._DOM.insertAtEnd(complexTextBlock, child)
+      } else {
+        // A block child is encountered,
+        // so interrupt the collection of elements in the complexTextBlock:
+        complexTextBlock = null;
+        newChildren.push(child);
+      }
+    })
+
+    return newChildren
   }
 
   // TEMPLATES
@@ -481,7 +562,7 @@ export default class Node {
 
     // while the candidates are within the current page
     // (below the element from which the last registered page starts):
-    while (this.getTop(prev, root) > topFloater) {
+    while (prev && this.getTop(prev, root) > topFloater) {
       // if it can't be left
       if (this.isNoHanging(prev)) {
         // and it's the Start of the page
@@ -613,6 +694,13 @@ export default class Node {
       // left: '-10000px',
     })
     return testNode;
+  }
+
+  createWord(text, index) {
+    const word = this.create(this._selector.word);
+    this._DOM.setInnerHTML(word, text);
+    word.dataset.index = index;
+    return word;
   }
 
   // todo: move styles to params as optional
@@ -960,8 +1048,9 @@ export default class Node {
   }
 
   splitByWordsGreedy(node) { // ? in prepareSplittedNode
+    const text = this._DOM.getNodeValue(node) || this._DOM.getInnerHTML(node);
     // SEE Pages: const WORD_JOINER
-    const arr = this._DOM.getInnerHTML(node).split(/(?<=\s|-)/); // WORD_JOINER = '';
+    const arr = text.split(/(?<=\s|-)/); // WORD_JOINER = '';
     // const arr = node.innerHTML.split(/(?<=\s|-)/); // WORD_JOINER = '';
     // const arr = node.innerHTML.split(/\s+/); // WORD_JOINER = ' ';
     // console.log('🔴', arr)
@@ -969,9 +1058,10 @@ export default class Node {
   }
 
   splitByWordsGreedyWithSpacesFilter(node) {
+    const text = this._DOM.getNodeValue(node) || this._DOM.getInnerHTML(node);
     // SEE Pages: const WORD_JOINER
     // ** 1 ** add trim() for trailing spaces
-    const arr = this._DOM.getInnerHTML(node).trim().split(/(?<=\s|-)/); // WORD_JOINER = '';
+    const arr = text.trim().split(/(?<=\s|-)/); // WORD_JOINER = '';
     // const arr = node.innerHTML.trim().split(/(?<=\s|-)/); // WORD_JOINER = '';
     // ** 2 ** filter arr and remove unnecessary spaces (' ') inside text block.
     // ** A meaningful space character has been added to an array element.
