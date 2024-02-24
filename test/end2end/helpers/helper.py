@@ -99,6 +99,13 @@ class Helper:
 
     # Element
 
+    def assert_element_contains(self, element_xpath, text: str) -> None:
+        self.test_case.assert_element(
+            f"{element_xpath}"
+            f"//*[contains(., '{text}')]",
+            by=By.XPATH,
+        )
+
     def assert_element_on_the_page(self, element_xpath, page_number, report: bool = False) -> None:
         # Check that the Test object is shifted to the specific page.
         # That is, it is lower than the top of the specific page.

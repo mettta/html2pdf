@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+  <script
+    defer
+    data-debug-mode="true"
+    data-markup-debug-mode="true"
+    data-print-height='300px'
+    data-print-width='600px'
+    data-print-left-margin= '50px'
+    data-print-right-margin= '50px'
+    data-print-top-margin= '50px'
+    data-print-bottom-margin= '50px'
+    data-print-font-size='16px'
+    src="../../../../dist/bundle.js"></script>
+</head>
+
+<body>
+  <!-- line-height = 1.25 (20) -->
+  <!-- 1 step to shift by 1 line is 20 pixels -->
+  <!-- Case #1 -->
+  <div filler style="height:180px"></div>
+  <div data-testid="paragraph">
+    Culpa aliquip cupidatat fugiat sit consequat voluptate aliquip pariatur labore eiusmod sunt.
+    <span class="💜" style="color:magenta">Esse dolor tempor</span> minim exercitation occaecat
+    <!-- laboris aliqua mollit duis ea. -->
+    <span class="🧡" style="color:orangered">laboris <i><b>aliqua mollit</b></i> duis ea</span>.
+    Proident do duis minim sit officia duis occaecat.
+    <span class="💙" style="color:blue">Culpa <b>aliqui cupidatat fugiat sit</b> consequat voluptate aliquip pariatur labore eiusmod sunt.
+    Esse dolor tempor minim</span> exercitation occaecat laboris aliqua mollit duis ea.
+    Proident do duis minim sit officia duis occaecat.
+  </div>
+</body>
+
+</html>
