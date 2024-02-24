@@ -214,6 +214,7 @@ ${SELECTOR.frontpageContent} {
   background-color: transparent;
 }
 
+${SELECTOR.word},
 ${SELECTOR.textNode},
 ${SELECTOR.textLine},
 ${SELECTOR.textGroup},
@@ -233,11 +234,11 @@ ${SELECTOR.textGroup} {
   display: block;
 }
 
-${SELECTOR.splitted} ${SELECTOR.textGroup} {
+/*${SELECTOR.splitted} ${SELECTOR.textGroup} {
   display: inline;
-}
+}*/
 
-${SELECTOR.textLine} {
+${SELECTOR.complexTextBlock} > ${SELECTOR.textLine} {
   /* Firefox and inconsistent values of offset top for inline element */
   display: inline-block;
 }
@@ -248,6 +249,10 @@ ${SELECTOR.textGroup} ${SELECTOR.textLine} {
 
 ${SELECTOR.complexTextBlock} {
   display: block;
+}
+
+${SELECTOR.complexTextBlock} ${SELECTOR.complexTextBlock} {
+  display: inline;
 }
 
 ${SELECTOR.printPageBreak} {

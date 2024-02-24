@@ -56,6 +56,7 @@ const SELECTOR = {
 
   // * Service elements (are created in the process):
   neutral: 'html2pdf-neutral',
+  word: 'html2pdf-word',
   textNode: 'html2pdf-text-node',
   textLine: 'html2pdf-text-line',
   textGroup: 'html2pdf-text-group',
