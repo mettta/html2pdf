@@ -391,8 +391,10 @@ export default class Paragraph {
 
         const start = beginnerNumbers[currentIndex];
         const end = beginnerNumbers[currentIndex + 1];
+        // FIXME
         // ? need to add safety spaces at both ends of the line:
-        const text = ' ' + wordArray.slice(start, end).join(WORD_JOINER) + WORD_JOINER + ' ';
+        // const text = ' ' + wordArray.slice(start, end).join(WORD_JOINER) + WORD_JOINER + ' ';
+        const text = wordArray.slice(start, end).join(WORD_JOINER) + WORD_JOINER;
         this._DOM.setInnerHTML(line, text);
         this._DOM.insertBefore(splittedItem, line);
 
