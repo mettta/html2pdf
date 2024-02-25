@@ -162,15 +162,30 @@ export default class Pages {
     // ** If the element is the FIRST child of nested FIRST children of a content flow,
     // ** we do not process it further for page breaks.
     // ** This ensures that page breaks are only made where they have not already been made for other reasons.
-    if (this._node.isFirstChildOfFirstChild(pageStarters[0], this._contentFlow)) {
-      pageStarters.shift()
-    };
+    // *** And consider that the first element is actually a service element ContentFlowStart.
+    if (pageStarters.length) {
+      const inspectedElement = pageStarters[0];
+      const inspectedElementMaxFChParent = this._node.findFirstChildParent(inspectedElement,this._contentFlow) || inspectedElement;
+      const elementBeforeInspected = this._DOM.getLeftNeighbor(inspectedElementMaxFChParent);
+      const isInspectedElementStartsContent = this._node.isContentFlowStart(elementBeforeInspected);
+      if (isInspectedElementStartsContent) {
+        console.log(pageStarters[0])
+        pageStarters.shift();
+      };
+    }
     // ** If the element is the LAST child of nested LAST children of a content flow,
     // ** we do not process it further for page breaks.
     // ** This ensures that page breaks are only made where they have not already been made for other reasons.
-    if (this._node.isLastChildOfLastChild(pageEnders.at(-1), this._contentFlow)) {
-      pageEnders.pop()
-    };
+    // *** And consider that the last element is actually a service element ContentFlowEnd.
+    if (pageEnders.length) {
+      const inspectedElement = pageEnders.at(-1);
+      const inspectedElementMaxLastChParent = this._node.findLastChildParent(inspectedElement,this._contentFlow) || inspectedElement;
+      const elementAfterInspected = this._DOM.getRightNeighbor(inspectedElementMaxLastChParent);
+      const isInspectedElementEndsContent = this._node.isContentFlowEnd(elementAfterInspected);
+      if (isInspectedElementEndsContent) {
+        pageEnders.pop()
+      };
+    }
 
     // * find all relevant elements and insert forced page break markers before them.
     pageStarters.length && pageStarters.forEach(element => {

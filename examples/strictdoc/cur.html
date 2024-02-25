@@ -316,253 +316,181 @@
   <sdoc-section>
   
   
-    <sdoc-section-title
-      data-level="6.2.4"
-    >
+    <sdoc-section-title data-level="1">
       
-      <h4
-        id="6.2.4-Composite-requirement"
-      >6.2.4.&nbsp;Composite requirement</h4>
+      <h2 id="1-Summary-of-user-needs">1.&nbsp;Summary of user needs</h2>
     </sdoc-section-title>
       
       <sdoc-section-text>
     
     <sdoc-autogen><div class="document">
-    <p>A <tt class="docutils literal">[COMPOSITE_REQUIREMENT]</tt> is a requirement that combines requirement
-    properties of a <tt class="docutils literal">[REQUIREMENT]</tt> element and grouping features of a <tt class="docutils literal">[SECTION]</tt>
-    element. This element can be useful in lower-level specifications documents
-    where a given section of a document has to describe a single feature and the
-    description requires a one or more levels of nesting. In this case, it might be
-    natural to use a composite requirement that is tightly connected to a few
-    related sub-requirements.</p>
-<pre class="code text literal-block">
-[COMPOSITE_REQUIREMENT]
-STATEMENT: Statement
-
-[REQUIREMENT]
-STATEMENT: Substatement #1
-
-[REQUIREMENT]
-STATEMENT: Substatement #2
-
-[REQUIREMENT]
-STATEMENT: Substatement #3
-
-[/COMPOSITE_REQUIREMENT]
-</pre>
-    <p>Special feature of <tt class="docutils literal">[COMPOSITE_REQUIREMENT]</tt>: like <tt class="docutils literal">[SECTION]</tt> element, the
-    <tt class="docutils literal">[COMPOSITE_REQUIREMENT]</tt> elements can be nested within each other. However,
-    <tt class="docutils literal">[COMPOSITE_REQUIREMENT]</tt> cannot nest sections.</p>
-    <p><strong>Note:</strong> Composite requirements should not be used in every document. Most
-    often, a more basic combination of nested <tt class="docutils literal">[SECTION]</tt> and <tt class="docutils literal">[REQUIREMENT]</tt>
-    elements should do the job.</p>
+    <p>This section offers an overview of the necessary capabilities of a requirements and documentation management tool.</p>
     </div>
     </sdoc-autogen></sdoc-section-text>
-    </sdoc-section>
-              
-    
-    <sdoc-section>
+  </sdoc-section>
+
+  <sdoc-section>
+
+
+    <sdoc-section-title data-level="1.1">
       
-      
-    <sdoc-section-title
-      data-level="6.2.5"
-    >
-      
-      <h4
-        id="6.2.5-Include-files"
-      >6.2.5.&nbsp;Include files</h4>
+      <h3 id="1.1-Free-and-open-source-tool">1.1.&nbsp;Free and open source tool</h3>
     </sdoc-section-title>
       
       <sdoc-section-text>
     
     <sdoc-autogen><div class="document">
-    <p>StrictDoc <tt class="docutils literal">.sdoc</tt> files can be built-up from including other fragment documents.</p>
-    <p>The <tt class="docutils literal">[FRAGMENT_FROM_FILE]</tt> element can be used anywhere body elements can be
-    used ( e.g. <tt class="docutils literal">[SECTION]</tt>, <tt class="docutils literal">[REQUIREMENT</tt>, <tt class="docutils literal">[COMPOSITE_REQUIREMENT]</tt> etc.) and will
-    evaluate by inserting its contents from the file referenced by its <tt class="docutils literal">FILE:</tt> property
-    where it was used in the parent document. The files included must start with a <tt class="docutils literal">[FRAGMENT]</tt>
-    directive and cannot contain <tt class="docutils literal">[FREETEXT]</tt> elements but are otherwise identical to
-    <tt class="docutils literal">*.sdoc</tt> files. They can have any filename except a <tt class="docutils literal">.sdoc</tt> extension.</p>
-    <p>Here is an example pair of files similar to examples above. First the
-    <tt class="docutils literal">.sdoc</tt> file has a <tt class="docutils literal">[FRAGMENT_FROM_FILE]</tt> that references the latter file.</p>
-<pre class="code text literal-block">
-[DOCUMENT]
-TITLE: StrictDoc
-
-[FREETEXT]
-...
-[/FREETEXT]
-
-[FRAGMENT_FROM_FILE]
-FILE: include.ssec
-
-[REQUIREMENT]
-</pre>
-    <p>Then the referenced file, <tt class="docutils literal">include.ssec</tt>:</p>
-<pre class="code text literal-block">
-[FRAGMENT]
-
-[REQUIREMENT]
-
-[SECTION]
-TITLE: Sub section
-[/SECTION]
-
-[COMPOSITE_REQUIREMENT]
-
-[REQUIREMENT]
-
-[/COMPOSITE_REQUIREMENT]
-</pre>
-    <p>Which will resolve to the following document after inclusion:</p>
-<pre class="code text literal-block">
-[DOCUMENT]
-TITLE: StrictDoc
-
-[FREETEXT]
-...
-[/FREETEXT]
-
-[REQUIREMENT]
-
-[SECTION]
-TITLE: Sub section
-[/SECTION]
-
-[COMPOSITE_REQUIREMENT]
-
-[REQUIREMENT]
-
-[/COMPOSITE_REQUIREMENT]
-
-[REQUIREMENT]
-</pre>
+    <p>The primary user need and entry point for this Requirements Tool specification is the availability of free, lightweight, yet capable software for creating requirements specifications and other technical documentation. The tool should facilitate the creation of requirements specifications and technical documents, effectively lowering the entry barrier for requirements engineering and technical documentation writing.</p>
+    <p>It is assumed throughout this document that the requirements tool will be developed as open-source software available at no cost. However, with minor adjustments, these requirements could also apply to commercial requirements tools. See <a href="#14-Licensing-and-distribution">🔗&nbsp;Licensing and distribution</a>.</p>
     </div>
     </sdoc-autogen></sdoc-section-text>
-    </sdoc-section>
-              
+  </sdoc-section>
+
+  <sdoc-section>
+
+
+    <sdoc-section-title data-level="1.2">
+      
+      <h3 id="1.2-Document-types">1.2.&nbsp;Document types</h3>
+    </sdoc-section-title>
+      
+      <sdoc-section-text>
     
-    <sdoc-section>
+    <sdoc-autogen><div class="document">
+    <p>A requirements tool is very often also a documentation writing and management tool, so, besides the requirements editing functionality, the tool shall be able to accommodate for the variety of documents and templates used in different industries.</p>
+    <p>The variety comes from:</p>
+    <ul class="simple">
+    <li>Supporting arbitrary documentation structures, e.g., non-nested vs. deeply nested documents.</li>
+    <li>Supporting a rich set of visualization mechanisms. Supporting images, diagrams, tables, text markup, etc.</li>
+    <li>Supporting custom fields/attributes used by different industries (the criticality levels in various industries, RAIT verification activities in aerospace, status/workflow fields, etc.).</li>
+    </ul>
+    <p>Examples of typical document types include:</p>
+    <ul class="simple">
+    <li>Requirements specification</li>
+    <li>Design document / architecture description document</li>
+    <li>Interface control document / API reference</li>
+    <li>User manual</li>
+    <li>Development plan</li>
+    <li>Systems engineering plan, management plan</li>
+    <li>Standard (e.g., ECSS or ISO 26262).</li>
+    </ul>
+    <p>The documentation/requirements management requirements for a Requirements Tool are specified in the sections <a href="#2-Documentation-management">🔗&nbsp;Documentation management</a> and <a href="#3-Requirements-management">🔗&nbsp;Requirements management</a>.</p>
+    </div>
+    </sdoc-autogen></sdoc-section-text>
+  </sdoc-section>
+
+  <sdoc-section>
+
+
+    <sdoc-section-title data-level="1.2.1">
       
-      
-    <sdoc-section-title
-      data-level="6.3"
-    >
-      
-      <h3
-        id="6.3-Machine-identifiers-MID"
-      >6.3.&nbsp;Machine identifiers (MID)</h3>
+      <h4 id="1.2.1-Document-structure-differences">1.2.1.&nbsp;Document structure differences</h4>
     </sdoc-section-title>
       <sdoc-meta>
       <sdoc-meta-label>UID:</sdoc-meta-label>
       <sdoc-meta-field>
     
-    <sdoc-autogen>SECTION-UG-Machine-identifiers-MID</sdoc-autogen></sdoc-meta-field>
+    <sdoc-autogen>SECTION-RTC-Appendix-A-Document-archetypes</sdoc-autogen></sdoc-meta-field>
     </sdoc-meta>
       <sdoc-section-text>
     
     <sdoc-autogen><div class="document">
-    <p>StrictDoc supports the automatic generation of machine identifiers (MIDs). This optional feature can be enabled individually for each document through the document-level <tt class="docutils literal">ENABLE_MID</tt> config option:</p>
-<pre class="code literal-block">
-[DOCUMENT]
-TITLE: Hello World!
-OPTIONS:
-  ENABLE_MID: True
-</pre>
-    <p>When the <tt class="docutils literal">ENABLE_MID</tt> option is enabled, StrictDoc automatically generates MID fields whenever the document is written back to the file system. On the web server, MIDs are generated automatically when a document, section, or requirement is saved. In the command-line interface, the generation of <tt class="docutils literal">MID</tt> can be initiated with a <tt class="docutils literal">passthrough</tt> command. Executing <tt class="docutils literal">strictdoc passthrough</tt> on a document with <tt class="docutils literal">ENABLE_MID: True</tt> results in all nodes having auto-generated MIDs. Implementing the ENABLE_MID option on a per-document basis allows for the integration of MID-enabled documents alongside third-party documents where the MID feature may not be necessary or desired.</p>
-    <p>Machine identifiers (MIDs) differ from and do not replace unique identifiers (UIDs). A requirement, section, or document node may have both <tt class="docutils literal">MID</tt> and <tt class="docutils literal">UID</tt> fields defined. For example:</p>
-<pre class="code literal-block">
-[REQUIREMENT]
-MID: 06ab121d3c0f4d8c94652323b8f735c6
-UID: SDOC-SSS-70
-STATUS: Active
-TITLE: Move nodes between documents
-STATEMENT: &gt;&gt;&gt;
-The Requirements Tool shall allow moving nodes (sections, requirements) between documents.
-&lt;&lt;&lt;
-</pre>
-    <p>Advantages of using machine identifiers:</p>
-    <ol class="arabic simple">
-    <li>Machine identifiers provide a robust means of identifying documents, sections, requirements, or custom nodes. An MID can uniquely identify a given node, independent of other fields like UID or TITLE.</li>
-    <li>The unique identification of nodes via MIDs enhances the effectiveness of StrictDoc's Diff/Changelog functionality. It allows the algorithm to accurately match requirements, sections, or document nodes, even if they are moved, renamed, or undergo metadata changes.</li>
-    <li>MIDs increase the portability of requirements data. Even when UID naming conventions change or nodes are relocated, the MID continues to uniquely identify the original node.</li>
-    </ol>
-    <p>For larger projects, particularly those with extended maintenance cycles, we strongly recommend activating machine identifiers early in the project lifecycle. This proactive approach ensures robust tracking and management of documentation throughout the project's duration.</p>
+    <p>The table below summarizes various differences observed across industry documents.</p>
+    <table border="1" class="docutils">
+    <caption>Table: Requirements and specification document</caption>
+    <colgroup>
+    <col width="20%">
+    <col width="80%">
+    </colgroup>
+    <thead valign="bottom">
+    <tr><th class="head">Criteria</th>
+    <th class="head">Comments</th>
+    </tr>
+    </thead>
+    <tbody valign="top">
+    <tr><td>Structure</td>
+    <td>Non-nested, nested, deeply nested. A structure of a deeply nested specification document can reach 8-10 levels (e.g., Section 1.2.3.4.5.6.7.8 "ABC").</td>
+    </tr>
+    <tr><td>Requirements visual presentation</td>
+    <td>Requirements are often presented as table cells. The cells can be standalone or a whole section or a document can be a structured as a long table with cells. Alternatively, requirements are rather presented as a section header + text.</td>
+    </tr>
+    <tr><td>Unique requirement identifiers (UID)</td>
+    <td>Some documents provide UIDs for all requirements, some do not. Where the UIDs are missing, the section header numbers are used instead for unique identification. Often, a combination "Number + Title" becomes a reference-able identifier.</td>
+    </tr>
+    <tr><td>Requirement titles</td>
+    <td>Not all documents provide requirement titles. When the requirement titles are missing, the grouping is may be provided by sections/chapters. When the titles are present, the requirement titles can also be section titles.</td>
+    </tr>
+    </tbody>
+    </table>
     </div>
     </sdoc-autogen></sdoc-section-text>
-    </sdoc-section>
-              
-    
-    <sdoc-section>
+  </sdoc-section>
+
+  <sdoc-section>
+
+
+    <sdoc-section-title data-level="1.3">
       
-      
-    <sdoc-section-title
-      data-level="6.4"
-    >
-      
-      <h3
-        id="6.4-Custom-grammars"
-      >6.4.&nbsp;Custom grammars</h3>
+      <h3 id="1.3-Workflows">1.3.&nbsp;Workflows</h3>
     </sdoc-section-title>
       <sdoc-meta>
       <sdoc-meta-label>UID:</sdoc-meta-label>
       <sdoc-meta-field>
     
-    <sdoc-autogen>SECTION-CUSTOM-GRAMMARS</sdoc-autogen></sdoc-meta-field>
+    <sdoc-autogen>SECTION-LRTS-Workflows</sdoc-autogen></sdoc-meta-field>
     </sdoc-meta>
       <sdoc-section-text>
     
     <sdoc-autogen><div class="document">
-    <p><strong>Observation:</strong> Different industries have their own types of requirements
-    documents with specialized meta information.
-    Examples: <tt class="docutils literal">ASIL</tt> in the automotive industry or
-    <tt class="docutils literal">HERITAGE</tt> field in some of the requirements documents by NASA.</p>
-    <p>StrictDoc allows declaration of custom grammars with custom fields that are
-    specific to a particular document.</p>
-    <p>First, such fields have to be registered on a document level using the
-    <tt class="docutils literal">[GRAMMAR]</tt> field. The following example demonstrates a declaration of
-    a grammar with four fields including a custom <tt class="docutils literal">VERIFICATION</tt> field.</p>
-<pre class="code text literal-block">
-[DOCUMENT]
-TITLE: How to declare a custom grammar
-
-[GRAMMAR]
-ELEMENTS:
-- TAG: REQUIREMENT
-  FIELDS:
-  - TITLE: UID
-    TYPE: String
-    REQUIRED: True
-  - TITLE: VERIFICATION
-    TYPE: String
-    REQUIRED: True
-  - TITLE: TITLE
-    TYPE: String
-    REQUIRED: True
-  - TITLE: STATEMENT
-    TYPE: String
-    REQUIRED: True
-  - TITLE: COMMENT
-    TYPE: String
-    REQUIRED: True
-</pre>
-    <p>This declaration configures the parser to recognize the declared fields as
-    defined by a user. Declaring a special field as <tt class="docutils literal">REQUIRED: True</tt> makes this
-    field mandatory for each and every requirement in the document.</p>
-    <p>When the fields are registered on the document level, it becomes possible to
-    declare them as the <tt class="docutils literal">[REQUIREMENT]</tt> special fields:</p>
-<pre class="code text literal-block">
-[REQUIREMENT]
-UID: ABC-123
-VERIFICATION: Test
-STATEMENT: System A shall do B.
-COMMENT: Test comment.
-</pre>
-    <p><strong>Note:</strong> The order of fields must match the order of their declaration in the
-    grammar.</p>
+    <p>Besides supporting a variety of document types, a Requirements Tool shall also support and integrate well with multiple documentation and requirements management workflows.</p>
+    <p>At least the following workflows have been identified to be relevant:</p>
+    <table border="1" class="docutils">
+    <colgroup>
+    <col width="25%">
+    <col width="75%">
+    </colgroup>
+    <thead valign="bottom">
+    <tr><th class="head"><strong>Workflow</strong></th>
+    <th class="head"><strong>Description</strong></th>
+    </tr>
+    </thead>
+    <tbody valign="top">
+    <tr><td>Requirements analysis and prototyping</td>
+    <td>Early phases of the project. Requirements are drafted out quickly. The higher-level picture and coverage of all topics may be more important than specific details.</td>
+    </tr>
+    <tr><td>Requirements compliance, traceability and justification</td>
+    <td>Demonstrating the correctness of specification, also for contractual purposes. Every aspect shall be traceable.</td>
+    </tr>
+    <tr><td>Requirements implementation</td>
+    <td>Assisting software engineers in implementing requirements in source code. Making links between requirements and source code implementation units, e.g., files, functions, code fragments. Linking source code implementation units to requirements using special markers left in source code.</td>
+    </tr>
+    <tr><td>Requirements validation/verification workflow (RAIT)</td>
+    <td>Verifying the correctness of requirements themselves and the validity of the information they communicate.</td>
+    </tr>
+    <tr><td>Configuration management, change management</td>
+    <td>Time machine and Diff functions. Maintaining requirements baselines (v1, v1.1, v2, etc.).</td>
+    </tr>
+    <tr><td>Reporting</td>
+    <td>Progress reports, statistics, metrication.</td>
+    </tr>
+    <tr><td>Collaboration on requirements</td>
+    <td>Supporting multiple users to collaborate on a documentation tree.</td>
+    </tr>
+    <tr><td>Requirements exchange</td>
+    <td>Integration between distinct projects requirements trees. Example: An embedded software project has its own requirements. The developers want to integrate a requirements subtree of another product that is integrated to the parent project as an off-the-shelf solution.</td>
+    </tr>
+    <tr><td>Formal reviews</td>
+    <td>Formal review of documentation. Walkthroughs, inspections. Version control of delivered documentation packages. Assessment of progress reports achieved.</td>
+    </tr>
+    <tr><td>Interoperability with industry standards.</td>
+    <td>Supporting seamless integration between a project documentation tree and applicable standards.</td>
+    </tr>
+    </tbody>
+    </table>
+    <p>The section <a href="#6-Existing-workflows">🔗&nbsp;Existing workflows</a> contains the workflow-related requirements for a Requirements Tool.</p>
     </div>
     </sdoc-autogen></sdoc-section-text>
-    </sdoc-section>
+  </sdoc-section>
 
 
 </div>

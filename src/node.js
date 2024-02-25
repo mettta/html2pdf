@@ -296,6 +296,10 @@ export default class Node {
     return this.isSelectorMatching(element, this._selector.pageStartMarker)
   }
 
+  isContentFlowStart(element) {
+    return this.isSelectorMatching(element, this._selector.contentFlowStart)
+  }
+
   isContentFlowEnd(element) {
     return this.isSelectorMatching(element, this._selector.contentFlowEnd)
   }
