@@ -1,5 +1,6 @@
 
 import config from './config';
+import debugConfig from './debugConfig.js';
 import SELECTOR from './selector';
 import DocumentObjectModel from './DOM';
 import Layout from './layout';
@@ -53,16 +54,24 @@ export default class App {
     // * process config
     this.debugMode && console.time("⏱️ Config time");
     this.debugMode && console.groupCollapsed('%c config ', CONSOLE_CSS_LABEL + 'color:LightGray');
-    this.config = config(this.params);
+    // ** Merging the user configuration (config) with the debugging settings (debugConfig).
+    // ** This allows centralized management of logging and other debugging options,
+    // ** passing them through the config object to all required classes.
+    this.config = {
+      ...config(this.params), // ** Main application configuration
+      debugConfig             // ** Debugging configuration (e.g., logging)
+    };
     this.debugMode && console.groupEnd();
+    this.debugMode && console.info('⚙️ Current config with debugConfig:', this.config);
     this.debugMode && console.timeEnd("⏱️ Config time");
+
 
     // * prepare helpers
 
     this.debugMode && console.time("⏱️ DOM helpers init time");
     const DOM = new DocumentObjectModel({
       DOM: window.document,
-      debugMode: this.debugMode
+      config: this.config,
     });
     this.debugMode && console.timeEnd("⏱️ DOM helpers init time");
 

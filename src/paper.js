@@ -7,8 +7,10 @@ export default class Paper {
     selector,
     layout,
   }) {
+    // * From config:
+    // this._debug = config.debugMode ? { ...config.debugConfig.paper } : {};
+
     // * private
-    this._debugMode = config.debugMode;
     this._DOM = DOM;
     this._selector = selector;
     this._node = node;

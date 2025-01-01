@@ -15,8 +15,10 @@ export default class Preview {
     paper,
   }) {
 
+    // * From config:
     this._config = config;
-    this._debugMode = config.debugMode;
+    this._debug = config.debugMode ? { ...config.debugConfig.preview } : {};
+
     this._DOM = DOM;
     this._selector = selector;
     this._node = node;
@@ -185,7 +187,7 @@ export default class Preview {
 
   _updatePageStartElementAttrValue(element, pageIndex) {
     //  frontpage on page 1 forces page numbers to be refreshed
-    // this._debugMode && console.log(`${pageIndex + 1}`, element, )
+    // this._debug._ && console.log(`${pageIndex + 1}`, element, )
     this._hasFrontPage && this._node.markPageStartElement(element, `${pageIndex + 1}`);
   }
 
@@ -296,7 +298,7 @@ export default class Preview {
     this._DOM.setStyles(balancingFooter, { marginBottom: balancer + 'px' });
 
     // TODO check if negative on large documents
-    this._debugMode && console.assert(balancer >= 0, `balancer is negative: ${balancer} < 0`, contentSeparator);
+    this._debug._ && console.assert(balancer >= 0, `balancer is negative: ${balancer} < 0`, contentSeparator);
   }
 
 }
