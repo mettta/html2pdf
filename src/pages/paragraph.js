@@ -17,7 +17,7 @@ export default class Paragraph {
     this._selector = selector;
     this._node = node;
 
-    this._debugToggler = true && this._debugMode;
+    this._debugToggler = false && this._debugMode;
 
 
     // todo
@@ -32,7 +32,7 @@ export default class Paragraph {
   }
 
   init() {
-    console.log('🚨 init Paragraph')
+    this._debugToggler && console.log('🚨 init Paragraph')
   }
 
   split(node) {
