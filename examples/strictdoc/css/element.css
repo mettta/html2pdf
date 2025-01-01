@@ -61,7 +61,7 @@ a[aria-disabled="true"] {
 
 code {
   position: relative;
-  padding: 2px 6px;
+  padding: 0 4px;
   font-style: normal;
   font-family: var(--code-font-family);
   font-size: var(--code-font-size);
@@ -73,13 +73,6 @@ code {
   word-wrap: break-word;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
-}
-
-/* .document from tool */
-.document a,
-.document a:link,
-.document a:visited {
-  text-decoration: underline;
 }
 
 /* action_button */
@@ -157,6 +150,12 @@ a.action_button:hover {
 [data-action-type="submit"],
 .action_button[type=submit] {
   color: var(--color-submit);
+}
+
+[data-action-type="action"],
+[data-action-type="confirm_delete"] {
+  color: var(--color-action) !important;
+  border-color: var(--color-action) !important;
 }
 
 [data-action-type="delete"],
@@ -256,6 +255,73 @@ sdoc-node-controls .action_button {
   vertical-align: top;
 }
 
+/* field_action */
+/* TODO: optimize code with .action_icon & .action_button */
+
+.field_action {  /* button */
+  font-size:var(--font-size-xsm);
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  backface-visibility: hidden;
+  user-select: none;
+  cursor: pointer;
+  appearance: none;
+  border: none;
+  border-color: transparent;
+  background-color: rgba(0,0,0,0);
+  background: rgba(0,0,0,0);
+  box-shadow: none;
+  background-clip: padding-box;
+
+  color: var(--color-action);
+  transition: 0.2s;
+  padding: calc(var(--base-rhythm)*.5);
+  z-index: 2;
+}
+
+.field_action:hover,
+a.field_action:hover {
+  color: var(--color-hover);
+  z-index: 6;
+}
+
+.field_action::before {
+  content: '';
+  position: absolute;
+  /* The element is expected to be placed in a context
+     that defines the top and bottom boundaries.
+
+     The width of the element must be enough
+     to cover the entire available context,
+     and will be cut off by the parent element via overflow.
+  */
+  top: calc(var(--base-rhythm)*(-3)); /* -2 */
+  bottom: calc(var(--base-rhythm)*(-1)); /* -2 */
+  left: -100vw;
+  right: -100vw;
+  z-index: 0;
+  pointer-events: none;
+  /* Determines the shade of the color through the opacity of the element.
+     The color is passed from the parent.
+  */
+  transition: background-color 0.3s;
+  background-color: transparent;
+  opacity: .1; /* Defines the color shade. */
+}
+
+.field_action:hover::before {
+  background: currentcolor;
+}
+
 /* ***
   USED BY copy_to_clipboard controller
   */
@@ -267,6 +333,8 @@ sdoc-field {
      positioned relative to it:
   */
   position: relative;
+  flex-grow: 1;
+  width: 100%; /* holds within the width of the parent */
 }
 
 sdoc-field-content {
@@ -276,7 +344,7 @@ sdoc-field-content {
 
 .copy_to_clipboard-cover {
   position: absolute;
-  z-index: 100;
+  z-index: 98;
   top: 0;
   bottom: 0;
   left: 0;
@@ -649,14 +717,14 @@ sdoc-anchor[visible]:hover .anchor_back_links_number {
 /* coverage */
 
 .value-bar {
-  display: inline-flex;
+  display: flex;
   height: 1rem;
 }
 
 .value-bar_bar {
-  width: 13rem;
+  width: 6rem;
   border-radius: .5rem;
-  background-color: white;
+
   /* box-shadow: inset 0px 2px 2px 0px #ccc; */
   border: 1px solid rgba(0,0,0,0.1);
   position: relative;
@@ -664,10 +732,13 @@ sdoc-anchor[visible]:hover .anchor_back_links_number {
 
   height: 0.75rem;
   margin-top: 0.25rem;
+
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .value-bar_bar[data-value] {
   border: 1px solid rgb(80, 240, 40);
+  background-color: rgba(255, 255, 255, 1);
 }
 
 .value-bar_filler {
@@ -682,6 +753,7 @@ sdoc-anchor[visible]:hover .anchor_back_links_number {
   width: 2.5rem;
   text-align: right;
   font-size: 0.75em;
+  font-weight: 600;
 }
 
 ol.arabic {
@@ -764,7 +836,7 @@ svg:hover .svg_icon_not_hover_visible {
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: var(--font-size-sm);
-  font-weight: 900;
+  font-weight: 700;
 
   flex-shrink: 0.1;
 }
@@ -774,7 +846,7 @@ svg:hover .svg_icon_not_hover_visible {
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: var(--font-size-sm);
-  font-weight: 500;
+  font-weight: 400;
   min-width: calc(var(--base-rhythm)*2.5);
 
   flex-shrink: 100;
@@ -874,7 +946,6 @@ a.strictdoc__version:hover {
 
 .viewtype__menu_header {
   padding: var(--base-rhythm);
-  font-size: var(--font-size-xsm);
   text-transform: uppercase;
   color: var(--color-fg-secondary);
   font-weight: 700;
@@ -929,9 +1000,19 @@ sdoc-menu menu {
   box-shadow: 0 2px 8px rgb(0 0 0 / 20%);
   border-radius: var(--base-rhythm);
   font-weight: 500;
+
   display: flex;
   flex-direction: column;
   row-gap: calc(var(--base-rhythm)/2);
+
+}
+
+sdoc-menu.add_node menu {
+  display: grid;
+  grid-template-columns:  minmax(min-content, max-content)
+                          minmax(min-content, max-content)
+                          minmax(min-content, max-content)
+                          minmax(min-content, max-content);
 }
 
 sdoc-menu menu[aria-hidden="true"] {
@@ -941,13 +1022,22 @@ sdoc-menu menu[aria-hidden="true"] {
 sdoc-menu menu[aria-hidden="false"] {
   display: flex;
 }
+sdoc-menu.add_node menu[aria-hidden="false"] {
+  display: grid;
+}
+
+sdoc-menu header:first-child {
+  /* "Add node" */
+  grid-column: 1 / -1;
+  border-bottom: var(--base-border);
+}
 
 sdoc-menu menu a {
   padding: 0;
   margin: 0;
   list-style: none;
   white-space: nowrap;
-  display: block;
+  display: flex; /* affects the 'add node' buttons */
   padding: var(--base-rhythm);
   border-radius: calc(var(--base-rhythm)/2);
   font-size: var(--font-size-xsm);
@@ -967,7 +1057,6 @@ sdoc-menu menu a:hover {
 
 sdoc-menu menu header {
   padding: var(--base-rhythm);
-  font-size: var(--font-size-xsm);
   text-transform: uppercase;
   color: var(--color-fg-secondary);
   font-weight: 700;
@@ -1031,6 +1120,65 @@ sdoc-menu-handler[aria-expanded="true"] svg {
   margin-bottom: calc(var(--base-rhythm) * 8);
   padding-left: calc(var(--base-rhythm) * 2);
   padding-right: calc(var(--base-rhythm) * 2);
+}
+
+.tree_fragments { /* ul */
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-left: calc(var(--base-rhythm) * 2);
+  padding-right: 0;
+  list-style: none;
+  width: 100%;
+}
+
+.tree_fragments li {
+  list-style: none;
+  width: 100%;
+}
+
+.tree_fragments,
+.tree_fragments li {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: var(--base-rhythm);
+}
+
+.tree_folder {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  column-gap: var(--base-rhythm);
+  min-width: 0;
+  line-height: 1.5;
+  width: 99%;
+  padding-top: 8px;
+  margin-top: 8px;
+  opacity: 0.6;
+  position: relative;
+  border-top: var(--base-border);
+}
+
+.tree_folder:first-child {
+  border-top: none;
+}
+
+.tree_folder_path {
+  font-size: var(--font-size-xsm);
+  font-weight: 400;
+}
+
+.tree_folder_path::before {
+  position: absolute;
+  /* content: ''; */
+  top: 0;
+  bottom: 0;
+  left: -20px;
+  right: -20px;
+  z-index: -1;
+  border-top: var(--base-border);
+  background-color: var(--color-bg-secondary);
 }
 
 a.tree_item,
@@ -1166,7 +1314,7 @@ a.tree_item:hover {
 }
 
 /* TOC parented */
-/* behavior depends on collapsible_list_controller.js */
+/* behavior depends on collapsible_list.js */
 .toc [data-collapsible_list__branch="closed"] ~ a[parented]::after {
   background-color: var(--color-highlight);
 }
@@ -1306,4 +1454,8 @@ a.sdoc-table_key_value-key::after {
   font-size: var(--font-size-xxsm);
   font-weight: 600;
   text-transform: uppercase;
+}
+
+.error {
+  color: var(--color-danger);
 }

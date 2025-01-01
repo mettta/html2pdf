@@ -136,7 +136,7 @@ export default class Pages {
         this._node.setFlagNoHanging(element);
         const lastChildParent = this._node.findLastChildParent(element, this._contentFlow)
         if (lastChildParent) {
-          this._node.setFlagNoHanging(lastChildParent);
+          this._node.setFlagNoHanging(lastChildParent, 'parent');
         }
       });
     }
@@ -285,7 +285,7 @@ export default class Pages {
       const firstChildParent = this._node.findFirstChildParent(pageStart, this._contentFlow);
       pageStart = firstChildParent || pageStart;
 
-      const previousCandidate = this._node.findPreviousNoHangingsFromPage(
+      const previousCandidate = this._node.findPreviousNonHangingsFromPage(
         pageStart,
         // * limited to the element from which the last registered page starts:
         this._node.getTop(this.pages.at(-1)?.pageStart, this._root),
@@ -781,9 +781,12 @@ export default class Pages {
         // * move element to the next page.
         // ** But,
         if (this._node.isNoHanging(previousElement)) {
-          // ** if previousElement can't be the last element on the page,
-          // ** move it to the next page.
-          this._registerPageStart(previousElement, true);
+          // ** if previousElement cannot be the last element on the page,
+          // ** move it to the next page if possible,
+          // * otherwise move the current one.
+          const previousOrCurrentElement = this._node.findSuitableNonHangingPageStart(previousElement, this.pages.at(-2)?.pageBottom) || currentElement;
+          this._registerPageStart(previousOrCurrentElement, true);
+
           this._node.markProcessed(currentElement, `doesn't fit, has no children, isNoHanging(previousElement)`);
           this._node.markProcessed(previousElement, `isNoHanging - register it or parents`);
         } else {
@@ -2067,7 +2070,7 @@ export default class Pages {
               const firstChildParent = this._node.findFirstChildParent(result, this._contentFlow);
               result = firstChildParent || result;
 
-              const previousCandidate = this._node.findPreviousNoHangingsFromPage(result, this.pages.at(-2)?.pageBottom, this._root)
+              const previousCandidate = this._node.findPreviousNonHangingsFromPage(result, this.pages.at(-2)?.pageBottom, this._root)
               result = previousCandidate || result;
 
 
