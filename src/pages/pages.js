@@ -781,9 +781,12 @@ export default class Pages {
         // * move element to the next page.
         // ** But,
         if (this._node.isNoHanging(previousElement)) {
-          // ** if previousElement can't be the last element on the page,
-          // ** move it to the next page.
-          this._registerPageStart(previousElement, true);
+          // ** if previousElement cannot be the last element on the page,
+          // ** move it to the next page if possible,
+          // * otherwise move the current one.
+          const previousOrCurrentElement = this._node.findSuitableNonHangingPageStart(previousElement, this.pages.at(-2)?.pageBottom) || currentElement;
+          this._registerPageStart(previousOrCurrentElement, true);
+
           this._node.markProcessed(currentElement, `doesn't fit, has no children, isNoHanging(previousElement)`);
           this._node.markProcessed(previousElement, `isNoHanging - register it or parents`);
         } else {

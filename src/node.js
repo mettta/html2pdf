@@ -589,6 +589,86 @@ export default class Node {
     return suitableSibling;
   }
 
+  findSuitableNonHangingPageStart(element, topFloater) {
+    // * This function finds the best element to start a new page when certain elements
+    // * (e.g., headings or similar items) cannot remain as the last item on the current page.
+    // * It descends to find the deepest restricted child, then ascends to identify
+    // * the highest valid parent that can start a new page. Finally, it checks if the
+    // * candidate is positioned above the page break threshold (topFloater).
+    // * Returns:
+    // * - The most suitable element to start a new page if a valid candidate is found
+    // *   (either the initial element or a refined child/parent candidate).
+    // * - Null if no valid candidate satisfies the position constraint.
+
+    let current = element; // * Current element being checked
+    let candidate = null; // * Candidate to be returned
+
+    // this._debugMode && console.log('💠 Initial element:', current);
+
+    // * === 1. Descend to find the candidate ===
+    while (true) {
+      const lastChild = this._DOM.getLastElementChild(current);
+
+      // * If there are no children, stop descending
+      if (!lastChild) {
+        // this._debugMode && console.log('💠 No further children, stopping descent at:', current);
+        break;
+      }
+
+      // * If the last child has the isNoHanging flag, it becomes the candidate
+      if (this.isNoHanging(lastChild)) {
+        // this._debugMode && console.log('💠 Found isNoHanging child:', lastChild);
+        candidate = lastChild; // * Update the candidate
+        break; // * Stop descending because the flag was found
+      }
+
+      // * Continue descending to the last child
+      current = lastChild;
+    }
+
+    // * If no candidate was found, set the initial element as the candidate
+    // * and skip the wrapper search
+    if (!candidate) {
+      candidate = element;
+      // this._debugMode && console.log('💠 No isNoHanging element found, using initial element as candidate:', candidate);
+    } else {
+      // * === 2. Ascend to find the best wrapper ===
+      current = candidate; // * Start moving up from the current candidate
+
+      while (current && current !== element) {
+        const parent = current.parentElement;
+
+        // * If there is no parent or we reached the initial element, stop
+        if (!parent || parent === element) {
+          // this._debugMode && console.log('💠 Reached top or initial element, stopping ascent.');
+          break;
+        }
+
+        // * Check if the current element is the first child of its parent
+        if (this._DOM.getFirstElementChild(parent) === current) {
+          // this._debugMode && console.log('💠 Parent satisfies the condition, updating candidate to:', parent);
+          candidate = parent; // * Update the candidate to its parent
+          current = parent; // * Move up to the parent
+        } else {
+          // this._debugMode && console.log('💠 Parent does NOT satisfy the condition, stopping ascent.');
+          break; // * Stop ascending if the condition is not met
+        }
+      }
+    }
+
+    // this._debugMode && console.log('💠 Final candidate after ascent:', candidate);
+
+    // * === 3. Position check ===
+    if (this.getTop(candidate) > topFloater) {
+      // this._debugMode && console.log('💠 Candidate satisfies position check, returning:', candidate);
+      return candidate;
+    }
+
+    // this._debugMode && console.log('💠 Candidate does not satisfy position check, returning null');
+    return null;
+
+  }
+
   // INSERT SPECIAL NODES
 
   insertForcedPageBreakBefore(element) {
