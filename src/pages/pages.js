@@ -136,7 +136,7 @@ export default class Pages {
         this._node.setFlagNoHanging(element);
         const lastChildParent = this._node.findLastChildParent(element, this._contentFlow)
         if (lastChildParent) {
-          this._node.setFlagNoHanging(lastChildParent);
+          this._node.setFlagNoHanging(lastChildParent, 'parent');
         }
       });
     }

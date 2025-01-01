@@ -835,8 +835,8 @@ export default class Node {
     this._DOM.setAttribute(element, this._selector.flagNoBreak)
   }
 
-  setFlagNoHanging(element) {
-    this._DOM.setAttribute(element, this._selector.flagNoHanging)
+  setFlagNoHanging(element, value) {
+    this._DOM.setAttribute(element, this._selector.flagNoHanging, value)
   }
 
   markPageStartElement(element, page) {
