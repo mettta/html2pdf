@@ -11,13 +11,11 @@ export default class Paragraph {
     selector,
   }) {
     // * From config:
-    this._debugMode = config.debugMode;
+    this._debug = config.debugMode ? { ...config.debugConfig.paragraph } : {};
     // * Private
     this._DOM = DOM;
     this._selector = selector;
     this._node = node;
-
-    this._debugToggler = false && this._debugMode;
 
 
     // todo
@@ -32,7 +30,7 @@ export default class Paragraph {
   }
 
   init() {
-    this._debugToggler && console.log('🚨 init Paragraph')
+    this._debug._ && console.log('🚨 init Paragraph')
   }
 
   split(node) {
@@ -47,7 +45,7 @@ export default class Paragraph {
 
     // TODO "complexTextBlock"
 
-    this._debugToggler && console.group('_splitComplexTextBlockIntoLines', [node]);
+    this._debug._ && console.group('_splitComplexTextBlockIntoLines', [node]);
 
     if (this._node.isSelectorMatching(node, this._selector.splitted)) {
       // * This node has already been processed and has lines and groups of lines inside it,
@@ -81,7 +79,7 @@ export default class Paragraph {
         }
       }
     );
-    this._debugToggler && console.log(
+    this._debug._ && console.log(
       '\n🚸 nodeChildren',[...nodeChildren],
       '\n🚸 extendedChildrenArray',[...extendedChildrenArray]
     );
@@ -98,7 +96,7 @@ export default class Paragraph {
       // * otherwise keep the original element:
       return item.element;
     });
-    this._debugToggler && console.log('\n🚸🚸🚸\n partiallyLinedChildren',[...partiallyLinedChildren]);
+    this._debug._ && console.log('\n🚸🚸🚸\n partiallyLinedChildren',[...partiallyLinedChildren]);
 
     // * Prepare an array of arrays containing references to elements
     // * that fit into the same row:
@@ -112,14 +110,14 @@ export default class Paragraph {
         if(this._DOM.getElementTagName(currentElement) === 'BR' ) {
           result.at(-1).push(currentElement);
           result.push([]); // => will be: result.at(-1).length === 0;
-          this._debugToggler && console.log('br; push:', currentElement);
+          this._debug._ && console.log('br; push:', currentElement);
           return result;
         }
 
         // * If this is the beginning, or if a new line:
         if(!result.length || this._node.isLineChanged(result.at(-1).at(-1), currentElement)) {
           result.push([currentElement]);
-          this._debugToggler && console.log('◼️ start new line:', currentElement);
+          this._debug._ && console.log('◼️ start new line:', currentElement);
           return result;
         }
 
@@ -128,12 +126,12 @@ export default class Paragraph {
           result.at(-1).length === 0 // the last element was BR
           || (result.length && this._node.isLineKept(result.at(-1).at(-1), currentElement))
         ) {
-          this._debugToggler && console.log('⬆ add to line:', currentElement);
+          this._debug._ && console.log('⬆ add to line:', currentElement);
           result.at(-1).push(currentElement);
           return result;
         }
 
-        this._debugToggler && console.assert(
+        this._debug._ && console.assert(
             true,
             'groupedPartiallyLinedChildren: An unexpected case of splitting a complex paragraph into lines.',
             '\nOn the element:',
@@ -142,7 +140,7 @@ export default class Paragraph {
       }, []
     );
 
-    this._debugToggler && console.log(
+    this._debug._ && console.log(
       '🟡🟡🟡 groupedPartiallyLinedChildren \n',
       groupedPartiallyLinedChildren.length,
       [...groupedPartiallyLinedChildren]
@@ -154,7 +152,7 @@ export default class Paragraph {
     // * this._minParagraphDanglingLines
 
     if (groupedPartiallyLinedChildren.length < this._minParagraphBreakableLines) {
-      this._debugToggler && console.log(
+      this._debug._ && console.log(
           'groupedPartiallyLinedChildren.length < this._minParagraphBreakableLines',
           groupedPartiallyLinedChildren.length, '<', this._minParagraphBreakableLines
         );
@@ -166,7 +164,7 @@ export default class Paragraph {
 
     const firstUnbreakablePart = groupedPartiallyLinedChildren.slice(0, this._minParagraphLeftLines).flat();
     const lastUnbreakablePart = groupedPartiallyLinedChildren.slice(-this._minParagraphDanglingLines).flat();
-    this._debugToggler && console.log(
+    this._debug._ && console.log(
       'groupedPartiallyLinedChildren', [...groupedPartiallyLinedChildren],
       '\n', 'minLeftLines =', this._minParagraphLeftLines,
       '\n', firstUnbreakablePart,
@@ -218,7 +216,7 @@ export default class Paragraph {
   _breakItIntoLines(splittedItem) {
     // return splittedItem
     // *** item.lines > 1 && !this._node.isNoBreak
-    this._debugToggler && console.group('_breakItIntoLines', [splittedItem]);
+    this._debug._ && console.group('_breakItIntoLines', [splittedItem]);
 
     // *** over-checking
     if (this._node.isNoBreak(splittedItem)) {
@@ -239,7 +237,7 @@ export default class Paragraph {
   }
 
   _processNestedInlineElements(node) {
-    this._debugToggler && console.group('_processNestedInlineElements', [node]);
+    this._debug._ && console.group('_processNestedInlineElements', [node]);
     const preparedChildren = this._getNestedInlineChildren(node);
     const linedChildren = preparedChildren.flatMap(child => {
       return (this._getLines(child) > 1) ? this._breakItIntoLines(child) : child;
@@ -350,13 +348,13 @@ export default class Paragraph {
 
     // * array with words:
     const wordArray = this._node.splitByWordsGreedy(splittingTextNode);
-    this._debugToggler && console.log('wordArray', wordArray);
+    this._debug._ && console.log('wordArray', wordArray);
 
     // * array with words wrapped with the inline tag 'html2pdf-word':
     const wrappedWordArray = wordArray.map((item, index) => {
       return this._node.createWord(item + WORD_JOINER, index);
     });
-    this._debugToggler && console.log('wrappedWordArray', wrappedWordArray);
+    this._debug._ && console.log('wrappedWordArray', wrappedWordArray);
 
     return {wordArray, wrappedWordArray}
   }
@@ -424,7 +422,7 @@ export default class Paragraph {
   // ***
 
   _end(string) {
-    this._debugToggler && console.log(`%c ▲ ${string} `, CONSOLE_CSS_END_LABEL);
-    this._debugToggler && console.groupEnd();
+    this._debug._ && console.log(`%c ▲ ${string} `, CONSOLE_CSS_END_LABEL);
+    this._debug._ && console.groupEnd();
   }
 }

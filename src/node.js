@@ -7,7 +7,8 @@ export default class Node {
     this._config = config;
     this._DOM = DOM;
     this._selector = selector;
-    this._debugMode = this._config.debugMode;
+    // * From config:
+    this._debug = config.debugMode ? { ...config.debugConfig.node } : {};
     this._markupDebugMode = this._config.markupDebugMode;
   }
 
@@ -111,7 +112,7 @@ export default class Node {
     });
 
     if (nodeEntries.unexpected.length > 0) {
-      this._debugMode
+      this._debug._
         && console.warn(`something unexpected is found in the table ${node}`);
     }
 
@@ -215,7 +216,7 @@ export default class Node {
 
   isSelectorMatching(element, selector) {
     if (!element || !selector) {
-      this._debugMode && console.warn('isSelectorMatching() must have 2 params',
+      this._debug._ && console.warn('isSelectorMatching() must have 2 params',
       '\n element: ', element,
       '\n selector: ', selector);
       return;
@@ -232,7 +233,7 @@ export default class Node {
       return this._DOM.hasID(element, id);
 
     } else if (first === '[') {
-      this._debugMode && console.assert(
+      this._debug._ && console.assert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);
@@ -603,7 +604,7 @@ export default class Node {
     let current = element; // * Current element being checked
     let candidate = null; // * Candidate to be returned
 
-    // this._debugMode && console.log('💠 Initial element:', current);
+    // this._debug._ && console.log('💠 Initial element:', current);
 
     // * === 1. Descend to find the candidate ===
     while (true) {
@@ -611,13 +612,13 @@ export default class Node {
 
       // * If there are no children, stop descending
       if (!lastChild) {
-        // this._debugMode && console.log('💠 No further children, stopping descent at:', current);
+        // this._debug._ && console.log('💠 No further children, stopping descent at:', current);
         break;
       }
 
       // * If the last child has the isNoHanging flag, it becomes the candidate
       if (this.isNoHanging(lastChild)) {
-        // this._debugMode && console.log('💠 Found isNoHanging child:', lastChild);
+        // this._debug._ && console.log('💠 Found isNoHanging child:', lastChild);
         candidate = lastChild; // * Update the candidate
         break; // * Stop descending because the flag was found
       }
@@ -630,7 +631,7 @@ export default class Node {
     // * and skip the wrapper search
     if (!candidate) {
       candidate = element;
-      // this._debugMode && console.log('💠 No isNoHanging element found, using initial element as candidate:', candidate);
+      // this._debug._ && console.log('💠 No isNoHanging element found, using initial element as candidate:', candidate);
     } else {
       // * === 2. Ascend to find the best wrapper ===
       current = candidate; // * Start moving up from the current candidate
@@ -640,31 +641,31 @@ export default class Node {
 
         // * If there is no parent or we reached the initial element, stop
         if (!parent || parent === element) {
-          // this._debugMode && console.log('💠 Reached top or initial element, stopping ascent.');
+          // this._debug._ && console.log('💠 Reached top or initial element, stopping ascent.');
           break;
         }
 
         // * Check if the current element is the first child of its parent
         if (this._DOM.getFirstElementChild(parent) === current) {
-          // this._debugMode && console.log('💠 Parent satisfies the condition, updating candidate to:', parent);
+          // this._debug._ && console.log('💠 Parent satisfies the condition, updating candidate to:', parent);
           candidate = parent; // * Update the candidate to its parent
           current = parent; // * Move up to the parent
         } else {
-          // this._debugMode && console.log('💠 Parent does NOT satisfy the condition, stopping ascent.');
+          // this._debug._ && console.log('💠 Parent does NOT satisfy the condition, stopping ascent.');
           break; // * Stop ascending if the condition is not met
         }
       }
     }
 
-    // this._debugMode && console.log('💠 Final candidate after ascent:', candidate);
+    // this._debug._ && console.log('💠 Final candidate after ascent:', candidate);
 
     // * === 3. Position check ===
     if (this.getTop(candidate) > topFloater) {
-      // this._debugMode && console.log('💠 Candidate satisfies position check, returning:', candidate);
+      // this._debug._ && console.log('💠 Candidate satisfies position check, returning:', candidate);
       return candidate;
     }
 
-    // this._debugMode && console.log('💠 Candidate does not satisfy position check, returning null');
+    // this._debug._ && console.log('💠 Candidate does not satisfy position check, returning null');
     return null;
 
   }
@@ -886,7 +887,7 @@ export default class Node {
   getTop( element, root = null, topAcc = 0 ) {
 
     if (!element) {
-      this._debugMode && console.warn(
+      this._debug._ && console.warn(
         'element must be provided, but was received:', element,
         '\nThe function returned:', undefined
       );
@@ -899,7 +900,7 @@ export default class Node {
     }
 
     if (!root) {
-      this._debugMode && console.warn(
+      this._debug._ && console.warn(
         'root must be provided, but was received:', root,
         '\nThe function returned:', undefined
       );
@@ -934,7 +935,7 @@ export default class Node {
 
     // TODO element == document.body
     if (!offsetParent) {
-      this._debugMode && console.warn(
+      this._debug._ && console.warn(
         'Element has no offset parent.',
         '\n element:', [element],
         '\n offsetParent:', offsetParent,
@@ -955,7 +956,7 @@ export default class Node {
 
   getBottom(element, root = null) {
     if (!element) {
-      this._debugMode && console.warn(
+      this._debug._ && console.warn(
         'element must be provided, but was received:', element,
         '\nThe function returned:', undefined
       );
@@ -968,7 +969,7 @@ export default class Node {
     }
 
     if (!root) {
-      this._debugMode && console.warn(
+      this._debug._ && console.warn(
         'root must be provided, but was received:', root,
         '\nThe function returned:', undefined
       );

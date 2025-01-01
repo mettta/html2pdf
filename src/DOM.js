@@ -1,16 +1,14 @@
 export default class DocumentObjectModel {
 
-  constructor({DOM, debugMode}) {
+  constructor({DOM, config}) {
 
     // * public
     this.document = DOM;
     this.body = DOM.body;
 
     // * private
-    this._debugMode = debugMode;
-    this._debugToggler = {
-      _DOM: false,
-    }
+    this._debugMode = config.debugMode;
+    this._debug = config.debugMode ? { ...config.debugConfig.DOM } : {};
   }
 
   // CREATE ELEMENTS
@@ -162,18 +160,18 @@ export default class DocumentObjectModel {
 
   getAttribute(element, selector) {
     if (!element || !selector) {
-      this._debugMode && this._debugToggler._DOM && console.warn('getAttribute() must have 2 params');
+      this._debug._ && console.warn('getAttribute() must have 2 params');
       return;
     }
 
     const first = selector.charAt(0);
 
     if (first === '.' || first === '#') {
-      this._debugMode && this._debugToggler._DOM && console.log(`you're really sure ${selector} is attribute selector?`)
+      this._debug._ && console.log(`you're really sure ${selector} is attribute selector?`)
     }
 
     if (first === '[') {
-      this._debugMode && this._debugToggler._DOM && console.assert(
+      this._debug._ && console.assert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);
@@ -187,7 +185,7 @@ export default class DocumentObjectModel {
 
   setAttribute(element, selector, value) {
     if (!element || !selector) {
-      this._debugMode && this._debugToggler._DOM && console.warn('setAttribute() must have 2 params');
+      this._debug._ && console.warn('setAttribute() must have 2 params');
       return;
     }
 
@@ -202,14 +200,14 @@ export default class DocumentObjectModel {
       element.id = id;
       return
     } else if (first === '[') {
-      this._debugMode && this._debugToggler._DOM && console.assert(
+      this._debug._ && console.assert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);
       element.setAttribute(attr, (value ? value : ''));
       return
     }
-    this._debugMode && this._debugToggler._DOM && console.log(`you're really sure ${selector} is a selector?`)
+    this._debug._ && console.log(`you're really sure ${selector} is a selector?`)
   }
 
   setStyles(element, styles) {
@@ -227,7 +225,7 @@ export default class DocumentObjectModel {
 
   removeAttribute(element, selector) {
     if (!element || !selector) {
-      this._debugMode && this._debugToggler._DOM && console.warn('removeAttribute() must have 2 params');
+      this._debug._ && console.warn('removeAttribute() must have 2 params');
       return;
     }
 
@@ -243,7 +241,7 @@ export default class DocumentObjectModel {
       element.removeAttribute(id);
       return
     } else if (first === '[') {
-      this._debugMode && this._debugToggler._DOM && console.assert(
+      this._debug._ && console.assert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);

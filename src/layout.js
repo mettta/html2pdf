@@ -24,7 +24,7 @@ export default class Layout {
     this._contentRoot;
 
     this._config = config;
-    this._debugMode = config.debugMode;
+    this._debug = config.debugMode ? { ...config.debugConfig.layout } : {};
     this._DOM = DOM;
     this._selector = selector;
     this._node = node;
@@ -107,7 +107,7 @@ export default class Layout {
       console.error('Failed to initialize the root element.');
       return
     }
-    this._debugMode && console.log('initial root:',this._initialRoot);
+    this._debug._ && console.log('initial root:',this._initialRoot);
 
     // * Create new layout elements.
     this._createRoot();
