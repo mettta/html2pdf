@@ -285,7 +285,7 @@ export default class Pages {
       const firstChildParent = this._node.findFirstChildParent(pageStart, this._contentFlow);
       pageStart = firstChildParent || pageStart;
 
-      const previousCandidate = this._node.findPreviousNoHangingsFromPage(
+      const previousCandidate = this._node.findPreviousNonHangingsFromPage(
         pageStart,
         // * limited to the element from which the last registered page starts:
         this._node.getTop(this.pages.at(-1)?.pageStart, this._root),
@@ -2067,7 +2067,7 @@ export default class Pages {
               const firstChildParent = this._node.findFirstChildParent(result, this._contentFlow);
               result = firstChildParent || result;
 
-              const previousCandidate = this._node.findPreviousNoHangingsFromPage(result, this.pages.at(-2)?.pageBottom, this._root)
+              const previousCandidate = this._node.findPreviousNonHangingsFromPage(result, this.pages.at(-2)?.pageBottom, this._root)
               result = previousCandidate || result;
 
 

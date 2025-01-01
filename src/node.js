@@ -560,7 +560,7 @@ export default class Node {
     return this.getAll(this._selector.printForcedPageBreak, element);
   }
 
-  findPreviousNoHangingsFromPage(element, topFloater, root) {
+  findPreviousNonHangingsFromPage(element, topFloater, root) {
     let suitableSibling = null;
     let prev = this._DOM.getLeftNeighbor(element);
 
