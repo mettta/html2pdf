@@ -38,6 +38,12 @@ The project is configured to use ES modules:
 - All imports include explicit `.js` extensions.
 - Webpack configurations (webpack.common.js, webpack.dev.js, webpack.prod.js) are converted to ES modules.
 
+### 4. **Sinon for Spies, Stubs, and Mocks**
+We use **Sinon** to mock, stub, and spy on dependencies in unit tests. It helps to:
+- Replace real functions with controlled behavior (e.g., API calls).
+- Verify function calls, arguments, and execution order.
+- Mock time-based functions like `setTimeout`.
+
 ## Running Tests
 1.	**Run all tests:**
 ```bash
