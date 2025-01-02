@@ -6,7 +6,7 @@ from test.end2end.helpers.helper import Helper
 
 path_to_this_test_file_folder = os.path.dirname(os.path.abspath(__file__))
 index_html_file_url = (
-    "file:///" + os.path.join(path_to_this_test_file_folder, "..", "..", "unit") + "/test.html"
+    "file:///" + os.path.join(path_to_this_test_file_folder, "..", "..", "unit", "examples") + "/test.html"
 )
 
 
