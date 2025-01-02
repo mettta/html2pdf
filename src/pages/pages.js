@@ -1,5 +1,5 @@
-import arrayFromString from './arrayFromString';
-import Paragraph from './paragraph';
+import arrayFromString from './arrayFromString.js';
+import Paragraph from './paragraph.js';
 
 const CONSOLE_CSS_COLOR_PAGES = '#66CC00';
 const CONSOLE_CSS_PRIMARY_PAGES = `color: ${CONSOLE_CSS_COLOR_PAGES};font-weight:bold`;

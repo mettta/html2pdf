@@ -1,7 +1,7 @@
 import { VERSION } from './version.js';
 console.info(`HTML2PDF4DOC version: ${VERSION}`);
 
-import App from './app';
+import App from './app.js';
 
 const dataset = document.currentScript.dataset;
 const app = new App(dataset);

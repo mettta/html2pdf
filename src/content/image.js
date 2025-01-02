@@ -3,7 +3,7 @@ import {
   img600,
   img898,
   img1200,
-} from './_images';
+} from './_images.js';
 
 const text = `
 

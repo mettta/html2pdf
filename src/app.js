@@ -1,17 +1,17 @@
 
-import config from './config';
+import config from './config.js';
 import debugConfig from './debugConfig.js';
-import SELECTOR from './selector';
-import DocumentObjectModel from './DOM';
-import Layout from './layout';
-import Node from './node';
-import Pages from './pages';
-import Paper from './paper';
-import Preview from './preview';
-import Toc from './toc';
-import Validator from './validator';
-import Preloader from './preloader';
-import Preprocess from './preprocess';
+import SELECTOR from './selector.js';
+import DocumentObjectModel from './DOM.js';
+import Layout from './layout.js';
+import Node from './node.js';
+import Pages from './pages/index.js';
+import Paper from './paper.js';
+import Preview from './preview.js';
+import Toc from './toc.js';
+import Validator from './validator.js';
+import Preloader from './preloader.js';
+import Preprocess from './preprocess/index.js';
 
 const CONSOLE_CSS_LABEL = `color:Gray;border:1px solid;`
 

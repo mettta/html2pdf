@@ -1,11 +1,11 @@
-import simple from './simple';
-import text from './text';
-import long from './long';
-import table from './table';
-import image from './image'; // todo
-import pre from './pre';
-import strictDoc from './strictDoc';
-import __try from './__try';
+import simple from './simple.js';
+import text from './text.js';
+import long from './long.js';
+import table from './table.js';
+import image from './image.js'; // todo
+import pre from './pre.js';
+import strictDoc from './strictDoc.js';
+import __try from './__try.js';
 
 export default function _emulateContent() {
   const temp = document.createElement('div');

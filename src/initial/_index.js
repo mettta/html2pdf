@@ -1,6 +1,6 @@
 // * v.0.1
 
-import _emulateContent from '../_emulateContent';
+import _emulateContent from '../_emulateContent.js';
 
 // TODO problem with <OBJECT>:
 // Either exclude the object at the generator level,

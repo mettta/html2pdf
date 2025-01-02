@@ -1,4 +1,4 @@
-import SELECTOR from './selector';
+import SELECTOR from './selector.js';
 
 export default class Style {
 

@@ -1,1 +1,1 @@
-export { default } from './preprocess';
+export { default } from './preprocess.js';
