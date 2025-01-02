@@ -1,7 +1,7 @@
 import {
   code,
   lines,
-} from './_pre';
+} from './_pre.js';
 
 const text = `
 <h3>Test for printing</h3>

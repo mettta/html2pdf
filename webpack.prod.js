@@ -1,9 +1,9 @@
-const webpack = require('webpack');
-const { merge } = require('webpack-merge');
-const common = require('./webpack.common.js');
-const packageJson = require('./package.json');
+import webpack from 'webpack';
+import { merge } from 'webpack-merge';
+import common from './webpack.common.js';
+import packageJson from './package.json' assert { type: "json" };
 
-module.exports = merge(common, {
+export default merge(common, {
   mode: 'production',
   plugins: [
     new webpack.BannerPlugin({
