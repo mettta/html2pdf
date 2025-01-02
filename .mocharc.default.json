@@ -1,0 +1,5 @@
+{
+  "spec": "test/**/*.test.js",
+  "extension": ["js"],
+  "timeout": 15000
+}

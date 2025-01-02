@@ -1,0 +1,5 @@
+{
+  "spec": "test/integration/**/*.test.js",
+  "extension": ["js"],
+  "timeout": 10000
+}

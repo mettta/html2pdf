@@ -32,8 +32,9 @@
     "version": "node -e \"require('fs').writeFileSync('./src/version.js', 'export const VERSION = \\'' + require('./package.json').version + '\\';\\n')\" && git add src/version.js",
     "start": "webpack serve --open --config webpack.dev.js",
     "build": "webpack --config webpack.prod.js",
-    "test": "mocha",
-    "test:unit": "mocha test/unit/**/*.test.js",
+    "test": "mocha --config .mocharc.default.json",
+    "test:unit": "mocha --config .mocharc.unit.json",
+    "test:integration": "mocha --config .mocharc.integration.json",
     "test_server": "http-server"
   },
   "private": true
