@@ -1,0 +1,38 @@
+
+.box {
+  background-color: #444;
+  color: #fff;
+  border-radius: 5px;
+  padding: 20px;
+  margin: 20px 0 20px 0;
+  font-size: 150%;
+}
+
+.wrapper {
+  width: 400px;
+  display: grid;
+  grid-template-columns: auto;
+  grid-template-rows: auto;
+  background-color: #fff;
+  color: #444;
+}
+
+.section1 {
+  grid-row: 1 / 2;
+}
+
+.section2 {
+  grid-row: 3 / 4;
+}
+
+.section3 {
+  grid-row: 5 / 6;
+}
+
+.ad1 {
+  grid-row: 2 / 3;
+}
+
+.ad2 {
+  grid-row: 4 / 5;
+}

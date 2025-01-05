@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="strictdoc, documentation, documentation-tool, requirements-management, requirements, documentation-generator, requirement-specifications, requirements-engineering, technical-documentation, requirements-specification">
+  <meta name="description" content="strictdoc. Software for technical documentation and requirements management.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📌</text></svg>">
+  <title>StrictDoc</title>
+
+  <link rel="stylesheet" href="grid.css">
+  <link rel="stylesheet" href="../../../../shared/css/main.css">
+
+  <!-- HTML2PDF -->
+  <!-- data-debug-mode='true' -->
+  <script
+    defer
+    data-debug-mode='true'
+    data-forced-page-break-selectors=''
+    data-page-break-before-selectors=''
+    data-page-break-after-selectors=''
+    data-no-break-selectors=''
+    data-no-hanging-selectors=''
+
+    data-print-height='100mm'
+    data-print-font-size='12pt'
+    src="../../../../../dist/bundle.js"></script>
+</head>
+
+<!-- https://gridbyexample.com/examples/example14/ -->
+
+<!-- Source Independence -->
+
+<!-- A key thing in Grid is that the order of items in the source does not matter, as long as they are children of the element that has been declared as a grid. In this example I have some content and then some ads which I have placed right at the bottom of the source. I can use Grid to visually display these in between sections of content.
+
+I could then use Media Queries to display them elsewhere in a wider layout.
+
+Important! For accessibility purposes the logical order should be set in the source. Do not use Grid properties to adjust the logical order of your document. -->
+
+
+<body data-viewtype="html2pdf" data-turbo="false">
+  <div filler style="height:140px"></div>
+
+  <div class="wrapper">
+    <div class="section1">
+      <p>In our urban and suburban houses what should we do without cats? In our sitting or bedrooms, our libraries, in our kitchens and storerooms, our farms, barns, and rickyards, in our docks, our granaries, our ships, and our wharves, in our corn markets,
+        meat markets, and other places too numerous to mention, how useful they are! In our ships, however, the rats oft set them at defiance; still they are of great service.</p>
+    </div>
+    <div class="section2">
+      <p>How wonderfully patient is the cat when watching for rats or mice, awaiting their egress from their place of refuge or that which is their home! How well Shakespeare in Pericles, Act iii., describes this keen attention of the cat to its natural pursuit!</p>
+
+    </div>
+    <div class="section3">
+
+      <p>A slight rustle, and the fugitive comes forth; a quick, sharp, resolute motion, and the cat has proved its usefulness. Let any one have a plague of rats and mice, as I once had, and let them be delivered therefrom by cats, as I was, and they will
+        have a lasting and kind regard for them.</p>
+
+    </div>
+    <div class="box ad1">Advert!</div>
+    <div class="box ad2">Another lovely advert!</div>
+  </div>
+
+</body>
+</html>
