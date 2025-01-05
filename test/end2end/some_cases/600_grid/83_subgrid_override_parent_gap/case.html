@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="strictdoc, documentation, documentation-tool, requirements-management, requirements, documentation-generator, requirement-specifications, requirements-engineering, technical-documentation, requirements-specification">
+  <meta name="description" content="strictdoc. Software for technical documentation and requirements management.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📌</text></svg>">
+  <title>StrictDoc</title>
+
+  <link rel="stylesheet" href="grid.css">
+  <link rel="stylesheet" href="../../../../shared/css/main.css">
+
+  <!-- HTML2PDF -->
+  <!-- data-debug-mode='true' -->
+  <script
+    defer
+    data-debug-mode='true'
+    data-forced-page-break-selectors=''
+    data-page-break-before-selectors=''
+    data-page-break-after-selectors=''
+    data-no-break-selectors=''
+    data-no-hanging-selectors=''
+
+    data-print-height='100mm'
+    data-print-font-size='12pt'
+    src="../../../../../dist/bundle.js"></script>
+</head>
+
+<!-- https://gridbyexample.com/examples2/example2-4/ -->
+
+<!-- The subgrid can override the gap on the parent -->
+<!-- The subgrid inherits the gap of the parent but it can be changed in the subgrid. -->
+
+
+<body data-viewtype="html2pdf" data-turbo="false">
+  <div filler style="height:140px"></div>
+
+  <div class="wrapper">
+    <div class="box a">A</div>
+    <div class="box b">B</div>
+    <div class="box c">C</div>
+    <div class="box d">
+      <div class="box e">E</div>
+      <div class="box f">F</div>
+      <div class="box g">G</div>
+      <div class="box h">H</div>
+      <div class="box i">I</div>
+    </div>
+  </div>
+
+</body>
+</html>

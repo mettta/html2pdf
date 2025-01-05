@@ -1,0 +1,15 @@
+.wrapper {
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: minmax(200px, 1fr) 200px 200px;
+  background-color: #fff;
+  color: #444;
+}
+
+.box {
+  background-color: #444;
+  color: #fff;
+  border-radius: 5px;
+  padding: 20px;
+  font-size: 150%;
+}

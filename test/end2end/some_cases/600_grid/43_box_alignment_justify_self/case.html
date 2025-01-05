@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="strictdoc, documentation, documentation-tool, requirements-management, requirements, documentation-generator, requirement-specifications, requirements-engineering, technical-documentation, requirements-specification">
+  <meta name="description" content="strictdoc. Software for technical documentation and requirements management.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📌</text></svg>">
+  <title>StrictDoc</title>
+
+  <link rel="stylesheet" href="grid.css">
+  <link rel="stylesheet" href="../../../../shared/css/main.css">
+
+  <!-- HTML2PDF -->
+  <!-- data-debug-mode='true' -->
+  <script
+    defer
+    data-debug-mode='true'
+    data-forced-page-break-selectors=''
+    data-page-break-before-selectors=''
+    data-page-break-after-selectors=''
+    data-no-break-selectors=''
+    data-no-hanging-selectors=''
+
+    data-print-height='100mm'
+    data-print-font-size='12pt'
+    src="../../../../../dist/bundle.js"></script>
+</head>
+
+<!-- https://gridbyexample.com/examples/example27/ -->
+
+<!-- Box alignment justify-self -->
+
+<body data-viewtype="html2pdf" data-turbo="false">
+  <div filler style="height:140px"></div>
+
+  <div class="wrapper">
+    <div class="box a">
+      <p>This is box A. </p>
+      <code>justify-self: stretch</code>
+    </div>
+    <div class="box b">
+      <p>This is box B.</p>
+      <code>justify-self: end</code>
+    </div>
+    <div class="box c">
+      <p>This is box C.</p>
+      <code>justify-self: start</code>
+
+    </div>
+    <div class="box d">
+      <p>This is box D.</p>
+      <code>justify-self: center</code>
+    </div>
+    <div class="box e">
+      <p>Each of the boxes on the left has a grid area of 3 columns and 3 rows (we're counting the gutter col/row). So each covers the same size area as box A.</p>
+      <p>The justify-self property is used to justify the content inside the grid-area.</p>
+    </div>
+  </div>
+
+</body>
+</html>
