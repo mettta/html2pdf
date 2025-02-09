@@ -84,7 +84,7 @@ def test_end2end_generate(
     """)
 
 
-@task(build)
+@task(build, aliases=["te"])
 def test_end2end(
     context,
     focus=None,
@@ -163,7 +163,7 @@ def test_end2end_random(
     run_invoke(context, test_command)
 
 
-@task
+@task(aliases=["t"])
 def test(context):
     test_unit(context)
     test_end2end(context)

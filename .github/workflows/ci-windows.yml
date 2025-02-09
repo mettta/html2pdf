@@ -1,0 +1,63 @@
+# NOTE: In contrast to Linux and macOS, the Windows build machines do not have Chrome installed.
+
+name: "HTML2PDF on Windows"
+
+on:
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Google Chrome
+      run: |
+        choco install googlechrome --no-progress -y --ignore-checksums
+      shell: powershell
+
+    - name: Check Chrome Version
+      run: '& "C:\Program Files\Google\Chrome\Application\chrome.exe" --version'
+      shell: powershell
+
+    - name: Add Chrome to PATH
+      run: |
+        $chromePath = "C:\Program Files\Google\Chrome\Application"
+        echo "Adding $chromePath to PATH"
+        echo "$chromePath" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+      shell: powershell
+
+    - name: Verify Chrome Installation
+      run: chrome --version
+      shell: powershell
+
+    - name: Upgrade pip
+      run: |
+        python -m pip install --upgrade pip
+
+    - name: Install Python packages
+      run: |
+        pip install -r requirements.txt
+
+    - name: Install NPM packages
+      run: |
+        npm install
+
+    - name: Run unit tests
+      run: |
+        invoke test-unit
+
+    - name: Run tests
+      run: |
+        invoke test-end2end
