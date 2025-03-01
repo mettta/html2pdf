@@ -403,6 +403,10 @@ export default class Node {
     );
   }
 
+  isSlough(element) {
+    return this._DOM.hasAttribute(element, 'slough-node');
+  }
+
   // *
 
   isFirstChildOfFirstChild(element, rootElement) {

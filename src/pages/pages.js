@@ -751,9 +751,10 @@ export default class Pages {
 
       // * Parse children:
       if (childrenNumber) {
-        // * In a fully split node, children replace it,
-        // * so we don't take into account the last child bottom margins (parentBottom).
-        const isFullySPlittedParent = this._node.isFullySPlitted(currentElement);
+        // * In a fully split node, or in a node that has received the 'slough' attribute,
+        // * children replace it.
+        // * So we don't take into account the last child bottom margins (parentBottom).
+        const isFullySPlittedParent = this._node.isFullySPlitted(currentElement) || this._node.isSlough(currentElement);
         // * Process children if exist:
         this._parseNodes({
           array: children,

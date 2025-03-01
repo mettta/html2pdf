@@ -1,0 +1,2 @@
+- input.PDF must have 4 pages
+- full_code_example.html must have 97 pages (and pdf must have 97 pages6 NOT 98!)
