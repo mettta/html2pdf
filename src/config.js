@@ -16,7 +16,7 @@ export default function createConfig(params) {
     preloaderTarget: '',
     preloaderBackground: '',
 
-    mask: false,
+    mask: true,
 
     // * The initialRoot can be overridden in the configuration settings.
     // * The default value is set in App.js.

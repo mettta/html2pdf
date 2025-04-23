@@ -52,30 +52,30 @@ export default class Preview {
   }
 
   _addMask() {
-    // The height of the paper is converted from millimeters to pixels.
-    // The 'height' of the HTML element will be an integer, which is inaccurate.
-    // In fact, it most likely contains a fractional part, and inaccuracy is accumulated.
-    // Therefore, let's calculate the average value on the whole set of pages.
-    const papers = [...this._paperFlow.querySelectorAll(this._virtualPaper)];
-    const maskHeight = this._DOM.getElementOffsetTop(papers.at(-1)) / (papers.length - 1);
+    // We rely on config values rather than checking DOM elements,
+    // since all units are converted to pixels before rendering.
+    // This ensures consistent behavior for both paper rendering and mask
+    // calculation per content stream, regardless of document length.
 
-    // The height of the topMargin is converted from millimeters to pixels.
-    // The 'height' of the HTML element will be an integer, which is inaccurate.
-    // But we use this shift only 1 time, so the error is insignificant.
-    const topMargin = this._DOM.getElementOffsetHeight(
-      this._paperFlow.querySelector(this._virtualPaperTopMargin)
-    );
+    const _virtualPagesGap = parseInt(this._config.virtualPagesGap);
+    const _printPaperHeight = parseInt(this._config.printHeight);
+    const _printTopMargin = parseInt(this._config.printTopMargin);
+    const _printBottomMargin = parseInt(this._config.printBottomMargin);
 
-    const bodyHeight = this._DOM.getElementOffsetHeight(
-      this._paperFlow.querySelector(this._paperBody)
-    );
+    const _printBodyAndHeaders = _printPaperHeight - _printTopMargin - _printBottomMargin;
+    const _virtualHeightPattern = _printPaperHeight + _virtualPagesGap;
 
-    // TODO: do a simplified calculation based on pixel dimensions
+    console.log(
+      'maskHeight', _printPaperHeight,
+      'maskWindow', _printBodyAndHeaders,
+      'maskTopPosition', _printTopMargin,
+    )
+
     addCSSMask({
       targetElement: this._contentFlow,
-      maskHeight: maskHeight,
-      maskWindow: bodyHeight,
-      maskTopPosition: topMargin,
+      maskHeight:_virtualHeightPattern,
+      maskWindow: _printBodyAndHeaders,
+      maskTopPosition: _printTopMargin,
     })
   }
 

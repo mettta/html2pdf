@@ -339,6 +339,16 @@ ${SELECTOR.bottomCutPart} {
     return this.config.debugMode ?
     `
 /* FOR TEST */
+${SELECTOR.contentFlow} {
+  background:repeating-linear-gradient(
+    -45deg,
+    rgba(100, 100, 100, .1),
+    rgba(100, 100, 100, .1) 10px,
+    rgba(100, 100, 100, .15) 10px,
+    rgba(100, 100, 100, .15) 20px
+  );
+}
+
 ${SELECTOR.virtualPaperGap} {
   background: #ff000020;
 }
