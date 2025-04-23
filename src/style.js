@@ -342,10 +342,10 @@ ${SELECTOR.bottomCutPart} {
 ${SELECTOR.contentFlow} {
   background:repeating-linear-gradient(
     -45deg,
-    rgba(100, 100, 100, .1),
-    rgba(100, 100, 100, .1) 10px,
-    rgba(100, 100, 100, .15) 10px,
-    rgba(100, 100, 100, .15) 20px
+    rgba(222, 222, 222, .1),
+    rgba(222, 222, 222, .1) 10px,
+    rgba(222, 222, 222, .2) 10px,
+    rgba(222, 222, 222, .2) 20px
   );
 }
 
