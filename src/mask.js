@@ -1,8 +1,8 @@
 export default function addCSSMask({
   targetElement,
-  maskHeight,
+  maskStep,
   maskWindow,
-  maskTopPosition,
+  maskFirstShift,
 }) {
     // The mask is only needed at preview time.
     // Mask canceled in @media print.
@@ -20,20 +20,20 @@ export default function addCSSMask({
       black 0,
       black ${maskWindow}px,
       transparent ${maskWindow}px,
-      transparent ${maskHeight}px
+      transparent ${maskStep}px
     );
             mask-image: linear-gradient(
               black 0,
               black ${maskWindow}px,
               transparent ${maskWindow}px,
-              transparent ${maskHeight}px
+              transparent ${maskStep}px
             );
     -webkit-mask-repeat: no-repeat;
             mask-repeat: no-repeat;
-    -webkit-mask-size: 100% ${maskHeight}px;
-            mask-size: 100% ${maskHeight}px;
-    -webkit-mask-position: 100% ${maskTopPosition}px;
-            mask-position: 100% ${maskTopPosition}px;
+    -webkit-mask-size: 100% ${maskStep}px;
+            mask-size: 100% ${maskStep}px;
+    -webkit-mask-position: 100% ${maskFirstShift}px;
+            mask-position: 100% ${maskFirstShift}px;
     -webkit-mask-repeat: repeat-y;
             mask-repeat: repeat-y;
     -webkit-mask-origin: border-box;

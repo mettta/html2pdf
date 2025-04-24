@@ -52,30 +52,43 @@ export default class Preview {
   }
 
   _addMask() {
-    // We rely on config values rather than checking DOM elements,
+    // We rely on config values and on parameters provided by the Paper class,
+    // rather than checking DOM elements,
     // since all units are converted to pixels before rendering.
-    // This ensures consistent behavior for both paper rendering and mask
-    // calculation per content stream, regardless of document length.
+    // This ensures consistent behavior for both paper rendering and
+    // mask calculation per content stream, regardless of document length.
 
+    // * Public Paper params:
+    // const _bodyWidth = this._paper.bodyWidth; // = 100%
+    const _bodyHeight = this._paper.bodyHeight;
+    const _headerHeight = this._paper.headerHeight;
+    const _footerHeight = this._paper.footerHeight;
+
+    // * Config params:
     const _virtualPagesGap = parseInt(this._config.virtualPagesGap);
     const _printPaperHeight = parseInt(this._config.printHeight);
     const _printTopMargin = parseInt(this._config.printTopMargin);
     const _printBottomMargin = parseInt(this._config.printBottomMargin);
 
-    const _printBodyAndHeaders = _printPaperHeight - _printTopMargin - _printBottomMargin;
-    const _virtualHeightPattern = _printPaperHeight + _virtualPagesGap;
+    // We mask elements that extend beyond the body,
+    // including in the header and footer area.
+    // This is to hide in these areas the borders and backgrounds of the wrappers
+    // within which the page separator is placed.
+    const _printBodyMaskWindowFirstShift = _printTopMargin + _headerHeight;
+    const _maskStep = _printPaperHeight + _virtualPagesGap;
 
-    console.log(
-      'maskHeight', _printPaperHeight,
-      'maskWindow', _printBodyAndHeaders,
-      'maskTopPosition', _printTopMargin,
-    )
+    console.assert(
+      (_printPaperHeight === _bodyHeight + _headerHeight + _printTopMargin + _footerHeight + _printBottomMargin),
+      'Paper size calculation params do not match'
+    );
 
+    // Add a safety pixel at the top and bottom of the body so that outline elements are not cropped.
+    // Excessive outlines will be trimmed to preserve the header and footer zones.
     addCSSMask({
       targetElement: this._contentFlow,
-      maskHeight:_virtualHeightPattern,
-      maskWindow: _printBodyAndHeaders,
-      maskTopPosition: _printTopMargin,
+      maskStep:_maskStep,
+      maskWindow: _bodyHeight + 2, // Add a safety pixel at the top and bottom of the body.
+      maskFirstShift: _printBodyMaskWindowFirstShift - 1, // The second pixel will be implicitly subtracted "from the footer".
     })
   }
 
