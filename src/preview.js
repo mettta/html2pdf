@@ -58,17 +58,33 @@ export default class Preview {
     // This ensures consistent behavior for both paper rendering and
     // mask calculation per content stream, regardless of document length.
 
-    // * Public Paper params:
-    // const _bodyWidth = this._paper.bodyWidth; // = 100%
-    const _bodyHeight = this._paper.bodyHeight;
-    const _headerHeight = this._paper.headerHeight;
-    const _footerHeight = this._paper.footerHeight;
-
     // * Config params:
     const _virtualPagesGap = parseInt(this._config.virtualPagesGap);
     const _printPaperHeight = parseInt(this._config.printHeight);
     const _printTopMargin = parseInt(this._config.printTopMargin);
     const _printBottomMargin = parseInt(this._config.printBottomMargin);
+    const _headerMargin = parseInt(this._config.headerMargin);
+    const _footerMargin = parseInt(this._config.footerMargin);
+
+    // * Public Paper params:
+    // const _paperBodyWidth = this._paper.bodyWidth; // = 100% for now
+    const _paperHeaderHeight = this._paper.headerHeight;
+    const _paperFooterHeight = this._paper.footerHeight;
+    const _paperBodyHeight = this._paper.bodyHeight;
+
+    // To preserve glyph bleed and visual spillover in header/footer areas,
+    // we factor in the template-defined _headerMargin and _footerMargin.
+    // These values are only used if the corresponding HTML template is present
+    // (i.e., _paperHeaderHeight already includes _headerMargin, and likewise for footer).
+    // We subtract half of each margin from the header/footer space,
+    // and add it to the maskWindow to avoid clipping glyph tails or decorative outlines.
+    const _topMargin = _paperHeaderHeight ? Math.ceil(_headerMargin / 2) : 0;
+    const _bottomMargin = _paperFooterHeight ? Math.ceil(_footerMargin / 2) : 0;
+
+    // * Refined Paper params:
+    const _headerHeight = _paperHeaderHeight - _topMargin;
+    const _footerHeight = _paperFooterHeight - _bottomMargin;
+    const _bodyHeight = _paperBodyHeight + _topMargin + _bottomMargin;
 
     // We mask elements that extend beyond the body,
     // including in the header and footer area.
@@ -82,13 +98,11 @@ export default class Preview {
       'Paper size calculation params do not match'
     );
 
-    // Add a safety pixel at the top and bottom of the body so that outline elements are not cropped.
-    // Excessive outlines will be trimmed to preserve the header and footer zones.
     addCSSMask({
       targetElement: this._contentFlow,
-      maskStep:_maskStep,
-      maskWindow: _bodyHeight + 2, // Add a safety pixel at the top and bottom of the body.
-      maskFirstShift: _printBodyMaskWindowFirstShift - 1, // The second pixel will be implicitly subtracted "from the footer".
+      maskStep: _maskStep,
+      maskWindow: _bodyHeight,
+      maskFirstShift: _printBodyMaskWindowFirstShift,
     })
   }
 
