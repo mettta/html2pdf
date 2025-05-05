@@ -189,6 +189,7 @@ export default class App {
       config: this.config,
       DOM: DOM,
       selector: this.selector,
+      node: node,
       layout: layout,
     }).init();
     this.debugMode && console.timeEnd("⏱️ Validator time");
