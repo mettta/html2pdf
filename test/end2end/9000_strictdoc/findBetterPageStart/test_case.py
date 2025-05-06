@@ -34,7 +34,9 @@ class Test(BaseCase):
 
     def test_01(self):
         self.helper.do_open(case1_html_file_url)
-        self.helper.assert_document_has_pages(3)
+        # 2 or 3 pages are produced on Firefox or Chrome, so don't assert on
+        # the page number.
+        # self.helper.assert_document_has_pages(3)
 
         # 1. Check that the specific admonition title has the no-hanging flag
         target = self.find_element(
