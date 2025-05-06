@@ -94,8 +94,8 @@ class Helper:
         if report:
             print('-> paper:', paper)
             print('-> pages:', pages)
-        assert paper == count
-        assert pages == count
+        assert paper == count, f"{paper} == {count}, pages: {pages}"
+        assert pages == count, f"{pages} == {count}, paper: {paper}"
 
     # Element
 
