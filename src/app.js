@@ -25,7 +25,7 @@ export default class App {
   }
 
   async render() {
-    console.time("⏱️ HTML2PDF4DOC time");
+    console.time("[HTML2PDF4DOC] Total time");
 
     this.debugMode && console.log('🏁 document.readyState', document.readyState)
 
@@ -203,7 +203,8 @@ export default class App {
     // ! preloader.remove();
 
     preloader.remove();
-    console.timeEnd("⏱️ HTML2PDF4DOC time");
+
     console.info(`[HTML2PDF4DOC] Page count:`, pages.length);
+    console.timeEnd("[HTML2PDF4DOC] Total time");
   }
 }
