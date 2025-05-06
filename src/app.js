@@ -197,11 +197,13 @@ export default class App {
     // * set the attribute that means that rendering is completed successfully
     // FIXME
     DOM.setAttribute(layout.root, '[success]');
+    DOM.setAttribute(layout.root, '[pages]', pages.length);
 
     // ? CONDITION
     // ! preloader.remove();
 
     preloader.remove();
     console.timeEnd("⏱️ HTML2PDF4DOC time");
+    console.info(`[HTML2PDF4DOC] Page count:`, pages.length);
   }
 }
