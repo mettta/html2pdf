@@ -25,7 +25,7 @@ export default class App {
   }
 
   async render() {
-    console.time("⏱️ HTML2PDF4DOC time");
+    console.time("[HTML2PDF4DOC] Total time");
 
     this.debugMode && console.log('🏁 document.readyState', document.readyState)
 
@@ -189,6 +189,7 @@ export default class App {
       config: this.config,
       DOM: DOM,
       selector: this.selector,
+      node: node,
       layout: layout,
     }).init();
     this.debugMode && console.timeEnd("⏱️ Validator time");
@@ -196,11 +197,14 @@ export default class App {
     // * set the attribute that means that rendering is completed successfully
     // FIXME
     DOM.setAttribute(layout.root, '[success]');
+    DOM.setAttribute(layout.root, '[pages]', pages.length);
 
     // ? CONDITION
     // ! preloader.remove();
 
     preloader.remove();
-    console.timeEnd("⏱️ HTML2PDF4DOC time");
+
+    console.info(`[HTML2PDF4DOC] Page count:`, pages.length);
+    console.timeEnd("[HTML2PDF4DOC] Total time");
   }
 }

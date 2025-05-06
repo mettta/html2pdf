@@ -58,10 +58,41 @@ npm run test:unit
 npm run test:integration
 ```
 
+4.	**End-to-End tests** (Python):
+End-to-end (E2E) tests are written in Python and live outside the JavaScript test infrastructure.
+
+Run them using the Invoke CLI:
+
+```bash
+invoke test_end2end
+```
+
+Or using the short alias:
+
+```bash
+invoke te
+```
+
+Optional flags:
+- `--focus=TableSplit` — run only matching test groups
+- `--exit-first` — stop after the first failure
+- `--long-timeouts` — increase allowed test durations
+- `--parallelize` — run tests in parallel (if supported)
+
+For randomized test generation and execution:
+
+```bash
+invoke test_end2end_random
+```
+
+This will generate input data and run tests against the output folder.
+
+
 ## Additional Steps
 
 **Adding New Tests:**
-Ensure file names follow the `*.test.js` pattern for automatic discovery.
+- For JavaScript tests, ensure file names follow the `*.test.js` pattern for automatic discovery by Mocha.
+- For Python end-to-end tests, place new test files in the appropriate `test/end2end/` folder. These tests should follow standard `pytest` or `unittest` naming conventions (e.g. `test_*.py`).
 
 **Debugging:**
 - If a test does not run, ensure its name matches the pattern in the Mocha configuration.

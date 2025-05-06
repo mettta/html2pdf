@@ -1,5 +1,5 @@
 import { VERSION } from './version.js';
-console.info(`HTML2PDF4DOC version: ${VERSION}`);
+console.info(`[HTML2PDF4DOC] Version:`, VERSION);
 
 import App from './app.js';
 

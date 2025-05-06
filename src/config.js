@@ -98,7 +98,7 @@ export default function createConfig(params) {
     ...params
   }
 
-  console.info('HTML2PDF4DOC config:', config);
+  console.info('[HTML2PDF4DOC] Config:', config);
 
   // * Convert units to pixels
   const measurement = {
@@ -126,8 +126,6 @@ export default function createConfig(params) {
     .forEach(([key, value]) => {
       test.style.width = value;
       measurement[key] = `${Math.trunc(test.getBoundingClientRect().width)}px`;
-
-      // console.log(test.offsetWidth, test.getBoundingClientRect().width, `${Math.trunc(test.getBoundingClientRect().width)}px`)
     });
   test.remove();
 
@@ -145,7 +143,7 @@ export default function createConfig(params) {
   // config.pageBreakAfterSelectors = '';
   // config.noBreakSelectors = '';
 
-  console.info('HTML2PDF4DOC config with converted units:', config);
+  config.debugMode && console.info('Config with converted units:', config);
 
   return config;
 }

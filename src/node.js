@@ -559,6 +559,50 @@ export default class Node {
     )
   }
 
+  // FIXME: this version must be replaced with next, new version!
+  // findBetterPageStart(pageStart, lastPageStart, rootNode, root) {
+  //   const firstChildParent = this.findFirstChildParent(pageStart, rootNode);
+  //   pageStart = firstChildParent || pageStart;
+
+  //   const previousCandidate = this.findPreviousNonHangingsFromPage(
+  //     pageStart,
+  //     // * limited to the element from which the last registered page starts:
+  //     this.getTop(lastPageStart, root),
+  //     root
+  //   );
+  //   pageStart = previousCandidate || pageStart;
+
+  //   return pageStart
+  // }
+
+  findBetterPageStart(pageStart, lastPageStart, rootNode, root) {
+    let current = pageStart;
+    // * limited to the element from which the last registered page starts:
+    const topLimit = this.getTop(lastPageStart, root);
+
+    while (true) {
+      const firstChildParent = this.findFirstChildParent(current, rootNode);
+      if (firstChildParent && firstChildParent !== current) {
+        current = firstChildParent;
+        continue;
+      }
+
+      const previousCandidate = this.findPreviousNonHangingsFromPage(
+        current,
+        topLimit,
+        root
+      );
+      if (previousCandidate && previousCandidate !== current) {
+        current = previousCandidate;
+        continue;
+      }
+
+      break;
+    }
+
+    return current;
+  }
+
   // GET SERVICE ELEMENTS
 
   findAllForcedPageBreakInside(element) {

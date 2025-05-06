@@ -269,16 +269,12 @@ export default class Pages {
 
   _registerPageStart(pageStart, improveResult = false) {
     if (improveResult) {
-      const firstChildParent = this._node.findFirstChildParent(pageStart, this._contentFlow);
-      pageStart = firstChildParent || pageStart;
-
-      const previousCandidate = this._node.findPreviousNonHangingsFromPage(
+      pageStart = this._node.findBetterPageStart(
         pageStart,
-        // * limited to the element from which the last registered page starts:
-        this._node.getTop(this.pages.at(-1)?.pageStart, this._root),
+        this.pages.at(-1)?.pageStart,
+        this._contentFlow,
         this._root
-      );
-      pageStart = previousCandidate || pageStart;
+      )
     }
 
     const pageBottom = this._node.getTopWithMargin(pageStart, this._root) + this._referenceHeight;
