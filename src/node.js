@@ -559,21 +559,27 @@ export default class Node {
     )
   }
 
-  // FIXME: this version must be replaced with next, new version!
-  // findBetterPageStart(pageStart, lastPageStart, rootNode, root) {
-  //   const firstChildParent = this.findFirstChildParent(pageStart, rootNode);
-  //   pageStart = firstChildParent || pageStart;
+  findBetterForcedPageStarter(element, root) {
+    let current = element;
 
-  //   const previousCandidate = this.findPreviousNonHangingsFromPage(
-  //     pageStart,
-  //     // * limited to the element from which the last registered page starts:
-  //     this.getTop(lastPageStart, root),
-  //     root
-  //   );
-  //   pageStart = previousCandidate || pageStart;
+    while (true) {
+      const firstChildParent = this.findFirstChildParent(current, root);
+      if (firstChildParent && firstChildParent !== current) {
+        current = firstChildParent;
+        continue;
+      }
 
-  //   return pageStart
-  // }
+      const left = this._DOM.getLeftNeighbor(current);
+      if (left && this.isNoHanging(left)) {
+        current = left;
+        continue;
+      }
+
+      break;
+    }
+
+    return current;
+  }
 
   findBetterPageStart(pageStart, lastPageStart, rootNode, root) {
     let current = pageStart;
