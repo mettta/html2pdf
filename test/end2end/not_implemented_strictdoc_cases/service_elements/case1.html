@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="keywords" content="strictdoc, documentation, documentation-tool, requirements-management, requirements, documentation-generator, requirement-specifications, requirements-engineering, technical-documentation, requirements-specification">
+  <meta name="description" content="strictdoc. Software for technical documentation and requirements management.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📌</text></svg>">
+  <title>StrictDoc</title>
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/content.css">
+  <link rel="stylesheet" href="css/node.css">
+  <link rel="stylesheet" href="css/element.css">
+  <link rel="stylesheet" href="css/node_content.css">
+  <link rel="stylesheet" href="css/form.css">
+  <link rel="stylesheet" href="css/requirement__temporary.css">
+  <link rel="stylesheet" href="css/autogen.css">
+  <link rel="stylesheet" href="css/tree.css">
+
+  <style js-resizable_bar-initial-style="">
+    [js-resizable_bar]{width:20vw}[js-resizable_bar="tree"]{width:12px}[js-resizable_bar="toc"]{width:12px}
+  </style>
+  <style js-resizable_bar-initial-preloader-style="">
+    aside {
+      /* for a pseudo preloader [js-resizable_bar]::after, affects: layout_tree,layout_toc */
+      position: relative;
+    }
+    [js-resizable_bar]::after {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        content: '';
+        position: absolute;
+        left: 0; right: 0; top: 0; bottom: 0;
+        z-index: 2;
+        background-color: var(--color-bg-main, White);
+    }
+  </style>
+  <style js-resizable_bar-style="">
+  [js-resizable_bar] {
+    position: relative;
+    height: 100%;
+    max-width: 20vw;
+  }
+
+  [js-resizable_bar]:hover {
+    z-index: 22;
+  }
+
+  [js-resizable_bar][data-state="open"] {
+    min-width: 77px;
+    pointer-events: auto;
+  }
+  [js-resizable_bar][data-state="closed"] {
+    max-width: 12px;
+    min-width: 12px;
+    pointer-events: none;
+    transition: .5s;
+  }
+
+  [js-resizable_bar][data-position="left"] {
+    border-left: none;
+  }
+  [js-resizable_bar][data-position="right"] {
+    border-right: none;
+  }
+
+  [js-resizable_bar-handler] {
+    pointer-events: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    width: 8px;
+    color: var(--color-fg-accent, currentColor);
+  }
+
+  [js-resizable_bar-border] {
+    pointer-events: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 8px;
+    background: transparent;
+    transition: .3s;
+    cursor: col-resize;
+  }
+
+  [js-resizable_bar][data-state="closed"] [js-resizable_bar-border] {
+    cursor: e-resize;
+  }
+
+  [js-resizable_bar-border]::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 1px;
+    background: var(--color-border, rgba(0,0,0,0.1));
+    transition: .3s;
+  }
+
+  [js-resizable_bar-border]::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 4px;
+    background: transparent;
+    transition: .3s;
+  }
+
+  [js-resizable_bar][data-position="left"] [js-resizable_bar-border]::before {
+    right: 0;
+    left: unset;
+  }
+  [js-resizable_bar][data-position="left"] [js-resizable_bar-border]::after {
+    right: -2px;
+    left: unset;
+  }
+
+  [js-resizable_bar][data-position="right"] [js-resizable_bar-border]::before {
+    right: unset;
+    left: 0;
+  }
+  [js-resizable_bar][data-position="right"] [js-resizable_bar-border]::after {
+    right: unset;
+    left: -2px;
+  }
+
+  [js-resizable_bar-border]:hover::after {
+    background: var(--color-fg-accent, currentColor);
+  }
+
+  [js-resizable_bar-button] {
+    cursor: pointer;
+    position: absolute;
+    z-index: 2;
+    left: 0;
+    right: 0;
+    top: -8px;
+    box-sizing: border-box;
+    width: 16px;
+    height: 16px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 50%;
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--color-bg-main, White);
+    background: var(--color-bg-main, White);
+    color: var(--color-fg-accent, currentColor);
+    transition: .3s;
+  }
+
+  [data-position="right"] [js-resizable_bar-button] {
+    right: 0;
+    left: unset;
+  }
+  [data-position="left"] [js-resizable_bar-button] {
+    left: 0;
+    right: unset;
+  }
+
+  [js-resizable_bar-button]:hover {
+    color: var(--color-fg-main, Black);
+    border-color: var(--color-fg-main, Black);
+  }
+
+  /* ❮❯ */
+  [js-resizable_bar-button]::after {
+    content: '❮';
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    left: 0;
+    right: 0;
+    top: -8px;
+    bottom: -8px;
+  }
+  [js-resizable_bar][data-state="open"] [js-resizable_bar-button]::after,
+  [js-resizable_bar][data-state="open"][data-position="left"] [js-resizable_bar-button]::after,
+  [js-resizable_bar][data-state="closed"][data-position="right"] [js-resizable_bar-button]::after {
+    content: '❮';
+  }
+  [js-resizable_bar][data-state="closed"] [js-resizable_bar-button]::after,
+  [js-resizable_bar][data-state="closed"][data-position="left"] [js-resizable_bar-button]::after,
+  [js-resizable_bar][data-state="open"][data-position="right"] [js-resizable_bar-button]::after {
+    content: '❯';
+  }
+
+  [js-resizable_bar-scroll] {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    /*padding: calc(var(--base-rhythm, 8px)*2);
+    padding-bottom: calc(var(--base-rhythm, 8px)*8);*/
+    scrollbar-color: var(--scrollbarBG, transparent) var(--scrollbarBG, transparent);
+  }
+  [js-resizable_bar-scroll='y'] {
+    overflow-x: hidden;
+    overflow-y: scroll;
+  }
+  [js-resizable_bar-scroll]:hover {
+    scrollbar-color: var(--thumbBG, rgba(0,0,0,.05)) var(--scrollbarBG, transparent);
+  }
+  [js-resizable_bar-scroll]::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbarBG, transparent);
+  }
+  [js-resizable_bar-scroll]:hover::-webkit-scrollbar-thumb {
+    background-color: var(--thumbBG, rgba(0,0,0,.05))
+  }
+
+  [data-state="closed"] [js-resizable_bar-scroll] {
+    display: none;
+  }
+  </style>
+  <style js-resizable_bar-preloader-style="">
+      [js-resizable_bar]::after {
+        opacity: 0;
+        transition: .3s;
+        pointer-events: none;
+      }
+  </style>
+
+  <!-- HTML2PDF -->
+  <!-- data-debug-mode='true' -->
+  <script
+    defer
+    data-debug-mode='true'
+    data-preloader='true'
+    data-preloader-target='[html2pdf-preloader]'
+    data-preloader-background='#F2F5F9'
+    data-forced-page-break-selectors=''
+    data-page-break-before-selectors='H2'
+    data-page-break-after-selectors='.pdf-toc .free_text'
+    data-no-break-selectors='sdoc-meta sdoc-section-title .pdf-toc-row'
+    data-no-hanging-selectors='sdoc-section-title sdoc-anchor sdoc-meta .admonition-title sdoc-node-title sdoc-node-field-label strong:only-child'
+
+    src="../../../../dist/bundle.js"></script>
+
+  <!--
+    data-print-height='200mm'
+    data-print-font-size='12pt'
+  -->
+
+</head>
+
+<body data-viewtype="html2pdf" data-turbo="false">
+<div id="connection_status" class="connection_status"></div>
+<div class="layout" id="layout">
+
+<div style='display:contents'><!-- TEST GROUPING -->
+  <nav class="layout_nav">
+  <div class="nav">
+  <a data-link="index" class="nav_button" href="http://127.0.0.1:5111/index.html" title="Project index">
+  <svg class="svg_icon" width="16" height="16" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <line x1="9" y1="4" x2="7" y2="4"></line>
+  <line x1="12" y1="9" x2="12" y2="7"></line>
+  <line x1="6" y1="10" x2="10" y2="6"></line>
+  <circle cx="4" cy="12" r="2.25"></circle>
+  <circle cx="12" cy="4" r="2.25"></circle>
+  <circle cx="4" cy="4" r="2.25"></circle>
+  <circle cx="12" cy="12" r="2.25"></circle>
+  </svg>
+  </a>
+  </div>
+  </nav>
+  <aside class="layout_tree">
+  <div js-resizable_bar="tree" data-state="closed" data-position="left" data-testid="tree-bar" style="width: 20vw;"><div js-resizable_bar-scroll="y" data-content="tree"></div>
+  <div js-resizable_bar-handler="" data-content="tree" style="left: unset;"><div js-resizable_bar-border="" data-content="tree" title="Resize tree" data-testid="tree-handler-border"></div><div js-resizable_bar-button="" data-content="tree" title="Toggle tree" data-testid="tree-handler-button"></div></div></div>
+  </aside>
+  <aside data-position="right" class="layout_toc">
+  <div js-resizable_bar="toc" data-state="closed" data-position="right" data-testid="toc-bar" style="width: 20vw;"><div js-resizable_bar-scroll="y" data-content="toc"></div>
+  <div js-resizable_bar-handler="" data-content="toc" style="right: unset;"><div js-resizable_bar-border="" data-content="toc" title="Resize toc" data-testid="toc-handler-border"></div><div js-resizable_bar-button="" data-content="toc" title="Toggle toc" data-testid="toc-handler-button"></div></div></div>
+  </aside>
+  <header class="layout_header">
+  <div class="header">
+  <svg class="svg_icon" width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <polyline points="14 5 14 10.5 8 15 2 10.5 2 5 8 1 14 5 8 9.5"></polyline>
+  <polyline points="2.5 5.5 8 9.5 8 15"></polyline>
+  </svg>
+  <div class="header__project_name" title="StrictDoc Documentation">StrictDoc Documentation</div>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" class="sc-gLvsXj bpkaBy"><path stroke="currentColor" d="M12.5 4.5l-5 11" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+  <turbo-frame id="header_document_title">
+  <svg class="svg_icon" width="16" height="16" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d=" M13,13 L13,8 C13,7.5 12.6,7 12,7 L9,7 C8.5,7 8,6.5 8,6 L8,3 C8,2.5 7.5,2 7,2 L4,2 C3.5,2 3,2.5 3,3 L3,13 C3,13.5 3.5,14 4,14 L12,14 C12.6,14 13,13.5 13,13 Z M13,9 L13,8 C13,7.5 13,7 12.5,6.5 L8.5,2.5 C8,2 7.5,2 7,2 L6,2"></path></svg>
+  <div class="header__document_title" title="User Guide">User Guide</div>
+  </turbo-frame>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" class="sc-gLvsXj bpkaBy"><path stroke="currentColor" d="M12.5 4.5l-5 11" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+  <div class="viewtype">
+  <div id="viewtype_handler" class="viewtype__handler" aria-expanded="false" aria-controls="viewtype_menu"><span>PDF</span><svg class="svg_icon" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M5 10l3 3 3-3M5 6l3-3 3 3"></path></svg></div>
+  </div>
+  </div>
+  </header>
+</div><!-- // TEST GROUPING -->
+
+<main class="layout_main">
+<div html2pdf-preloader="" class="main">
+<!-- START of content -->
+
+
+
+<div html2pdf="" class="content">
+  <div class="pdf-toc" data-testid="pdf-toc-list">
+    <div class="pdf-toc-row">
+      <span class="pdf-toc-cell"></span>
+      <span class="pdf-toc-cell" style="text-align: center;font-weight: bold;">Table of contents</span>
+      <span class="pdf-toc-cell"></span>
+    </div>
+    <div class="pdf-toc-row" data-nodeid="qeqwewqe678768768">
+      <span class="pdf-toc-cell">
+        1
+      </span>
+      <span dotted="" class="pdf-toc-cell">
+        <a href="#tyutyuytut" data-turbo="false">Introduction Plain</a>
+      </span>
+      <span class="pdf-toc-cell"><html2pdf-toc-page-number data-id="tyutyuytut"></html2pdf-toc-page-number></span>
+    </div>
+    <div class="pdf-toc-row" data-nodeid="sdfsdfsd7987987987">
+      <span class="pdf-toc-cell">
+        1.1
+      </span>
+      <span dotted="" class="pdf-toc-cell">
+        <a href="#uikniukinkin" data-turbo="false">Introduction Plain inside</a>
+      </span>
+      <span class="pdf-toc-cell"><html2pdf-toc-page-number data-id="uikniukinkin"></html2pdf-toc-page-number></span>
+    </div>
+    <div class="pdf-toc-row" data-nodeid="bd3e1273cb244616aff9hgm45645654mbddfc22c05638">
+      <span class="pdf-toc-cell">
+        2
+      </span>
+      <span dotted="" class="pdf-toc-cell">
+        <a href="#wvsesrvvserg" data-turbo="false">Introduction</a>
+      </span>
+      <span class="pdf-toc-cell"><html2pdf-toc-page-number data-id="wvsesrvvserg"></html2pdf-toc-page-number></span>
+    </div>
+    <div class="pdf-toc-row" data-nodeid="bd3e1273cb244616aff9hg46496896ddfc22c05638">
+      <span class="pdf-toc-cell">
+        2.1
+      </span>
+      <span dotted="" class="pdf-toc-cell">
+        <a href="#ervgvgydrvdrthbrthbxht" data-turbo="false">Introduction inside</a>
+      </span>
+      <span class="pdf-toc-cell"><html2pdf-toc-page-number
+          data-id="ervgvgydrvdrthbrthbxht"></html2pdf-toc-page-number></span>
+    </div>
+    <div class="pdf-toc-row" data-nodeid="bd3e1273cb244616aff956bddfbdfdfc22c05638">
+      <span class="pdf-toc-cell">
+        3
+      </span>
+      <span dotted="" class="pdf-toc-cell">
+        <a href="#ehehrhrthrthrhsth" data-turbo="false">First reserved section</a>
+      </span>
+      <span class="pdf-toc-cell"><html2pdf-toc-page-number
+          data-id="ehehrhrthrthrhsth"></html2pdf-toc-page-number></span>
+    </div>
+    <div class="pdf-toc-row" data-nodeid="bd3e1273cb2466666956bddfbdfdfc22c05638">
+      <span class="pdf-toc-cell">
+        3.1
+      </span>
+      <span dotted="" class="pdf-toc-cell">
+        <a href="#econdeservedsection" data-turbo="false">Second reserved section</a>
+      </span>
+      <span class="pdf-toc-cell"><html2pdf-toc-page-number
+          data-id="econdeservedsection"></html2pdf-toc-page-number></span>
+    </div>
+    <div class="pdf-toc-row" data-nodeid="bd3e1273cb244616aff9hgmgmghmghmbddfc22c05638">
+      <span class="pdf-toc-cell">
+        4
+      </span>
+      <span dotted="" class="pdf-toc-cell">
+        <a href="#4-Introduction" data-turbo="false">Introduction</a>
+      </span>
+      <span class="pdf-toc-cell"><html2pdf-toc-page-number data-id="4-Introduction"></html2pdf-toc-page-number></span>
+    </div>
+    <div class="pdf-toc-row" data-nodeid="bd3e1273cb244616aff9hg46464356mbddfc22c05638">
+      <span class="pdf-toc-cell">
+        4.1
+      </span>
+      <span dotted="" class="pdf-toc-cell">
+        <a href="#4.1-Introduction-inside" data-turbo="false">Introduction inside</a>
+      </span>
+      <span class="pdf-toc-cell"><html2pdf-toc-page-number
+          data-id="4.1-Introduction-inside"></html2pdf-toc-page-number></span>
+    </div>
+    <div class="pdf-toc-row" data-nodeid="n4857ty5487ty4587jt5487ty54t8cy854">
+      <span class="pdf-toc-cell">
+        4.2
+      </span>
+      <span dotted="" class="pdf-toc-cell">
+        <a href="#TEST-TEST-3" data-turbo="false">StrictDoc web-based graphical user interface</a>
+      </span>
+      <span class="pdf-toc-cell"><html2pdf-toc-page-number data-id="TEST-TEST-3"></html2pdf-toc-page-number></span>
+    </div>
+  </div>
+  <sdoc-node node-style="readonly" node-role="requirement" show-node-type-name="SECTION_PLAIN" node-view="plain"
+    data-testid="node-requirement">
+    <sdoc-anchor id="tyutyuytut" node-role="requirement" data-uid="tyutyuytut"></sdoc-anchor>
+    <sdoc-node-content node-view="plain" data-level="1" show-node-type-name="SECTION_PLAIN"
+      data-testid="requirement-style-plain">
+      <sdoc-node-title data-level="1">
+        <h2>
+          <sdoc-autogen>1.&nbsp;Introduction Plain</sdoc-autogen>
+        </h2>
+      </sdoc-node-title>
+
+    </sdoc-node-content>
+  </sdoc-node>
+  <sdoc-node node-style="readonly" node-role="requirement" show-node-type-name="SECTION_PLAIN" node-view="plain"
+    data-testid="node-requirement">
+    <sdoc-anchor id="uikniukinkin" node-role="requirement" data-uid="uikniukinkin"></sdoc-anchor>
+    <sdoc-node-content node-view="plain" data-level="1.1" show-node-type-name="SECTION_PLAIN"
+      data-testid="requirement-style-plain">
+      <sdoc-node-title data-level="1.1">
+        <h3>
+          <sdoc-autogen>1.1.&nbsp;Introduction Plain inside</sdoc-autogen>
+        </h3>
+      </sdoc-node-title>
+    </sdoc-node-content>
+  </sdoc-node>
+  <sdoc-node node-style="readonly" node-role="requirement" show-node-type-name="TEXT_PLAIN" node-view="plain"
+    data-testid="node-requirement">
+    <sdoc-anchor id="4425609424" node-role="requirement"></sdoc-anchor>
+    <sdoc-node-content node-view="plain" data-level="" show-node-type-name="TEXT_PLAIN"
+      data-testid="requirement-style-plain">
+      <sdoc-node-field-label>STATEMENT:</sdoc-node-field-label>
+      <sdoc-node-field data-field-label="statement">
+        <sdoc-autogen>
+          <div class="document">
+            <p>Simple Plain view. The new pope faces a divided church in his home country, as Catholics have split along
+              political lines.</p>
+          </div>
+        </sdoc-autogen></sdoc-node-field>
+    </sdoc-node-content>
+  </sdoc-node>
+  <sdoc-node node-style="readonly" node-role="requirement" show-node-type-name="SECTION_NAR" node-view="narrative"
+    data-testid="node-requirement">
+    <sdoc-anchor id="wvsesrvvserg" node-role="requirement" data-uid="wvsesrvvserg"></sdoc-anchor>
+    <sdoc-node-content node-view="narrative" data-level="2" show-node-type-name="SECTION_NAR"
+      data-testid="requirement-style-narrative">
+      <sdoc-node-title data-level="2">
+        <h2>
+          <sdoc-autogen>2.&nbsp;Introduction</sdoc-autogen>
+        </h2>
+      </sdoc-node-title>
+      <sdoc-scope class="node_fields_group-secondary">
+        <sdoc-node-field-label>MID:</sdoc-node-field-label>
+        <sdoc-node-field data-field-type="singleline" data-field-label="MID">
+          <sdoc-autogen>bd3e1273cb244616aff9hgm45645654mbddfc22c05638</sdoc-autogen></sdoc-node-field>
+        <sdoc-node-field-label>UID:</sdoc-node-field-label>
+        <sdoc-node-field data-field-type="singleline" data-field-label="UID">
+          <sdoc-autogen>wvsesrvvserg</sdoc-autogen></sdoc-node-field>
+      </sdoc-scope>
+    </sdoc-node-content>
+  </sdoc-node>
+  <sdoc-node node-style="readonly" node-role="requirement" show-node-type-name="SECTION_NAR" node-view="narrative"
+    data-testid="node-requirement">
+    <sdoc-anchor id="ervgvgydrvdrthbrthbxht" node-role="requirement" data-uid="ervgvgydrvdrthbrthbxht"></sdoc-anchor>
+    <sdoc-node-content node-view="narrative" data-level="2.1" show-node-type-name="SECTION_NAR"
+      data-testid="requirement-style-narrative">
+      <sdoc-node-title data-level="2.1">
+        <h3>
+          <sdoc-autogen>2.1.&nbsp;Introduction inside</sdoc-autogen>
+        </h3>
+      </sdoc-node-title>
+      <sdoc-scope class="node_fields_group-secondary">
+        <sdoc-node-field-label>MID:</sdoc-node-field-label>
+        <sdoc-node-field data-field-type="singleline" data-field-label="MID">
+          <sdoc-autogen>bd3e1273cb244616aff9hg46496896ddfc22c05638</sdoc-autogen></sdoc-node-field>
+        <sdoc-node-field-label>UID:</sdoc-node-field-label>
+        <sdoc-node-field data-field-type="singleline" data-field-label="UID">
+          <sdoc-autogen>ervgvgydrvdrthbrthbxht</sdoc-autogen></sdoc-node-field>
+      </sdoc-scope>
+    </sdoc-node-content>
+  </sdoc-node>
+  <sdoc-node node-style="readonly" node-role="requirement" show-node-type-name="TEXT_NAR" node-view="narrative"
+    data-testid="node-requirement">
+    <sdoc-anchor id="4425610432" node-role="requirement"></sdoc-anchor>
+    <sdoc-node-content node-view="narrative" data-level="" show-node-type-name="TEXT_NAR"
+      data-testid="requirement-style-narrative">
+      <sdoc-scope class="node_fields_group-secondary">
+        <sdoc-node-field-label>MID:</sdoc-node-field-label>
+        <sdoc-node-field data-field-type="singleline" data-field-label="MID">
+          <sdoc-autogen>fae9c95e545645645654645680e479228f9ba</sdoc-autogen></sdoc-node-field>
+      </sdoc-scope>
+      <sdoc-scope class="node_fields_group-primary">
+        <sdoc-node-field-label>STATEMENT:</sdoc-node-field-label>
+        <sdoc-node-field data-field-label="statement">
+          <sdoc-autogen>
+            <div class="document">
+              <p>Simple.</p>
+            </div>
+          </sdoc-autogen></sdoc-node-field>
+      </sdoc-scope>
+    </sdoc-node-content>
+  </sdoc-node>
+  <sdoc-section>
+    <sdoc-section-title data-level="3">
+      <h2 id="ehehrhrthrthrhsth">3.&nbsp;First reserved section</h2>
+    </sdoc-section-title>
+    <sdoc-meta>
+      <sdoc-meta-label>UID:</sdoc-meta-label>
+      <sdoc-meta-field>
+        <sdoc-autogen>ehehrhrthrthrhsth</sdoc-autogen></sdoc-meta-field>
+    </sdoc-meta>
+  </sdoc-section>
+  <sdoc-node node-style="readonly" node-role="requirement" show-node-type-name="TEXT" node-view="simple"
+    data-testid="node-requirement">
+    <sdoc-anchor id="4425611056" node-role="requirement"></sdoc-anchor>
+    <sdoc-node-content node-view="simple" data-level="" show-node-type-name="TEXT"
+      data-testid="requirement-style-simple">
+      <sdoc-node-field-label>MID:</sdoc-node-field-label>
+      <sdoc-node-field data-field-type="singleline" data-field-label="MID">
+        <sdoc-autogen>asasasasasasasasadffgtvg565656</sdoc-autogen></sdoc-node-field>
+      <sdoc-node-field-label>STATEMENT:</sdoc-node-field-label>
+      <sdoc-node-field data-field-label="statement">
+        <sdoc-autogen>
+          <div class="document">
+            <p>Introduction to test new grammar features in document. Introduction to test new grammar features in
+              document. Introduction to test new grammar features in document.</p>
+          </div>
+        </sdoc-autogen></sdoc-node-field>
+    </sdoc-node-content>
+  </sdoc-node>
+  <sdoc-section>
+    <sdoc-section-title data-level="3.1">
+      <h3 id="econdeservedsection">3.1.&nbsp;Second reserved section</h3>
+    </sdoc-section-title>
+    <sdoc-meta>
+      <sdoc-meta-label>UID:</sdoc-meta-label>
+      <sdoc-meta-field>
+        <sdoc-autogen>econdeservedsection</sdoc-autogen></sdoc-meta-field>
+    </sdoc-meta>
+  </sdoc-section>
+  <sdoc-node node-style="readonly" node-role="requirement" show-node-type-name="TEXT" node-view="simple"
+    data-testid="node-requirement">
+    <sdoc-anchor id="4425611344" node-role="requirement"></sdoc-anchor>
+    <sdoc-node-content node-view="simple" data-level="" show-node-type-name="TEXT"
+      data-testid="requirement-style-simple">
+      <sdoc-node-field-label>MID:</sdoc-node-field-label>
+      <sdoc-node-field data-field-type="singleline" data-field-label="MID">
+        <sdoc-autogen>96dbff3aa48b4c68b31e8356c894887e</sdoc-autogen></sdoc-node-field>
+      <sdoc-node-field-label>STATEMENT:</sdoc-node-field-label>
+      <sdoc-node-field data-field-label="statement">
+        <sdoc-autogen>
+          <div class="document">
+            <p>Text without UID.</p>
+            <p>Introduction to test new grammar features in document. Introduction to test new grammar features in
+              document. Introduction to test new grammar features in document. Introduction to test new grammar features
+              in document. Introduction to test new grammar features in document. Introduction to test new grammar
+              features in document.</p>
+          </div>
+        </sdoc-autogen></sdoc-node-field>
+    </sdoc-node-content>
+  </sdoc-node>
+  <sdoc-node node-style="readonly" node-role="requirement" show-node-type-name="SECTION_TAG" node-view="simple"
+    data-testid="node-requirement">
+    <sdoc-anchor id="4-Introduction" node-role="requirement"></sdoc-anchor>
+    <sdoc-node-content node-view="simple" data-level="4" show-node-type-name="SECTION_TAG"
+      data-testid="requirement-style-simple">
+      <sdoc-node-title data-level="4">
+        <sdoc-autogen>4.&nbsp;Introduction</sdoc-autogen>
+      </sdoc-node-title>
+      <sdoc-node-field-label>MID:</sdoc-node-field-label>
+      <sdoc-node-field data-field-type="singleline" data-field-label="MID">
+        <sdoc-autogen>bd3e1273cb244616aff9hgmgmghmghmbddfc22c05638</sdoc-autogen></sdoc-node-field>
+    </sdoc-node-content>
+  </sdoc-node>
+  <sdoc-node node-style="readonly" node-role="requirement" show-node-type-name="SECTION_TAG" node-view="simple"
+    data-testid="node-requirement">
+    <sdoc-anchor id="4.1-Introduction-inside" node-role="requirement"></sdoc-anchor>
+    <sdoc-node-content node-view="simple" data-level="4.1" show-node-type-name="SECTION_TAG"
+      data-testid="requirement-style-simple">
+      <sdoc-node-title data-level="4.1">
+        <sdoc-autogen>4.1.&nbsp;Introduction inside</sdoc-autogen>
+      </sdoc-node-title>
+      <sdoc-node-field-label>MID:</sdoc-node-field-label>
+      <sdoc-node-field data-field-type="singleline" data-field-label="MID">
+        <sdoc-autogen>bd3e1273cb244616aff9hg46464356mbddfc22c05638</sdoc-autogen></sdoc-node-field>
+    </sdoc-node-content>
+  </sdoc-node>
+  <sdoc-node node-style="readonly" node-role="requirement" show-node-type-name="TEXT" node-view="simple"
+    data-testid="node-requirement">
+    <sdoc-anchor id="4425612208" node-role="requirement"></sdoc-anchor>
+    <sdoc-node-content node-view="simple" data-level="" show-node-type-name="TEXT"
+      data-testid="requirement-style-simple">
+      <sdoc-node-field-label>MID:</sdoc-node-field-label>
+      <sdoc-node-field data-field-type="singleline" data-field-label="MID">
+        <sdoc-autogen>fae9c95e57154a2cab680e479228f9ba</sdoc-autogen></sdoc-node-field>
+      <sdoc-node-field-label>STATEMENT:</sdoc-node-field-label>
+      <sdoc-node-field data-field-label="statement">
+        <sdoc-autogen>
+          <div class="document">
+            <p>Introduction to test new grammar features in document.</p>
+          </div>
+        </sdoc-autogen></sdoc-node-field>
+    </sdoc-node-content>
+  </sdoc-node>
+  <sdoc-node node-style="readonly" node-role="requirement" show-node-type-name="FEATURE" node-view="simple"
+    data-testid="node-requirement">
+    <sdoc-anchor id="TEST-TEST-3" node-role="requirement" data-uid="TEST-TEST-3"></sdoc-anchor>
+    <sdoc-node-content node-view="simple" data-level="4.2" data-status="stable" show-node-type-name="FEATURE"
+      data-testid="requirement-style-simple">
+      <sdoc-node-title data-level="4.2">
+        <sdoc-autogen>4.2.&nbsp;StrictDoc web-based graphical user interface</sdoc-autogen>
+      </sdoc-node-title>
+      <sdoc-node-field-label>MID:</sdoc-node-field-label>
+      <sdoc-node-field data-field-type="singleline" data-field-label="MID">
+        <sdoc-autogen>n4857ty5487ty4587jt5487ty54t8cy854</sdoc-autogen></sdoc-node-field>
+      <sdoc-node-field-label>UID:</sdoc-node-field-label>
+      <sdoc-node-field data-field-type="singleline" data-field-label="UID">
+        <sdoc-autogen>TEST-TEST-3</sdoc-autogen></sdoc-node-field>
+      <sdoc-node-field-label>STATUS:</sdoc-node-field-label>
+      <sdoc-node-field data-field-type="singleline" data-field-label="STATUS">
+        <sdoc-autogen>Stable</sdoc-autogen></sdoc-node-field>
+      <sdoc-node-field-label>STATEMENT:</sdoc-node-field-label>
+      <sdoc-node-field data-field-label="statement">
+        <sdoc-autogen>
+          <div class="document">
+            <p>StrictDoc features an editable web interface that enables users to view and modify requirements directly
+              within their browser. This interface provides a user-friendly way to interact with .sdoc files, allowing
+              real-time editing of documents and requirements. Changes made through the web interface are automatically
+              saved back to the original text files, ensuring synchronization between the user interface and the
+              underlying document structure. The web interface also supports visualization of requirement hierarchies
+              and relationships, making it easier to manage complex documents with multiple nested levels and linked
+              requirements.</p>
+          </div>
+        </sdoc-autogen></sdoc-node-field>
+      <sdoc-node-field-label>DOCUMENTATION:</sdoc-node-field-label>
+      <sdoc-node-field data-field-label="DOCUMENTATION">
+        <sdoc-autogen>
+          <div class="document">
+            <ul class="simple">
+              <li><a href="../../../strictdoc/docs/strictdoc_01_user_guide-PDF.html#SECTION-UG-Web-server">🔗&nbsp;4.2.
+                  Web server</a></li>
+              <li><a href="../../../strictdoc/docs/strictdoc_01_user_guide-PDF.html#SDOC_UG_LIMIT_WEB">🔗&nbsp;18.2.
+                  Limitations of web user interface</a></li>
+            </ul>
+          </div>
+        </sdoc-autogen></sdoc-node-field>
+      <sdoc-node-field-label>parent relations:</sdoc-node-field-label>
+      <sdoc-node-field data-field-label="parent relations">
+        <ul class="requirement__link">
+          <li>
+            <a data-turbo="false" class="requirement__link-parent"
+              href="../../../strictdoc/docs/strictdoc_20_L1_Open_Requirements_Tool-PDF.html#SDOC-SSS-88">
+              <span class="requirement__parent-uid">SDOC-SSS-88</span>
+              Text files for storing documentation and requirements
+            </a>
+          </li>
+        </ul>
+      </sdoc-node-field>
+      <sdoc-node-field-label>file relations:</sdoc-node-field-label>
+      <sdoc-node-field data-field-label="file relations">
+        <ul class="requirement__link">
+          <li>
+            <a data-turbo="false" class="requirement__link-file"
+              href="../../../_source_files/strictdoc/backend/sdoc/grammar/grammar.py.html#TEST-TEST-3#1#239">
+              strictdoc/backend/sdoc/grammar/grammar.py, <i>lines: 1-239</i>, entire file
+            </a>
+          </li>
+          <li>
+            <a data-turbo="false" class="requirement__link-file"
+              href="../../../_source_files/strictdoc/backend/sdoc/grammar/grammar_builder.py.html#TEST-TEST-3#1#59">
+              strictdoc/backend/sdoc/grammar/grammar_builder.py, <i>lines: 1-59</i>, entire file
+            </a>
+          </li>
+          <li>
+            <a data-turbo="false" class="requirement__link-file"
+              href="../../../_source_files/strictdoc/backend/sdoc/processor.py.html#TEST-TEST-3#1#264">
+              strictdoc/backend/sdoc/processor.py, <i>lines: 1-264</i>, entire file
+            </a>
+          </li>
+          <li>
+            <a data-turbo="false" class="requirement__link-file"
+              href="../../../_source_files/strictdoc/backend/sdoc/reader.py.html#TEST-TEST-3#1#104">
+              strictdoc/backend/sdoc/reader.py, <i>lines: 1-104</i>, entire file
+            </a>
+          </li>
+          <li>
+            <a data-turbo="false" class="requirement__link-file"
+              href="../../../_source_files/strictdoc/backend/sdoc/writer.py.html#TEST-TEST-3#1#546">
+              strictdoc/backend/sdoc/writer.py, <i>lines: 1-546</i>, entire file
+            </a>
+          </li>
+        </ul>
+      </sdoc-node-field>
+    </sdoc-node-content>
+  </sdoc-node>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- END of content -->
+</div><!-- / main -->
+
+
+
+
+
+
+<style html2pdf-frontpage-style>
+  .html2pdf-frontpage-grid {
+    display: grid;
+    height: 100%;
+  }
+  .html2pdf-frontpage-grid-middle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .html2pdf-frontpage-grid-bottom {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+  }
+  </style>
+  <!-- <template html2pdf-frontpage><div class="html2pdf-frontpage-grid">
+    <div class="html2pdf-frontpage-grid-top"></div>
+    <div class="html2pdf-frontpage-grid-middle">
+      <h1 data-testid="document-title">Dummy Software Requirements Specification #1</h1>
+    </div>
+    <div class="html2pdf-frontpage-grid-bottom">
+    </div>
+    </div>
+  </template> -->
+  <style html2pdf-header-style>
+  html2pdf-header {
+    padding-top: 0;
+  }
+  .html2pdf-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    column-gap: 32px;
+    font-size: small;
+    line-height: 1;
+    color: rgba(0,0,0,0.5);
+    border-bottom: 1px solid rgba(0,0,0,0.25);
+    padding-bottom: 8px;
+  }
+  .html2pdf-header-left {
+    text-align: left;
+    flex-shrink: 0;
+  }
+  .html2pdf-header-right {
+    text-align: right;
+    font-weight: bold;
+  }
+  </style>
+  <template html2pdf-header><div class="html2pdf-header">
+      <div class="html2pdf-header-left">Untitled Project</div>
+      <div class="html2pdf-header-right">Dummy Software Requirements Specification #1</div>
+    </div>
+  </template>
+  <style html2pdf-footer-style>
+  html2pdf-footer {
+    padding-bottom: 0;
+  }
+  .html2pdf-footer {
+    display: flex;
+    justify-content: space-between;
+    column-gap: 16px;
+    font-size: small;
+    line-height: 1;
+    color: rgba(0,0,0,0.5);
+    border-top: 1px solid rgba(0,0,0,0.25);
+    padding-top: 8px;
+  }
+  .html2pdf-footer-left {
+    text-align: left;
+  }
+  .html2pdf-footer-right {
+    text-align: right;
+  }
+  .html2pdf-header-page_placeholder {
+    width: 54px; /* max for pattern 888/888 */
+    flex-shrink: 0;
+    text-indent: -10000px;
+  }
+  </style>
+  <template html2pdf-footer><div html2pdf-page-number>
+      <span html2pdf-page-number-current></span>/<span html2pdf-page-number-total></span>
+    </div>
+    <div class="html2pdf-footer">
+      <div class="html2pdf-footer-left">2024-01-18</div>
+      <div class="html2pdf-footer-right"></div>
+      <div class="html2pdf-header-page_placeholder"></div>
+    </div>
+  </template>
+
+
+</main>
+<footer class="layout_footer">
+  <div class="footer">
+    Built with
+    <a class="strictdoc__link" href="https://github.com/strictdoc-project/strictdoc" target="_blank">StrictDoc</a>
+    <a class="strictdoc__version" href="https://github.com/strictdoc-project/strictdoc/releases/tag/0.0.43a3" target="_blank">
+      <svg height="16" viewBox="0 0 16 16" version="1.1" width="16">
+        <path fill-rule="evenodd" d="M2.5 7.775V2.75a.25.25 0 01.25-.25h5.025a.25.25 0 01.177.073l6.25 6.25a.25.25 0 010 .354l-5.025 5.025a.25.25 0 01-.354 0l-6.25-6.25a.25.25 0 01-.073-.177zm-1.5 0V2.75C1 1.784 1.784 1 2.75 1h5.025c.464 0 .91.184 1.238.513l6.25 6.25a1.75 1.75 0 010 2.474l-5.026 5.026a1.75 1.75 0 01-2.474 0l-6.25-6.25A1.75 1.75 0 011 7.775zM6 5a1 1 0 100 2 1 1 0 000-2z"></path>
+      </svg>
+      0.0.43a3
+    </a>
+  </div>
+</footer>
+<aside class="layout_aside"></aside>
+</div><!-- / .layout -->
+<div id="modal"></div>
+<div id="confirm"></div>
+</body>
+</html>
