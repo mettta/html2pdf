@@ -98,9 +98,9 @@ export default class Pages {
 
   calculate() {
     this._removeGarbageElements();
+    this._prepareNoHangingElements();
     this._prepareForcedPageBreakElements();
     this._prepareNoBreakElements();
-    this._prepareNoHangingElements();
     this._calculate();
     this._debug._ && console.log('%c ✔ Pages.calculate()', CONSOLE_CSS_LABEL_PAGES, this.pages);
 
@@ -137,6 +137,8 @@ export default class Pages {
   }
 
   _prepareForcedPageBreakElements() {
+    // ** Must be called after _prepareNoHangingElements()
+
     const pageStarters = this._pageBreakBeforeSelectors.length
                        ? this._node.getAll(this._pageBreakBeforeSelectors, this._contentFlow)
                        : [];
@@ -156,7 +158,6 @@ export default class Pages {
       const elementBeforeInspected = this._DOM.getLeftNeighbor(inspectedElementMaxFChParent);
       const isInspectedElementStartsContent = this._node.isContentFlowStart(elementBeforeInspected);
       if (isInspectedElementStartsContent) {
-        console.log(pageStarters[0])
         pageStarters.shift();
       };
     }
@@ -176,22 +177,16 @@ export default class Pages {
 
     // * find all relevant elements and insert forced page break markers before them.
     pageStarters.length && pageStarters.forEach(element => {
-      const firstChildParent = this._node.findFirstChildParent(element, this._contentFlow);
-      if (firstChildParent) {
-        element = firstChildParent;
-      };
-      this._node.insertForcedPageBreakBefore(element);
+      const candidate = this._node.findBetterForcedPageStarter(element, this._contentFlow);
+      candidate && this._node.insertForcedPageBreakBefore(candidate);
     });
 
     // * find all relevant elements and insert forced page break markers before them.
     forcedPageStarters && forcedPageStarters.forEach(element => {
       // ** If it is not a forced page break element inserted by hand into the code:
       if(!this._node.isForcedPageBreak(element)) {
-        const firstChildParent = this._node.findFirstChildParent(element, this._contentFlow)
-        if (firstChildParent) {
-          element = firstChildParent;
-        }
-        this._node.insertForcedPageBreakBefore(element);
+        const candidate = this._node.findBetterForcedPageStarter(element, this._contentFlow);
+        candidate && this._node.insertForcedPageBreakBefore(candidate);
       }
       // ** In other case we leave it as it is.
     });
