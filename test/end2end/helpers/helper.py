@@ -106,9 +106,9 @@ class Helper:
             by=By.XPATH,
         )
 
-    def assert_element_starts_page(self, element_xpath: str, page_number: int) -> None:
+    def assert_element_starts_page(self, element_xpath: str, page_number: int, element_order: int = 1) -> None:
         attr_value = self.test_case.get_attribute(
-            f'{_content_flow_}{element_xpath}',
+            f'({_content_flow_}{element_xpath})[{element_order}]',
             'html2pdf-page-start',
             by=By.XPATH
         )
