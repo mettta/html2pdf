@@ -262,16 +262,27 @@ export default class Pages {
   }
 
   _registerPageStart(pageStart, improveResult = false) {
+    this._debug._registerPageStart && console.log(
+      `%c📍`, "background:yellow;font-weight:bold",
+      '\n  improveResult:', improveResult,
+      '\n  passed pageStart:', pageStart,
+    );
+
+    // Improving the result should also be skipped, as we would have to look for
+    // a variant before the already registered page.
+    if (this._node.isPageStartElement(pageStart)) return;
+
     if (improveResult) {
       pageStart = this._node.findBetterPageStart(
         pageStart,
         this.pages.at(-1)?.pageStart,
-        this._contentFlow,
+        // this._contentFlow, // delete after rebase
         this._root
       )
     }
 
-    const pageBottom = this._node.getTopWithMargin(pageStart, this._root) + this._referenceHeight;
+    const pageTop = this._node.getTopWithMargin(pageStart, this._root);
+    const pageBottom = pageTop + this._referenceHeight;
     this.pages.push({
       pageStart: pageStart,
       pageBottom: pageBottom,
@@ -279,6 +290,8 @@ export default class Pages {
     this._node.markPageStartElement(pageStart, this.pages.length);
     this._debug._registerPageStart && console.log(
       `%c📍register page ${this.pages.length}`, "background:yellow;font-weight:bold",
+      '\n  improved result:', improveResult,
+      '\n  pageTop:', pageTop,
       '\n  pageBottom:', pageBottom,
       '\n  pageStart:',pageStart,
     );
