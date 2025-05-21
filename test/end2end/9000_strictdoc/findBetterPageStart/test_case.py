@@ -46,23 +46,29 @@ class Test(BaseCase):
             "Expected element to have [html2pdf-flag-no-hanging]"
 
         # 2. Check that the scope node has page-start="2"
-        page_start = self.find_element(
-            'sdoc-node-content:nth-child(5) sdoc-scope.node_fields_group-primary'
-        )
+        try:
+            page_start = self.find_element(
+                'sdoc-node-content:nth-child(5) sdoc-scope.node_fields_group-primary'
+            )
+            print("[DEBUG] Element found.")
+        except Exception as e:
+            print(f"[ERROR] Failed to find element: {e}")
+            raise
 
-        self.wait_for_attribute(
-            'sdoc-node-content:nth-child(5) sdoc-scope.node_fields_group-primary',
-            'html2pdf-page-start',
-            '2',
-            timeout=3
-        )
+        try:
+            outer_html = page_start.get_attribute("outerHTML")
+            print("[DEBUG] outerHTML:\n", outer_html)
+        except Exception as e:
+            print(f"[ERROR] Failed to get outerHTML: {e}")
 
-        actual_page_start = page_start.get_attribute("html2pdf-page-start")
+        try:
+            actual_page_start = page_start.get_attribute("html2pdf-page-start")
+            print(f"[DEBUG] html2pdf-page-start value: {actual_page_start}")
+        except Exception as e:
+            print(f"[ERROR] Failed to get html2pdf-page-start attribute: {e}")
+            actual_page_start = None
 
         if actual_page_start != "2":
-            print(f"[DEBUG] html2pdf-page-start: {actual_page_start}")
-            print(f"[DEBUG] outerHTML: {page_start.get_attribute('outerHTML')}")
-
             try:
                 with open("debug_output.html", "w", encoding="utf-8") as f:
                     f.write(self.driver.page_source)
