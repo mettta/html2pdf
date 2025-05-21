@@ -809,6 +809,14 @@ export default class Node {
     return this.create(this._selector.neutral)
   }
 
+  createNeutralBlock() {
+    // It is important that this element does not unexpectedly inherit parameters
+    // that affect its height and has a block model.
+    const element = this.createNeutral();
+    element.style.display = 'block';
+    return element
+  }
+
   createTextLine() {
     return this.create(this._selector.textLine)
   }
@@ -1056,9 +1064,9 @@ export default class Node {
     // * the exact check will be through the creation of the test element.
     // ? However, the performance compared to getBottom() decreases:
     // ? 0.001 to 0.3 ms per such operation.
-    // const test = this.create();
-    const test = this.create(); // TODO
-    // *** The bottom margin pushes the DIV below the margin,
+
+    const test = this.createNeutralBlock();
+    // *** The bottom margin pushes the test DIV below the margin,
     // *** so no dummy padding is needed.
     element && this._DOM.insertAfter(element, test);
     const top = element ? this.getTop(test, root) : undefined;
