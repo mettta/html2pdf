@@ -146,8 +146,7 @@ export default class DocumentObjectModel {
   }
 
   getElementOffsetBottom(element) {
-    // BUG ?
-    return element.offsetTop + element.offsetHeight || undefined;
+    return element?.offsetTop + element?.offsetHeight || undefined;
   }
 
   getElementTagName(element) {
