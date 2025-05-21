@@ -50,18 +50,36 @@ class Test(BaseCase):
             'sdoc-node-content:nth-child(5) sdoc-scope.node_fields_group-primary'
         )
 
+        self.wait_for_attribute(
+            'sdoc-node-content:nth-child(5) sdoc-scope.node_fields_group-primary',
+            'html2pdf-page-start',
+            '2',
+            timeout=3
+        )
+
         actual_page_start = page_start.get_attribute("html2pdf-page-start")
 
         if actual_page_start != "2":
             print(f"[DEBUG] html2pdf-page-start: {actual_page_start}")
             print(f"[DEBUG] outerHTML: {page_start.get_attribute('outerHTML')}")
-            print("[DEBUG] Saving full page source to debug_output.html")
-            with open("debug_output.html", "w", encoding="utf-8") as f:
-                f.write(self.driver.page_source)
 
-            # Log bounding box
-            box = self.driver.execute_script("return arguments[0].getBoundingClientRect()", page_start)
-            print(f"[DEBUG] getBoundingClientRect(): top={box['top']}, height={box['height']}, bottom={box['bottom']}")
+            try:
+                with open("debug_output.html", "w", encoding="utf-8") as f:
+                    f.write(self.driver.page_source)
+                print("[DEBUG] Saved full page source to debug_output.html")
+            except Exception as e:
+                print(f"[DEBUG] Failed to write debug_output.html: {e}")
+
+            try:
+                box = self.driver.execute_script(
+                    "const b = arguments[0].getBoundingClientRect(); "
+                    "return {top: b.top, height: b.height, bottom: b.bottom};",
+                    page_start,
+                )
+                print(f"[DEBUG] getBoundingClientRect(): top={box['top']}, "
+                      f"height={box['height']}, bottom={box['bottom']}")
+            except Exception as e:
+                print(f"[DEBUG] Failed to get bounding box: {e}")
 
         assert actual_page_start == "2", \
             f'Expected element to have [html2pdf-page-start="2"], got {actual_page_start!r}'
