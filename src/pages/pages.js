@@ -417,6 +417,7 @@ export default class Pages {
 
     const currentElementTop = this._node.getTop(currentElement, this._root);
 
+    // TODO: We have to rely on the top or bottom here? currentElementBottom vs currentElementTop
     const _isTileLongerThanPage = parentBottom > (currentElementTop + this._referenceHeight);
     if (parentBottom && _isTileLongerThanPage) {
       // ** if parentBottom ---> current is LAST
@@ -549,7 +550,12 @@ export default class Pages {
     if ((currentElementTop >= newPageBottom) && (currentElementBottom - currentElementTop)) {
       const parentTop = parent ? this._node.getTopWithMargin(parent, this._root) : undefined;
       const beginningTail = parent && parentTop && (currentElementTop - parentTop >= this._referenceHeight);
-      this._debug._parseNode && console.warn('🪀 currentElementTop >= newPageBottom', currentElementTop, '>=', newPageBottom, '\n beginningTail:', beginningTail);
+      this._debug._parseNode && console.warn(
+        '🪀 currentElementTop >= newPageBottom',
+        currentElementTop, '>=', newPageBottom,
+        '\n beginningTail:', beginningTail,
+        currentElementTop - parentTop, '>=', this._referenceHeight
+      );
       this._registerPageStart(currentElement, !beginningTail);
     }
 
