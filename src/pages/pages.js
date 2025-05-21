@@ -2051,6 +2051,7 @@ export default class Pages {
             // * If no children,
             // * move element to the next page.
             // ** But,
+            // TODO: update with findBetterPageStart algorythm
             if (previousElement && this._node.isNoHanging(previousElement)) {
               // ** if previousElement can't be the last element on the page,
               // ** move it to the next page.
