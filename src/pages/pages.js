@@ -23,6 +23,7 @@ export default class Pages {
 
     // * From config:
     this._debug = config.debugMode ? { ...config.debugConfig.pages } : {};
+    this._assert = config.consoleAssert ? true : false;
 
     // * Private
     this._selector = selector; // todo one occurrence
@@ -799,7 +800,7 @@ export default class Pages {
           '\n🥁 fullPageFactor', fullPageFactor,
         );
 
-        console.assert(availableSpaceFactor < 1);
+        this._debug._parseNode && console.assert(availableSpaceFactor < 1);
 
         // Try to fit currentElement into the remaining space
         // on the current(last) page (availableSpace).

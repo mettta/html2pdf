@@ -11,6 +11,11 @@ export default function createConfig(params) {
     debugMode: false,
     // ** The preloader is only debugged when enabled via user configuration.
 
+    // * Assert messages are enabled in the user settings by the parameter
+    // * data-console-assert="true".
+    // * By default is disabled.
+    consoleAssert: false,
+
     // Register option to print for informational purposes:
     preloader: false,
     preloaderTarget: '',

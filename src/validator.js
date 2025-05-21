@@ -12,6 +12,8 @@ export default class Validator {
     this._node = node;
     this._layout = layout;
     this._root = layout.root;
+
+    this._assert = config.consoleAssert ? true : false;
   }
 
   init() {
@@ -31,7 +33,7 @@ export default class Validator {
       return accumulator
     }, []);
 
-    console.assert(!brokenDividers.length, 'Problems with preview generation on the following pages: ', brokenDividers)
+    this._assert && console.assert(!brokenDividers.length, 'Problems with preview generation on the following pages: ', brokenDividers)
 
   }
 }

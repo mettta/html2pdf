@@ -65,6 +65,7 @@ export default class App {
     this.debugMode && console.info('⚙️ Current config with debugConfig:', this.config);
     this.debugMode && console.timeEnd("⏱️ Config time");
 
+    this.config.consoleAssert && console.info('🧧 Assertions enabled.');
 
     // * prepare helpers
 
