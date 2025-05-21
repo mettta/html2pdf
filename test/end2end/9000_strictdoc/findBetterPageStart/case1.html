@@ -312,124 +312,13 @@
 <div html2pdf="" class="content">
 
 
-  <sdoc-node-content has-no-title node-view="narrative" data-level="" show-node-type-name="TEXT" data-testid="requirement-style-narrative">
-  
-  
-  
-
-  
-  
-
-  
-    <sdoc-scope class="node_fields_group-secondary">
-      
-    <sdoc-node-field-label>MID:</sdoc-node-field-label>
-    <sdoc-node-field data-field-type="singleline" data-field-label="MID">
-
-<sdoc-field data-controller="copy_to_clipboard">
-  <sdoc-field-content>
-    <sdoc-autogen>1fc9f6f4f84d47439bf6aa3404227ca4</sdoc-autogen>
-  </sdoc-field-content>
-</sdoc-field></sdoc-node-field>
-  
-      
-      
-    </sdoc-scope>
-    <sdoc-scope class="node_fields_group-primary">
-      
-    <sdoc-node-field-label>STATEMENT:</sdoc-node-field-label>
-    <sdoc-node-field data-field-label="statement">
-
-<sdoc-field data-controller="copy_to_clipboard">
-  <sdoc-field-content>
-    <sdoc-autogen><div class="document">
-<p>StrictDoc supports a web-based user interface. The StrictDoc web server is launched via the <tt class="docutils literal">server</tt> command which accepts a path to a documentation tree as a parameter.</p>
-<pre class="code bash literal-block">strictdoc<span class="whitespace"> </span>server<span class="whitespace"> </span>.
-</pre>
-<p>The <tt class="docutils literal">server</tt> command accepts a number of options. To explore the options, run:</p>
-<p>The <tt class="docutils literal">server</tt> command accepts a number of options. To explore the options, run:</p>
-<pre class="code bash literal-block">strictdoc<span class="whitespace"> </span>server<span class="whitespace"> </span>--help
-</pre>
-<p>StrictDoc uses <tt class="docutils literal">127.0.0.1</tt> as a default host and <tt class="docutils literal">5111</tt> as a default port. When running within Docker, the host argument <tt class="docutils literal"><span class="pre">--host</span></tt> can be specified, for example, <tt class="docutils literal"><span class="pre">--host</span> 0.0.0.0</tt> or a more specific host or IP address. The host and port can be also configured in a TOML config file, see <a href="#SECTION-UG-Host-and-port">🔗&nbsp;Host and port</a>.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The implementation of the web interface is work-in-progress.
-See <a href="#SDOC_UG_LIMIT_WEB">🔗&nbsp;Limitations of web user interface</a> for an overview of the existing limitations.</p>
-</div>
-</div>
-</sdoc-autogen>
-  </sdoc-field-content>
-</sdoc-field></sdoc-node-field>
-      
-      
-
-
-
-      
-
-
-
-  
-    </sdoc-scope>
-  
-
-</sdoc-node-content>
-
-
-<sdoc-node-content node-view="narrative" data-level="4.3" show-node-type-name="SECTION" data-testid="requirement-style-narrative">
-  
-  
-  
-
-  <sdoc-node-title id="4.3-Security-considerations" html2pdf-flag-no-break="" html2pdf-flag-no-hanging="">
-    4.3.&nbsp;Security considerations</sdoc-node-title>
-  
-  
-
-  
-    <sdoc-scope class="node_fields_group-secondary">
-      
-    <sdoc-node-field-label>MID:</sdoc-node-field-label>
-    <sdoc-node-field data-field-type="singleline" data-field-label="MID">
-
-<sdoc-field data-controller="copy_to_clipboard">
-  <sdoc-field-content>
-    <sdoc-autogen>9f7fcbdd8e564af8986349deb09745a5</sdoc-autogen>
-  </sdoc-field-content>
-</sdoc-field></sdoc-node-field>
-  
-      
-      
-    </sdoc-scope>
-    <sdoc-scope class="node_fields_group-primary">
-      
-      
-      
-
-
-
-      
-
-
-
-  
-    </sdoc-scope>
-  
-
-</sdoc-node-content>
+<div style="height:766px"></div>
 
 
 <sdoc-node-content has-no-title node-view="narrative" data-level="" show-node-type-name="TEXT" data-testid="requirement-style-narrative">
-  
-  
-  
 
-  
-  
-
-  
   <sdoc-scope class="node_fields_group-secondary">
-    
+
   <sdoc-node-field-label>MID:</sdoc-node-field-label>
   <sdoc-node-field data-field-type="singleline" data-field-label="MID">
 
@@ -439,11 +328,10 @@ See <a href="#SDOC_UG_LIMIT_WEB">🔗&nbsp;Limitations of web user interface</a>
 </sdoc-field-content>
 </sdoc-field></sdoc-node-field>
 
-    
-    
   </sdoc-scope>
-  <sdoc-scope class="node_fields_group-primary">
-    
+
+  <sdoc-scope class="node_fields_group-primary" data-testid="page2starter">
+
   <sdoc-node-field-label>STATEMENT:</sdoc-node-field-label>
   <sdoc-node-field data-field-label="statement">
 
@@ -451,37 +339,21 @@ See <a href="#SDOC_UG_LIMIT_WEB">🔗&nbsp;Limitations of web user interface</a>
 <sdoc-field-content>
   <sdoc-autogen><div class="document">
 <div class="admonition warning">
-<p class="first admonition-title">Warning</p>
+<p class="first admonition-title" data-testid="admonitionTitle">Warning</p>
 <p><strong>TL;DR</strong>: StrictDoc's web server is not yet hardened against unsafe use. Making StrictDoc safe for deployment in public networks is an ongoing effort.</p>
 <p class="last">Using StrictDoc's command-line and web interfaces should be more secure if the web server is not deployed on a public network.</p>
 </div>
 <p>Due to current constraints (refer to <a href="#SDOC_UG_LIMIT_WEB">🔗&nbsp;Limitations of web user interface</a>), StrictDoc requires running a server through a command line interface in one window or OS process, and separately committing changes to documents using Git in another window or OS process. Deploying StrictDoc as a shared web server is impractical, as it still requires manual commits to SDoc files via the server's command line using Git. The future development plan for StrictDoc aims to enable its use as a standalone server application, which includes resolving the following security-related issues.</p>
 <p>What makes StrictDoc's web server unsafe:</p>
-<ul class="simple">
-<li>The web interface is not fully hardened against unsafe inputs, such as malformed strings or files. The web server does not perform comprehensive sanity checks on the size and validity of inputs across all its HTTP endpoints.</li>
-<li>StrictDoc uses the <a class="reference external" href="https://docs.python.org/3/library/pickle.html">pickle</a> module to cache SDoc files, significantly improving performance. However, the pickle module is not secure. The pickled files are currently stored in the /tmp folder, which poses risks under certain circumstances.</li>
-<li>The security-related properties of the textX/Arpeggio parser are not understood yet. We have opened a request to track this upstream: <a class="reference external" href="https://github.com/textX/textX/discussions/422">textX -  Security considerations (#422)</a>.</li>
-<li>Several uses of regular expressions may be unsafe, some of which have been identified by GitHub's CodeQL analyzer.</li>
-<li>The security aspects of StrictDoc's dependencies have not yet been analyzed.</li>
-</ul>
+
 <p>Known security-related issues are tracked on GitHub, under the <a class="reference external" href="https://github.com/strictdoc-project/strictdoc/issues?q=is%3Aissue+is%3Aopen+security+label%3ASecurity">"Security" label</a>. As StrictDoc becomes usable without command-line access, all known issues will need to be addressed or acknowledged as known limitations.</p>
 <p>We are committed to continuously enhancing the functionality and security of StrictDoc and welcome user feedback and contributions in this area.</p>
 </div>
 </sdoc-autogen>
 </sdoc-field-content>
 </sdoc-field></sdoc-node-field>
-    
-    
-
-
-
-    
-
-
-
 
   </sdoc-scope>
-
 
 </sdoc-node-content>
 
