@@ -620,6 +620,46 @@ export default class Node {
     return this.getAll(this._selector.printForcedPageBreak, element);
   }
 
+  findFirstChildParentFromPage(element, topLimit, root) {
+    // Returns:
+    // ** Nothing found, loop terminated normally  |  null
+    // ** Found matching parent                    |  DOM element
+    // ** Interrupted by isPageStartElement()      |  undefined
+    //
+    // If we reached PageStart while moving UP the tree -
+    // we don't need intermediate results,
+    // (we'll want to ignore the rule for semantic break improvement).
+
+    let firstSuitableParent = null;
+    let current = element;
+    let interruptedByPageStart = false;
+
+    while (true) {
+      const parent = this._DOM.getParentNode(current);
+      if (!parent) break;
+
+      const isFirstChild = this._DOM.getFirstElementChild(parent) === current;
+      if (!isFirstChild) {
+        // First interrupt with end of nesting, with result passed to return.
+        this._debug._ && console.warn('findFirstChildParentFromPage // !isFirstChild', parent);
+        break;
+      }
+
+      if (this.isPageStartElement(parent) || this.getTop(parent, root) < topLimit) {
+        // Interrupt with limit reached, with resetting the result, using interruptedByPageStart.
+        this._debug._ && console.warn('🫥 findFirstChildParentFromPage // interruptedByPageStart');
+        interruptedByPageStart = true;
+        break;
+      }
+
+      this._debug._ && console.log('findFirstChildParentFromPage:', parent);
+      firstSuitableParent = parent;
+      current = parent;
+    }
+
+    return interruptedByPageStart ? undefined : firstSuitableParent;
+  }
+
   findPreviousNonHangingsFromPage(element, topLimit, root) {
     // Returns:
     // ** Nothing found, loop terminated normally  |  null
