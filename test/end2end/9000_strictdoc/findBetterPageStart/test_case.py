@@ -49,11 +49,25 @@ class Test(BaseCase):
         page_start = self.find_element(
             'sdoc-node-content:nth-child(5) sdoc-scope.node_fields_group-primary'
         )
-        assert page_start.get_attribute("html2pdf-page-start") == "2", \
-            "Expected element to have [html2pdf-page-start='2']"
+
+        actual_page_start = page_start.get_attribute("html2pdf-page-start")
+
+        if actual_page_start != "2":
+            print(f"[DEBUG] html2pdf-page-start: {actual_page_start}")
+            print(f"[DEBUG] outerHTML: {page_start.get_attribute('outerHTML')}")
+            print("[DEBUG] Saving full page source to debug_output.html")
+            with open("debug_output.html", "w", encoding="utf-8") as f:
+                f.write(self.driver.page_source)
+
+            # Log bounding box
+            box = self.driver.execute_script("return arguments[0].getBoundingClientRect()", page_start)
+            print(f"[DEBUG] getBoundingClientRect(): top={box['top']}, height={box['height']}, bottom={box['bottom']}")
+
+        assert actual_page_start == "2", \
+            f'Expected element to have [html2pdf-page-start="2"], got {actual_page_start!r}'
 
         # 3. Check that this page-start element appears after the page marker with [page='2']
         page_marker = self.find_element('html2pdf-page[page="2"]')
         assert page_marker.location['y'] < page_start.location['y'], \
-            "Expected page-start element to appear after page marker with [page='2']"
+            'Expected page-start element to appear after page marker with [page="2"]'
 
