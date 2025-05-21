@@ -155,8 +155,7 @@ export default class Pages {
     if (pageStarters.length) {
       const inspectedElement = pageStarters[0];
       const inspectedElementMaxFChParent = this._node.findFirstChildParent(inspectedElement,this._contentFlow) || inspectedElement;
-      const elementBeforeInspected = this._DOM.getLeftNeighbor(inspectedElementMaxFChParent);
-      const isInspectedElementStartsContent = this._node.isContentFlowStart(elementBeforeInspected);
+      const isInspectedElementStartsContent = this._node.isAfterContentFlowStart(inspectedElementMaxFChParent);
       if (isInspectedElementStartsContent) {
         pageStarters.shift();
       };
