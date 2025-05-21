@@ -311,11 +311,13 @@ export default class Pages {
     );
 
     for (let i = 0; i < array.length; i++) {
+      const isCurrentFirst = (i == 0 && !array[i - 1]);
+      const isCurrentLast = (i === array.length - 1);
       this._parseNode({
         previousElement: array[i - 1] || previous,
         currentElement: array[i],
         nextElement: array[i + 1] || next,
-        isCurrentFirst: (i == 0 && !array[i - 1]),
+        isCurrentFirst: isCurrentFirst,
         parent,
         // *** If the parent item has a bottom margin, we must consider it
         // *** when deciding on the last child.
@@ -323,7 +325,7 @@ export default class Pages {
         // *** and not counted in the calculation of the next page height,
         // *** causing blank unaccounted pages.
         // *** So, for the last child:
-        parentBottom: (i === array.length - 1) ? parentBottom : undefined,
+        parentBottom: isCurrentLast ? parentBottom : undefined,
       });
     }
   }
