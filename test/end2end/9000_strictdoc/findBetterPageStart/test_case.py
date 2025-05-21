@@ -71,6 +71,13 @@ class Test(BaseCase):
             print(f"[ERROR] Failed to get html2pdf-page-start attribute: {e}")
             actual_page_start = None
 
+        try:
+            print("[DEBUG] page_source START ↓↓↓")
+            print(self.driver.page_source)
+            print("[DEBUG] page_source END ↑↑↑")
+        except Exception as e:
+            print(f"[ERROR] Failed to dump page_source: {e}")
+
         if actual_page_start != "2":
             try:
                 with open("debug_output.html", "w", encoding="utf-8") as f:
