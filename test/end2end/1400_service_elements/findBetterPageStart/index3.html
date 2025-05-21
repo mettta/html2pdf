@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+  <style>
+    .wrapper { border:1px solid green; }
+    .wrapper .wrapper { border:1px solid orange; margin: 4px; }
+    .wrapper .wrapper .wrapper { border: 1px solid red; }
+    .after { border-bottom-width:4px; border-style: dashed; }
+    .before { border: 1px solid red; border-top-width:4px; border-style: dashed; }
+    .forced { border: 1px solid red; border-top-width:4px; }
+    .no-hang { background-color: cyan ;}
+  </style>
+
+  <script
+    defer
+    data-debug-mode="true"
+    data-print-height='100mm'
+    data-print-font-size='12pt'
+    data-page-break-after-selectors='.after'
+    data-page-break-before-selectors='.before'
+    data-forced-page-break-selectors='.forced'
+    data-no-break-selectors=''
+    data-no-hanging-selectors='.no-hang'
+    src="../../../../dist/bundle.js"></script>
+</head>
+
+<body>
+
+  <div filler style="height:111px"></div>
+
+  <H2 class="no-hang" data-testid="title1">
+    No hanging title: I am on the 2nd page
+  </H2>
+
+  <H3 class="no-hang" data-testid="title2">
+    No hanging title: I am on the 2nd page
+  </H3>
+  <H3 class="no-hang" data-testid="title3">
+    No hanging title: I am on the 2nd page
+  </H3>
+  <H3 class="no-hang" data-testid="title4">
+    No hanging title: I am on the 2nd page
+  </H3>
+  <H3 class="no-hang" data-testid="title5">
+    No hanging title: I am on the 2nd page
+  </H3>
+  <H3 class="no-hang" data-testid="title6">
+    No hanging title: I am on the 2nd page
+  </H3>
+  <H3 class="no-hang" data-testid="title7">
+    No hanging title: I am on the 3rd page <span data-testid="title_content">(as whole tag)</span>
+  </H3>
+  <H3 class="no-hang" data-testid="title8">
+    No hanging title: I am on the 3rd page
+  </H3>
+
+  <p data-testid="p1">
+    And add some test text. And add some test text. And add some test text. And add some test text.
+    And add some test text. And add some test text. And add some test text. And add some test text.
+  </p>
+
+</body>
+
+</html>

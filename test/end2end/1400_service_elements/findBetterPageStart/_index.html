@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <!--
+    * data-print-paper-size='a4' // default, 1032px
+    * data-print-height='88mm'      => 242px
+    * data-print-font-size='12pt' => 1 line:  18px
+    *                                2 lines: 36px
+    *                                3 lines: 54px
+    *                                4 lines: 72px
+    *                                5 lines: 90px
+    ? filler sizes for Paragraph cases (without margin-block):
+      1 line:  242 - 18 = 224px -
+      2 lines: 242 - 36 = 206px -
+      3 lines: 242 - 54 = 188px -
+      4 lines: 242 - 72 = 170px -
+      5 lines: 242 - 90 = 152px -
+  -->
+  <style>
+    div { border:1px solid green; }
+    div div { border:1px solid orange; margin: 4px; }
+    div div div { border: 1px solid red; }
+    .after { border-bottom-width:4px; border-style: dashed; }
+    .before { border: 1px solid red; border-top-width:4px; border-style: dashed; }
+    .forced { border: 1px solid red; border-top-width:4px; }
+    .no-hang { background-color: cyan ;}
+  </style>
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+
+  <script
+    defer
+    data-debug-mode="true"
+    data-print-height='100mm'
+    data-print-font-size='12pt'
+    data-page-break-after-selectors='.after'
+    data-page-break-before-selectors='.before'
+    data-forced-page-break-selectors='.forced'
+    data-no-break-selectors=''
+    data-no-hanging-selectors='.no-hang'
+    src="../../../../dist/bundle.js"></script>
+</head>
+
+<body>
+  <!-- ⬇️⬆️ -->
+
+  <!-- <div filler style="height:0px"></div> -->
+
+  <div data-testid="testPointParent1" style="padding-bottom:100px">
+    <div>
+      <div>
+
+        <H3 class="no-hang" data-testid="title3">NO HANGING</H3>
+
+        <div>
+          <div>
+
+            <div data-testid="admonition">
+              <H3 class="no-hang" data-testid="admonitionTitle">
+                No hanging title
+              </H3>
+              <p data-testid="p1">
+                <b class="no-hang" data-testid="b1">No hanging (spec. case)</b> and add some test text. And add some test text. And add some test text.
+                And add some test text.
+              </p>
+              <H4 class="no-hang" data-testid="title4">No hanging title</H4>
+              <H5 class="no-hang" data-testid="title4">No hanging title</H5>
+              <p data-testid="p2">
+                And add some test text. And add some test text. And add some test text. And add some test text. And add
+                some test text.
+                And add some test text. And add some test text. And add some test text. And add some test text. And add
+                some test text.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>

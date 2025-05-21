@@ -301,6 +301,11 @@ export default class Node {
     return this.isSelectorMatching(element, this._selector.contentFlowStart)
   }
 
+  isAfterContentFlowStart(element) {
+    const elementBeforeInspected = this._DOM.getLeftNeighbor(element);
+    return this.isSelectorMatching(elementBeforeInspected, this._selector.contentFlowStart)
+  }
+
   isContentFlowEnd(element) {
     return this.isSelectorMatching(element, this._selector.contentFlowEnd)
   }
@@ -581,32 +586,114 @@ export default class Node {
     return current;
   }
 
-  findBetterPageStart(pageStart, lastPageStart, rootNode, root) {
-    let current = pageStart;
+  findBetterPageStart(pageStart, lastPageStart, root) {
+    this._debug._ && console.groupCollapsed('➗ findBetterPageStart');
+
+    let interruptedWithUndefined = false;
+    let interruptedWithLimit = false;
+
     // * limited to the element from which the last registered page starts:
     const topLimit = this.getTop(lastPageStart, root);
 
-    while (true) {
-      const firstChildParent = this.findFirstChildParent(current, rootNode);
-      if (firstChildParent && firstChildParent !== current) {
-        current = firstChildParent;
-        continue;
-      }
+    this._debug._ && console.log(
+      "Start calculations:",
+      {pageStart, lastPageStart, topLimit},
+    );
 
-      const previousCandidate = this.findPreviousNonHangingsFromPage(
-        current,
+    // * Let's keep a stable intermediate improvement here, based on findFirstChildParent.
+    let betterCandidate = this.findFirstChildParentFromPage(
+        pageStart,
         topLimit,
         root
-      );
-      if (previousCandidate && previousCandidate !== current) {
-        current = previousCandidate;
+      ) || pageStart;
+
+    this._debug._ && console.log("betterCandidate:", betterCandidate,);
+
+    let currentCandidate = betterCandidate;
+
+    while (true) {
+      // * ⬅ * Going left/up on “no hanging” until we reach the limit.
+      const previousCandidate = this.findPreviousNonHangingsFromPage(
+        currentCandidate,
+        topLimit,
+        root
+      ); // *** returns new element, undefined or null
+      if (previousCandidate === undefined) {
+        this._debug._ && console.warn('🫥 previousCandidate', previousCandidate);
+        interruptedWithUndefined = true;
+        break;
+      }
+      this._debug._ && console.log('• previousCandidate', {previousCandidate});
+      if (previousCandidate) {
+        currentCandidate = previousCandidate;
         continue;
       }
+      this._debug._ && console.log('• update currentCandidate', {previousCandidate});
+
+      // * ⬆ * Going up, through the first children.
+      const firstChildParent = this.findFirstChildParentFromPage(
+        currentCandidate,
+        topLimit,
+        root
+      ); // *** returns new element, undefined or null
+      if (firstChildParent === undefined) {
+        this._debug._ && console.warn('🫥 firstChildParent', firstChildParent);
+        interruptedWithUndefined = true;
+        break;
+      }
+      this._debug._ && console.log('• firstChildParent', {firstChildParent});
+      if (firstChildParent) {
+        currentCandidate = firstChildParent;
+        continue;
+      }
+      this._debug._ && console.log('• update currentCandidate', {firstChildParent});
 
       break;
     }
 
-    return current;
+    // ! Now in the case of a long enough sequence of “previous candidates”,
+    // ! we abolish the rule at all, and split the node inside the shell
+    // ! with a single child (like headers).
+
+    // We should be able to check “start of last page” here:
+    // - as the previous element (left)
+    // - as the parent element (up)
+
+    if (currentCandidate == lastPageStart || this.getTop(currentCandidate, root) <= topLimit) {
+      interruptedWithLimit = true;
+      this._debug._ && console.log('☝️ Top page limit has been reached', betterCandidate);
+    }
+
+    // TODO: needs more tests
+    const prev = this._DOM.getLeftNeighbor(currentCandidate);
+    if (prev == lastPageStart) {
+      interruptedWithLimit = true;
+      this._debug._ && console.log('👈 Left limit has been reached (left neighbor is the last page start)', prev, betterCandidate);
+    }
+
+    //// return currentCandidate; // remove after rebase
+    // If `undefined` is returned, it means that we have reached the limit
+    // in one of the directions (past page start). Therefore we cancel attempts
+    // to improve the page break semantically and leave only geometric improvement.
+    let result = (interruptedWithUndefined || interruptedWithLimit) ? betterCandidate : currentCandidate;
+
+    if (this.isAfterContentFlowStart(result)) {
+      result = pageStart;
+    }
+
+    this._debug._ && console.log({
+      interruptedWithUndefined,
+      interruptedWithLimit,
+      pageStart,
+      betterCandidate,
+      currentCandidate,
+      result,
+    });
+
+    this._debug._ && console.log('➗ end, return:', result);
+    this._debug._ && console.groupEnd();
+
+    return result
   }
 
   // GET SERVICE ELEMENTS
@@ -615,35 +702,91 @@ export default class Node {
     return this.getAll(this._selector.printForcedPageBreak, element);
   }
 
-  findPreviousNonHangingsFromPage(element, topFloater, root) {
-    let suitableSibling = null;
-    let prev = this._DOM.getLeftNeighbor(element);
+  findFirstChildParentFromPage(element, topLimit, root) {
+    // Returns:
+    // ** Nothing found, loop terminated normally  |  null
+    // ** Found matching parent                    |  DOM element
+    // ** Interrupted by isPageStartElement()      |  undefined
+    //
+    // If we reached PageStart while moving UP the tree -
+    // we don't need intermediate results,
+    // (we'll want to ignore the rule for semantic break improvement).
 
-    // while the candidates are within the current page
-    // (below the element from which the last registered page starts):
-    while (prev && this.getTop(prev, root) > topFloater) {
-      // if it can't be left
-      if (this.isNoHanging(prev)) {
-        // and it's the Start of the page
-        if (this.isPageStartElement(prev)) {
-          // if I'm still on the current page and have a "start" -
-          // then I simply drop the case and move the original element
-          return element
-        } else {
-          // * isNoHanging(prev) && !isPageStartElement(prev)
-          // I'm looking at the previous element:
-          suitableSibling = prev;
-          element = prev;
-          prev = this._DOM.getLeftNeighbor(element);
-        }
-      } else {
-        // * !isNoHanging(prev) - return last computed
-        return suitableSibling;
+    this._debug._ && console.groupCollapsed('⬆ findFirstChildParentFromPage');
+
+    let firstSuitableParent = null;
+    let current = element;
+    let interruptedByPageStart = false;
+
+    while (true) {
+      const parent = this._DOM.getParentNode(current);
+      if (!parent) break;
+
+      const isFirstChild = this._DOM.getFirstElementChild(parent) === current;
+      if (!isFirstChild) {
+        // First interrupt with end of nesting, with result passed to return.
+        this._debug._ && console.warn({'!isFirstChild': parent});
+        break;
       }
+
+      if (this.isPageStartElement(parent) || this.getTop(parent, root) < topLimit) {
+        // Interrupt with limit reached, with resetting the result, using interruptedByPageStart.
+        this._debug._ && console.warn('🫥 findFirstChildParentFromPage // interruptedByPageStart');
+        interruptedByPageStart = true;
+        break;
+      }
+
+      this._debug._ && console.log({parent});
+      firstSuitableParent = parent;
+      current = parent;
     }
-    return suitableSibling;
+
+    this._debug._ && console.groupEnd('⬆ findFirstChildParentFromPage');
+    return interruptedByPageStart ? undefined : firstSuitableParent;
   }
 
+  findPreviousNonHangingsFromPage(element, topLimit, root) {
+    // Returns:
+    // ** Nothing found, loop terminated normally  |  null
+    // ** Found matching parent                    |  DOM element
+    // ** Interrupted by isPageStartElement()      |  undefined
+    //
+    // If we reached PageStart while moving LEFT the tree -
+    // we don't need intermediate results,
+    // (we'll want to ignore the rule for semantic break improvement).
+
+    this._debug._ && console.groupCollapsed('⬅ findPreviousNonHangingsFromPage');
+
+    let suitableSibling = null;
+    let current = element;
+    let interruptedByPageStart = false;
+
+    while (true) {
+      const prev = this._DOM.getLeftNeighbor(current);
+
+      this._debug._ && console.log({ interruptedByPageStart, topLimit, prev, current });
+
+      if (!prev || !this.isNoHanging(prev) || prev === current) break; // * return last computed
+
+      if (this.isPageStartElement(prev) || this.getTop(prev, root) < topLimit) {
+        interruptedByPageStart = true;
+        break;
+      }
+
+      // * isNoHanging(prev) && !isPageStartElement(prev)
+      // I'm looking at the previous element:
+      suitableSibling = prev;
+      current = prev;
+    }
+
+    this._debug._ && console.groupEnd('⬅ findPreviousNonHangingsFromPage');
+    return interruptedByPageStart ? undefined : suitableSibling;
+  }
+
+  // findSuitableNonHangingPageStart: Added January 1, 25,
+  // Commit: 407bd8166a9b9265b21ea3bfbdb80d0cb15e173f [407bd81]
+  // "Node: add findSuitableNoHangingPageStart function to determine the best element for page breaks"
+  // TODO: And it's not being used.
   findSuitableNonHangingPageStart(element, topFloater) {
     // * This function finds the best element to start a new page when certain elements
     // * (e.g., headings or similar items) cannot remain as the last item on the current page.
@@ -798,6 +941,14 @@ export default class Node {
 
   createNeutral() {
     return this.create(this._selector.neutral)
+  }
+
+  createNeutralBlock() {
+    // It is important that this element does not unexpectedly inherit parameters
+    // that affect its height and has a block model.
+    const element = this.createNeutral();
+    element.style.display = 'block';
+    return element
   }
 
   createTextLine() {
@@ -1042,22 +1193,45 @@ export default class Node {
 
   getBottomWithMargin(element, root) {
     // TODO : performance
+    // ? However, the performance compared to getBottom() decreases:
+    // ? 0.001 to 0.3 ms per such operation.
+
     // * Because of the possible bottom margin
     // * of the parent element or nested last children,
     // * the exact check will be through the creation of the test element.
-    // ? However, the performance compared to getBottom() decreases:
-    // ? 0.001 to 0.3 ms per such operation.
-    // const test = this.create();
-    const test = this.create(); // TODO
-    // *** The bottom margin pushes the DIV below the margin,
-    // *** so no dummy padding is needed.
-    element && this._DOM.insertAfter(element, test);
-    const top = element ? this.getTop(test, root) : undefined;
-    this._DOM.removeNode(test);
-    return top;
+    // * (The bottom margin pushes the test DIV below the margin).
 
-    // const bottomMargin = this._DOM.getComputedStyle(element).marginBottom;
-    // return this.getBottom(element, root) + bottomMargin;
+    // * However, not all structures give the correct result. For example,
+    // * flex or others with vertical rhythm abnormalities.
+    // * Therefore, we implement an additional check.
+
+    if (!element) {
+      return
+    }
+
+    const _elementBottom = this.getBottom(element, root);
+    let result;
+
+    const test = this.createNeutralBlock();
+    this._DOM.insertAfter(element, test);
+    const testTop = this.getTop(test, root);
+    this._DOM.removeNode(test);
+
+    // * In case of normal vertical rhythm, the position of the test element
+    // * inserted after the current one can only be greater than or equal
+    // * to _elementBottom:
+
+    const isTestResultValid = testTop >= _elementBottom;
+
+    if (isTestResultValid) {
+      result = testTop;
+    } else {
+      // * Otherwise, we'll have to use a less accurate but stable method.
+      const bottomMargin = this._DOM.getComputedStyle(element).marginBottom;
+      result = _elementBottom + bottomMargin;
+    }
+
+    return result;
   }
 
   getTopWithMargin(element, root) {

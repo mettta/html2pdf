@@ -26,6 +26,9 @@ case6_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "case6.html")
 )
 
+admonitionTitle = '//*[@data-testid="admonitionTitle"]'
+page2starter = '//*[@data-testid="page2starter"]'
+
 
 class Test(BaseCase):
     def __init__(self, *args, **kwargs):
@@ -34,26 +37,14 @@ class Test(BaseCase):
 
     def test_01(self):
         self.helper.do_open(case1_html_file_url)
-        # 2 or 3 pages are produced on Firefox or Chrome, so don't assert on
-        # the page number.
-        # self.helper.assert_document_has_pages(3)
+        # 2 or 3 pages were produced on Firefox or Chrome.
+        # To assert on the page number we simplified the markup.
+        self.helper.assert_document_has_pages(2, True)
 
         # 1. Check that the specific admonition title has the no-hanging flag
-        target = self.find_element(
-            'sdoc-node-content:nth-child(5) p.first.admonition-title'
-        )
-        assert target.get_attribute("html2pdf-flag-no-hanging") is not None, \
-            "Expected element to have [html2pdf-flag-no-hanging]"
+        self.helper.assert_element_on_the_page(admonitionTitle, 2, True)
+        self.helper.assert_element_has_attribute(admonitionTitle, 'html2pdf-flag-no-hanging')
 
-        # 2. Check that the scope node has page-start="2"
-        page_start = self.find_element(
-            'sdoc-node-content:nth-child(5) sdoc-scope.node_fields_group-primary'
-        )
-        assert page_start.get_attribute("html2pdf-page-start") == "2", \
-            "Expected element to have [html2pdf-page-start='2']"
-
-        # 3. Check that this page-start element appears after the page marker with [page='2']
-        page_marker = self.find_element('html2pdf-page[page="2"]')
-        assert page_marker.location['y'] < page_start.location['y'], \
-            "Expected page-start element to appear after page marker with [page='2']"
+        # 2. Check that the right parent node that contains 'admonition title' starts page "2"
+        self.helper.assert_element_starts_page(page2starter, 2)
 

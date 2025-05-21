@@ -3,23 +3,11 @@
 
 <head>
   <meta charset="utf-8" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥁</text></svg>">
   <meta name="keywords" content="HTML2PDF, end2end" />
   <meta name="description" content="HTML2PDF end2end test" />
   <title>Test page</title>
-  <link rel="stylesheet" href="css/main.css">
-  <script
-    defer
-    data-debug-mode="true"
-    data-print-height='100mm'
-    data-print-font-size='12pt'
-    data-page-break-after-selectors='.after'
-    data-page-break-before-selectors='.before'
-    data-forced-page-break-selectors='.forced'
-    data-no-break-selectors=''
-    data-no-hanging-selectors='.no-hang'
-    src="bundle.js"></script>
 
+  <link rel="stylesheet" href="../../../shared/css/main.css">
   <style>
     .wrapper { border:1px solid green; }
     .wrapper .wrapper { border:1px solid orange; margin: 50px 4px; }
@@ -30,49 +18,21 @@
     .no-hang { background-color: cyan ;}
     .service { margin: 0; padding: 0; width: 100%; outline: 1px solid magenta;}
   </style>
+
+  <script
+    defer
+    data-debug-mode="true"
+    data-print-height='100mm'
+    data-print-font-size='12pt'
+    data-page-break-after-selectors='.after'
+    data-page-break-before-selectors='.before'
+    data-forced-page-break-selectors='.forced'
+    data-no-break-selectors=''
+    data-no-hanging-selectors='.no-hang'
+    src="../../../../dist/bundle.js"></script>
 </head>
 
-<!-- <div filler style="height:111px"></div> -->
-
 <body>
-
-  <!-- <div filler style="height:265px"></div> -->
-
-  <div>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-  </div>
-  <div>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    <!-- uncomment the next line to see 🪁 tail-case: -->
-    <!-- dmkdfkmbdflk<br> -->
-  </div>
 
   <div data-testid="testPointParent1">
     <div class="wrapper" data-testid="parent-2">
@@ -141,6 +101,5 @@
     <span data-testid="p10end"></p>
 
 </body>
-
 
 </html>

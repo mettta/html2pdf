@@ -106,6 +106,28 @@ class Helper:
             by=By.XPATH,
         )
 
+    def assert_element_has_attribute(self, element_xpath, attribute: str) -> None:
+        target = self.test_case.find_element(
+            f'{_content_flow_}{element_xpath}',
+            by=By.XPATH,
+        )
+        attr_value = self.test_case.get_attribute(
+            f'{_content_flow_}{element_xpath}',
+            attribute,
+            by=By.XPATH
+        )
+        assert attr_value is not None, \
+            f"Expected element to have [{attribute}]"
+
+    def assert_element_starts_page(self, element_xpath: str, page_number: int, element_order: int = 1) -> None:
+        attr_value = self.test_case.get_attribute(
+            f'({_content_flow_}{element_xpath})[{element_order}]',
+            'html2pdf-page-start',
+            by=By.XPATH
+        )
+        expected = str(page_number)
+        assert attr_value == expected, f"Expected html2pdf-page-start='{expected}', got '{attr_value}'"
+
     def assert_element_on_the_page(self, element_xpath, page_number, report: bool = False) -> None:
         # Check that the Test object is shifted to the specific page.
         # That is, it is lower than the top of the specific page.
