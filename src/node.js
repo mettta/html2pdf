@@ -644,6 +644,10 @@ export default class Node {
     return suitableSibling;
   }
 
+  // findSuitableNonHangingPageStart: Added January 1, 25,
+  // Commit: 407bd8166a9b9265b21ea3bfbdb80d0cb15e173f [407bd81]
+  // "Node: add findSuitableNoHangingPageStart function to determine the best element for page breaks"
+  // TODO: And it's not being used.
   findSuitableNonHangingPageStart(element, topFloater) {
     // * This function finds the best element to start a new page when certain elements
     // * (e.g., headings or similar items) cannot remain as the last item on the current page.
