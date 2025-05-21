@@ -1193,22 +1193,45 @@ export default class Node {
 
   getBottomWithMargin(element, root) {
     // TODO : performance
-    // * Because of the possible bottom margin
-    // * of the parent element or nested last children,
-    // * the exact check will be through the creation of the test element.
     // ? However, the performance compared to getBottom() decreases:
     // ? 0.001 to 0.3 ms per such operation.
 
-    const test = this.createNeutralBlock();
-    // *** The bottom margin pushes the test DIV below the margin,
-    // *** so no dummy padding is needed.
-    element && this._DOM.insertAfter(element, test);
-    const top = element ? this.getTop(test, root) : undefined;
-    this._DOM.removeNode(test);
-    return top;
+    // * Because of the possible bottom margin
+    // * of the parent element or nested last children,
+    // * the exact check will be through the creation of the test element.
+    // * (The bottom margin pushes the test DIV below the margin).
 
-    // const bottomMargin = this._DOM.getComputedStyle(element).marginBottom;
-    // return this.getBottom(element, root) + bottomMargin;
+    // * However, not all structures give the correct result. For example,
+    // * flex or others with vertical rhythm abnormalities.
+    // * Therefore, we implement an additional check.
+
+    if (!element) {
+      return
+    }
+
+    const _elementBottom = this.getBottom(element, root);
+    let result;
+
+    const test = this.createNeutralBlock();
+    this._DOM.insertAfter(element, test);
+    const testTop = this.getTop(test, root);
+    this._DOM.removeNode(test);
+
+    // * In case of normal vertical rhythm, the position of the test element
+    // * inserted after the current one can only be greater than or equal
+    // * to _elementBottom:
+
+    const isTestResultValid = testTop >= _elementBottom;
+
+    if (isTestResultValid) {
+      result = testTop;
+    } else {
+      // * Otherwise, we'll have to use a less accurate but stable method.
+      const bottomMargin = this._DOM.getComputedStyle(element).marginBottom;
+      result = _elementBottom + bottomMargin;
+    }
+
+    return result;
   }
 
   getTopWithMargin(element, root) {
