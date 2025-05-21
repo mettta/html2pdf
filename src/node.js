@@ -301,6 +301,11 @@ export default class Node {
     return this.isSelectorMatching(element, this._selector.contentFlowStart)
   }
 
+  isAfterContentFlowStart(element) {
+    const elementBeforeInspected = this._DOM.getLeftNeighbor(element);
+    return this.isSelectorMatching(elementBeforeInspected, this._selector.contentFlowStart)
+  }
+
   isContentFlowEnd(element) {
     return this.isSelectorMatching(element, this._selector.contentFlowEnd)
   }
