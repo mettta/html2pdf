@@ -630,6 +630,8 @@ export default class Node {
     // we don't need intermediate results,
     // (we'll want to ignore the rule for semantic break improvement).
 
+    this._debug._ && console.groupCollapsed('⬆ findFirstChildParentFromPage');
+
     let firstSuitableParent = null;
     let current = element;
     let interruptedByPageStart = false;
@@ -641,7 +643,7 @@ export default class Node {
       const isFirstChild = this._DOM.getFirstElementChild(parent) === current;
       if (!isFirstChild) {
         // First interrupt with end of nesting, with result passed to return.
-        this._debug._ && console.warn('findFirstChildParentFromPage // !isFirstChild', parent);
+        this._debug._ && console.warn({'!isFirstChild': parent});
         break;
       }
 
@@ -652,11 +654,12 @@ export default class Node {
         break;
       }
 
-      this._debug._ && console.log('findFirstChildParentFromPage:', parent);
+      this._debug._ && console.log({parent});
       firstSuitableParent = parent;
       current = parent;
     }
 
+    this._debug._ && console.groupEnd('⬆ findFirstChildParentFromPage');
     return interruptedByPageStart ? undefined : firstSuitableParent;
   }
 
@@ -670,47 +673,31 @@ export default class Node {
     // we don't need intermediate results,
     // (we'll want to ignore the rule for semantic break improvement).
 
+    this._debug._ && console.groupCollapsed('⬅ findPreviousNonHangingsFromPage');
+
     let suitableSibling = null;
     let current = element;
     let interruptedByPageStart = false;
 
-    // while the candidates are within the current page
-    // (below the element from which the last registered page starts):
     while (true) {
       const prev = this._DOM.getLeftNeighbor(current);
-      if (!prev) break;
+
+      this._debug._ && console.log({ interruptedByPageStart, topLimit, prev, current });
+
+      if (!prev || !this.isNoHanging(prev) || prev === current) break; // * return last computed
 
       if (this.isPageStartElement(prev) || this.getTop(prev, root) < topLimit) {
         interruptedByPageStart = true;
         break;
       }
 
-      this._debug._ && console.log('findPreviousNonHangingsFromPage', { interruptedByPageStart, topLimit, prev, current });
-
-      if (prev === current) break;
-
-      // if it can't be left
-      if (this.isNoHanging(prev)) {
-        // and it's the Start of the page
-        if (this.isPageStartElement(prev)) {
-          // if I'm still on the current page and have a "start" -
-          // then I simply drop the case and move the
-          //// original element
-          // `undefined`
-          interruptedByPageStart = true;
-          return undefined
-        } else {
-          // * isNoHanging(prev) && !isPageStartElement(prev)
-          // I'm looking at the previous element:
-          suitableSibling = prev;
-          current = prev;
-        }
-      } else {
-        // * !isNoHanging(prev) - return last computed
-        return suitableSibling;
-      }
+      // * isNoHanging(prev) && !isPageStartElement(prev)
+      // I'm looking at the previous element:
+      suitableSibling = prev;
+      current = prev;
     }
-    // return suitableSibling;
+
+    this._debug._ && console.groupEnd('⬅ findPreviousNonHangingsFromPage');
     return interruptedByPageStart ? undefined : suitableSibling;
   }
 
