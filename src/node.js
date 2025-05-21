@@ -586,32 +586,114 @@ export default class Node {
     return current;
   }
 
-  findBetterPageStart(pageStart, lastPageStart, rootNode, root) {
-    let current = pageStart;
+  findBetterPageStart(pageStart, lastPageStart, root) {
+    this._debug._ && console.groupCollapsed('➗ findBetterPageStart');
+
+    let interruptedWithUndefined = false;
+    let interruptedWithLimit = false;
+
     // * limited to the element from which the last registered page starts:
     const topLimit = this.getTop(lastPageStart, root);
 
-    while (true) {
-      const firstChildParent = this.findFirstChildParent(current, rootNode);
-      if (firstChildParent && firstChildParent !== current) {
-        current = firstChildParent;
-        continue;
-      }
+    this._debug._ && console.log(
+      "Start calculations:",
+      {pageStart, lastPageStart, topLimit},
+    );
 
-      const previousCandidate = this.findPreviousNonHangingsFromPage(
-        current,
+    // * Let's keep a stable intermediate improvement here, based on findFirstChildParent.
+    let betterCandidate = this.findFirstChildParentFromPage(
+        pageStart,
         topLimit,
         root
-      );
-      if (previousCandidate && previousCandidate !== current) {
-        current = previousCandidate;
+      ) || pageStart;
+
+    this._debug._ && console.log("betterCandidate:", betterCandidate,);
+
+    let currentCandidate = betterCandidate;
+
+    while (true) {
+      // * ⬅ * Going left/up on “no hanging” until we reach the limit.
+      const previousCandidate = this.findPreviousNonHangingsFromPage(
+        currentCandidate,
+        topLimit,
+        root
+      ); // *** returns new element, undefined or null
+      if (previousCandidate === undefined) {
+        this._debug._ && console.warn('🫥 previousCandidate', previousCandidate);
+        interruptedWithUndefined = true;
+        break;
+      }
+      this._debug._ && console.log('• previousCandidate', {previousCandidate});
+      if (previousCandidate) {
+        currentCandidate = previousCandidate;
         continue;
       }
+      this._debug._ && console.log('• update currentCandidate', {previousCandidate});
+
+      // * ⬆ * Going up, through the first children.
+      const firstChildParent = this.findFirstChildParentFromPage(
+        currentCandidate,
+        topLimit,
+        root
+      ); // *** returns new element, undefined or null
+      if (firstChildParent === undefined) {
+        this._debug._ && console.warn('🫥 firstChildParent', firstChildParent);
+        interruptedWithUndefined = true;
+        break;
+      }
+      this._debug._ && console.log('• firstChildParent', {firstChildParent});
+      if (firstChildParent) {
+        currentCandidate = firstChildParent;
+        continue;
+      }
+      this._debug._ && console.log('• update currentCandidate', {firstChildParent});
 
       break;
     }
 
-    return current;
+    // ! Now in the case of a long enough sequence of “previous candidates”,
+    // ! we abolish the rule at all, and split the node inside the shell
+    // ! with a single child (like headers).
+
+    // We should be able to check “start of last page” here:
+    // - as the previous element (left)
+    // - as the parent element (up)
+
+    if (currentCandidate == lastPageStart || this.getTop(currentCandidate, root) <= topLimit) {
+      interruptedWithLimit = true;
+      this._debug._ && console.log('☝️ Top page limit has been reached', betterCandidate);
+    }
+
+    // TODO: needs more tests
+    const prev = this._DOM.getLeftNeighbor(currentCandidate);
+    if (prev == lastPageStart) {
+      interruptedWithLimit = true;
+      this._debug._ && console.log('👈 Left limit has been reached (left neighbor is the last page start)', prev, betterCandidate);
+    }
+
+    //// return currentCandidate; // remove after rebase
+    // If `undefined` is returned, it means that we have reached the limit
+    // in one of the directions (past page start). Therefore we cancel attempts
+    // to improve the page break semantically and leave only geometric improvement.
+    let result = (interruptedWithUndefined || interruptedWithLimit) ? betterCandidate : currentCandidate;
+
+    if (this.isAfterContentFlowStart(result)) {
+      result = pageStart;
+    }
+
+    this._debug._ && console.log({
+      interruptedWithUndefined,
+      interruptedWithLimit,
+      pageStart,
+      betterCandidate,
+      currentCandidate,
+      result,
+    });
+
+    this._debug._ && console.log('➗ end, return:', result);
+    this._debug._ && console.groupEnd();
+
+    return result
   }
 
   // GET SERVICE ELEMENTS
