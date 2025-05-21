@@ -620,33 +620,58 @@ export default class Node {
     return this.getAll(this._selector.printForcedPageBreak, element);
   }
 
-  findPreviousNonHangingsFromPage(element, topFloater, root) {
+  findPreviousNonHangingsFromPage(element, topLimit, root) {
+    // Returns:
+    // ** Nothing found, loop terminated normally  |  null
+    // ** Found matching parent                    |  DOM element
+    // ** Interrupted by isPageStartElement()      |  undefined
+    //
+    // If we reached PageStart while moving LEFT the tree -
+    // we don't need intermediate results,
+    // (we'll want to ignore the rule for semantic break improvement).
+
     let suitableSibling = null;
-    let prev = this._DOM.getLeftNeighbor(element);
+    let current = element;
+    let interruptedByPageStart = false;
 
     // while the candidates are within the current page
     // (below the element from which the last registered page starts):
-    while (prev && this.getTop(prev, root) > topFloater) {
+    while (true) {
+      const prev = this._DOM.getLeftNeighbor(current);
+      if (!prev) break;
+
+      if (this.isPageStartElement(prev) || this.getTop(prev, root) < topLimit) {
+        interruptedByPageStart = true;
+        break;
+      }
+
+      this._debug._ && console.log('findPreviousNonHangingsFromPage', { interruptedByPageStart, topLimit, prev, current });
+
+      if (prev === current) break;
+
       // if it can't be left
       if (this.isNoHanging(prev)) {
         // and it's the Start of the page
         if (this.isPageStartElement(prev)) {
           // if I'm still on the current page and have a "start" -
-          // then I simply drop the case and move the original element
-          return element
+          // then I simply drop the case and move the
+          //// original element
+          // `undefined`
+          interruptedByPageStart = true;
+          return undefined
         } else {
           // * isNoHanging(prev) && !isPageStartElement(prev)
           // I'm looking at the previous element:
           suitableSibling = prev;
-          element = prev;
-          prev = this._DOM.getLeftNeighbor(element);
+          current = prev;
         }
       } else {
         // * !isNoHanging(prev) - return last computed
         return suitableSibling;
       }
     }
-    return suitableSibling;
+    // return suitableSibling;
+    return interruptedByPageStart ? undefined : suitableSibling;
   }
 
   // findSuitableNonHangingPageStart: Added January 1, 25,
