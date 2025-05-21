@@ -241,6 +241,7 @@ ${SELECTOR.textGroup} {
 ${SELECTOR.complexTextBlock} > ${SELECTOR.textLine} {
   /* Firefox and inconsistent values of offset top for inline element */
   display: inline-block;
+  // TODO: it removes spaces between parts of the string, it should leave the text inline after processing.
 }
 
 ${SELECTOR.textGroup} ${SELECTOR.textLine} {
