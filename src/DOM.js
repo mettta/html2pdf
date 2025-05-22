@@ -9,6 +9,7 @@ export default class DocumentObjectModel {
     // * private
     this._debugMode = config.debugMode;
     this._debug = config.debugMode ? { ...config.debugConfig.DOM } : {};
+    this._assert = config.consoleAssert ? true : false;
   }
 
   // CREATE ELEMENTS
@@ -170,7 +171,7 @@ export default class DocumentObjectModel {
     }
 
     if (first === '[') {
-      this._debug._ && console.assert(
+      this._assert && console.assert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);
@@ -199,7 +200,7 @@ export default class DocumentObjectModel {
       element.id = id;
       return
     } else if (first === '[') {
-      this._debug._ && console.assert(
+      this._assert && console.assert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);
@@ -229,7 +230,7 @@ export default class DocumentObjectModel {
     }
 
     const first = selector.charAt(0);
-    console.assert(first.match(/[a-zA-Z#\[\.]/), `removeAttribute() expects a valid selector, but received ${selector}`)
+    this._assert && console.assert(first.match(/[a-zA-Z#\[\.]/), `removeAttribute() expects a valid selector, but received ${selector}`)
 
     if (first === '.') {
       const cl = selector.substring(1);
@@ -240,7 +241,7 @@ export default class DocumentObjectModel {
       element.removeAttribute(id);
       return
     } else if (first === '[') {
-      this._debug._ && console.assert(
+      this._assert && console.assert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);

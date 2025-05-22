@@ -18,6 +18,7 @@ export default class Preview {
     // * From config:
     this._config = config;
     this._debug = config.debugMode ? { ...config.debugConfig.preview } : {};
+    this._assert = config.consoleAssert ? true : false;
 
     this._DOM = DOM;
     this._selector = selector;
@@ -93,7 +94,7 @@ export default class Preview {
     const _printBodyMaskWindowFirstShift = _printTopMargin + _headerHeight;
     const _maskStep = _printPaperHeight + _virtualPagesGap;
 
-    console.assert(
+    this._assert && console.assert(
       (_printPaperHeight === _bodyHeight + _headerHeight + _printTopMargin + _footerHeight + _printBottomMargin),
       'Paper size calculation params do not match'
     );
@@ -325,7 +326,7 @@ export default class Preview {
     this._DOM.setStyles(balancingFooter, { marginBottom: balancer + 'px' });
 
     // TODO check if negative on large documents
-    this._debug._ && console.assert(balancer >= 0, `balancer is negative: ${balancer} < 0`, contentSeparator);
+    this._assert && console.assert(balancer >= 0, `balancer is negative: ${balancer} < 0`, contentSeparator);
   }
 
 }

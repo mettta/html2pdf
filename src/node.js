@@ -9,23 +9,24 @@ export default class Node {
     this._selector = selector;
     // * From config:
     this._debug = config.debugMode ? { ...config.debugConfig.node } : {};
+    this._assert = config.consoleAssert ? true : false;
     this._markupDebugMode = this._config.markupDebugMode;
   }
 
   // GET NODE
 
   get(selector, target = this._DOM) {
-    console.assert(selector);
+    this._debug._ && console.assert(selector);
     return this._DOM.getElement(selector, target)
   }
 
   getAll(selectors, target = this._DOM) {
-    console.assert(selectors);
+    this._debug._ && console.assert(selectors);
     if (typeof selectors === 'string') {
       selectors = selectors.split(',').filter(Boolean);
     }
-    console.assert(Array.isArray(selectors), 'Selectors must be provided as an array or string (one selector or multiple selectors, separated by commas). Now the selectors are:', selectors);
-    console.assert(selectors.length > 0, 'getAll(selectors), selectors:', selectors);
+    this._assert && console.assert(Array.isArray(selectors), 'Selectors must be provided as an array or string (one selector or multiple selectors, separated by commas). Now the selectors are:', selectors);
+    this._debug._ && console.assert(selectors.length > 0, 'getAll(selectors), selectors:', selectors);
 
     if (selectors.length === 1) {
       return [...this._DOM.getAllElements(selectors[0], target)]
@@ -927,7 +928,7 @@ export default class Node {
       } else if (first.match(/[a-zA-Z]/)) {
         element = this._DOM.createElement(selector);
       } else {
-        console.assert(false, `Expected valid html selector ot tag name, but received:`, selector)
+        this._assert && console.assert(false, `Expected valid html selector ot tag name, but received:`, selector)
         return
       }
     }
