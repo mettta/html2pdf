@@ -2,6 +2,10 @@ import SELECTOR from './selector.js';
 
 export default function createConfig(params) {
 
+  // * Normalize string booleans in config object
+  // * (e.g. "true" → true)
+  params = convertStringBools(params);
+
   // ? used in style.js
   let config = {
     // * Debug mode is set in the user configuration.
@@ -151,4 +155,38 @@ export default function createConfig(params) {
   config.debugMode && console.info('Config with converted units:', config);
 
   return config;
+}
+
+/**
+ * Returns a copy of the object where string values
+ * that clearly represent boolean values ("true", "false", "1", "0", "")
+ * are converted to true or false.
+ *
+ * Conversion rules:
+ *   - "true", "1" (case-insensitive) → true
+ *   - "false", "0", "" (case-insensitive) → false
+ *   - all other values (including numbers and other strings) are left unchanged
+ *   - the original object is not modified
+ *
+ * @param {Object} obj — the input object
+ * @returns {Object} — a new object with normalized boolean values
+ */
+function convertStringBools(obj) {
+  const result = { ...obj };
+
+  for (const key in result) {
+    const value = result[key];
+
+    if (typeof value === "string") {
+      const lowered = value.toLowerCase();
+
+      if (lowered === "true" || lowered === "1") {
+        result[key] = true;
+      } else if (lowered === "false" || lowered === "0" || lowered === "") {
+        result[key] = false;
+      }
+    }
+  }
+
+  return result;
 }
