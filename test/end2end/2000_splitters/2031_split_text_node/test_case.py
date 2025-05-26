@@ -1,6 +1,5 @@
 import os
 
-from selenium.webdriver.common.by import By
 from seleniumbase import BaseCase
 
 from test.end2end.helpers.helper import Helper
