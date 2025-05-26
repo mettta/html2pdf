@@ -58,6 +58,9 @@ export default function createConfig(params) {
     footerMargin: '16px',
     // virtual
     virtualPagesGap: '16px',
+
+    // * service elements:
+    splitLabelHeight: '24px'
   }
 
   const A4 = {

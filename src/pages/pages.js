@@ -77,8 +77,9 @@ export default class Pages {
 
     this._imageReductionRatio = 0.8;
 
-    // TODO move to config
-    this._signpostHeight = 24;
+    // * From config:
+    // - if null is set - the element is not created in createSignpost().
+    this._signpostHeight = parseFloat(config.splitLabelHeight) || 0;
 
     // TODO: # _minimumBreakableHeight
     this._commonLineHeight = this._node.getLineHeight(this._root);
