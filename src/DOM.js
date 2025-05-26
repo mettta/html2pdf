@@ -64,6 +64,11 @@ export default class DocumentObjectModel {
     console.assert(this.getInnerHTML(source) === "");
   }
 
+  replaceNodeContentsWith(element, ...payload) {
+    this.setInnerHTML(element, '');
+    this.insertAtEnd(element, ...payload)
+  }
+
   // REMOVE
 
   removeNode(element) {

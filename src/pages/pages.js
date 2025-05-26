@@ -1172,7 +1172,7 @@ export default class Pages {
         return line
       });
       this._debug._splitPreNode && console.log('linesFromNode', linesFromNode);
-      this._node.replaceNodeContentsWith(node, ...linesFromNode);
+      this._DOM.replaceNodeContentsWith(node, ...linesFromNode);
 
       // * calculate parts
 
@@ -1259,7 +1259,7 @@ export default class Pages {
       //// this._DOM.insertInsteadOf(node, ...newPreElementsArray);
       // * We need to keep the original node,
       // * we may need it as a parent in this._parseNode().
-      this._node.replaceNodeContentsWith(node, ...newPreElementsArray);
+      this._DOM.replaceNodeContentsWith(node, ...newPreElementsArray);
       // * We "open" the slough node, but leave it.
       this._DOM.setStyles(node, { display: 'contents' });
       this._DOM.setAttribute(node, '[slough-node]', '');
@@ -1406,7 +1406,7 @@ export default class Pages {
 
     // * We need to keep the original node,
     // * we may need it as a parent in this._parseNode().
-    this._node.replaceNodeContentsWith(node, ...newPreElementsArray);
+    this._DOM.replaceNodeContentsWith(node, ...newPreElementsArray);
     // * We "open" the slough node, but leave it.
     this._DOM.removeAllClasses(node);
     // this._DOM.removeAllAttributes(node);
