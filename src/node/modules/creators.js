@@ -50,6 +50,13 @@ export function createNeutralBlock() {
 /**
  * @this {Node}
  */
+export function createTextNodeWrapper() {
+  return this.create(this._selector.textNode)
+}
+
+/**
+ * @this {Node}
+ */
 export function createTextLine() {
   return this.create(this._selector.textLine);
 }

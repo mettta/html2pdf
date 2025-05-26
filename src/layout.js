@@ -196,7 +196,9 @@ export default class Layout {
 
         } else if (this._node.isSignificantTextNode(child)) {
           // process text nodes
-          this._DOM.setAttribute(this._node.wrapTextNode(child), this._selector.printHide);
+          const textNodeWrapper = this._node.createTextNodeWrapper();
+          this._DOM.wrap(child, textNodeWrapper);
+          this._DOM.setAttribute(textNodeWrapper, this._selector.printHide);
 
         } else {
           return

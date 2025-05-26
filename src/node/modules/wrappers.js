@@ -1,18 +1,5 @@
 // WRAP
 
-/**
- * @this {Node}
- */
-export function wrapTextNode(element) {
-  if (!this.isSignificantTextNode(element)) {
-    return
-  }
-  const wrapper = this.create(this._selector.textNode);
-  this._DOM.insertBefore(element, wrapper);
-  this._DOM.insertAtEnd(wrapper, element);
-  return wrapper;
-}
-
 // wrapNodeChildren(node) {
 //   const children = this.getChildren(node);
 //   const wrapper = this.create();

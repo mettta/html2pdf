@@ -12,7 +12,10 @@ export function getPreparedChildren(element) {
         }
 
         if (this.isSignificantTextNode(item)) {
-          acc.push(this.wrapTextNode(item));
+          const textNodeWrapper = this.createTextNodeWrapper();
+          this._DOM.wrap(item, textNodeWrapper);
+          acc.push(textNodeWrapper);
+          this._debugMode && console.info('🚸 (getPreparedChildren) wrap and return TEXT NODE', [item]);
           return acc;
         }
 

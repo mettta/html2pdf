@@ -316,7 +316,10 @@ export default class Paragraph {
 
         // * wrap text node, use element.nodeType
         if (this._node.isSignificantTextNode(item)) {
-          acc.push(this._node.wrapTextNode(item)); // TODO
+          const textNodeWrapper = this._node.createTextNodeWrapper();
+          this._DOM.wrap(item, textNodeWrapper);
+          acc.push(textNodeWrapper); // TODO
+
           return acc;
         }
 
