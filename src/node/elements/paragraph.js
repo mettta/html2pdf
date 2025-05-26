@@ -41,6 +41,13 @@ export default class Paragraph {
 
     this._debug._ && console.group('_splitComplexTextBlockIntoLines', [node]);
 
+    if (this._estimateLineCount(node) < this._minParagraphBreakableLines) {
+
+      this._end('few lines - Not to break it up');
+      // Not to break it up
+      return []
+    }
+
     if (this._node.isSelectorMatching(node, this._selector.split)) {
       // * This node has already been processed and has lines and groups of lines inside it,
 
@@ -312,12 +319,13 @@ export default class Paragraph {
     .reduce(
       (acc, item) => {
 
+        // TODO: use a more detailed algorithm from 'children'
+
         // * wrap text node, use element.nodeType
         if (this._node.isSignificantTextNode(item)) {
           const textNodeWrapper = this._node.createTextNodeWrapper();
           this._DOM.wrap(item, textNodeWrapper);
           acc.push(textNodeWrapper); // TODO
-
           return acc;
         }
 
@@ -344,7 +352,7 @@ export default class Paragraph {
     // Split the splittingTextNode into <html2pdf-word>.
 
     // * array with words:
-    const wordArray = this._node.splitByWordsGreedy(splittingTextNode);
+    const wordArray = this._node.splitTextByWordsGreedy(splittingTextNode);
     this._debug._ && console.log('wordArray', wordArray);
 
     // * array with words wrapped with the inline tag 'html2pdf-word':

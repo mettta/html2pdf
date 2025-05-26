@@ -6,7 +6,7 @@
 // TODO make Obj with offsetTop and use it later
 export function prepareSplittedNode(node) {
   const splittedNode = node;
-  const nodeWords = this.splitByWordsGreedy(node);
+  const nodeWords = this.splitTextByWordsGreedy(node);
 
   const nodeWordItems = nodeWords.map((item) => {
     const span = this._DOM.createElement('span');
@@ -36,7 +36,7 @@ export function splitTextByLinesGreedy(string) {
 /**
 * @this {Node}
 */
-export function splitByWordsGreedy(node) { // ? in prepareSplittedNode
+export function splitTextByWordsGreedy(node) { // ? in prepareSplittedNode
   const text = this._DOM.getNodeValue(node) || this._DOM.getInnerHTML(node);
   // SEE Pages: const WORD_JOINER
   const arr = text.split(/(?<=\s|-)/); // WORD_JOINER = '';
