@@ -8,6 +8,12 @@ import * as Wrappers from './modules/wrappers.js';
 import * as Fitters from './modules/fitters.js';
 import * as Pagebreaks from './modules/pagebreaks.js';
 import * as Children from './modules/children.js';
+import Paragraph from './elements/paragraph.js';
+import Table from './elements/table.js';
+import TableLike from './elements/tableLike.js';
+import Grid from './elements/grid.js';
+import Pre from './elements/pre.js';
+
 
 export default class Node {
   constructor({
@@ -33,6 +39,37 @@ export default class Node {
     Object.assign(this, Fitters);
     Object.assign(this, Pagebreaks);
     Object.assign(this, Children);
+
+    this._paragraph = new Paragraph({
+      config: this._config,
+      DOM: this._DOM,
+      selector: this._selector,
+      node: this,
+    });
+    this._pre = new Pre({
+      config: this._config,
+      DOM: this._DOM,
+      selector: this._selector,
+      node: this,
+    });
+    this._table = new Table({
+      config: this._config,
+      DOM: this._DOM,
+      selector: this._selector,
+      node: this,
+    });
+    this._grid = new Grid({
+      config: this._config,
+      DOM: this._DOM,
+      selector: this._selector,
+      node: this,
+    });
+    this._tableLike = new TableLike({
+      config: this._config,
+      DOM: this._DOM,
+      selector: this._selector,
+      node: this,
+    });
   }
 
   clearTemplates(root) {

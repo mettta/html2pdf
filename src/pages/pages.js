@@ -1,5 +1,4 @@
 import arrayFromString from './arrayFromString.js';
-import Paragraph from './paragraph.js';
 
 const CONSOLE_CSS_COLOR_PAGES = '#66CC00';
 const CONSOLE_CSS_PRIMARY_PAGES = `color: ${CONSOLE_CSS_COLOR_PAGES};font-weight:bold`;
@@ -43,13 +42,6 @@ export default class Pages {
 
     // ***:
     this._DOM = DOM;
-    this._paragraph = new Paragraph({
-      config,
-      DOM,
-      node,
-      selector,
-    });
-    this._paragraph.init()
 
     this._root = layout.root;
     this._contentFlow = layout.contentFlow;
@@ -895,7 +887,7 @@ export default class Pages {
       // }
 
       // otherwise try to break it and loop the children:
-      const children = this._getProcessedChildren(currentElement, newPageBottom, this._referenceHeight);
+      const children = this._node.getProcessedChildren(currentElement, newPageBottom, this._referenceHeight);
       this._debug._parseNode && console.log(
         'try to break it and loop the children:', children
       );
@@ -960,116 +952,7 @@ export default class Pages {
 
   // CHILDREN
 
-  // !!!!!! node: _getPreparedChildren(element)
 
-  _getProcessedChildren(node, firstPageBottom, fullPageHeight) {
-    const consoleMark = ['%c_getProcessedChildren\n', 'color:white',];
-
-    let children = [];
-
-    if (this._node.isNoBreak(node)) {
-      // don't break apart, thus keep an empty children array
-      this._debug._getProcessedChildren && console.info(...consoleMark,
-        '🧡 isNoBreak', node);
-      return children = [];
-
-    } else if (this._node.isComplexTextBlock(node)) {
-      this._debug._getProcessedChildren && console.info(...consoleMark,
-        '💚 ComplexTextBlock', node);
-      return children = this._paragraph.split(node) || [];
-
-    } else if (this._node.isWrappedTextNode(node)) {
-      this._debug._getProcessedChildren && console.info(...consoleMark,
-        '💚 TextNode', node);
-
-      return children = this._paragraph.split(node) || [];
-
-    }
-
-    const nodeComputedStyle = this._DOM.getComputedStyle(node);
-
-    // ? TABLE now has conditions that overlap with PRE (except for the tag name),
-    // ? so let's check it first.
-    // FIXME the order of checks
-    if (this._node.isTableLikeNode(node, nodeComputedStyle)) {
-      this._debug._getProcessedChildren && console.info(...consoleMark,
-        '💚 TABLE like', node);
-      children = this._splitTableLikeNode(
-        node,
-        firstPageBottom,
-        fullPageHeight,
-        nodeComputedStyle
-      ) || [];
-
-    } else if (this._node.isTableNode(node, nodeComputedStyle)) {
-      this._debug._getProcessedChildren && console.info(...consoleMark,
-        '💚 TABLE', node);
-      children = this._splitTableNode(
-        node,
-        firstPageBottom,
-        fullPageHeight,
-        nodeComputedStyle
-      ) || [];
-
-    } else if (this._node.isPRE(node, nodeComputedStyle)) {
-      this._debug._getProcessedChildren && console.info(...consoleMark,
-        '💚 PRE', node);
-      children = this._splitPreNode(
-        node,
-        firstPageBottom,
-        fullPageHeight,
-      ) || [];
-
-    } else if (this._node.isGridAutoFlowRow(this._DOM.getComputedStyle(node))) {
-      // ** If it is a grid element.
-      // ????? Process only some modifications of grids!
-      // ***** There's an inline grid check here, too.
-      // ***** But since the check for inline is below and real inline children don't get here,
-      // ***** it is expected that the current element is either block or actually
-      // ***** behaves as a block element in the flow thanks to its content.
-      this._debug._getProcessedChildren && console.info(...consoleMark,
-        '💜 GRID');
-      children = this._splitGridNode(
-        node,
-        firstPageBottom,
-        fullPageHeight
-      ) || [];
-
-
-      // TODO LI: если в LI есть UL, маркер может оставаться на прежней странице - см. скрин в телеге.
-      // } else if (this._node.isLiNode(node)) {
-      //   // todo
-      //   // now make all except UL unbreakable
-      //   const liChildren = this._node.getPreparedChildren(node)
-      //     .reduce((acc, child) => {
-      //       if (this._DOM.getElementTagName(child) === 'UL') {
-      //         acc.push(child);
-      //       } else {
-      //         // TODO сразу собирать в нейтральный объект
-      //         // и проверить display contents!! чтобы брать положение, но отключать стили и влияние на другие
-      //         if (acc[acc.length - 1]?.length) {
-      //           acc[acc.length - 1].push(child);
-      //         } else {
-      //           acc.push([child]);
-      //         }
-      //       }
-      //       return acc
-      //     }, []);
-
-    } else {
-      this._debug._getProcessedChildren && console.info(...consoleMark,
-        '💚 some node', node);
-      children = this._node.getPreparedChildren(node);
-
-      this._debug._getProcessedChildren && console.info(
-        ...consoleMark,
-        '🚸 get element children ',
-        children
-      );
-    }
-
-    return children
-  }
 
 
 
@@ -2175,7 +2058,7 @@ export default class Pages {
             currentElement
           );
 
-          const currentElementChildren = this._getProcessedChildren(currentElement, pageBottom, fullPageHeight);
+          const currentElementChildren = this._node.getProcessedChildren(currentElement, pageBottom, fullPageHeight);
 
           // * Parse children:
           if (currentElementChildren.length) {

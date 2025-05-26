@@ -36,6 +36,118 @@ export function getPreparedChildren(element) {
   }
 }
 
+/**
+ * @this {Node}
+ */
+export function getProcessedChildren(node, firstPageBottom, fullPageHeight) {
+    const consoleMark = ['%c_getProcessedChildren\n', 'color:white',];
+
+    let children = [];
+
+    if (this.isNoBreak(node)) {
+      // don't break apart, thus keep an empty children array
+      this._debugMode && console.info(...consoleMark,
+        '🧡 isNoBreak', node);
+      return children = [];
+
+    } else if (this.isComplexTextBlock(node)) {
+      this._debugMode && console.info(...consoleMark,
+        '💚 ComplexTextBlock', node);
+      return children = this._paragraph.split(node) || [];
+
+    } else if (this.isWrappedTextNode(node)) {
+      this._debugMode && console.info(...consoleMark,
+        '💚 TextNode', node);
+
+      return children = this._paragraph.split(node) || [];
+
+    }
+
+    const nodeComputedStyle = this._DOM.getComputedStyle(node);
+
+    // ? TABLE now has conditions that overlap with PRE (except for the tag name),
+    // ? so let's check it first.
+    // FIXME the order of checks
+    if (this.isTableLikeNode(node, nodeComputedStyle)) {
+      this._debugMode && console.info(...consoleMark,
+        '💚 TABLE like', node);
+      children = this._tableLike.split(
+        node,
+        firstPageBottom,
+        fullPageHeight,
+        nodeComputedStyle
+      ) || [];
+
+    } else if (this.isTableNode(node, nodeComputedStyle)) {
+      this._debugMode && console.info(...consoleMark,
+        '💚 TABLE', node);
+      children = this._table.split(
+        node,
+        firstPageBottom,
+        fullPageHeight,
+        // nodeComputedStyle
+      ) || [];
+
+    } else if (this.isPRE(node, nodeComputedStyle)) {
+      this._debugMode && console.info(...consoleMark,
+        '💚 PRE', node);
+      children = this._pre.split(
+        node,
+        firstPageBottom,
+        fullPageHeight,
+      ) || [];
+
+    } else if (this.isGridAutoFlowRow(this._DOM.getComputedStyle(node))) {
+      // ** If it is a grid element.
+      // ????? Process only some modifications of grids!
+      // ***** There's an inline grid check here, too.
+      // ***** But since the check for inline is below and real inline children don't get here,
+      // ***** it is expected that the current element is either block or actually
+      // ***** behaves as a block element in the flow thanks to its content.
+      this._debugMode && console.info(...consoleMark,
+        '💜 GRID');
+      children = this._grid.split(
+        node,
+        firstPageBottom,
+        fullPageHeight
+      ) || [];
+
+
+      // TODO LI: если в LI есть UL, маркер может оставаться на прежней странице - см. скрин в телеге.
+      // } else if (this.isLiNode(node)) {
+      //   // todo
+      //   // now make all except UL unbreakable
+      //   const liChildren = this.getPreparedChildren(node)
+      //     .reduce((acc, child) => {
+      //       if (this._DOM.getElementTagName(child) === 'UL') {
+      //         acc.push(child);
+      //       } else {
+      //         // TODO сразу собирать в нейтральный объект
+      //         // и проверить display contents!! чтобы брать положение, но отключать стили и влияние на другие
+      //         if (acc[acc.length - 1]?.length) {
+      //           acc[acc.length - 1].push(child);
+      //         } else {
+      //           acc.push([child]);
+      //         }
+      //       }
+      //       return acc
+      //     }, []);
+
+    } else {
+      this._debugMode && console.info(...consoleMark,
+        '💚 some node', node);
+      children = this.getPreparedChildren(node);
+
+      this._debugMode && console.info(
+        ...consoleMark,
+        '🚸 get element children ',
+        children
+      );
+    }
+
+    return children
+  }
+
 // 🔒 private
 
 /**

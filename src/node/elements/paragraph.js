@@ -29,10 +29,6 @@ export default class Paragraph {
 
   }
 
-  init() {
-    this._debug._ && console.log('🚨 init Paragraph')
-  }
-
   split(node) {
     return this._splitComplexTextBlockIntoLines(node)
   }

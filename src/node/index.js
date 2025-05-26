@@ -1,2 +1,1 @@
-import Node from './node.js';
-export default Node;
+export { default } from './node.js';
