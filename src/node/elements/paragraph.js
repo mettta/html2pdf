@@ -1,6 +1,4 @@
-const CONSOLE_CSS_END_LABEL = `background:#eee;color:#888;padding: 0 1px 0 0;`; //  font-size:smaller
-
-// SEE splitByWordsGreedyWithSpacesFilter(node) in DOM
+// SEE splitTextByWordsGreedyWithSpacesFilter(node) in DOM
 const WORD_JOINER = '';
 
 export default class Paragraph {
@@ -33,7 +31,7 @@ export default class Paragraph {
     return this._splitComplexTextBlockIntoLines(node)
   }
 
-  _getLines(element) {
+  _estimateLineCount(element) {
     return Math.ceil(this._DOM.getElementOffsetHeight(element) / this._node.getLineHeight(element))
   }
 
@@ -236,7 +234,7 @@ export default class Paragraph {
     this._debug._ && console.group('_processNestedInlineElements', [node]);
     const preparedChildren = this._getNestedInlineChildren(node);
     const linedChildren = preparedChildren.flatMap(child => {
-      return (this._getLines(child) > 1) ? this._breakItIntoLines(child) : child;
+      return (this._estimateLineCount(child) > 1) ? this._breakItIntoLines(child) : child;
     });
     const splitters = this._findNewLineStarts(linedChildren);
 
@@ -421,6 +419,7 @@ export default class Paragraph {
   // ***
 
   _end(string) {
+    const CONSOLE_CSS_END_LABEL = `background:#eee;color:#888;padding: 0 1px 0 0;`; //  font-size:smaller
     this._debug._ && console.log(`%c ▲ ${string} `, CONSOLE_CSS_END_LABEL);
     this._debug._ && console.groupEnd();
   }
