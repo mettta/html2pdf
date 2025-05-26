@@ -28,7 +28,7 @@ export function prepareSplittedNode(node) {
 /**
  * @this {Node}
  */
-export function splitByLinesGreedy(string) {
+export function splitTextByLinesGreedy(string) {
   const arr = string.split(/(?<=\n)/); // JOINER = '';
   return arr
 }

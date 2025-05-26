@@ -104,7 +104,7 @@ export default class Grid {
 
       // * split the text node into lines by \n,
       // * leaving the character \n at the end of the resulting string:
-      const stringsFromNodeText = this._node.splitByLinesGreedy(currentNodeText);
+      const stringsFromNodeText = this._node.splitTextByLinesGreedy(currentNodeText);
 
       if (stringsFromNodeText.length < this._minPreBreakableLines) {
         this._debug._ && console.log('%c END _splitPreNode few lines', CONSOLE_CSS_END_LABEL);
