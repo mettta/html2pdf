@@ -4,7 +4,7 @@ import debugConfig from './debugConfig.js';
 import SELECTOR from './selector.js';
 import DocumentObjectModel from './DOM.js';
 import Layout from './layout.js';
-import Node from './node.js';
+import Node from './node/index.js';
 import Pages from './pages/index.js';
 import Paper from './paper.js';
 import Preview from './preview.js';

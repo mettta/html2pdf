@@ -1,13 +1,13 @@
-import * as Selectors from './node/selectors.js';
-import * as Positioning from './node/positioning.js';
-import * as Getters from './node/getters.js';
-import * as Creators from './node/creators.js';
-import * as Splitters from './node/splitters.js';
-import * as Markers from './node/markers.js';
-import * as Wrappers from './node/wrappers.js';
-import * as Fitters from './node/fitters.js';
-import * as Pagebreaks from './node/pagebreaks.js';
-import * as Children from './node/children.js';
+import * as Selectors from './modules/selectors.js';
+import * as Positioning from './modules/positioning.js';
+import * as Getters from './modules/getters.js';
+import * as Creators from './modules/creators.js';
+import * as Splitters from './modules/splitters.js';
+import * as Markers from './modules/markers.js';
+import * as Wrappers from './modules/wrappers.js';
+import * as Fitters from './modules/fitters.js';
+import * as Pagebreaks from './modules/pagebreaks.js';
+import * as Children from './modules/children.js';
 
 export default class Node {
   constructor({
