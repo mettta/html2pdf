@@ -3,14 +3,6 @@
 /**
  * @this {Node}
  */
-export function wrapNode(node, wrapper) {
-  this._DOM.insertBefore(node, wrapper);
-  this._DOM.insertAtEnd(wrapper, node);
-}
-
-/**
- * @this {Node}
- */
 export function wrapTextNode(element) {
   if (!this.isSignificantTextNode(element)) {
     return

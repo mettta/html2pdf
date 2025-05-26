@@ -182,7 +182,7 @@ function _processInlineChildren(children) {
       if (!complexTextBlock) {
         // the first inline child
         complexTextBlock = this.createComplexTextBlock();
-        this.wrapNode(child, complexTextBlock);
+        this._DOM.wrap(child, complexTextBlock);
         newChildren.push(complexTextBlock);
       }
       // not the first inline child

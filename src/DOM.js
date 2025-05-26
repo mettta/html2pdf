@@ -1,6 +1,6 @@
 export default class DocumentObjectModel {
 
-  constructor({DOM, config}) {
+  constructor({ DOM, config }) {
 
     // * public
     this.document = DOM;
@@ -55,6 +55,12 @@ export default class DocumentObjectModel {
   insertInsteadOf(element, ...payload) {
     this.insertBefore(element, ...payload);
     element.remove();
+  }
+
+  wrap(element, wrapper) {
+    element.before(wrapper);
+    wrapper.append(element);
+    return wrapper;
   }
 
   moveContent(source, target) {
