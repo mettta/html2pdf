@@ -41,20 +41,6 @@ export default class Node {
     templates.forEach((el) => this._DOM.removeNode(el));
   }
 
-  // INSERT SPECIAL NODES
-
-  insertForcedPageBreakBefore(element) {
-    const div = this.create(this._selector.printForcedPageBreak);
-    this._DOM.insertBefore(element, div);
-    return div;
-  }
-
-  insertForcedPageBreakAfter(element) {
-    const div = this.create(this._selector.printForcedPageBreak);
-    this._DOM.insertAfter(element, div);
-    return div;
-  }
-
   // **********
 
   notSolved(element) {

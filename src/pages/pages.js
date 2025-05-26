@@ -179,7 +179,8 @@ export default class Pages {
     // * find all relevant elements and insert forced page break markers before them.
     pageStarters.length && pageStarters.forEach(element => {
       const candidate = this._node.findBetterForcedPageStarter(element, this._contentFlow);
-      candidate && this._node.insertForcedPageBreakBefore(candidate);
+      candidate && this._DOM.insertBefore(candidate, this._node.createForcedPageBreak());
+
     });
 
     // * find all relevant elements and insert forced page break markers before them.
@@ -187,7 +188,8 @@ export default class Pages {
       // ** If it is not a forced page break element inserted by hand into the code:
       if(!this._node.isForcedPageBreak(element)) {
         const candidate = this._node.findBetterForcedPageStarter(element, this._contentFlow);
-        candidate && this._node.insertForcedPageBreakBefore(candidate);
+        candidate && this._DOM.insertBefore(candidate, this._node.createForcedPageBreak());
+
       }
       // ** In other case we leave it as it is.
     });
@@ -200,7 +202,8 @@ export default class Pages {
       }
       // If there are AFTER and BEFORE breaks - insert only one.
       if (!this._node.isForcedPageBreak(element.nextElementSibling)) {
-        this._node.insertForcedPageBreakAfter(element);
+      this._DOM.insertAfter(element, this._node.createForcedPageBreak())
+
       } // else pass
     });
 
