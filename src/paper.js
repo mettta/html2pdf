@@ -8,7 +8,7 @@ export default class Paper {
     layout,
   }) {
     // * From config:
-    // this._debug = config.debugMode ? { ...config.debugConfig.paper } : {};
+    this._debug = config.debugMode ? { ...config.debugConfig.paper } : {};
 
     // * private
     this._DOM = DOM;

@@ -7,14 +7,11 @@ export default class TableLike {
   }) {
 
     // * From config:
-    this._debugMode = config.debugMode;
+    this._debug = config.debugMode ? { ...config.debugConfig.tableLike } : {};
     // * Private
     this._DOM = DOM;
     this._selector = selector;
     this._node = node;
-
-    this._debugToggler = true && this._debugMode;
-
 
     // todo
     // 1) move to config
@@ -42,7 +39,7 @@ export default class TableLike {
 
   }
 
-  split(node, pageBottom, fullPageHeight, nodeComputedStyle) {
+  split(node, pageBottom, fullPageHeight, root, nodeComputedStyle,) {
     // FF has page breaks has no effect inside internal table elements.
     // So such a node will have to be split like a table.
 
@@ -57,9 +54,11 @@ export default class TableLike {
       ? nodeComputedStyle
       : this._DOM.getComputedStyle(node);
 
+    this._debug._ && console.log('root', root);
+
     const sortOfLines = this._node.getPreparedChildren(node);
 
-    const nodeTop = this._node.getTop(node, this._root);
+    const nodeTop = this._node.getTop(node, root);
     const nodeWrapperHeight = this._node.getEmptyNodeHeight(node);
 
     // ** Prepare parameters for splitters calculation
@@ -105,7 +104,7 @@ export default class TableLike {
     if(!splitters.length) {
       // ** if there is no partitioning, we return an empty array
       // ** and the original node will be taken in its entirety.
-      this._debugMode && console.log('splitters.length', splitters.length)
+      this._debug._ && console.log('splitters.length', splitters.length)
       return []
     }
 

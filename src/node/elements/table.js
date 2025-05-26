@@ -6,14 +6,12 @@ export default class Table {
     selector,
   }) {
     // * From config:
-    this._debugMode = config.debugMode;
+    this._debug = config.debugMode ? { ...config.debugConfig.table } : {};
+
     // * Private
     this._DOM = DOM;
     this._selector = selector;
     this._node = node;
-
-    this._debugToggler = true && this._debugMode;
-
 
     // todo
     // 1) move to config
@@ -46,7 +44,7 @@ export default class Table {
   // TODO test more complex tables
   _splitTableNode(table, pageBottom, fullPageHeight) {
     // * Split simple tables, without regard to col-span and the like.
-    this._debugToggler && console.group('%c_splitTableNode', 'background:cyan', [table]);
+    this._debug._ && console.group('%c_splitTableNode', 'background:cyan', [table]);
 
     this._lockWidths(table);
 
@@ -56,7 +54,7 @@ export default class Table {
     // * Get table entries
     const tableEntries = this._getEntries(table);
 
-    this._debugToggler && console.log('tableEntries', tableEntries);
+    this._debug._ && console.log('tableEntries', tableEntries);
 
     // TODO # can be a single row with long content ?
     // ! this._minBreakableRows === 0
@@ -93,7 +91,7 @@ export default class Table {
       - tableWrapperHeight
       - 2 * this._signpostHeight;
 
-    this._debugToggler && console.log(
+    this._debug._ && console.log(
       '\n • tableFirstPartBottom', tableFirstPartBottom,
       '\n',
       '\n   pageBottom', pageBottom,
@@ -119,14 +117,14 @@ export default class Table {
     ];
 
     let distributedRows = getDistributedRows(tableEntries);
-    this._debugToggler && console.log('distributedRows', distributedRows);
+    this._debug._ && console.log('distributedRows', distributedRows);
 
     // * Calculate Table Splits Ids
 
     let splitsIds = [];
     let currentPageBottom = tableFirstPartBottom;
 
-    this._debugToggler && console.log(
+    this._debug._ && console.log(
       this._node.getTop(distributedRows[1], table) - this._node.getBottom(distributedRows[0], table),
       '(row[1].top - row[0].bottom)',
     )
@@ -136,11 +134,11 @@ export default class Table {
       // * then even the header doesn't fit.
       // * Go immediately to the second page.
       currentPageBottom = tableFullPartContentHeight;
-      this._debugToggler && console.log(`The Row 0 goes to the 2nd page`);
+      this._debug._ && console.log(`The Row 0 goes to the 2nd page`);
     }
 
     for (let index = 0; index < distributedRows.length; index++) {
-      this._debugToggler && console.log(
+      this._debug._ && console.log(
         `%c 🟪 Check the Row # ${index}`, 'color:blueviolet',
         [ distributedRows[index] ],
         // [...distributedRows]
@@ -168,7 +166,7 @@ export default class Table {
         const isNoBreak = this._node.isNoBreak(splittingRow);
         const makesSenseToSplitTheRow = (splittingRowHeight >= splittingMinRowHeight) && (!isNoBreak);
 
-        this._debugToggler && console.log(
+        this._debug._ && console.log(
           `%c • Row # ${index}: try to split`, 'color:blueviolet', splittingRow,
         );
 
@@ -176,7 +174,7 @@ export default class Table {
         if (makesSenseToSplitTheRow) {
           // * Let's split table row [index]
 
-          this._debugToggler && console.groupCollapsed(
+          this._debug._ && console.groupCollapsed(
             `Split The ROW.${splittingRowIndex}`
           );
 
@@ -189,7 +187,7 @@ export default class Table {
 
           theRowContentSlicesByTD = [...splittingRowTDs].map((td, ind) => {
             const tdChildren = this._node.getPreparedChildren(td);
-            this._debugToggler && console.groupCollapsed(`Split TD.${ind} in ROW.${splittingRowIndex}`);
+            this._debug._ && console.groupCollapsed(`Split TD.${ind} in ROW.${splittingRowIndex}`);
             const tdInternalSplitters = this._getInternalBlockSplitters({
               rootNode: td,
               children: tdChildren,
@@ -197,17 +195,17 @@ export default class Table {
               firstPartHeight: rowFirstPartHeight,
               fullPageHeight: rowFullPageHeight,
             });
-            this._debugToggler && console.groupEnd(`Split TD.${ind} in ROW.${splittingRowIndex}`);
+            this._debug._ && console.groupEnd(`Split TD.${ind} in ROW.${splittingRowIndex}`);
             return tdInternalSplitters
           });
 
-          this._debugToggler && console.log(
+          this._debug._ && console.log(
             '🟣 \ntheRowContentSlicesByTD',
             theRowContentSlicesByTD
           );
 
           const shouldFirstPartBeSkipped = theRowContentSlicesByTD.some(obj => {
-            this._debugToggler && console.log(
+            this._debug._ && console.log(
               '🟣',
               '\nobj.result.length',
               obj.result.length,
@@ -217,7 +215,7 @@ export default class Table {
             return (obj.result.length && obj.result[0] === null)
           });
 
-          this._debugToggler && console.log(
+          this._debug._ && console.log(
             '🟣',
             '\nshouldFirstPartBeSkipped',
             shouldFirstPartBeSkipped
@@ -237,7 +235,7 @@ export default class Table {
             });
           }
 
-          this._debugToggler && console.log(
+          this._debug._ && console.log(
             '🟣',
             '\n theRowContentSlicesByTD',
             theRowContentSlicesByTD
@@ -246,7 +244,7 @@ export default class Table {
           const ifThereIsSplit = theRowContentSlicesByTD.some(obj => {
             return obj.result.length
           });
-          this._debugToggler && console.log('🟣 ifThereIsSplit', ifThereIsSplit);
+          this._debug._ && console.log('🟣 ifThereIsSplit', ifThereIsSplit);
 
           // !
           if (ifThereIsSplit) {
@@ -268,10 +266,10 @@ export default class Table {
               }
             });
 
-            this._debugToggler && console.log('🟣 theTdContentElements', theTdContentElements);
+            this._debug._ && console.log('🟣 theTdContentElements', theTdContentElements);
 
             const theNewTrCount = Math.max(...theTdContentElements.map(arr => arr.length));
-            this._debugToggler && console.log('🟣 theNewTrCount', theNewTrCount);
+            this._debug._ && console.log('🟣 theNewTrCount', theNewTrCount);
 
             const theNewRows = [];
             for (let i = 0; i < theNewTrCount; i++) {
@@ -291,12 +289,12 @@ export default class Table {
               theNewRows.push(rowWrapper);
             }
 
-            this._debugToggler && console.log('🟣', '\n theNewRows', theNewRows);
+            this._debug._ && console.log('🟣', '\n theNewRows', theNewRows);
 
             // добавляем строки в массив и в таблицу
 
             this._DOM.setAttribute(splittingRow, '.🚫_must_be_removed'); // for test, must be removed
-            this._debugToggler && console.log('🟣 splittingRow', splittingRow);
+            this._debug._ && console.log('🟣 splittingRow', splittingRow);
             this._DOM.insertInsteadOf(splittingRow, ...theNewRows)
 
             // меняем исходный массив строк таблицы!
@@ -315,11 +313,11 @@ export default class Table {
 
           // !!!!!!!!!!!!!!
           if (isNoBreak) {
-            this._debugToggler && isNoBreak && console.log(
+            this._debug._ && isNoBreak && console.log(
               `%c • Row # ${index}: noBreak`, 'color:red', splittingRow,
             );
           } else {
-            this._debugToggler && console.log(
+            this._debug._ && console.log(
               `%c • Row # ${index}: small`, 'color:blueviolet', splittingRow,
             );
           }
@@ -332,7 +330,7 @@ export default class Table {
             // *** In the other case, we do not register a page break,
             // *** and the first small piece will be skipped.
             splitsIds.push(index);
-            this._debugToggler && console.log(
+            this._debug._ && console.log(
               `%c • Row # ${index}: REGISTER as start, index >= ${this._minLeftRows} (_minLeftRows) `, 'color:blueviolet',
               splittingRow
             );
@@ -354,13 +352,13 @@ export default class Table {
       } else {
         // currRowTop <= currentPageBottom
         // pass
-        this._debugToggler && console.log(
+        this._debug._ && console.log(
           `%c • Row # ${index}: PASS ...`, 'color:blueviolet',
         );
       }
     }; //? END OF for: distributedRows
 
-    this._debugToggler && console.log(
+    this._debug._ && console.log(
       '\n splitsIds', splitsIds,
       '\n distributedRows', [...distributedRows]
     );
@@ -387,7 +385,7 @@ export default class Table {
       tableEntries,
     }))
 
-    this._debugToggler && console.log(
+    this._debug._ && console.log(
       'splits', splits
     );
 
@@ -414,7 +412,7 @@ export default class Table {
     //   split: true | false,
     // }
 
-    this._debugToggler && console.group(`_createSlicesBySplitFlag`);
+    this._debug._ && console.group(`_createSlicesBySplitFlag`);
 
     const sliceWrapper = this._node.createWithFlagNoBreak();
     this._DOM.setStyles(sliceWrapper, { display: 'contents' });
@@ -439,29 +437,29 @@ export default class Table {
         currentWrapper = child;
       }
 
-      this._debugToggler && console.log(' createWrapperFromArray:', wrapper);
+      this._debug._ && console.log(' createWrapperFromArray:', wrapper);
       return wrapper;
     }
 
     const processChildren = (children, parent = null) => {
-      this._debugToggler && console.group('processChildren');
-      this._debugToggler && console.log('*start* children', children)
+      this._debug._ && console.group('processChildren');
+      this._debug._ && console.log('*start* children', children)
 
       for (let i = 0; i < children.length; i++) {
         processObj(children[i]);
       }
 
-      this._debugToggler && console.log('- wrappers BEFORE pop:', [...wrappers]);
+      this._debug._ && console.log('- wrappers BEFORE pop:', [...wrappers]);
       const a = wrappers.pop();
-      this._debugToggler && console.log('- wrappers.pop()', a);
-      this._debugToggler && console.log('- parent', parent);
-      this._debugToggler && console.log('- wrappers AFTER pop:', [...wrappers]);
+      this._debug._ && console.log('- wrappers.pop()', a);
+      this._debug._ && console.log('- parent', parent);
+      this._debug._ && console.log('- wrappers AFTER pop:', [...wrappers]);
 
       currentTargetInSlice = wrappers.at(-1);
       // TODO сделать функцию
-      this._debugToggler && console.log('🎯🎯 currentTargetInSlice', currentTargetInSlice)
-      this._debugToggler && console.log('🎯 wrappers.at(-1)', wrappers.at(-1))
-      this._debugToggler && console.log('*END* children', children)
+      this._debug._ && console.log('🎯🎯 currentTargetInSlice', currentTargetInSlice)
+      this._debug._ && console.log('🎯 wrappers.at(-1)', wrappers.at(-1))
+      this._debug._ && console.log('*END* children', children)
 
       this._end(`processChildren`);
     }
@@ -473,12 +471,12 @@ export default class Table {
       const currentElement = obj.element;
       const id = obj.id;
 
-      this._debugToggler && console.group(`processObj # ${id}`); // Collapsed
-      this._debugToggler && console.log('currentElement', currentElement);
+      this._debug._ && console.group(`processObj # ${id}`); // Collapsed
+      this._debug._ && console.log('currentElement', currentElement);
       currentElement && this._DOM.removeNode(currentElement);
 
       if(hasSplitFlag) {
-        this._debugToggler && console.log('••• hasSplitFlag');
+        this._debug._ && console.log('••• hasSplitFlag');
         // start new object
         // const currentWrapper = slices.at(-1);
         // const nextWrapper = this._DOM.cloneNode(currentWrapper);
@@ -487,47 +485,47 @@ export default class Table {
           clone.classList.add("🚩");
           return clone
         });
-        this._debugToggler && console.log('• hasSplitFlag: NEW wrappers.map:', [...wrappers]);
+        this._debug._ && console.log('• hasSplitFlag: NEW wrappers.map:', [...wrappers]);
         const nextWrapper = createWrapperFromArray(wrappers);
 
         slices.push(nextWrapper);
-        this._debugToggler && console.log('• hasSplitFlag: slices.push(nextWrapper):', [...slices]);
+        this._debug._ && console.log('• hasSplitFlag: slices.push(nextWrapper):', [...slices]);
         // find container in new object
 
         currentTargetInSlice = wrappers.at(-1);
-        this._debugToggler && console.log('• hasSplitFlag: currentTargetInSlice:', currentTargetInSlice);
+        this._debug._ && console.log('• hasSplitFlag: currentTargetInSlice:', currentTargetInSlice);
       }
 
       // TODO проверить, когда есть оба флага
 
       if(hasChildren) {
-        this._debugToggler && console.log('••• hasChildren');
+        this._debug._ && console.log('••• hasChildren');
         // make new wrapper
         const cloneCurrentElementWrapper = this._DOM.cloneNodeWrapper(currentElement);
 
         // add cloneCurrentElementWrapper to wrappers
         wrappers.push(cloneCurrentElementWrapper); // ???????????
 
-        this._debugToggler && console.log('• hasChildren: wrappers.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...wrappers]);
+        this._debug._ && console.log('• hasChildren: wrappers.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...wrappers]);
         // add cloneCurrentElementWrapper to slice
-        this._debugToggler && console.log('• hasChildren: currentTargetInSlice (check):', currentTargetInSlice);
+        this._debug._ && console.log('• hasChildren: currentTargetInSlice (check):', currentTargetInSlice);
 
         if(currentTargetInSlice) {
-          this._debugToggler && console.log('• hasChildren: currentTargetInSlice', 'TRUE, add to existing', cloneCurrentElementWrapper);
+          this._debug._ && console.log('• hasChildren: currentTargetInSlice', 'TRUE, add to existing', cloneCurrentElementWrapper);
           // add to existing as a child
           this._DOM.insertAtEnd(currentTargetInSlice, cloneCurrentElementWrapper);
         } else {
-          this._debugToggler && console.log('• hasChildren: currentTargetInSlice', 'FALSE, init the first', cloneCurrentElementWrapper);
+          this._debug._ && console.log('• hasChildren: currentTargetInSlice', 'FALSE, init the first', cloneCurrentElementWrapper);
           // init the first
           cloneCurrentElementWrapper.classList.add('🏁first');
 
           this._DOM.setStyles(cloneCurrentElementWrapper, { background: 'yellow' });
           slices.push(cloneCurrentElementWrapper);
-          this._debugToggler && console.log('• hasChildren: slices.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...slices]);
+          this._debug._ && console.log('• hasChildren: slices.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...slices]);
         }
         // update wrapper bookmark
         currentTargetInSlice = wrappers.at(-1) // = cloneCurrentElementWrapper
-        this._debugToggler && console.log('• hasChildren:  currentTargetInSlice (=):', currentTargetInSlice);
+        this._debug._ && console.log('• hasChildren:  currentTargetInSlice (=):', currentTargetInSlice);
 
 
         processChildren(obj.children, currentElement);
@@ -536,19 +534,19 @@ export default class Table {
 
         // insert current Element
         currentTargetInSlice = wrappers.at(-1);
-        this._debugToggler && console.log('insert currentElement', currentElement, 'to target', currentTargetInSlice);
+        this._debug._ && console.log('insert currentElement', currentElement, 'to target', currentTargetInSlice);
         this._DOM.insertAtEnd(currentTargetInSlice, currentElement);
       }
 
       this._end(`processObj # ${id}`);
     }
 
-    this._debugToggler && console.log('#######  currentTargetInSlice (=):', currentTargetInSlice);
+    this._debug._ && console.log('#######  currentTargetInSlice (=):', currentTargetInSlice);
 
     processChildren(inputArray);
 
-    this._debugToggler && console.log('slices:', slices)
-    this._debugToggler && slices.forEach(slice => console.log('slice:', slice))
+    this._debug._ && console.log('slices:', slices)
+    this._debug._ && slices.forEach(slice => console.log('slice:', slice))
 
     this._end(`_createSlicesBySplitFlag`);
     return slices
@@ -583,7 +581,7 @@ export default class Table {
       this._DOM.setStyles(rootNode, { position: 'relative' });
     }
 
-    this._debugToggler && console.group('💟 _getInternalBlockSplitters'); // Collapsed
+    this._debug._ && console.group('💟 _getInternalBlockSplitters'); // Collapsed
 
     const findFirstNullIDInContinuousChain = (array) => {
       let item = null;
@@ -608,14 +606,14 @@ export default class Table {
     }
 
     const registerResult = (element, id) => {
-      this._debugToggler && console.assert((id >= 0), `registerResult: ID mast be provided`, element);
+      this._debug._ && console.assert((id >= 0), `registerResult: ID mast be provided`, element);
 
       let theElementObject = trail[id]; // * contender without special cases
       let theElementIndexInStack; // ***
 
-      this._debugToggler && console.groupCollapsed('💜💜💜 registerResult(element, id)');
+      this._debug._ && console.groupCollapsed('💜💜💜 registerResult(element, id)');
 
-      this._debugToggler && console.log(
+      this._debug._ && console.log(
           '\n element', element,
           '\n id', id,
           '\n theElementObject (trail[id])', theElementObject,
@@ -628,7 +626,7 @@ export default class Table {
 
         const topParentElementFromStack = findFirstNullIDInContinuousChain(stack);
 
-        this._debugToggler && console.log(
+        this._debug._ && console.log(
             '💜💜 id == 0',
             '\n💜 [...stack]', [...stack],
             '\n💜 topParentElementFromStack', topParentElementFromStack,
@@ -641,7 +639,7 @@ export default class Table {
 
       }
 
-      this._debugToggler && console.log('💜',
+      this._debug._ && console.log('💜',
         '\n theElementObject', theElementObject,
         '\n theElementIndexInStack', theElementIndexInStack,
         '\n [...indexTracker]', [...indexTracker],
@@ -656,7 +654,7 @@ export default class Table {
 
         result.push(null); // * it is used to calculate the height of a piece
 
-        this._debugToggler && console.log(
+        this._debug._ && console.log(
             'result.push(null)',
             '\n\n💜💜💜',
           );
@@ -664,7 +662,7 @@ export default class Table {
         result.push(theElementObject.element); // * it is used to calculate the height of a piece
         theElementObject && (theElementObject.split = true);
 
-        this._debugToggler && console.log(
+        this._debug._ && console.log(
             '\n theElementObject', theElementObject,
             '\n theElementObject.element', theElementObject.element,
             '\n result.push(theElementObject.element)',
@@ -675,7 +673,7 @@ export default class Table {
       this._end(`_getInternalBlockSplitters registerResult`);
     }
 
-    this._debugToggler && console.log(
+    this._debug._ && console.log(
         '💟 result 💟', result,
         '\n\n',
         `\n rootNode:`, rootNode,
@@ -728,7 +726,7 @@ export default class Table {
         //register
 
         // TODO #ForcedPageBreak
-        this._debugToggler && console.warn(
+        this._debug._ && console.warn(
             currentElement, '💟 is isForcedPageBreak'
           );
       }
@@ -740,12 +738,12 @@ export default class Table {
       if (nextElementTop <= floater) {
         // -- current fits
 
-        // this._debugToggler && console.log('💟💟 nextElementTop <= floater // current fits');
+        // this._debug._ && console.log('💟💟 nextElementTop <= floater // current fits');
 
         if (this._node.isNoHanging(currentElement)) {
           // -- current fits but it can't be the last
 
-          this._debugToggler && console.log('💟💟 currentElement _isNoHanging');
+          this._debug._ && console.log('💟💟 currentElement _isNoHanging');
 
           registerResult(currentElement, i);
         }
@@ -753,16 +751,16 @@ export default class Table {
       } else { // nextElementTop > floater
               // currentElement ?
 
-        this._debugToggler && console.log('💟💟', currentElement, `nextElementTop > floater \n ${nextElementTop} > ${floater} `,);
+        this._debug._ && console.log('💟💟', currentElement, `nextElementTop > floater \n ${nextElementTop} > ${floater} `,);
 
         if (this._node.isSVG(currentElement) || this._node.isIMG(currentElement)) {
           // TODO needs testing
-          this._debugToggler && console.log('%cIMAGE 💟💟', 'color:red;text-weight:bold')
+          this._debug._ && console.log('%cIMAGE 💟💟', 'color:red;text-weight:bold')
         }
 
         const currentElementBottom = this._node.getBottomWithMargin(currentElement, rootNode);
 
-        this._debugToggler && console.log(
+        this._debug._ && console.log(
           '💟💟 current ???',
           '\n currentElement', currentElement,
           '\n currentElementBottom', currentElementBottom,
@@ -773,11 +771,11 @@ export default class Table {
         // in the remaining space on the page,
         if (currentElementBottom <= floater) {
 
-          this._debugToggler && console.log('💟💟💟 currentElementBottom <= floater');
+          this._debug._ && console.log('💟💟💟 currentElementBottom <= floater');
 
           // ** add nextElement check (undefined as end)
           if(nextElement) {
-            this._debugToggler && console.log('💟💟💟💟 register nextElement');
+            this._debug._ && console.log('💟💟💟💟 register nextElement');
             trail.push(newObjectFromNext);
             registerResult(nextElement, i + 1);
           } // else - this is the end of element list
@@ -785,7 +783,7 @@ export default class Table {
         } else {
           // currentElementBottom > floater
           // try to split
-          this._debugToggler && console.log(
+          this._debug._ && console.log(
             '💟💟💟 currentElementBottom > floater,\ntry to split',
             currentElement
           );
@@ -816,7 +814,7 @@ export default class Table {
 
             stack.pop();
 
-            this._debugToggler && console.log('🟪 back from _getInternalBlockSplitters;\n trail[i]', trail[i]);
+            this._debug._ && console.log('🟪 back from _getInternalBlockSplitters;\n trail[i]', trail[i]);
             // *** END of 'has children'
 
           } else {
@@ -839,11 +837,11 @@ export default class Table {
               result = previousCandidate || result;
 
 
-              this._debugToggler && console.log('previousElement _isNoHanging')
+              this._debug._ && console.log('previousElement _isNoHanging')
               registerResult(result, i - 1);
             } else {
               // TODO #tracedParent
-              this._debugToggler && console.log(currentElement, 'currentElement has no children')
+              this._debug._ && console.log(currentElement, 'currentElement has no children')
               registerResult(currentElement, i);
             }
           } // *** END of 'no children'
@@ -940,7 +938,7 @@ export default class Table {
     });
 
     if (nodeEntries.unexpected.length > 0) {
-      this._debugToggler && console.warn(`something unexpected is found in the table ${node}`);
+      this._debug._ && console.warn(`something unexpected is found in the table ${node}`);
     }
 
     return nodeEntries
@@ -948,7 +946,7 @@ export default class Table {
 
   _insertTableSplit({ startId, endId, table, tableEntries }) {
 
-    // this._debugToggler && console.log(`=> _insertTableSplit(${startId}, ${endId})`);
+    // this._debug._ && console.log(`=> _insertTableSplit(${startId}, ${endId})`);
 
     const tableWrapper = this._DOM.cloneNodeWrapper(table);
 
@@ -990,8 +988,8 @@ export default class Table {
   _end(string) {
     const CONSOLE_CSS_END_LABEL = `background:#eee;color:#888;padding: 0 1px 0 0;`; //  font-size:smaller
 
-    this._debugToggler && console.log(`%c ▲ ${string} `, CONSOLE_CSS_END_LABEL);
-    this._debugToggler && console.groupEnd();
+    this._debug._ && console.log(`%c ▲ ${string} `, CONSOLE_CSS_END_LABEL);
+    this._debug._ && console.groupEnd();
   }
 
 }

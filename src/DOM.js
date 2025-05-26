@@ -7,7 +7,6 @@ export default class DocumentObjectModel {
     this.body = DOM.body;
 
     // * private
-    this._debugMode = config.debugMode;
     this._debug = config.debugMode ? { ...config.debugConfig.DOM } : {};
     this._assert = config.consoleAssert ? true : false;
   }

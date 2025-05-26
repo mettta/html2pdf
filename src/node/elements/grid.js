@@ -8,15 +8,12 @@ export default class Grid {
     selector,
   }) {
     // * From config:
-    this._debugMode = config.debugMode;
+    this._debug = config.debugMode ? { ...config.debugConfig.grid } : {};
+
     // * Private
     this._DOM = DOM;
     this._selector = selector;
     this._node = node;
-
-    this._debugToggler = true && this._debugMode;
-
-
 
     // todo
     // 1) move to config
@@ -44,22 +41,21 @@ export default class Grid {
 
   }
 
-
-  split(node, pageBottom, fullPageHeight) {
+  split(node, pageBottom, fullPageHeight, root) {
     // * Split simple grids,
     // * consider that templating is used, but there is no content in complex areas.
     // * If something unclear is encountered - do not split at all.
     // TODO (shall we scale?).
 
-    this._debugMode && console.group('%c_splitGridNode', 'background:#00FFFF');
+    this._debug._ && console.group('%c_splitGridNode', 'background:#00FFFF');
 
     // ** Take the node children.
     const children = this._node.getPreparedChildren(node);
-    this._debugMode && console.log(
+    this._debug._ && console.log(
       '💠 children', children
     );
 
-    this._debugMode && console.groupCollapsed('make childrenGroups');
+    this._debug._ && console.groupCollapsed('make childrenGroups');
     // ** Organize the children into groups by rows.
     const childrenGroups = children.reduce(
       (result, currentElement, currentIndex, array) => {
@@ -94,17 +90,17 @@ export default class Grid {
             // ** add newItem to the previous group.
 
             result.at(-1).push(newItem);
-            this._debugMode && console.log(
+            this._debug._ && console.log(
              `Add to group (after no-hang.)`, newItem
             );
           } else {
             // * Add a new group and a new item in it:
             result.push([newItem]);
-            this._debugMode && console.log(
+            this._debug._ && console.log(
               'Start new group:', newItem,
             );
           }
-          this._debugMode && console.log(
+          this._debug._ && console.log(
             'result:', [...result]
           );
           return result
@@ -117,13 +113,13 @@ export default class Grid {
           // * If the order number is increasing, it is a grid row continuation.
           // * Add a new element to the end of the last group:
           result.at(-1).push(newItem);
-          this._debugMode && console.log(
+          this._debug._ && console.log(
             'Add to group:', newItem, [...result]
           );
           return result
         }
 
-        this._debugMode
+        this._debug._
           && console.assert(
             true,
             '_splitGridNode: An unexpected case of splitting a grid.',
@@ -132,8 +128,8 @@ export default class Grid {
         );
       }, []
     );
-    this._debugMode && console.groupEnd('make childrenGroups');
-    this._debugMode && console.log(
+    this._debug._ && console.groupEnd('make childrenGroups');
+    this._debug._ && console.log(
       '%c childrenGroups', 'font-weight:bold', childrenGroups
     );
 
@@ -146,8 +142,8 @@ export default class Grid {
     // TODO: make the same condition for all like-table:
     if (gridNodeRows < this._minBreakableGridRows && gridNodeHeight < fullPageHeight) {
       // ** Otherwise, we don't split it.
-      this._debugMode && console.log(`%c END DONT _splitGridNode`, CONSOLE_CSS_END_LABEL);
-      this._debugMode && console.groupEnd()
+      this._debug._ && console.log(`%c END DONT _splitGridNode`, CONSOLE_CSS_END_LABEL);
+      this._debug._ && console.groupEnd()
       return []
     }
 
@@ -167,7 +163,7 @@ export default class Grid {
       // this._node.getTop(nodeEntries.tfoot, node) || gridNodeHeight
 
 
-    this._debugMode && console.log(
+    this._debug._ && console.log(
       'gridPseudoRowsTopPoints', gridPseudoRowsTopPoints
     );
 
@@ -175,7 +171,7 @@ export default class Grid {
     // TODO: same as the table
 
     // ** Prepare node parameters
-    const nodeTop = this._node.getTop(node, this._root);
+    const nodeTop = this._node.getTop(node, root);
     const nodeWrapperHeight = this._node.getEmptyNodeHeight(node);
     const firstPartHeight = pageBottom
       - nodeTop
@@ -185,7 +181,7 @@ export default class Grid {
       // - 2 * this._signpostHeight
       - nodeWrapperHeight;
 
-    this._debugMode && console.log(
+    this._debug._ && console.log(
       '\n • firstPartHeight', firstPartHeight,
       '\n • fullPagePartHeight', fullPagePartHeight
     );
@@ -220,20 +216,20 @@ export default class Grid {
       }
     };
 
-    this._debugMode && console.log('splitsIds', splitsIds);
+    this._debug._ && console.log('splitsIds', splitsIds);
 
     const insertGridSplit = (startId, endId) => {
       // * The function is called later.
       // TODO Put it in a separate method: THIS AND TABLE
 
-      this._debugMode && console.log(`=> insertGridSplit(${startId}, ${endId})`);
+      this._debug._ && console.log(`=> insertGridSplit(${startId}, ${endId})`);
 
       // const partEntries = nodeEntries.rows.slice(startId, endId);
       const partEntries = childrenGroups
         .slice(startId, endId)
         .flat()
         .map(obj => obj.element);
-      this._debugMode && console.log(`partEntries`, partEntries);
+      this._debug._ && console.log(`partEntries`, partEntries);
 
       // const part = this._node.createWithFlagNoBreak();
       // ! Do not wrap nodes so as not to break styles.
@@ -274,7 +270,7 @@ export default class Grid {
 
     const splits = [...splitsIds.map((value, index, array) => insertGridSplit(array[index - 1] || 0, value)), node]
 
-    this._debugMode && console.log(
+    this._debug._ && console.log(
       'splits', splits
     );
 
@@ -293,8 +289,8 @@ export default class Grid {
     // LAST PART handling
     this._node.setFlagNoBreak(node);
 
-    this._debugMode && console.log(`%c END _splitGridNode`, CONSOLE_CSS_END_LABEL);
-    this._debugMode && console.groupEnd()
+    this._debug._ && console.log(`%c END _splitGridNode`, CONSOLE_CSS_END_LABEL);
+    this._debug._ && console.groupEnd()
 
     return splits
   }

@@ -9,8 +9,8 @@ export default class Toc {
   }) {
 
     // * From config:
-    this._debugMode = config.debugMode;
-    this._debug = config.debugMode ? { ...config.debugConfig.toc } : {};
+    this._globalDebugMode = config.debugMode;
+    this._debug = this._globalDebugMode ? { ...config.debugConfig.toc } : {};
 
     this._DOM = DOM;
     this._node = node;
@@ -21,7 +21,7 @@ export default class Toc {
   }
 
   render() {
-    this._debugMode && console.time("Processing TOC");
+    this._globalDebugMode && console.time("Processing TOC");
 
     this._debug._ && console.log(`
 📑 TOC: I am here!
@@ -108,6 +108,6 @@ tocPageNumberSelector:
 
     this._debug._ && console.log('📑 tocObject', tocObject);
 
-    this._debugMode && console.timeEnd("Processing TOC");
+    this._globalDebugMode && console.timeEnd("Processing TOC");
   }
 }

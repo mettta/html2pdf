@@ -8,15 +8,11 @@ export default class Grid {
     selector,
   }) {
     // * From config:
-    this._debugMode = config.debugMode;
+    this._debug = config.debugMode ? { ...config.debugConfig.pre } : {};
     // * Private
     this._DOM = DOM;
     this._selector = selector;
     this._node = node;
-
-    this._debugToggler = true && this._debugMode;
-
-
 
     // todo
     // 1) move to config
@@ -45,7 +41,7 @@ export default class Grid {
   }
 
 
-  split(node, pageBottom, fullPageHeight, nodeComputedStyle) {
+  split(node, pageBottom, fullPageHeight, nodeComputedStyle, root) {
     // ['pre', 'pre-wrap', 'pre-line', 'break-spaces']
 
     // * If we call the function in a context where
@@ -56,11 +52,11 @@ export default class Grid {
       : this._DOM.getComputedStyle(node);
 
     const consoleMark = ['%c_splitPreNode\n', 'color:white',]
-    this._debugMode && console.group('%c_splitPreNode', 'background:cyan');
-    this._debugMode && console.log(...consoleMark, 'node', node);
+    this._debug._ && console.group('%c_splitPreNode', 'background:cyan');
+    this._debug._ && console.log(...consoleMark, 'node', node);
 
     // Prepare node parameters
-    const nodeTop = this._node.getTop(node, this._root);
+    const nodeTop = this._node.getTop(node, root);
     const nodeHeight = this._DOM.getElementOffsetHeight(node);
     const nodeLineHeight = this._node.getLineHeight(node);
     const preWrapperHeight = this._node.getEmptyNodeHeight(node, false);
@@ -70,21 +66,21 @@ export default class Grid {
     // * and the line would occupy exactly one line.
     const minNodeHeight = preWrapperHeight + nodeLineHeight * this._minPreBreakableLines;
     if (nodeHeight < minNodeHeight) {
-      this._debugMode && console.log('%c END _splitPreNode (small node)', CONSOLE_CSS_END_LABEL);
+      this._debug._ && console.log('%c END _splitPreNode (small node)', CONSOLE_CSS_END_LABEL);
       return []
     }
 
     const _children = this._DOM.getChildNodes(node);
-    this._debugMode && console.log('_children:', _children.length);
+    this._debug._ && console.log('_children:', _children.length);
     if (_children.length == 0) {
       // ??? empty tag => not breakable
-      this._debugMode && console.log('%c END _splitPreNode (not breakable)', CONSOLE_CSS_END_LABEL);
+      this._debug._ && console.log('%c END _splitPreNode (not breakable)', CONSOLE_CSS_END_LABEL);
       return []
     } else if (_children.length > 1) {
       // ! if _children.length > 1
       // TODO check if there are NODES except text nodes
       // ! TODO
-      this._debugMode && console.log('%c END _splitPreNode TODO!', CONSOLE_CSS_END_LABEL);
+      this._debug._ && console.log('%c END _splitPreNode TODO!', CONSOLE_CSS_END_LABEL);
       return []
     } else { // * if _children.length == 1
       // * then it is a TEXT node and has only `\n` as a line breaker
@@ -92,14 +88,14 @@ export default class Grid {
         // element node
         // TODO check if there are NODES except text nodes
         const currentElementNode = _children[0];
-        this._debugMode && console.warn("is Element Node", currentElementNode)
+        this._debug._ && console.warn("is Element Node", currentElementNode)
         // FIXME other cases i.e. node and we need recursion
-        this._debugMode && console.log('%c END _splitPreNode ???????', CONSOLE_CSS_END_LABEL);
+        this._debug._ && console.log('%c END _splitPreNode ???????', CONSOLE_CSS_END_LABEL);
         return []
       }
       if (this._node.isWrappedTextNode(_children[0])) {
         // if (textNode.nodeType === 3) // 3 - тип TextNode
-        this._debugMode && console.warn(`is TEXT Node: ${_children[0]}`);
+        this._debug._ && console.warn(`is TEXT Node: ${_children[0]}`);
         // FIXME other cases i.e. node and we need recursion
       }
 
@@ -111,7 +107,7 @@ export default class Grid {
       const stringsFromNodeText = this._node.splitByLinesGreedy(currentNodeText);
 
       if (stringsFromNodeText.length < this._minPreBreakableLines) {
-        this._debugMode && console.log('%c END _splitPreNode few lines', CONSOLE_CSS_END_LABEL);
+        this._debug._ && console.log('%c END _splitPreNode few lines', CONSOLE_CSS_END_LABEL);
         return []
       }
 
@@ -132,7 +128,7 @@ export default class Grid {
         this._DOM.setInnerHTML(line, string);
         return line
       });
-      this._debugMode && console.log('linesFromNode', linesFromNode);
+      this._debug._ && console.log('linesFromNode', linesFromNode);
       this._DOM.replaceNodeContentsWith(node, ...linesFromNode);
 
       // * calculate parts
@@ -176,7 +172,7 @@ export default class Grid {
       if(!splitters.length) {
         // ** if there is no partitioning, we return an empty array
         // ** and the original node will be taken in its entirety.
-        this._debugMode && console.log('%c END _splitPreNode NO SPLIITERS', CONSOLE_CSS_END_LABEL);
+        this._debug._ && console.log('%c END _splitPreNode NO SPLIITERS', CONSOLE_CSS_END_LABEL);
         return []
       }
 
@@ -186,7 +182,7 @@ export default class Grid {
 
       // * The last part end is registered automatically.
       splitters.push(null);
-      this._debugMode && console.log(
+      this._debug._ && console.log(
         ...consoleMark,
         'splitters', splitters
       );
@@ -211,7 +207,7 @@ export default class Grid {
       // * Mark nodes as parts
       this._node.markPartNodesWithClass(newPreElementsArray);
 
-      this._debugMode && console.log(
+      this._debug._ && console.log(
         ...consoleMark,
         'newPreElementsArray',
         newPreElementsArray
@@ -226,8 +222,8 @@ export default class Grid {
       this._DOM.setAttribute(node, '[slough-node]', '');
       this._DOM.removeAllClasses(node);
 
-      this._debugMode && console.log('%c END _splitPreNode', CONSOLE_CSS_END_LABEL);
-      this._debugMode && console.groupEnd();
+      this._debug._ && console.log('%c END _splitPreNode', CONSOLE_CSS_END_LABEL);
+      this._debug._ && console.groupEnd();
 
       return newPreElementsArray;
 
