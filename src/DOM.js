@@ -33,23 +33,27 @@ export default class DocumentObjectModel {
   // INSERT
 
   insertBefore(element, ...payload) {
-    element.before(...payload)
+    const cleanPayload = payload.filter(el => el != null);
+    element.before(...cleanPayload);
   }
 
   insertAfter(element, ...payload) {
-    element.after(...payload)
+    const cleanPayload = payload.filter(el => el != null);
+    element.after(...cleanPayload);
   }
 
   insertAtEnd(element, ...payload) {
-    element.append(...payload);
+    const cleanPayload = payload.filter(el => el != null);
+    element.append(...cleanPayload);
   }
 
   insertAtStart(element, ...payload) {
-    element.prepend(...payload);
+    const cleanPayload = payload.filter(el => el != null);
+    element.prepend(...cleanPayload);
   }
 
   insertInsteadOf(element, ...payload) {
-    element.before(...payload);
+    this.insertBefore(element, ...payload);
     element.remove();
   }
 
