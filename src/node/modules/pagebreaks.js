@@ -142,7 +142,7 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
  * @this {Node}
  */
 export function findAllForcedPageBreakInside(element) {
-  return this.getAll(this._selector.printForcedPageBreak, element);
+  return this._DOM.getAll(this._selector.printForcedPageBreak, element);
 }
 
 /**

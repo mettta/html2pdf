@@ -111,7 +111,7 @@ export default class Pages {
 
   _removeGarbageElements() {
     if (this._garbageSelectors.length) {
-      const elements = this._node.getAll(this._garbageSelectors, this._contentFlow);
+      const elements = this._DOM.getAll(this._garbageSelectors, this._contentFlow);
       elements.forEach(element => {
         this._DOM.removeNode(element)
       });
@@ -120,7 +120,7 @@ export default class Pages {
 
   _prepareNoHangingElements() {
     if (this._noHangingSelectors.length) {
-      const elements = this._node.getAll(this._noHangingSelectors, this._contentFlow);
+      const elements = this._DOM.getAll(this._noHangingSelectors, this._contentFlow);
       elements.forEach(element => {
         this._node.setFlagNoHanging(element);
         const lastChildParent = this._node.findLastChildParent(element, this._contentFlow)
@@ -133,7 +133,7 @@ export default class Pages {
 
   _prepareNoBreakElements() {
     if (this._noBreakSelectors.length) {
-      const elements = this._node.getAll(this._noBreakSelectors, this._contentFlow);
+      const elements = this._DOM.getAll(this._noBreakSelectors, this._contentFlow);
       elements.forEach(element => this._node.setFlagNoBreak(element));
     }
   }
@@ -142,13 +142,13 @@ export default class Pages {
     // ** Must be called after _prepareNoHangingElements()
 
     const pageStarters = this._pageBreakBeforeSelectors.length
-                       ? this._node.getAll(this._pageBreakBeforeSelectors, this._contentFlow)
+                       ? this._DOM.getAll(this._pageBreakBeforeSelectors, this._contentFlow)
                        : [];
     const pageEnders = this._pageBreakAfterSelectors.length
-                     ? this._node.getAll(this._pageBreakAfterSelectors, this._contentFlow)
+                     ? this._DOM.getAll(this._pageBreakAfterSelectors, this._contentFlow)
                      : [];
     // there's at least one element:
-    const forcedPageStarters = this._node.getAll(this._forcedPageBreakSelectors, this._contentFlow);
+    const forcedPageStarters = this._DOM.getAll(this._forcedPageBreakSelectors, this._contentFlow);
 
     // ** If the element is the FIRST child of nested FIRST children of a content flow,
     // ** we do not process it further for page breaks.
@@ -231,7 +231,7 @@ export default class Pages {
 
     // register a FIRST page
     // TODO: make a service function
-    this._registerPageStart(this._node.get(this._selector.contentFlowStart, this._contentFlow));
+    this._registerPageStart(this._DOM.getElement(this._selector.contentFlowStart, this._contentFlow));
 
     // IF contentFlow is less than one page,
 

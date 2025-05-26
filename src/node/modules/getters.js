@@ -1,33 +1,3 @@
-// GET NODE
-
-/**
- * @this {Node}
- */
-export function get(selector, target = this._DOM) {
-  this._debug._ && console.assert(selector);
-  return this._DOM.getElement(selector, target);
-}
-
-/**
- * @this {Node}
- */
-export function getAll(selectors, target = this._DOM) {
-  this._debug._ && console.assert(selectors);
-  if (typeof selectors === 'string') {
-    selectors = selectors.split(',').filter(Boolean);
-  }
-  this._assert && console.assert(Array.isArray(selectors), 'Selectors must be provided as an array or string (one selector or multiple selectors, separated by commas). Now the selectors are:', selectors);
-  this._debug._ && console.assert(selectors.length > 0, 'getAll(selectors), selectors:', selectors);
-
-  if (selectors.length === 1) {
-    return [...this._DOM.getAllElements(selectors[0], target)]
-  } else {
-    return [...selectors].flatMap(
-      selector => [...this._DOM.getAllElements(selector, target)]
-    )
-  }
-}
-
 // GET PARAMS
 
 /**

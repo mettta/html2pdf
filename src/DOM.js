@@ -61,7 +61,7 @@ export default class DocumentObjectModel {
     while (source.firstChild) {
       target.append(source.firstChild);
     }
-    console.assert(this.getInnerHTML(source) === "");
+    this._assert && console.assert(this.getInnerHTML(source) === "");
   }
 
   replaceNodeContentsWith(element, ...payload) {
@@ -77,11 +77,31 @@ export default class DocumentObjectModel {
 
   // GET ELEMENT
 
+  getAll(selectors, target = this.document) {
+    this._assert && console.assert(selectors);
+    if (typeof selectors === 'string') {
+      selectors = selectors.split(',').filter(Boolean);
+    }
+    this._assert && console.assert(Array.isArray(selectors), 'Selectors must be provided as an array or string (one selector or multiple selectors, separated by commas). Now the selectors are:', selectors);
+    this._assert && console.assert(selectors.length > 0, 'getAll(selectors), selectors:', selectors);
+
+    if (selectors.length === 1) {
+      return [...this.getAllElements(selectors[0], target)]
+    } else {
+      return [...selectors].flatMap(
+        selector => [...this.getAllElements(selector, target)]
+      )
+    }
+  }
+
+
   getElement(selector, target = this.document) {
+    this._assert && console.assert(selector);
     return target.querySelector(selector);
   }
 
   getAllElements(selector, target = this.document) {
+    this._assert && console.assert(selector);
     return target.querySelectorAll(selector);
   }
 

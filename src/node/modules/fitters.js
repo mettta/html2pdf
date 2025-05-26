@@ -44,7 +44,7 @@ export function copyNodeWidth(clone, node) {
  */
 export function lockTableWidths(table) {
   this.copyNodeWidth(table, table);
-  this.getAll('td', table).forEach(
+  this._DOM.getAll('td', table).forEach(
     td => this.copyNodeWidth(td, td)
   )
 }

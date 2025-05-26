@@ -32,7 +32,7 @@ tocPageNumberSelector:
  • ${this._pageDividerSelector}
       `);
 
-    const tocPageNumberBoxes = this._node.getAll(this._tocPageNumberSelector, this._contentFlow);
+    const tocPageNumberBoxes = this._DOM.getAll(this._tocPageNumberSelector, this._contentFlow);
     this._debug._ && console.log('📑 tocPageNumberBoxes', tocPageNumberBoxes.length);
 
     if (!tocPageNumberBoxes.length) {
@@ -46,7 +46,7 @@ tocPageNumberSelector:
     //    which have their 'targetTop' positions as keys
     // 3) merge the dictionaries.
 
-    const dataFromPagesMarkers = this._node.getAll(this._pageDividerSelector, this._contentFlow)
+    const dataFromPagesMarkers = this._DOM.getAll(this._pageDividerSelector, this._contentFlow)
     .reduce((acc, marker, index) => {
       // * The conditions for the following code snippet are as follows:
       // - It should be executed after the preview is rendered.

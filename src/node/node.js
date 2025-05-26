@@ -37,7 +37,7 @@ export default class Node {
 
   clearTemplates(root) {
     // Remove all <template>s, if there are any in the Root.
-    const templates = this.getAll('template', root);
+    const templates = this._DOM.getAll('template', root);
     templates.forEach((el) => this._DOM.removeNode(el));
   }
 
