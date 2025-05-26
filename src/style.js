@@ -234,7 +234,7 @@ ${SELECTOR.textGroup} {
   display: block;
 }
 
-/*${SELECTOR.splitted} ${SELECTOR.textGroup} {
+/*${SELECTOR.split} ${SELECTOR.textGroup} {
   display: inline;
 }*/
 

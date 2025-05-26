@@ -43,10 +43,10 @@ export default class Paragraph {
 
     this._debug._ && console.group('_splitComplexTextBlockIntoLines', [node]);
 
-    if (this._node.isSelectorMatching(node, this._selector.splitted)) {
+    if (this._node.isSelectorMatching(node, this._selector.split)) {
       // * This node has already been processed and has lines and groups of lines inside it,
 
-      this._end(this._selector.splitted);
+      this._end(this._selector.split);
       // * so we just return those child elements:
       return this._DOM.getChildren(node);
     }
@@ -204,7 +204,7 @@ export default class Paragraph {
 
     this._end('OK _splitComplexTextBlockIntoLines');
 
-    this._DOM.setAttribute(node, this._selector.splitted);
+    this._DOM.setAttribute(node, this._selector.split);
 
     return linedChildren
   }

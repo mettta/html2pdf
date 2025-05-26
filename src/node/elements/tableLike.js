@@ -123,7 +123,7 @@ export default class TableLike {
       // So we will give the PRE itself this property.
       const part = this._DOM.cloneNodeWrapper(node);
       this._node.setFlagNoBreak(part);
-      // TODO make the same with other splitted nodes
+      // TODO make the same with other split nodes
       this._node.unmarkPageStartElement(part);
 
       // id = the beginning of the next part

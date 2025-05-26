@@ -621,7 +621,7 @@ export default class Pages {
           'currentBlockBottom <= newPageBottom', currentBlockBottom, '<=', newPageBottom,
           '\n register nextElement as pageStart'
         );
-        // we need <= because splitted elements often get equal height // todo comment
+        // we need <= because split elements often get equal height // todo comment
 
         // ? The currentElement has a chance to be the last one on the page.
         if (this._node.isNoHanging(currentElement)) {
@@ -1275,7 +1275,7 @@ export default class Pages {
       // So we will give the PRE itself this property.
       const part = this._DOM.cloneNodeWrapper(node);
       this._node.setFlagNoBreak(part);
-      // TODO make the same with other splitted nodes
+      // TODO make the same with other split nodes
       this._node.unmarkPageStartElement(part);
 
       // id = the beginning of the next part
