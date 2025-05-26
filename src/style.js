@@ -172,7 +172,8 @@ ${SELECTOR.runningSafety} {
      and take it into account in the calculations:
      padding-top: 1px;
   */
-  padding-top: .1px;
+  /* padding-top: .1px; */
+  overflow: auto;
 }
 
 ${SELECTOR.virtualPaperTopMargin} {
@@ -363,6 +364,7 @@ ${SELECTOR.paperBody} {
 }
 ${SELECTOR.runningSafety} {
   background: #f200ff;
+  outline: 0.1px solid #f200ff88;
 }
 ${SELECTOR.frontpageContent} {
   background: #00fcff20;
