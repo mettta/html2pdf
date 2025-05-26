@@ -43,6 +43,26 @@ body {
   );
 }
 
+[filler='violet'] {
+  background:repeating-linear-gradient(
+    -45deg,
+    rgba(255, 0, 255, .1),
+    rgba(255, 0, 255, .1) 10px,
+    rgba(255, 0, 255, .15) 10px,
+    rgba(255, 0, 255, .15) 20px
+  );
+}
+
+[filler='yellow'] {
+  background:repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 0, .1),
+    rgba(255, 255, 0, .1) 10px,
+    rgba(255, 255, 0, .85) 10px,
+    rgba(255, 255, 0, .85) 20px
+  );
+}
+
 [floater] {
   outline: rgba(255, 0, 200, 0.2) 1px solid;
 }
