@@ -63,7 +63,7 @@ const SELECTOR = {
   complexTextBlock: 'html2pdf-complex-text-block',
   printForcedPageBreak: 'html2pdf-print-forced-page-break',
   // * Service flags (are created in the process):
-  splitted: '[html2pdf-splitted]',
+  split: '[html2pdf-split]',
   processed: '[html2pdf-processed]',
 
   // * FLAGS (have no styles):

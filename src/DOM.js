@@ -1,13 +1,12 @@
 export default class DocumentObjectModel {
 
-  constructor({DOM, config}) {
+  constructor({ DOM, config }) {
 
     // * public
     this.document = DOM;
     this.body = DOM.body;
 
     // * private
-    this._debugMode = config.debugMode;
     this._debug = config.debugMode ? { ...config.debugConfig.DOM } : {};
     this._assert = config.consoleAssert ? true : false;
   }
@@ -33,31 +32,46 @@ export default class DocumentObjectModel {
   // INSERT
 
   insertBefore(element, ...payload) {
-    element.before(...payload)
+    const cleanPayload = payload.filter(el => el != null);
+    element.before(...cleanPayload);
   }
 
   insertAfter(element, ...payload) {
-    element.after(...payload)
+    const cleanPayload = payload.filter(el => el != null);
+    element.after(...cleanPayload);
   }
 
   insertAtEnd(element, ...payload) {
-    element.append(...payload);
+    const cleanPayload = payload.filter(el => el != null);
+    element.append(...cleanPayload);
   }
 
   insertAtStart(element, ...payload) {
-    element.prepend(...payload);
+    const cleanPayload = payload.filter(el => el != null);
+    element.prepend(...cleanPayload);
   }
 
   insertInsteadOf(element, ...payload) {
-    element.before(...payload);
+    this.insertBefore(element, ...payload);
     element.remove();
+  }
+
+  wrap(element, wrapper) {
+    element.before(wrapper);
+    wrapper.append(element);
+    return wrapper;
   }
 
   moveContent(source, target) {
     while (source.firstChild) {
       target.append(source.firstChild);
     }
-    console.assert(this.getInnerHTML(source) === "");
+    this._assert && console.assert(this.getInnerHTML(source) === "");
+  }
+
+  replaceNodeContentsWith(element, ...payload) {
+    this.setInnerHTML(element, '');
+    this.insertAtEnd(element, ...payload)
   }
 
   // REMOVE
@@ -68,11 +82,31 @@ export default class DocumentObjectModel {
 
   // GET ELEMENT
 
+  getAll(selectors, target = this.document) {
+    this._assert && console.assert(selectors);
+    if (typeof selectors === 'string') {
+      selectors = selectors.split(',').filter(Boolean);
+    }
+    this._assert && console.assert(Array.isArray(selectors), 'Selectors must be provided as an array or string (one selector or multiple selectors, separated by commas). Now the selectors are:', selectors);
+    this._assert && console.assert(selectors.length > 0, 'getAll(selectors), selectors:', selectors);
+
+    if (selectors.length === 1) {
+      return [...this.getAllElements(selectors[0], target)]
+    } else {
+      return [...selectors].flatMap(
+        selector => [...this.getAllElements(selector, target)]
+      )
+    }
+  }
+
+
   getElement(selector, target = this.document) {
+    this._assert && console.assert(selector);
     return target.querySelector(selector);
   }
 
   getAllElements(selector, target = this.document) {
+    this._assert && console.assert(selector);
     return target.querySelectorAll(selector);
   }
 

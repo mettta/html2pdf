@@ -9,8 +9,8 @@ export default class Toc {
   }) {
 
     // * From config:
-    this._debugMode = config.debugMode;
-    this._debug = config.debugMode ? { ...config.debugConfig.toc } : {};
+    this._globalDebugMode = config.debugMode;
+    this._debug = this._globalDebugMode ? { ...config.debugConfig.toc } : {};
 
     this._DOM = DOM;
     this._node = node;
@@ -21,7 +21,7 @@ export default class Toc {
   }
 
   render() {
-    this._debugMode && console.time("Processing TOC");
+    this._globalDebugMode && console.time("Processing TOC");
 
     this._debug._ && console.log(`
 📑 TOC: I am here!
@@ -32,7 +32,7 @@ tocPageNumberSelector:
  • ${this._pageDividerSelector}
       `);
 
-    const tocPageNumberBoxes = this._node.getAll(this._tocPageNumberSelector, this._contentFlow);
+    const tocPageNumberBoxes = this._DOM.getAll(this._tocPageNumberSelector, this._contentFlow);
     this._debug._ && console.log('📑 tocPageNumberBoxes', tocPageNumberBoxes.length);
 
     if (!tocPageNumberBoxes.length) {
@@ -46,7 +46,7 @@ tocPageNumberSelector:
     //    which have their 'targetTop' positions as keys
     // 3) merge the dictionaries.
 
-    const dataFromPagesMarkers = this._node.getAll(this._pageDividerSelector, this._contentFlow)
+    const dataFromPagesMarkers = this._DOM.getAll(this._pageDividerSelector, this._contentFlow)
     .reduce((acc, marker, index) => {
       // * The conditions for the following code snippet are as follows:
       // - It should be executed after the preview is rendered.
@@ -108,6 +108,6 @@ tocPageNumberSelector:
 
     this._debug._ && console.log('📑 tocObject', tocObject);
 
-    this._debugMode && console.timeEnd("Processing TOC");
+    this._globalDebugMode && console.timeEnd("Processing TOC");
   }
 }

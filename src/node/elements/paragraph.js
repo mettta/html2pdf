@@ -1,6 +1,4 @@
-const CONSOLE_CSS_END_LABEL = `background:#eee;color:#888;padding: 0 1px 0 0;`; //  font-size:smaller
-
-// SEE splitByWordsGreedyWithSpacesFilter(node) in DOM
+// SEE splitTextByWordsGreedyWithSpacesFilter(node) in DOM
 const WORD_JOINER = '';
 
 export default class Paragraph {
@@ -29,15 +27,11 @@ export default class Paragraph {
 
   }
 
-  init() {
-    this._debug._ && console.log('🚨 init Paragraph')
-  }
-
   split(node) {
     return this._splitComplexTextBlockIntoLines(node)
   }
 
-  _getLines(element) {
+  _estimateLineCount(element) {
     return Math.ceil(this._DOM.getElementOffsetHeight(element) / this._node.getLineHeight(element))
   }
 
@@ -47,10 +41,17 @@ export default class Paragraph {
 
     this._debug._ && console.group('_splitComplexTextBlockIntoLines', [node]);
 
-    if (this._node.isSelectorMatching(node, this._selector.splitted)) {
+    if (this._estimateLineCount(node) < this._minParagraphBreakableLines) {
+
+      this._end('few lines - Not to break it up');
+      // Not to break it up
+      return []
+    }
+
+    if (this._node.isSelectorMatching(node, this._selector.split)) {
       // * This node has already been processed and has lines and groups of lines inside it,
 
-      this._end(this._selector.splitted);
+      this._end(this._selector.split);
       // * so we just return those child elements:
       return this._DOM.getChildren(node);
     }
@@ -208,7 +209,7 @@ export default class Paragraph {
 
     this._end('OK _splitComplexTextBlockIntoLines');
 
-    this._DOM.setAttribute(node, this._selector.splitted);
+    this._DOM.setAttribute(node, this._selector.split);
 
     return linedChildren
   }
@@ -240,7 +241,7 @@ export default class Paragraph {
     this._debug._ && console.group('_processNestedInlineElements', [node]);
     const preparedChildren = this._getNestedInlineChildren(node);
     const linedChildren = preparedChildren.flatMap(child => {
-      return (this._getLines(child) > 1) ? this._breakItIntoLines(child) : child;
+      return (this._estimateLineCount(child) > 1) ? this._breakItIntoLines(child) : child;
     });
     const splitters = this._findNewLineStarts(linedChildren);
 
@@ -318,9 +319,13 @@ export default class Paragraph {
     .reduce(
       (acc, item) => {
 
+        // TODO: use a more detailed algorithm from 'children'
+
         // * wrap text node, use element.nodeType
         if (this._node.isSignificantTextNode(item)) {
-          acc.push(this._node.wrapTextNode(item)); // TODO
+          const textNodeWrapper = this._node.createTextNodeWrapper();
+          this._DOM.wrap(item, textNodeWrapper);
+          acc.push(textNodeWrapper); // TODO
           return acc;
         }
 
@@ -347,7 +352,7 @@ export default class Paragraph {
     // Split the splittingTextNode into <html2pdf-word>.
 
     // * array with words:
-    const wordArray = this._node.splitByWordsGreedy(splittingTextNode);
+    const wordArray = this._node.splitTextByWordsGreedy(splittingTextNode);
     this._debug._ && console.log('wordArray', wordArray);
 
     // * array with words wrapped with the inline tag 'html2pdf-word':
@@ -422,6 +427,7 @@ export default class Paragraph {
   // ***
 
   _end(string) {
+    const CONSOLE_CSS_END_LABEL = `background:#eee;color:#888;padding: 0 1px 0 0;`; //  font-size:smaller
     this._debug._ && console.log(`%c ▲ ${string} `, CONSOLE_CSS_END_LABEL);
     this._debug._ && console.groupEnd();
   }

@@ -71,6 +71,8 @@ ${SELECTOR.contentFlowStart},
 ${SELECTOR.contentFlowEnd},
 ${SELECTOR.pageDivider} {
   display: block;
+  /* to avoid the effect of margins of neighboring elements on the positioning of this marker: */
+  overflow: auto;
 }
 
 ${SELECTOR.virtualPaper} {
@@ -166,13 +168,7 @@ ${SELECTOR.contentFlow} {
 
 ${SELECTOR.runningSafety} {
   display: block;
-  /*  ? should be checked and updated,
-        but in the meantime, bring back the common solution:
-     firefox ignores 0.1px size, so it's necessary to make a full-size pixel
-     and take it into account in the calculations:
-     padding-top: 1px;
-  */
-  padding-top: .1px;
+  overflow: auto;
 }
 
 ${SELECTOR.virtualPaperTopMargin} {
@@ -234,7 +230,7 @@ ${SELECTOR.textGroup} {
   display: block;
 }
 
-/*${SELECTOR.splitted} ${SELECTOR.textGroup} {
+/*${SELECTOR.split} ${SELECTOR.textGroup} {
   display: inline;
 }*/
 
@@ -305,7 +301,8 @@ ${SELECTOR.printForcedPageBreak} {
 
   ${SELECTOR.printPageBreak} {
     break-after: page;
-    padding: .1px;
+    /* padding: .1px; */
+    overflow: auto;
   }
 
   ${SELECTOR.printForcedPageBreak} {
@@ -363,6 +360,7 @@ ${SELECTOR.paperBody} {
 }
 ${SELECTOR.runningSafety} {
   background: #f200ff;
+  outline: 0.1px solid #f200ff88;
 }
 ${SELECTOR.frontpageContent} {
   background: #00fcff20;
