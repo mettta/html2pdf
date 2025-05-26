@@ -12,137 +12,451 @@
   <script
     defer
     data-debug-mode="true"
+    data-markup-debug-mode="true"
+    data-print-height='300px'
+    data-print-width='600px'
+    data-print-left-margin= '50px'
+    data-print-right-margin= '50px'
+    data-print-top-margin= '50px'
+    data-print-bottom-margin= '50px'
+    data-print-font-size='16px'
     data-console-assert="true"
-    data-print-height='100mm'
-    data-print-font-size='12pt'
-    data-page-break-after-selectors='.after'
-    data-page-break-before-selectors='.before'
-    data-forced-page-break-selectors='.forced'
-    data-no-break-selectors=''
-    data-no-hanging-selectors='.no-hang'
     src="bundle.js"></script>
-
-  <style>
-    .wrapper { border:1px solid green; }
-    .wrapper .wrapper { border:1px solid orange; margin: 50px 4px; }
-    .wrapper .wrapper .wrapper { border: 1px solid red; }
-    .after { border-bottom-width:4px; border-style: dashed; }
-    .before { border: 1px solid red; border-top-width:4px; border-style: dashed; }
-    .forced { border: 1px solid red; border-top-width:4px; }
-    .no-hang { background-color: cyan ;}
-    .service { margin: 0; padding: 0; width: 100%; outline: 1px solid magenta;}
-  </style>
 </head>
 
-<!-- <div filler style="height:111px"></div> -->
-
 <body>
+  <!-- line-height = 1.25 (20) -->
+  <!-- 1 step to shift by 1 line is 20 pixels -->
+  <!-- Case #1 -->
+  <!-- <div filler style="height:80px"></div> -->
 
-  <!-- <div filler style="height:265px"></div> -->
+  <table class="t1" border="1" width="100%" style="margin: 10px 0; font-size:9px; line-height:10px;">
+    <caption>Table: caption</caption>
+    <colgroup>
+      <col width="20%">
+      <col width="80%">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>TH1</th>
+        <th>TH2</th>
+      </tr>
+    </thead>
+    <tbody>
 
-  <div>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-  </div>
-  <div>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    <!-- uncomment the next line to see 🪁 tail-case: -->
-    <!-- dmkdfkmbdflk<br> -->
-  </div>
+      <tr class="tr__000">
+        <td>
+          <div filler="yellow">A_0</div>
+          <div filler="yellow">A_01</div>
+          <div filler="yellow">A_02</div>
+        </td>
+        <td>
+          <div filler="yellow" style="height:200px">A0</div>
+        </td>
+      </tr>
 
-  <div data-testid="testPointParent1">
-    <div class="wrapper" data-testid="parent-2">
-      <div class="wrapper">
-        <div class="wrapper">
-          <div class="wrapper">
-            <div class="wrapper">
-              <div class="wrapper">
-                <div class="wrapper" data-testid="parent-3">
-                  <div class="wrapper">
+      <tr class="tr__Yellow">
+        <td>
+          <div filler="yellow" style="height:20px">Y_0</div>
+          <div floater></div>
+          <div filler="yellow" style="height:20px">Y_1</div>
+          <div floater></div>
+          <div filler="yellow" style="height:20px">Y_2</div>
+          <div floater></div>
+          <div filler="yellow" style="height:20px">Y_3 last</div>
+        </td>
+        <td>
+          <div filler="yellow" style="height:20px">Y0</div>
+          <div floater></div>
+          <div filler="yellow" style="height:20px">Y1</div>
+          <div floater></div>
+          <div filler="yellow" style="height:20px">Y2</div>
+          <div floater></div>
+          <div filler="yellow" style="height:20px">Y3 last</div>
+        </td>
+      </tr>
 
-                    <div data-testid="admonition">
-                      <H3 class="no-hang" data-testid="admonitionTitle">
-                        NO HANGING
-                      </H3>
-                      <p data-testid="p1">
-                        <b class="no-hang" data-testid="b1">NO HANGING (only-child)</b> and add some test text. And add some test text. And add some test text.
-                        And add some test text.
-                      </p>
-                      <p data-testid="p2">
-                        And add some test text. And add some test text. And add some test text. And add some test text. And add
-                        some test text.
-                        And add some test text. And add some test text. And add some test text. And add some test text. And add
-                        some test text.
-                        And add some test text. And add some test text. And add some test text. And add some test text. And add
-                        some test text.<span data-testid="p2edgeCase"></span>
+      <!-- V -->
+      <tr class="tr__V">
+        <td>
+          <div filler="violet" style="height:10px">V_0</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V_1</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V_2</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V_3</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V_4</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V_5</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V_6</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V_7</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V_8</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V_9 last</div>
+          <div floater></div>
+        </td>
+        <td>
+          <div filler="violet" style="height:10px">V0</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V1</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V2</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V3</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V4</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V5</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V6</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V7</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V8</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V9</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V10</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px" class="⛳ V11">V11</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V12</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V13</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V14</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V15</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V16</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V17</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V18</div>
+          <div floater></div>
+          <div filler="violet" style="height:10px">V19 last</div>
+          <div floater></div>
+        </td>
+      </tr>
+      <!-- R -->
+      <tr class="tr__R">
+        <td>
+          <div filler="red" style="height:10px">R_0</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R_1</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R_2</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R_3</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R_4</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R_5</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R_6</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R_7</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R_8</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R_9 last</div>
+          <div floater></div>
+        </td>
+        <td>
+          <div filler="red" style="height:10px">R0</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R1</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R2</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R3</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R4</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R5</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R6</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R7</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R8</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R9</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R10</div>
+          <div floater></div>
+          <div filler="red" style="height:10px" class="⛳ R11">R11</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R12</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R13</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R14</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R15</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R16</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R17</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R18</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R19 last</div>
+          <div floater></div>
+        </td>
+      </tr>
+      <!-- G -->
+      <tr class="tr__G">
+        <td>
+          <div filler="green" style="height:10px">G_0</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_1</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_2</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_3</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_4</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_5</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_6</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_7</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_8</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_9</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_10</div>
+          <div floater></div>
+          <div filler="green" style="height:10px" class="⛳ G_11">G_11</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_12</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_13</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_14</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_15</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_16</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_17</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_18</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_19 last</div>
+          <div floater></div>
+        </td>
+        <td>
+          <div filler="green" style="height:10px">G0</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G1</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G2</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G3</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G4</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G5</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G6</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G7</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G8</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G9</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G10</div>
+          <div floater></div>
+          <div filler="green" style="height:10px" class="⛳ G11">G11</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G12</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G13</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G14</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G15</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G16</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G17</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G18</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G19 last</div>
+          <div floater></div>
+        </td>
+      </tr>
+      <!-- B -->
+      <tr>
+        <td>
+          <div filler="blue" style="height:20px" html2pdf-flag-no-break>B_0</div>
+          <div floater></div>
+          <div filler="blue" style="height:20px" html2pdf-flag-no-break>B_1</div>
+          <div floater></div>
+          <div filler="blue" style="height:20px" html2pdf-flag-no-break>B_2</div>
+          <div floater></div>
+          <div filler="blue" style="height:20px" html2pdf-flag-no-break>B_3 last</div>
+        </td>
+        <td>
+          <div filler="blue" style="height:20px" html2pdf-flag-no-break>B0</div>
+          <div floater></div>
+          <div filler="blue" style="height:20px" html2pdf-flag-no-break>B1</div>
+          <div floater></div>
+          <div filler="blue" style="height:20px" html2pdf-flag-no-break>B2</div>
+          <div floater></div>
+          <div filler="blue" style="height:20px" html2pdf-flag-no-break>B3 last</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
-                        And add some test text. And add some test text. And add some test text. And add some test text. And add some test text. And add
-                        some test text.
-                        And add some test text. And add some test text. And add some test text. And add some test text. And add
-                        some test text.
-                      </p>
-                    </div>
+  <!-- <html2pdf-print-forced-page-break></html2pdf-print-forced-page-break>
+  <html2pdf-print-forced-page-break></html2pdf-print-forced-page-break>
 
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <p data-testid="p9_last"> And add some test text. And add some test text. And add some test text. And add some test text. And add
-    some test text.<span data-testid="p9end"></p>
-  <p data-testid="p10">
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    <span data-testid="p10end"></p>
+  <table class="t2" border="1" width="100%" style="margin: 10px 0; font-size:9px; line-height:10px;  ">
+    <caption>Table: caption</caption>
+    <colgroup>
+      <col width="20%">
+      <col width="80%">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>TH1</th>
+        <th>TH2</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="🔴" filler="red" style="height:10px">R_0</div>
+          <div floater></div>
+          <div class="🔴" filler="red" style="height:10px">R_1</div>
+          <div floater></div>
+          <div class="🔴" filler="red" style="height:10px">R_2</div>
+          <div floater></div>
+          <div class="🔴" filler="red" style="height:10px">R_3</div>
+          <div floater></div>
+          <div class="🔴" filler="red" style="height:10px">R_4</div>
+          <div floater></div>
+          <div class="🔴" filler="red" style="height:10px">R_5</div>
+          <div floater></div>
+          <div class="🔴" filler="red" style="height:10px">R_6</div>
+          <div floater></div>
+        </td>
+        <td>
+          <div class="🟥" filler="red" style="height:10px">R0</div>
+          <div floater></div>
+          <div class="🟥" filler="red" style="height:10px">R1</div>
+          <div floater></div>
+          <div class="🟥" filler="red" style="height:10px">R2</div>
+          <div floater></div>
+          <div class="🟥" filler="red" style="height:10px">R3</div>
+          <div floater></div>
+          <div class="🟥" filler="red" style="height:10px">R4</div>
+          <div floater></div>
+          <div class="🟥" filler="red" style="height:10px">R5</div>
+          <div floater></div>
+          <div class="🟥" filler="red" style="height:10px">R6</div>
+          <div floater></div>
+          <div class="🟥" filler="red" style="height:10px">R7</div>
+          <div floater></div>
+          <div class="🟥" filler="red" style="height:10px">R8</div>
+          <div floater></div>
+          <div class="🟥" filler="red" style="height:10px">R9</div>
+          <div floater></div>
+          <div class="🟥" filler="red" style="height:10px">R10</div>
+          <div floater></div>
+          <div class="🟥11" filler="red" style="height:10px">R11</div>
+          <div floater></div>
 
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="🟢" filler="green" style="height:10px">G_0</div>
+          <div floater></div>
+          <div class="🟢" filler="green" style="height:10px">G_1</div>
+          <div floater></div>
+          <div class="🟢" filler="green" style="height:10px">G_2</div>
+          <div floater></div>
+          <div class="🟢" filler="green" style="height:10px">G_3</div>
+          <div floater></div>
+          <div class="🟢" filler="green" style="height:10px">G_4</div>
+          <div floater></div>
+          <div class="🟢" filler="green" style="height:10px">G_5</div>
+          <div floater></div>
+          <div class="🟢" filler="green" style="height:10px">G_6</div>
+          <div floater></div>
+          <div class="🟢" filler="green" style="height:10px">G_7</div>
+          <div floater></div>
+        </td>
+        <td>
+          <div class="🟩" filler="green" style="height:10px">G0</div>
+          <div floater></div>
+          <div class="🟩" filler="green" style="height:10px">G1</div>
+          <div floater></div>
+          <div class="🟩" filler="green" style="height:10px">G2</div>
+          <div floater></div>
+          <div class="🟩" filler="green" style="height:10px">G3</div>
+          <div floater></div>
+          <div class="🟩" filler="green" style="height:10px">G4</div>
+          <div floater></div>
+          <div class="🟩" filler="green" style="height:10px">G5</div>
+          <div floater></div>
+          <div class="🟩" filler="green" style="height:10px">G6</div>
+          <div floater></div>
+          <div class="🟩" filler="green" style="height:10px">G7</div>
+          <div floater></div>
+          <div class="🟩" filler="green" style="height:10px">G8</div>
+          <div floater></div>
+          <div class="🟩" filler="green" style="height:10px">G9</div>
+          <div floater></div>
+          <div class="🟩" filler="green" style="height:10px">G10</div>
+          <div floater></div>
+          <div class="🟩" filler="green" style="height:10px">G11</div>
+          <div floater></div>
+
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="🔵" filler="blue" style="height:10px">B_0</div>
+          <div floater></div>
+          <div class="🔵" filler="blue" style="height:10px">B_1</div>
+          <div floater></div>
+          <div class="🔵" filler="blue" style="height:10px">B_2</div>
+          <div floater></div>
+          <div class="🔵" filler="blue" style="height:10px">B_3</div>
+          <div floater></div>
+        </td>
+        <td>
+          <div class="🟦" filler="blue" style="height:10px">B0</div>
+          <div floater></div>
+          <div class="🟦" filler="blue" style="height:10px">B1</div>
+          <div floater></div>
+          <div class="🟦" filler="blue" style="height:10px">B2</div>
+          <div floater></div>
+          <div class="🟦" filler="blue" style="height:10px">B3</div>
+          <div floater></div>
+          <div class="🟦" filler="blue" style="height:10px">B4</div>
+          <div floater></div>
+          <div class="🟦" filler="blue" style="height:10px">B5</div>
+          <div floater></div>
+        </td>
+      </tr>
+    </tbody>
+  </table> -->
 </body>
-
 
 </html>
