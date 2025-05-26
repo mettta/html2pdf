@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+  <script
+    defer
+    data-debug-mode="true"
+    data-markup-debug-mode="true"
+    data-print-height='300px'
+    data-print-width='600px'
+    data-print-left-margin= '50px'
+    data-print-right-margin= '50px'
+    data-print-top-margin= '50px'
+    data-print-bottom-margin= '50px'
+    data-print-font-size='16px'
+    src="../../../../dist/bundle.js"></script>
+    <style>
+    </style>
+</head>
+
+<body>
+  <!-- line-height = 1 (10) -->
+  <!-- 1 step to shift by 1 line is 20 pixels -->
+  <!-- Case #1 -->
+  <!-- <div filler style="height:160px"></div> -->
+  <table border="1" width="100%" style="margin: 10px 0; font-size:9px; line-height:10px;  "><!-- border-collapse: collapse; -->
+    <caption>Table: caption</caption>
+    <colgroup>
+      <col width="20%">
+      <col width="80%">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>TH1</th>
+        <th>TH2</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <div filler="red" style="height:10px">R_0</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R_1</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R_2</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R_3</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R_4</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R_5</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R_6</div>
+          <div floater></div>
+        </td>
+        <td>
+          <div data-testid="red-first" filler="red" style="height:10px">R0</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R1</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R2</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R3</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R4</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R5</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R6</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R7</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R8</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R9</div>
+          <div floater></div>
+          <div filler="red" style="height:10px">R10</div>
+          <div floater></div>
+          <div data-testid="red-last" filler="red" style="height:10px">R11</div>
+          <div floater></div>
+
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div data-testid="green-first-left" filler="green" style="height:10px">G_0</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_1</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_2</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_3</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_4</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_5</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G_6</div>
+          <div floater></div>
+          <div data-testid="green-part-left" filler="green" style="height:10px">G_7</div>
+          <div floater></div>
+        </td>
+        <td>
+          <div data-testid="green-first" filler="green" style="height:10px">G0</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G1</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G2</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G3</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G4</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G5</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G6</div>
+          <div floater></div>
+          <div data-testid="green-part" filler="green" style="height:10px">G7</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G8</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G9</div>
+          <div floater></div>
+          <div filler="green" style="height:10px">G10</div>
+          <div floater></div>
+          <div data-testid="green-last" filler="green" style="height:10px">G11</div>
+          <div floater></div>
+
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div filler="blue" style="height:10px">B_0</div>
+          <div floater></div>
+          <div filler="blue" style="height:10px">B_1</div>
+          <div floater></div>
+          <div filler="blue" style="height:10px">B_2</div>
+          <div floater></div>
+          <div data-testid="blue-last-left" filler="blue" style="height:10px">B_3</div>
+          <div floater></div>
+        </td>
+        <td>
+          <div data-testid="blue-first" filler="blue" style="height:10px">B0</div>
+          <div floater></div>
+          <div filler="blue" style="height:10px">B1</div>
+          <div floater></div>
+          <div filler="blue" style="height:10px">B2</div>
+          <div floater></div>
+          <div filler="blue" style="height:10px">B3</div>
+          <div floater></div>
+          <div filler="blue" style="height:10px">B4</div>
+          <div floater></div>
+          <div data-testid="blue-last" filler="blue" style="height:10px">B5</div>
+          <div floater></div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+
+</html>

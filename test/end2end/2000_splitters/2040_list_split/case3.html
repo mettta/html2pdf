@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="../../../shared/css/main.css">
   <script
     defer
+    data-debug-mode='true'
     data-print-height='88mm'
     data-print-font-size='12pt'
     src="../../../../dist/bundle.js"></script>
@@ -34,7 +35,9 @@
   <!--
       The current implementation allows you to leave one line of the list
       last or move it to the next page.
-      So 3 cases would be enough.
+      AND
+      object with 3 lines is not split.
+      So 3 + 1 lines would be enough.
   -->
 
   <!-- Case #3 -->
@@ -43,6 +46,7 @@
     <li><b class="li1">Proident</b> do duis minim sit officia duis occaecat.</li>
     <li><b class="li2">Proident</b> do duis minim sit officia duis occaecat.</li>
     <li><b class="li3">Proident</b> do duis minim sit officia duis occaecat.</li>
+    <li><b class="li4">Proident</b> do duis minim sit officia duis occaecat.</li>
   </ul>
 </body>
 
