@@ -7,21 +7,12 @@ export default class Table {
   }) {
     // * From config:
     this._debug = config.debugMode ? { ...config.debugConfig.table } : {};
-
     // * Private
     this._DOM = DOM;
     this._selector = selector;
     this._node = node;
 
-    // todo
-    // 1) move to config
-    // Table:
-    // # can be a single row with long content
-    this._minLeftRows = 1; // ! min 1!
-    this._minDanglingRows = 1;  // ! min 1!
-    this._minBreakableRows = 1; // this._minLeftRows + this._minDanglingRows;
-    // TODO move to paragraph
-    this._minBreakableLines = 4;
+    this._splitLabelHeightFromConfig = config.splitLabelHeight;
 
     // TODO move to config
     this._signpostHeight = 24;

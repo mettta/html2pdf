@@ -33,8 +33,10 @@ export default class TableLike {
 
     this._imageReductionRatio = 0.8;
 
-    // TODO move to config
-    this._signpostHeight = 24;
+    // TODO make function
+    // * From config:
+    // - if null is set - the element is not created in createSignpost().
+    this._signpostHeight = parseFloat(config.splitLabelHeight) || 0;
 
 
   }
