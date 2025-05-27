@@ -87,21 +87,21 @@ export function isLineChanged(current, next) {
 /**
  * @this {Node}
  */
-export function isLineKept(current, next, debug) {
+export function isLineKept(current, next) {
   // * (-1): Browser rounding fix (when converting mm to pixels).
   const currentBottom = this._DOM.getElementOffsetBottom(current);
   const nextTop = this._DOM.getElementOffsetTop(next);
   const delta = currentBottom - nextTop;
   const vert = delta >= 2;
-  debug && console.group('isLineKept?')
-  debug && console.log(
+  this._debug._ && console.group('isLineKept?')
+  this._debug._ && console.log(
     '\n',
     vert,
     '\n',
     '\n currentBottom', currentBottom, [current],
     '\n nextTop', nextTop, [next],
-'\n delta', delta,
-    );
-    debug && console.groupEnd('isLineKept?')
+    '\n delta', delta,
+  );
+  this._debug._ && console.groupEnd('isLineKept?')
   return vert;
 }

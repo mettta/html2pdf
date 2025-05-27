@@ -9,7 +9,7 @@ export function getTop(element, root = null, topAcc = 0) {
       'element must be provided, but was received:', element,
       '\nThe function returned:', undefined
     );
-    return;
+    return
   }
 
   // the offset case
@@ -22,7 +22,7 @@ export function getTop(element, root = null, topAcc = 0) {
       'root must be provided, but was received:', root,
       '\nThe function returned:', undefined
     );
-    return;
+    return
   }
 
   const offsetParent = this._DOM.getElementOffsetParent(element);
@@ -35,7 +35,7 @@ export function getTop(element, root = null, topAcc = 0) {
       '\n offsetParent:', offsetParent,
       '\n The function returned:', undefined
     );
-    return;
+    return
   }
 
   const currTop = this._DOM.getElementOffsetTop(element);
@@ -56,12 +56,12 @@ export function getBottom(element, root = null) {
       'element must be provided, but was received:', element,
       '\nThe function returned:', undefined
     );
-    return;
+    return
   }
 
   // the offset case
   if (root === null) {
-    return this._DOM.getElementOffsetBottom(element);
+    return this._DOM.getElementOffsetBottom(element)
   }
 
   if (!root) {
@@ -69,20 +69,10 @@ export function getBottom(element, root = null) {
       'root must be provided, but was received:', root,
       '\nThe function returned:', undefined
     );
-    return;
+    return
   }
 
   return this.getTop(element, root) + this._DOM.getElementOffsetHeight(element);
-}
-
-/**
- * @this {Node}
- */
-export function getHeightWithMargin(element) {
-  const topMargin = parseInt(this._DOM.getComputedStyle(element).marginTop);
-  const bottomMargin = parseInt(this._DOM.getComputedStyle(element).marginBottom);
-  const height = this._DOM.getElementOffsetHeight(element);
-  return height + topMargin + bottomMargin;
 }
 
 /**
@@ -103,7 +93,7 @@ export function getBottomWithMargin(element, root) {
   // * Therefore, we implement an additional check.
 
   if (!element) {
-    return;
+    return
   }
 
   const _elementBottom = this.getBottom(element, root);
@@ -134,6 +124,16 @@ export function getBottomWithMargin(element, root) {
 /**
  * @this {Node}
  */
+export function getHeightWithMargin(element) {
+  const topMargin = parseInt(this._DOM.getComputedStyle(element).marginTop);
+  const bottomMargin = parseInt(this._DOM.getComputedStyle(element).marginBottom);
+  const height = this._DOM.getElementOffsetHeight(element);
+  return height + topMargin + bottomMargin;
+}
+
+/**
+ * @this {Node}
+ */
 export function getTopWithMargin(element, root) {
   // TODO : performance
   const topMargin = parseInt(this._DOM.getComputedStyle(element).marginTop);
@@ -144,7 +144,7 @@ export function getTopWithMargin(element, root) {
  * @this {Node}
  */
 export function getMaxWidth(node) {
-  // * width adjustment for createTestNodeFrom()
+  // * width adjustment for createTestNodeFrom() from Node
   // ? problem: if the node is inline,
   // it may not show its maximum width in the parent context.
   // So we make a block element that shows
@@ -178,9 +178,15 @@ export function getEmptyNodeHeight(node, margins = true) {
  */
 export function getLineHeight(node) {
   const testNode = this.createNeutral();
+  // if node has padding, this affects so cant be taken bode clone as wrapper // todo comment
+  // const testNode = this._DOM.cloneNodeWrapper(node);
   this._DOM.setInnerHTML(testNode, '!');
   this._DOM.setStyles(testNode, {
     display: 'block',
+    // ! 'absolute' added extra height to the element:
+    // position: 'absolute',
+    // left: '-10000px',
+    // width: '100%',
   });
 
   this._DOM.insertAtEnd(node, testNode);
@@ -188,6 +194,8 @@ export function getLineHeight(node) {
   this._DOM.removeNode(testNode);
   return lineHeight;
 }
+
+// TODO: not used?
 
 /**
  * @this {Node}
@@ -211,31 +219,31 @@ export function getTableEntries(node) {
     const tag = curr.tagName;
 
     if (tag === 'TBODY') {
-      return {...acc, rows: [...acc.rows, ...curr.children]};
+      return { ...acc, rows: [...acc.rows, ...curr.children] };
     }
 
     if (tag === 'CAPTION') {
       this.setFlagNoBreak(curr);
-      return {...acc, caption: curr};
+      return { ...acc, caption: curr };
     }
 
     if (tag === 'COLGROUP') {
       this.setFlagNoBreak(curr);
-      return {...acc, colgroup: curr};
+      return { ...acc, colgroup: curr };
     }
 
     if (tag === 'THEAD') {
       this.setFlagNoBreak(curr);
-      return {...acc, thead: curr};
+      return { ...acc, thead: curr };
     }
 
     if (tag === 'TFOOT') {
       this.setFlagNoBreak(curr);
-      return {...acc, tfoot: curr};
+      return { ...acc, tfoot: curr };
     }
 
     if (tag === 'TR') {
-      return {...acc, rows: [...acc.rows, ...curr]};
+      return { ...acc, rows: [...acc.rows, ...curr] };
     }
 
     return {

@@ -1,3 +1,23 @@
+
+/**
+ * Returns a cleaned and normalized list of children for the given element.
+ *
+ * @relation(PAGINATION-1, scope=function)
+ *
+ * INTENTION: Prepare children for layout by filtering, wrapping, and flattening
+ *            elements that would otherwise interfere with pagination flow.
+ *
+ * INPUT: A DOM element whose children should be prepared for layout analysis.
+ *        Skips style, whitespace, and comment nodes.
+ *        Wraps significant text nodes.
+ *        Recursively unwraps elements with no offset (e.g., display: contents).
+ *        Skips fixed/absolute positioned elements.
+ *
+ *        If the resulting children break vertical flow,
+ *        they are grouped into a complexTextBlock.
+ *
+ * EXPECTED_RESULTS: A clean, flat array of elements ready to be laid out into pages.
+ */
 /**
  * @this {Node}
  */
@@ -39,6 +59,22 @@ export function getPreparedChildren(element) {
   }
 }
 
+
+/**
+ * Returns pagination-ready fragments for a given DOM element.
+ *
+ * @relation(PAGINATION-2, scope=function)
+ *
+ * INTENTION: Select and apply the correct split strategy based on the element type,
+ *            so it can be safely divided across pages or preserved unbroken.
+ *
+ * INPUT: A DOM node and pagination metrics (firstPageBottom, fullPageHeight, root).
+ *        Known types (tables, pre, complex text) invoke specific split functions.
+ *        Fallback to getPreparedChildren for generic cases.
+ *
+ * EXPECTED_RESULTS: An array of elements or fragments suitable for page layout.
+ *                   Unbreakable nodes return an empty array.
+ */
 /**
  * @this {Node}
  */

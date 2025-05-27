@@ -6,8 +6,8 @@
 export function isSelectorMatching(element, selector) {
   if (!element || !selector) {
     this._debug._ && console.warn('isSelectorMatching() must have 2 params',
-    '\n element: ', element,
-    '\n selector: ', selector);
+      '\n element: ', element,
+      '\n selector: ', selector);
     return;
   }
 
@@ -51,28 +51,28 @@ export function isSignificantTextNode(element) {
  * @this {Node}
  */
 export function isSTYLE(element) {
-  return this._DOM.getElementTagName(element) === 'STYLE';
+  return this._DOM.getElementTagName(element) === 'STYLE'
 }
 
 /**
  * @this {Node}
  */
 export function isIMG(element) {
-  return this._DOM.getElementTagName(element) === 'IMG';
+  return this._DOM.getElementTagName(element) === 'IMG'
 }
 
 /**
  * @this {Node}
  */
 export function isSVG(element) {
-  return this._DOM.getElementTagName(element) === 'svg';
+  return this._DOM.getElementTagName(element) === 'svg'
 }
 
 /**
  * @this {Node}
  */
 export function isOBJECT(element) {
-  return this._DOM.getElementTagName(element) === 'OBJECT';
+  return this._DOM.getElementTagName(element) === 'OBJECT'
 }
 
 /**
@@ -95,35 +95,35 @@ export function isNeutral(element) {
  * @this {Node}
  */
 export function isWrappedTextNode(element) {
-  return this.isSelectorMatching(element, this._selector.textNode);
+  return this.isSelectorMatching(element, this._selector.textNode)
 }
 
 /**
  * @this {Node}
  */
 export function isWrappedTextLine(element) {
-  return this.isSelectorMatching(element, this._selector.textLine);
+  return this.isSelectorMatching(element, this._selector.textLine)
 }
 
 /**
  * @this {Node}
  */
 export function isWrappedTextGroup(element) {
-  return this.isSelectorMatching(element, this._selector.textGroup);
+  return this.isSelectorMatching(element, this._selector.textGroup)
 }
 
 /**
  * @this {Node}
  */
 export function isPageStartElement(element) {
-  return this.isSelectorMatching(element, this._selector.pageStartMarker);
+  return this.isSelectorMatching(element, this._selector.pageStartMarker)
 }
 
 /**
  * @this {Node}
  */
 export function isContentFlowStart(element) {
-  return this.isSelectorMatching(element, this._selector.contentFlowStart);
+  return this.isSelectorMatching(element, this._selector.contentFlowStart)
 }
 
 /**
@@ -131,21 +131,21 @@ export function isContentFlowStart(element) {
  */
 export function isAfterContentFlowStart(element) {
   const elementBeforeInspected = this._DOM.getLeftNeighbor(element);
-  return this.isSelectorMatching(elementBeforeInspected, this._selector.contentFlowStart);
+  return this.isSelectorMatching(elementBeforeInspected, this._selector.contentFlowStart)
 }
 
 /**
  * @this {Node}
  */
 export function isContentFlowEnd(element) {
-  return this.isSelectorMatching(element, this._selector.contentFlowEnd);
+  return this.isSelectorMatching(element, this._selector.contentFlowEnd)
 }
 
 /**
  * @this {Node}
  */
 export function isComplexTextBlock(element) {
-  return this.isSelectorMatching(element, this._selector.complexTextBlock);
+  return this.isSelectorMatching(element, this._selector.complexTextBlock)
 }
 
 /**
@@ -153,10 +153,10 @@ export function isComplexTextBlock(element) {
  */
 export function isNoBreak(element, _style = this._DOM.getComputedStyle(element)) {
   return this.isSelectorMatching(element, this._selector.flagNoBreak)
-      || this.isWrappedTextLine(element)
-      || this.isWrappedTextGroup(element)
-      || this.isInlineBlock(_style)
-      || this.notSolved(element);
+    || this.isWrappedTextLine(element)
+    || this.isWrappedTextGroup(element)
+    || this.isInlineBlock(_style)
+    || this.notSolved(element);
   // TODO
 }
 
@@ -164,26 +164,27 @@ export function isNoBreak(element, _style = this._DOM.getComputedStyle(element))
  * @this {Node}
  */
 export function isNoHanging(element) {
-  return this.isSelectorMatching(element, this._selector.flagNoHanging);
+  return this.isSelectorMatching(element, this._selector.flagNoHanging)
 }
 
 /**
  * @this {Node}
  */
 export function isForcedPageBreak(element) {
-  return this.isSelectorMatching(element, this._selector.printForcedPageBreak);
+  return this.isSelectorMatching(element, this._selector.printForcedPageBreak)
 }
 
 /**
  * @this {Node}
  */
 export function isInline(computedStyle) {
+  // todo: amend with (element, _style = this._DOM.getComputedStyle(element))
   const display = computedStyle.display;
   const res = display === "inline"
-            || display === "inline-block"
-            || display === "inline-table"
-            || display === "inline-flex"
-            || display === "inline-grid";
+    || display === "inline-block"
+    || display === "inline-table"
+    || display === "inline-flex"
+    || display === "inline-grid";
   return res;
 }
 
@@ -191,11 +192,12 @@ export function isInline(computedStyle) {
  * @this {Node}
  */
 export function isInlineBlock(computedStyle) {
+  // todo: amend with (element, _style = this._DOM.getComputedStyle(element))
   const display = computedStyle.display;
   const res = display === "inline-block"
-            || display === "inline-table"
-            || display === "inline-flex"
-            || display === "inline-grid";
+    || display === "inline-table"
+    || display === "inline-flex"
+    || display === "inline-grid";
   return res;
 }
 
@@ -203,6 +205,7 @@ export function isInlineBlock(computedStyle) {
  * @this {Node}
  */
 export function isGrid(computedStyle) {
+  // todo: amend with (element, _style = this._DOM.getComputedStyle(element))
   const display = computedStyle.display;
   const res = display === "grid";
   return res;
@@ -213,7 +216,9 @@ export function isGrid(computedStyle) {
  */
 export function isTableLikeNode(element, _style = this._DOM.getComputedStyle(element)) {
   return this._DOM.getElementTagName(element) !== 'TABLE'
-      && [ 'table' ].includes(_style.display);
+    && [
+      'table'
+    ].includes(_style.display);
 }
 
 /**
@@ -225,8 +230,8 @@ export function isTableNode(element, _style = this._DOM.getComputedStyle(element
   //* issue#1370 https://css-tricks.com/preventing-a-grid-blowout/ */
   // so table can has 'block' and 'nowrap'.
   return this._DOM.getElementTagName(element) === 'TABLE'
-      || // ! &&
-      ['table'].includes(_style.display);
+    || // ! &&
+    ['table'].includes(_style.display);
 }
 
 /**
@@ -234,29 +239,29 @@ export function isTableNode(element, _style = this._DOM.getComputedStyle(element
  */
 export function isPRE(element, _style = this._DOM.getComputedStyle(element)) {
   // this._DOM.getElementTagName(element) === 'PRE'
-  return [ 'block' ].includes(_style.display)
-      && [
-        'pre',
-        'pre-wrap',
-        'pre-line',
-        'break-spaces',
-        'nowrap'
-      ].includes(_style.whiteSpace);
+  return [
+    'block'
+  ].includes(_style.display)
+    && [
+      'pre',
+      'pre-wrap',
+      'pre-line',
+      'break-spaces',
+      'nowrap'
+    ].includes(_style.whiteSpace);
 }
 
 /**
  * @this {Node}
  */
 export function isGridAutoFlowRow(computedStyle) {
+  // todo: amend with (element, _style = this._DOM.getComputedStyle(element))
   const display = computedStyle.display;
   const gridAutoFlow = computedStyle.gridAutoFlow;
-  const res1 = display === "grid"
-            || display === "inline-grid";
+  const res1 = (display === "grid") || (display === "inline-grid");
   const res2 = gridAutoFlow === "row";
   return res1 && res2;
 }
-
-// ?
 
 /**
  * @this {Node}
@@ -264,10 +269,10 @@ export function isGridAutoFlowRow(computedStyle) {
 export function isFullySPlitted(node) {
   const _style = this._DOM.getComputedStyle(node);
   return (
-    this.isPRE(node, _style)
-    || this.isTableNode(node, _style)
-    || this.isTableLikeNode(node, _style)
-    || this.isGridAutoFlowRow(_style) // todo
+    this.isPRE(node, _style) ||
+    this.isTableNode(node, _style) ||
+    this.isTableLikeNode(node, _style) ||
+    this.isGridAutoFlowRow(_style) // todo
   );
 }
 

@@ -69,6 +69,7 @@ export default class Pages {
 
     this._imageReductionRatio = 0.8;
 
+    // TODO make function
     // * From config:
     // - if null is set - the element is not created in createSignpost().
     this._signpostHeight = parseFloat(config.splitLabelHeight) || 0;
@@ -194,8 +195,7 @@ export default class Pages {
       }
       // If there are AFTER and BEFORE breaks - insert only one.
       if (!this._node.isForcedPageBreak(element.nextElementSibling)) {
-      this._DOM.insertAfter(element, this._node.createForcedPageBreak())
-
+        this._DOM.insertAfter(element, this._node.createForcedPageBreak())
       } // else pass
     });
 
