@@ -139,12 +139,36 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
 // GET SERVICE ELEMENTS
 
 /**
+ * Returns all forced page break markers inside the given element.
+ *
+ * @relation(PAGINATION-6, scope=function)
+ *
+ * INTENTION: Locate explicit user-defined page break markers inside a container element.
+ *
+ * INPUT: A DOM element to search inside. Uses a predefined selector to find break markers.
+ *
+ * EXPECTED_RESULTS: Array of matching elements (or empty).
+ */
+/**
  * @this {Node}
  */
 export function findAllForcedPageBreakInside(element) {
   return this._DOM.getAll(this._selector.printForcedPageBreak, element);
 }
 
+/**
+* Finds the topmost parent where the element is the first child, within vertical limits.
+*
+* @relation(PAGINATION-7, scope=function)
+*
+* INTENTION: Identify a suitable wrapper that may influence page break logic, unless interrupted.
+*
+* INPUT: Element to start from, top limit (Y), and root container.
+*        Traverses upward while element is first child.
+*        Stops at page start marker or if position is above limit.
+*
+* EXPECTED_RESULTS: DOM element, or null if not found, or undefined if interrupted.
+*/
 /**
  * @this {Node}
  */
@@ -192,6 +216,19 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
 }
 
 /**
+* Finds the previous no-hanging sibling within vertical limits.
+*
+* @relation(PAGINATION-8, scope=function)
+*
+* INTENTION: Locate a safe leftward element for layout anchoring.
+*
+* INPUT: Current element, vertical Y-limit, and root container.
+*        Traverses previous siblings marked as no-hanging.
+*        Stops at page start marker or when above limit.
+*
+* EXPECTED_RESULTS: DOM element, or null if not found, or undefined if interrupted.
+*/
+/**
  * @this {Node}
  */
 export function findPreviousNonHangingsFromPage(element, topLimit, root) {
@@ -237,6 +274,21 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
 // * These functions assist higher-level page break algorithms by walking the DOM tree.
 
 /**
+ * Ascends the DOM to find the nearest parent where the element is the first child.
+ *
+ * @relation(PAGINATION-3, scope=function)
+ *
+ * INTENTION: Identify the outermost block where the current element is the leading child,
+ *            to inform layout decisions such as merging or page-breaking.
+ *
+ * INPUT: A DOM element and a root boundary element.
+ *        Ascends while the current element is the first child of its parent.
+ *        Stops if the parent equals root or breaks the condition.
+ *
+ * EXPECTED_RESULTS: Returns the highest such parent element if found;
+ *                   otherwise returns null.
+ */
+/**
  * @this {Node}
  */
 export function findFirstChildParent(element, rootElement) {
@@ -258,6 +310,21 @@ export function findFirstChildParent(element, rootElement) {
   return firstSuitableParent;
 }
 
+/**
+* Ascends the DOM to find the nearest parent where the element is the last child.
+*
+* @relation(PAGINATION-5, scope=function)
+*
+* INTENTION: Identify the outermost block where the current element is the trailing child,
+*            to inform layout decisions such as avoiding orphaned elements or improving grouping.
+*
+* INPUT: A DOM element and a root boundary element.
+*        Ascends while the current element is the last child of its parent.
+*        Stops if the parent equals root or breaks the condition.
+*
+* EXPECTED_RESULTS: Returns the highest such parent element if found;
+*                   otherwise returns null.
+*/
 /**
  * @this {Node}
  */

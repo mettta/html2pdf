@@ -18,7 +18,7 @@ export function create(selector, textContent) {
       element = this._DOM.createElement(selector);
     } else {
       this._assert && console.assert(false, `Expected valid html selector ot tag name, but received:`, selector)
-      return;
+      return
     }
   }
 
@@ -33,7 +33,7 @@ export function create(selector, textContent) {
  * @this {Node}
  */
 export function createNeutral() {
-  return this.create(this._selector.neutral);
+  return this.create(this._selector.neutral)
 }
 
 /**
@@ -44,7 +44,7 @@ export function createNeutralBlock() {
   // that affect its height and has a block model.
   const element = this.createNeutral();
   element.style.display = 'block';
-  return element;
+  return element
 }
 
 /**
@@ -58,14 +58,14 @@ export function createTextNodeWrapper() {
  * @this {Node}
  */
 export function createTextLine() {
-  return this.create(this._selector.textLine);
+  return this.create(this._selector.textLine)
 }
 
 /**
  * @this {Node}
  */
 export function createTextGroup() {
-  return this.create(this._selector.textGroup);
+  return this.create(this._selector.textGroup)
 }
 
 /**
@@ -102,6 +102,7 @@ export function createTestNodeFrom(node) {
     position: 'absolute',
     background: 'rgb(255 239 177)',
     width: this.getMaxWidth(node) + 'px',
+    // left: '-10000px',
   });
   return testNode;
 }
@@ -144,7 +145,7 @@ export function createSignpost(text, height) {
     height: height + 'px',
   });
   text && this._DOM.setInnerHTML(prefix, text);
-  return prefix;
+  return prefix
 }
 
 /**
