@@ -91,4 +91,14 @@ export default class Node {
     return false
   }
 
+  // 🔧 Service:
+
+  // TODO: move this function to shared (for node/paragraph/table...)
+  _end(string) {
+    const CONSOLE_CSS_END_LABEL = `background:#eee;color:#888;padding: 0 1px 0 0;`; //  font-size:smaller
+
+    this._debug._ && console.log(`%c ▲ ${string} `, CONSOLE_CSS_END_LABEL);
+    this._debug._ && console.groupEnd();
+  }
+
 }
