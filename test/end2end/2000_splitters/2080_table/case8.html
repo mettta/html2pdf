@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+  <script
+    defer
+    data-debug-mode="true"
+    data-markup-debug-mode="true"
+    data-print-height='300px'
+    data-print-width='600px'
+    data-print-left-margin= '50px'
+    data-print-right-margin= '50px'
+    data-print-top-margin= '50px'
+    data-print-bottom-margin= '50px'
+    data-print-font-size='16px'
+    src="../../../../dist/bundle.js"></script>
+
+    <!-- styles for test element -->
+    <style>
+      .line-yellow {
+        height: 20px
+      }
+
+      .line-blue {
+        height: 20px
+      }
+
+      .table-testing {
+        font-family: Arial, Helvetica, sans-serif;
+        width: 100%;
+        margin: 10px 0;
+
+        /*border-collapse: collapse;*/
+
+        font-size: 9px;
+        line-height: 10px;
+      }
+    </style>
+    <!-- line-height = 1 (10) -->
+    <!-- 1 step to shift by 1 line is 20 pixels -->
+</head>
+
+<body>
+
+  <!-- Expected 4 pages -->
+
+  <table class="table-testing" border="1">
+    <caption>Table: caption</caption>
+    <colgroup>
+      <col width="20%">
+      <col width="80%">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>TH1</th>
+        <th>TH2</th>
+      </tr>
+    </thead>
+    <tbody>
+
+
+
+      <tr>
+        <td>
+          <div data-testid="Y_0" filler="yellow" class="line-yellow">Y_0</div>
+          <div floater></div>
+          <div data-testid="Y_1" filler="yellow" class="line-yellow">Y_1</div>
+          <div floater></div>
+          <div data-testid="Y_2" filler="yellow" class="line-yellow">Y_2</div>
+          <div floater></div>
+          <div data-testid="Y_3" filler="yellow" class="line-yellow">Y_3</div>
+          <div floater></div>
+          <div data-testid="Y_4" filler="yellow" class="line-yellow">Y_4</div>
+          <div floater></div>
+        </td>
+        <td>
+          <div data-testid="Y0" filler="yellow" class="line-yellow">Y0</div>
+          <div floater></div>
+          <div data-testid="Y1" filler="yellow" class="line-yellow">Y1</div>
+          <div floater></div>
+          <div data-testid="Y2" filler="yellow" class="line-yellow">Y2</div>
+          <div floater></div>
+          <div data-testid="Y3" filler="yellow" class="line-yellow">Y3</div>
+          <div floater></div>
+          <div data-testid="Y4" filler="yellow" class="line-yellow">Y4</div>
+          <div floater></div>
+
+        </td>
+      </tr>
+
+      <tr class="tr__000">
+        <td>
+          <div filler="yellow">A1_0</div>
+          <div filler="yellow">A1_1</div>
+          <div filler="yellow">A1_2</div>
+        </td>
+        <td>
+          <div data-testid="box1" filler="yellow" style="height:200px">A1</div>
+        </td>
+      </tr>
+
+      <!-- B -->
+      <tr>
+        <td>
+          <div data-testid="B_0" filler="blue" class="line-blue">B_0</div>
+          <div floater></div>
+          <div data-testid="B_1" filler="blue" class="line-blue">B_1</div>
+          <div floater></div>
+          <div data-testid="B_2" filler="blue" class="line-blue">B_2</div>
+          <div floater></div>
+          <div data-testid="B_3" filler="blue" class="line-blue">B_3</div>
+          <div floater></div>
+        </td>
+        <td>
+          <div data-testid="B0" filler="blue" class="line-blue">B0</div>
+          <div floater></div>
+          <div data-testid="B1" filler="blue" class="line-blue">B1</div>
+          <div floater></div>
+          <div data-testid="B2" filler="blue" class="line-blue">B2</div>
+          <div floater></div>
+          <div data-testid="B3" filler="blue" class="line-blue">B3</div>
+          <div floater></div>
+        </td>
+      </tr>
+
+      <tr class="tr__000">
+        <td>
+          <div filler="yellow">A2_0</div>
+          <div filler="yellow">A2_1</div>
+          <div filler="yellow">A2_2</div>
+        </td>
+        <td>
+          <div data-testid="box2" filler="yellow" style="height:200px">A2</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div data-testid="closer" filler style="height:10px"></div>
+</body>
+
+</html>
