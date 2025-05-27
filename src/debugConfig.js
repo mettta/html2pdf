@@ -6,7 +6,7 @@ const debugConfig = {
     _: true,
   },
   pages: {
-    _: true,
+    _: false,
     _parseNode: false,
     _parseNodes: false,
     _registerPageStart: false,
@@ -34,7 +34,7 @@ const debugConfig = {
     _: false,
   },
   table: {
-    _: false,
+    _: true,
   },
   tableLike: {
     _: false,
