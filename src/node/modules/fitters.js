@@ -29,6 +29,7 @@ export function fitElementWithinBoundaries({ element, height, width, vspace, hsp
  */
 export function copyNodeWidth(clone, node) {
   this._DOM.setStyles(clone, {
+    'box-sizing': 'border-box', // * to prevent the effects of borders etc.
     'width': `${this._DOM.getElementOffsetWidth(node)}px`,
     // * if in COLGROUP/COL were set 'width',
     // * it defines a minimum width for the columns within the column group,
