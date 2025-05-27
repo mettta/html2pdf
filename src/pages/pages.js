@@ -887,7 +887,7 @@ export default class Pages {
       // }
 
       // otherwise try to break it and loop the children:
-      const children = this._node.getProcessedChildren(currentElement, newPageBottom, this._referenceHeight);
+      const children = this._node.getSplitChildren(currentElement, newPageBottom, this._referenceHeight);
       this._debug._parseNode && console.log(
         'try to break it and loop the children:', children
       );
@@ -929,7 +929,7 @@ export default class Pages {
           parent: isFullySPlittedParent ? undefined : tracedParent,
           parentBottom: isFullySPlittedParent ? undefined : baseBlockBottom,
         });
-        this._node.markProcessed(currentElement, `getProcessedChildren and _parseNodes`);
+        this._node.markProcessed(currentElement, `getSplitChildren and _parseNodes`);
       } else {
         // * If no children,
         // * move element to the next page.
