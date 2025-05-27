@@ -42,8 +42,8 @@ export function getPreparedChildren(element) {
 /**
  * @this {Node}
  */
-export function getProcessedChildren(node, firstPageBottom, fullPageHeight) {
     const consoleMark = ['%c_getProcessedChildren\n', 'color:white',];
+export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
 
     let children = [];
 
