@@ -50,7 +50,7 @@
 </head>
 
 <body>
-  <div filler style="height:50px"></div>
+  <!-- <div data-testid="pusher" filler style="height:50px"></div> -->
   <table class="table-testing" border="1">
     <caption>Table: caption</caption>
     <colgroup>
@@ -64,7 +64,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr>
+      <!-- <tr>
         <td>
           <div data-testid="R_0" filler="red" class="line-red">R_0</div>
           <div floater></div>
@@ -155,7 +155,7 @@
           <div floater></div>
 
         </td>
-      </tr>
+      </tr> -->
       <tr>
         <td>
           <div data-testid="B_0" filler="blue" class="line-blue">B_0</div>
@@ -182,8 +182,17 @@
           <div floater></div>
         </td>
       </tr>
+
+      <tr>
+        <td></td>
+        <td>
+          <div data-testid="box" filler="yellow" style="height: 200px;"></div>
+        </td>
+      </tr>
     </tbody>
   </table>
+
+  <div data-testid="closer" filler style="height:10px"></div>
 </body>
 
 </html>
