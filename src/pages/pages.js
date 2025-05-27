@@ -870,7 +870,7 @@ export default class Pages {
       }
 
       // otherwise try to break it and loop the children:
-      const children = this._node.getSplitChildren(currentElement, newPageBottom, this._referenceHeight);
+      const children = this._node.getSplitChildren(currentElement, newPageBottom, this._referenceHeight, this._root);
       this._debug._parseNode && console.log(
         'try to break it and loop the children:', children
       );
