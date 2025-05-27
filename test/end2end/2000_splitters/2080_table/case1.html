@@ -19,16 +19,39 @@
     data-print-bottom-margin= '50px'
     data-print-font-size='16px'
     src="../../../../dist/bundle.js"></script>
+
+    <!-- styles for test element -->
     <style>
+      .line-red {
+        height: 10px
+      }
+
+      .line-green {
+        height: 10px
+      }
+
+      .line-blue {
+        height: 10px
+      }
+
+      .table-testing {
+        font-family: Arial, Helvetica, sans-serif;
+        width: 100%;
+        margin: 10px 0;
+
+        border-collapse: collapse;
+
+        font-size: 9px;
+        line-height: 10px;
+      }
     </style>
+    <!-- line-height = 1 (10) -->
+    <!-- 1 step to shift by 1 line is 20 pixels -->
 </head>
 
 <body>
-  <!-- line-height = 1 (10) -->
-  <!-- 1 step to shift by 1 line is 20 pixels -->
-  <!-- Case #1 -->
   <!-- <div filler style="height:160px"></div> -->
-  <table border="1" width="100%" style="margin: 10px 0; font-size:9px; line-height:10px;  "><!-- border-collapse: collapse; -->
+  <table class="table-testing" border="1">
     <caption>Table: caption</caption>
     <colgroup>
       <col width="20%">
@@ -43,119 +66,119 @@
     <tbody>
       <tr>
         <td>
-          <div filler="red" style="height:10px">R_0</div>
+          <div data-testid="R_0" filler="red" class="line-red">R_0</div>
           <div floater></div>
-          <div filler="red" style="height:10px">R_1</div>
+          <div data-testid="R_1" filler="red" class="line-red">R_1</div>
           <div floater></div>
-          <div filler="red" style="height:10px">R_2</div>
+          <div data-testid="R_2" filler="red" class="line-red">R_2</div>
           <div floater></div>
-          <div filler="red" style="height:10px">R_3</div>
+          <div data-testid="R_3" filler="red" class="line-red">R_3</div>
           <div floater></div>
-          <div filler="red" style="height:10px">R_4</div>
+          <div data-testid="R_4" filler="red" class="line-red">R_4</div>
           <div floater></div>
-          <div filler="red" style="height:10px">R_5</div>
+          <div data-testid="R_5" filler="red" class="line-red">R_5</div>
           <div floater></div>
-          <div filler="red" style="height:10px">R_6</div>
+          <div data-testid="R_6" filler="red" class="line-red">R_6</div>
           <div floater></div>
         </td>
         <td>
-          <div data-testid="red-first" filler="red" style="height:10px">R0</div>
+          <div data-testid="R0" filler="red" class="line-red">R0</div>
           <div floater></div>
-          <div filler="red" style="height:10px">R1</div>
+          <div data-testid="R1" filler="red" class="line-red">R1</div>
           <div floater></div>
-          <div filler="red" style="height:10px">R2</div>
+          <div data-testid="R2" filler="red" class="line-red">R2</div>
           <div floater></div>
-          <div filler="red" style="height:10px">R3</div>
+          <div data-testid="R3" filler="red" class="line-red">R3</div>
           <div floater></div>
-          <div filler="red" style="height:10px">R4</div>
+          <div data-testid="R4" filler="red" class="line-red">R4</div>
           <div floater></div>
-          <div filler="red" style="height:10px">R5</div>
+          <div data-testid="R5" filler="red" class="line-red">R5</div>
           <div floater></div>
-          <div filler="red" style="height:10px">R6</div>
+          <div data-testid="R6" filler="red" class="line-red">R6</div>
           <div floater></div>
-          <div filler="red" style="height:10px">R7</div>
+          <div data-testid="R7" filler="red" class="line-red">R7</div>
           <div floater></div>
-          <div filler="red" style="height:10px">R8</div>
+          <div data-testid="R8" filler="red" class="line-red">R8</div>
           <div floater></div>
-          <div filler="red" style="height:10px">R9</div>
+          <div data-testid="R9" filler="red" class="line-red">R9</div>
           <div floater></div>
-          <div filler="red" style="height:10px">R10</div>
+          <div data-testid="R10" filler="red" class="line-red">R10</div>
           <div floater></div>
-          <div data-testid="red-last" filler="red" style="height:10px">R11</div>
+          <div data-testid="R11" filler="red" class="line-red">R11</div>
           <div floater></div>
 
         </td>
       </tr>
       <tr>
         <td>
-          <div data-testid="green-first-left" filler="green" style="height:10px">G_0</div>
+          <div data-testid="G_0" filler="green" class="line-green">G_0</div>
           <div floater></div>
-          <div filler="green" style="height:10px">G_1</div>
+          <div data-testid="G_1" filler="green" class="line-green">G_1</div>
           <div floater></div>
-          <div filler="green" style="height:10px">G_2</div>
+          <div data-testid="G_2" filler="green" class="line-green">G_2</div>
           <div floater></div>
-          <div filler="green" style="height:10px">G_3</div>
+          <div data-testid="G_3" filler="green" class="line-green">G_3</div>
           <div floater></div>
-          <div filler="green" style="height:10px">G_4</div>
+          <div data-testid="G_4" filler="green" class="line-green">G_4</div>
           <div floater></div>
-          <div filler="green" style="height:10px">G_5</div>
+          <div data-testid="G_5" filler="green" class="line-green">G_5</div>
           <div floater></div>
-          <div filler="green" style="height:10px">G_6</div>
+          <div data-testid="G_6" filler="green" class="line-green">G_6</div>
           <div floater></div>
-          <div data-testid="green-part-left" filler="green" style="height:10px">G_7</div>
+          <div data-testid="G_7" filler="green" class="line-green">G_7</div>
           <div floater></div>
         </td>
         <td>
-          <div data-testid="green-first" filler="green" style="height:10px">G0</div>
+          <div data-testid="G0" filler="green" class="line-green">G0</div>
           <div floater></div>
-          <div filler="green" style="height:10px">G1</div>
+          <div data-testid="G1" filler="green" class="line-green">G1</div>
           <div floater></div>
-          <div filler="green" style="height:10px">G2</div>
+          <div data-testid="G2" filler="green" class="line-green">G2</div>
           <div floater></div>
-          <div filler="green" style="height:10px">G3</div>
+          <div data-testid="G3" filler="green" class="line-green">G3</div>
           <div floater></div>
-          <div filler="green" style="height:10px">G4</div>
+          <div data-testid="G4" filler="green" class="line-green">G4</div>
           <div floater></div>
-          <div filler="green" style="height:10px">G5</div>
+          <div data-testid="G5" filler="green" class="line-green">G5</div>
           <div floater></div>
-          <div filler="green" style="height:10px">G6</div>
+          <div data-testid="G6" filler="green" class="line-green">G6</div>
           <div floater></div>
-          <div data-testid="green-part" filler="green" style="height:10px">G7</div>
+          <div data-testid="G7" filler="green" class="line-green">G7</div>
           <div floater></div>
-          <div filler="green" style="height:10px">G8</div>
+          <div data-testid="G8" filler="green" class="line-green">G8</div>
           <div floater></div>
-          <div filler="green" style="height:10px">G9</div>
+          <div data-testid="G9" filler="green" class="line-green">G9</div>
           <div floater></div>
-          <div filler="green" style="height:10px">G10</div>
+          <div data-testid="G10" filler="green" class="line-green">G10</div>
           <div floater></div>
-          <div data-testid="green-last" filler="green" style="height:10px">G11</div>
+          <div data-testid="G11" filler="green" class="line-green">G11</div>
           <div floater></div>
 
         </td>
       </tr>
       <tr>
         <td>
-          <div filler="blue" style="height:10px">B_0</div>
+          <div data-testid="B_0" filler="blue" class="line-blue">B_0</div>
           <div floater></div>
-          <div filler="blue" style="height:10px">B_1</div>
+          <div data-testid="B_1" filler="blue" class="line-blue">B_1</div>
           <div floater></div>
-          <div filler="blue" style="height:10px">B_2</div>
+          <div data-testid="B_2" filler="blue" class="line-blue">B_2</div>
           <div floater></div>
-          <div data-testid="blue-last-left" filler="blue" style="height:10px">B_3</div>
+          <div data-testid="B_3" filler="blue" class="line-blue">B_3</div>
           <div floater></div>
         </td>
         <td>
-          <div data-testid="blue-first" filler="blue" style="height:10px">B0</div>
+          <div data-testid="B0" filler="blue" class="line-blue">B0</div>
           <div floater></div>
-          <div filler="blue" style="height:10px">B1</div>
+          <div data-testid="B1" filler="blue" class="line-blue">B1</div>
           <div floater></div>
-          <div filler="blue" style="height:10px">B2</div>
+          <div data-testid="B2" filler="blue" class="line-blue">B2</div>
           <div floater></div>
-          <div filler="blue" style="height:10px">B3</div>
+          <div data-testid="B3" filler="blue" class="line-blue">B3</div>
           <div floater></div>
-          <div filler="blue" style="height:10px">B4</div>
+          <div data-testid="B4" filler="blue" class="line-blue">B4</div>
           <div floater></div>
-          <div data-testid="blue-last" filler="blue" style="height:10px">B5</div>
+          <div data-testid="B5" filler="blue" class="line-blue">B5</div>
           <div floater></div>
         </td>
       </tr>
