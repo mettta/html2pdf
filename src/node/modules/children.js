@@ -110,7 +110,7 @@ export function getPreparedChildren(element) {
 
   }
 
-  this._end(`getPreparedChildren`);
+  this.logGroupEnd(`getPreparedChildren`);
   this._debugMode && console.info('🚸 getPreparedChildren:', children);
   return children;
 }

@@ -1,3 +1,5 @@
+import * as Logging from '../../utils/logging.js';
+
 export default class Table {
   constructor({
     config,
@@ -24,6 +26,8 @@ export default class Table {
     // * and is not taken into account in calculation
     // * of offset parameters of table rows.
     this._isFirefox = typeof InstallTrigger !== 'undefined';
+
+    Object.assign(this, Logging);
 
     // ** sets current parameters to undefined
     this._resetCurrent();
@@ -132,7 +136,7 @@ export default class Table {
     );
 
     if (!splitsIds.length) {
-      this._end(`_splitCurrentTable !splitsIds.length`);
+      this.logGroupEnd(`_splitCurrentTable !splitsIds.length`);
       return []
     }
 
@@ -171,7 +175,7 @@ export default class Table {
 
     console.log(lastPart)
 
-    this._end(`_splitCurrentTable`);
+    this.logGroupEnd(`_splitCurrentTable`);
 
     return [...splits, lastPart]
   }
@@ -328,7 +332,7 @@ export default class Table {
           // todo что-то тут не так - если мы не разбили длинную строку - просто перелистываем? нет нет
         }
 
-        this._end(`🟣 Split The ROW ${rowIndex} (from ${this._currentTableDistributedRows.length}) (...if canSplitRow)`);
+        this.logGroupEnd(`🟣 Split The ROW ${rowIndex} (from ${this._currentTableDistributedRows.length}) (...if canSplitRow)`);
       } else { // isNoBreak
 
         this._debug._ && isNoBreak && console.log(
@@ -866,15 +870,6 @@ export default class Table {
     return tableEntries
   }
 
-  // 🔧 Service:
-
-  _end(string) {
-    const CONSOLE_CSS_END_LABEL = `background:#eee;color:#888;padding: 0 1px 0 0;`; //  font-size:smaller
-
-    this._debug._ && console.log(`%c ▲ ${string} `, CONSOLE_CSS_END_LABEL);
-    this._debug._ && console.groupEnd();
-  }
-
   // 🧬 Working with nested blocks:
 
 
@@ -937,7 +932,7 @@ export default class Table {
       this._debug._ && console.log('🎯 wrappers.at(-1)', wrappers.at(-1))
       this._debug._ && console.log('*END* children', children)
 
-      this._end(`processChildren`);
+      this.logGroupEnd(`processChildren`);
     }
 
     const processObj = (obj) => {
@@ -1014,7 +1009,7 @@ export default class Table {
         this._DOM.insertAtEnd(currentTargetInSlice, currentElement);
       }
 
-      this._end(`processObj # ${id}`);
+      this.logGroupEnd(`processObj # ${id}`);
     }
 
     this._debug._ && console.log('#######  currentTargetInSlice (=):', currentTargetInSlice);
@@ -1024,7 +1019,7 @@ export default class Table {
     this._debug._ && console.log('slices:', slices)
     this._debug._ && slices.forEach(slice => console.log('slice:', slice))
 
-    this._end(`_createSlicesBySplitFlag`);
+    this.logGroupEnd(`_createSlicesBySplitFlag`);
     return slices
   }
 

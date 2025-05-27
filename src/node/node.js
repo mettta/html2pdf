@@ -1,3 +1,4 @@
+import * as Logging from '../utils/logging.js';
 import * as Selectors from './modules/selectors.js';
 import * as Positioning from './modules/positioning.js';
 import * as Getters from './modules/getters.js';
@@ -29,6 +30,8 @@ export default class Node {
     this._debug = config.debugMode ? { ...config.debugConfig.node } : {};
     this._assert = config.consoleAssert ? true : false;
     this._markupDebugMode = this._config.markupDebugMode;
+
+    Object.assign(this, Logging);
 
     Object.assign(this, Selectors);
     Object.assign(this, Positioning);
@@ -89,16 +92,6 @@ export default class Node {
     const tag = this._DOM.getElementTagName(element);
     // return (tag === 'OBJECT')
     return false
-  }
-
-  // 🔧 Service:
-
-  // TODO: move this function to shared (for node/paragraph/table...)
-  _end(string) {
-    const CONSOLE_CSS_END_LABEL = `background:#eee;color:#888;padding: 0 1px 0 0;`; //  font-size:smaller
-
-    this._debug._ && console.log(`%c ▲ ${string} `, CONSOLE_CSS_END_LABEL);
-    this._debug._ && console.groupEnd();
   }
 
 }

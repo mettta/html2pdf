@@ -1,3 +1,5 @@
+import * as Logging from '../../utils/logging.js';
+
 // SEE splitTextByWordsGreedyWithSpacesFilter(node) in DOM
 const WORD_JOINER = '';
 
@@ -25,6 +27,7 @@ export default class Paragraph {
     // calculate
     this._minParagraphBreakableLines = this._minParagraphLeftLines + this._minParagraphDanglingLines || 2;
 
+    Object.assign(this, Logging);
   }
 
   split(node) {
@@ -43,7 +46,7 @@ export default class Paragraph {
 
     if (this._estimateLineCount(node) < this._minParagraphBreakableLines) {
 
-      this._end('few lines - Not to break it up');
+      this.logGroupEnd('few lines - Not to break it up');
       // Not to break it up
       return []
     }
@@ -51,7 +54,7 @@ export default class Paragraph {
     if (this._node.isSelectorMatching(node, this._selector.split)) {
       // * This node has already been processed and has lines and groups of lines inside it,
 
-      this._end(this._selector.split);
+      this.logGroupEnd(this._selector.split);
       // * so we just return those child elements:
       return this._DOM.getChildren(node);
     }
@@ -158,7 +161,7 @@ export default class Paragraph {
           groupedPartiallyLinedChildren.length, '<', this._minParagraphBreakableLines
         );
 
-      this._end('NOT _splitComplexTextBlockIntoLines');
+      this.logGroupEnd('NOT _splitComplexTextBlockIntoLines');
       // Not to break it up
       return []
     }
@@ -207,7 +210,7 @@ export default class Paragraph {
       }
     );
 
-    this._end('OK _splitComplexTextBlockIntoLines');
+    this.logGroupEnd('OK _splitComplexTextBlockIntoLines');
 
     this._DOM.setAttribute(node, this._selector.split);
 
@@ -221,19 +224,19 @@ export default class Paragraph {
 
     // *** over-checking
     if (this._node.isNoBreak(splittedItem)) {
-      this._end('isNoBreak');
+      this.logGroupEnd('isNoBreak');
       return splittedItem
     }
 
     // * TEXT NODE
     if (this._node.isWrappedTextNode(splittedItem)) {
       const newLines =  this._breakWrappedTextNodeIntoLines(splittedItem);
-      this._end('TextNode newLines');
+      this.logGroupEnd('TextNode newLines');
       return newLines
     }
 
     // * INLINE NODE
-    this._end('(recursive _breakItIntoLines)');
+    this.logGroupEnd('(recursive _breakItIntoLines)');
     return this._processNestedInlineElements(splittedItem);
   }
 
@@ -252,7 +255,7 @@ export default class Paragraph {
     });
     this._DOM.insertInsteadOf(node, ...parts);
 
-    this._end('Nested Inline parts');
+    this.logGroupEnd('Nested Inline parts');
     return parts;
   }
 
@@ -422,13 +425,5 @@ export default class Paragraph {
       }, [0]
     );
     return newLineStartNumbers
-  }
-
-  // ***
-
-  _end(string) {
-    const CONSOLE_CSS_END_LABEL = `background:#eee;color:#888;padding: 0 1px 0 0;`; //  font-size:smaller
-    this._debug._ && console.log(`%c ▲ ${string} `, CONSOLE_CSS_END_LABEL);
-    this._debug._ && console.groupEnd();
   }
 }
