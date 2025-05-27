@@ -6,7 +6,7 @@
 // // import splitArrayBySplitFlag from './splitArrayBySplitFlag.js';
 
 // } else if (this._node.isWrappedTextNode(node)) {
-//   this._debugMode && this._debugToggler._getProcessedChildren && console.info(...consoleMark,
+//   console.info(...consoleMark,
 //     '💚 TextNode', node);
 //   // TODO: Compare performance of _splitComplexTextBlockIntoLines and _splitTextNode!
 //   // temporarily use the less productive function.
@@ -14,7 +14,7 @@
 //   // children = this._splitTextNode(node, firstPageBottom, fullPageHeight) || [];
 
 // TODO split text with BR
-// TODO split text with A (long, splitted) etc.
+// TODO split text with A (long, split) etc.
 
 _splitTextNode(node, pageBottom, fullPageHeight) {
 
@@ -54,7 +54,7 @@ _splitTextNode(node, pageBottom, fullPageHeight) {
     splittedNode,
     nodeWords,
     nodeWordItems,
-  } = this._node.prepareSplittedNode(node);
+  } = ___prepareSplittedNode(node);
 
   // CALCULATE exact split IDs
   const exactSplitters = approximateSplitters.map(
@@ -90,4 +90,28 @@ _splitTextNode(node, pageBottom, fullPageHeight) {
   // последняя единственная строка - как проверять?
   // смотреть, если эта НОДА - единственный или последний потомок своего родителя
 
+};
+
+// backup from Node
+
+// TODO make Obj with offsetTop and use it later
+function ___prepareSplittedNode(node) {
+  const splittedNode = node;
+  const nodeWords = this.splitTextByWordsGreedy(node);
+
+  const nodeWordItems = nodeWords.map((item) => {
+    const span = this._DOM.createElement('span');
+    this._DOM.setInnerHTML(span, item + ' ');
+    return span;
+  })
+
+  const testNode = this.createTestNodeFrom(node);
+  this._DOM.insertAtEnd(testNode, ...nodeWordItems);
+  this._DOM.insertAtEnd(node, testNode);
+
+  return {
+    splittedNode,
+    nodeWords,
+    nodeWordItems,
+  }
 }
