@@ -159,13 +159,13 @@ export function getMaxWidth(node) {
 /**
  * @this {Node}
  */
-export function getEmptyNodeHeight(node, margins = true) {
+export function getEmptyNodeHeight(node, inner = '', margins = true) {
+  // An inner is expected for elements with a specific structure,
+  // e.g. “<tr><td></td></td></tr>” for a table.
   const wrapper = this.create();
-  margins && this._DOM.setStyles(wrapper, {padding: '0.1px'});
+  margins && this._DOM.setStyles(wrapper, { overflow: 'auto' });
   const clone = this._DOM.cloneNodeWrapper(node);
-  if (this._DOM.getElementTagName(node) === 'TABLE') {
-    this._DOM.setInnerHTML(clone, '<tr><td></td></tr>');
-  }
+  this._DOM.setInnerHTML(clone, inner);
   this._DOM.insertAtEnd(wrapper, clone);
   this._DOM.insertBefore(node, wrapper);
   const wrapperHeight = this._DOM.getElementOffsetHeight(wrapper);

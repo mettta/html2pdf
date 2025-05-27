@@ -59,7 +59,7 @@ export default class Pages {
     // # can be a single row with long content
     this._minLeftRows = 1; // ! min 1!
     this._minDanglingRows = 1;  // ! min 1!
-    this._minBreakableRows = this._minLeftRows + this._minDanglingRows;
+    this._minBreakableRows = 1; // this._minLeftRows + this._minDanglingRows;
     // Code:
     this._minPreFirstBlockLines = 3;
     this._minPreLastBlockLines = 3;
