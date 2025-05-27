@@ -860,31 +860,14 @@ export default class Pages {
         'currentBlockBottom > newPageBottom', currentBlockBottom, '>', newPageBottom
       );
 
-      // TODO #fewLines
-      // // see if this node is worth paying attention to, based on its height
-      // // TODO: need to rearrange the order of the condition checks
-      // if (this._DOM.getElementOffsetHeight(currentElement) + 2 < this._minimumBreakableHeight) {
-      //   this._debug._parseNode && console.log(
-      //     'this._DOM.getElementOffsetHeight(currentElement) + 2 < this._minimumBreakableHeight',
-      //     this._DOM.getElementOffsetHeight(currentElement),
-      //   );
-
-      //   // todo #fewLines
-      //   // ! add 2 compensation pixels, because when converting millimeters to pixels,
-      //   // ! there's a rounding off, and with a rough calculation (like now)
-      //   // ! and the rounding of 1 line will be rougher than 4 -->
-      //   // ! we will get a smaller number than the actual 4 lines, at least by a 2 pixel.
-      //   // todo #mm-px convert mm to px before all calculations and rendering
-      //   // console.log('??????????????????????????? \n getElementHeight(currentElement) <= this._minimumBreakableHeight',
-      //   // this._DOM.getElementOffsetHeight(currentElement),
-      //   //  '<',
-      //   //  this._minimumBreakableHeight,
-      //   //   currentElement)
-      //   this._registerPageStart(currentElement, true);
-      //   this._debug._parseNode && console.log('%c END _parseNode #fewLines', CONSOLE_CSS_END_LABEL);
-      //   this._debug._parseNode && console.groupEnd();
-      //   return
-      // }
+      // TODO TEST ME: #fewLines
+      if (this._DOM.getElementOffsetHeight(currentElement) < this._minimumBreakableHeight) {
+        this._registerPageStart(currentElement, true);
+        this._node.markProcessed(currentElement, `starts new page, #fewLines`);
+        this._debug._parseNode && console.log('%c END _parseNode #fewLines', CONSOLE_CSS_END_LABEL);
+        this._debug._parseNode && console.groupEnd();
+        return
+      }
 
       // otherwise try to break it and loop the children:
       const children = this._node.getSplitChildren(currentElement, newPageBottom, this._referenceHeight);
