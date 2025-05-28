@@ -438,7 +438,7 @@ export default class Table {
         // const tdChildren = this._node.getPreparedChildren(td);
         const tdChildren = this._node.getSplitChildren(td, rowFirstPartHeight, rowFullPageHeight, splittingRow);
         this._debug._ && console.groupCollapsed(`(••) Split TD.${ind} in ROW.${splittingRowIndex}`);
-        const tdInternalSplitters = this._node.getSplitPoint({
+        const tdInternalSplitters = this._node.getSplitPoints({
           rootNode: td,
           children: tdChildren,
           firstPartHeight: rowFullPageHeight,
