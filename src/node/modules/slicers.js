@@ -1,30 +1,24 @@
+// 🔪
+
 /**
+ * High-level wrapper to slice content into parts based on height.
  * @this {Node}
  */
 export function sliceNodeContent({ rootNode, firstPartHeight, fullPageHeight, root }) {
   const tdChildren = this.getSplitChildren(rootNode, firstPartHeight, fullPageHeight, root);
-  let splitPoints = getSplitPoints.call(this, {
+  const splitPoints = getSplitPoints.call(this, {
     rootNode: rootNode,
     children: tdChildren,
     firstPartHeight,
     fullPageHeight,
   });
 
-  const shouldSkipFirst = splitPoints.length && splitPoints[0] === null;
-  if (shouldSkipFirst) {
-    splitPoints = getSplitPoints.call(this, {
-      rootNode: rootNode,
-      children: tdChildren,
-      firstPartHeight: fullPageHeight,
-      fullPageHeight,
-    });
-  }
-
-  const contentSlices = _splitContentIntoParts.call(this, {
+  const contentSlices = sliceNodeContentBySplitPoints.call(this, {
     rootNode: rootNode,
     splitPoints,
   });
 
+  console.log('🍇', {contentSlices})
   return contentSlices;
 }
 
@@ -233,6 +227,10 @@ export function getSplitPoints({
                 currentElement,
                 `height: ${currentElementHeight}`
               );
+              if (!points.length && currentElement === children[0]) {
+                console.warn('points.push(null) 1');
+                points.push(null);
+              }
               _scaleElementToFitHeight.call(this, currentElement, room)
               if (nextElement) { registerPoint(nextElement) }
             } else {
@@ -264,6 +262,10 @@ export function getSplitPoints({
               currentElement,
               `height: ${currentElementHeight}`
             );
+            console.warn('points.push(null) 2');
+            if (!points.length && currentElement === children[0]) {
+                points.push(null);
+            }
             _scaleElementToFitHeight.call(this, currentElement, fullPageHeight)
             if (nextElement) { registerPoint(nextElement) }
           } else {
@@ -316,23 +318,13 @@ export function getSplitPoints({
   return points
 }
 
-// 🔒 private
-
 /**
+ * Split rootNode content based on calculated split points.
  * @this {Node}
  */
-function _splitContentIntoParts({ rootNode, splitPoints }) {
+export function sliceNodeContentBySplitPoints({ rootNode, splitPoints }) {
   const allChildren = [...rootNode.childNodes];
   const parts = [];
-  // let lastIndex = 0;
-
-  // const appendPart = (startIdx, endIdx) => {
-  //   const wrapper = this.createNeutral();
-  //   for (let i = startIdx; i < endIdx; i++) {
-  //     wrapper.appendChild(allChildren[i].cloneNode(true));
-  //   }
-  //   parts.push(wrapper);
-  // };
 
   const indexes = splitPoints
     .map(point => allChildren.indexOf(point))
@@ -342,13 +334,9 @@ function _splitContentIntoParts({ rootNode, splitPoints }) {
   let startIdx = 0;
 
   for (let i = 0; i <= indexes.length; i++) {
-    // const start = lastIndex;
-    // const end = indexes[i] ?? allChildren.length;
-    // appendPart(start, end);
-    // lastIndex = end;
 
     const endIdx = indexes[i] ?? allChildren.length;
-    const wrapper = this.createNeutral();
+    const wrapper = this.createNeutralBlock();
 
     for (let j = startIdx; j < endIdx; j++) {
       const clonedNode = allChildren[j].cloneNode(true);
@@ -364,6 +352,8 @@ function _splitContentIntoParts({ rootNode, splitPoints }) {
 
   return parts;
 }
+
+// 🔒 private
 
 /**
  * @this {Node}

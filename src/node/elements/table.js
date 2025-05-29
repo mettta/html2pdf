@@ -506,11 +506,9 @@ export default class Table {
       // });
 
       const theTdWithContentArray = [...splittingRowTDs].map(td => {
-        return this._node.sliceNodeContent({
+        return this._node.sliceNodeContentBySplitPoints({
           rootNode: td,
-          firstPartHeight: rowFirstPartHeight,
-          fullPageHeight: rowFullPageHeight,
-          root: splittingRow
+          splitPoints,
         });
       });
 
