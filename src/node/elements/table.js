@@ -234,20 +234,20 @@ export default class Table {
           },
         );
 
-        const theNewRows = this._splitTableRow(
+        const newRows = this._splitTableRow(
           rowIndex,
           currentRow,
           rowFirstPartHeight,
           rowFullPageHeight,
         );
-        this._debug._ && console.log('%c🟣 theNewRows \n', 'color:blueviolet; font-weight:bold', theNewRows);
+        this._debug._ && console.log('%c🟣 newRows \n', 'color:blueviolet; font-weight:bold', newRows);
 
-        if (theNewRows.length) {
+        if (newRows.length) {
 
-          this._debug._ && console.log('🟣 currentRow', currentRow, '\n💟 theNewRows.length', theNewRows.length);
+          this._debug._ && console.log('🟣 currentRow', currentRow, '\n💟 newRows.length', newRows.length);
 
-          this._replaceRowInDOM(currentRow, theNewRows);
-          this._updateCurrentTableEntriesAfterSplit(rowIndex, theNewRows);
+          this._replaceRowInDOM(currentRow, newRows);
+          this._updateCurrentTableEntriesAfterSplit(rowIndex, newRows);
           this._updateCurrentTableDistributedRows();
 
           this._debug._ && console.log('💟 old rowIndex', rowIndex);
@@ -394,69 +394,65 @@ export default class Table {
     //* The splitting row and each clone gets the flag:
     this._node.setFlagNoBreak(splittingRow);
 
-    const splittingRowTDs = this._DOM.getChildren(splittingRow);
+    const originalTDs = [...this._DOM.getChildren(splittingRow)];
 
-    let innerTDSplitterArrayOfArray = [...splittingRowTDs]
-    .map((td, ind) => {
-      this._debug._ && console.groupCollapsed(
-        `(•) Split TD.${ind} in ROW.${splittingRowIndex}`
-      );
+    let splitPointsPerTD = originalTDs.map((td, ind) => {
+      this._debug._ && console.groupCollapsed(`(•) Split TD.${ind} in ROW.${splittingRowIndex}`);
 
-      // FIXME
-      // const tdChildren = this._node.getPreparedChildren(td);
+      // 🔁 potential recursion because of getSplitChildren()
+      // TODO: test complex nested elements
       const tdChildren = this._node.getSplitChildren(td, rowFirstPartHeight, rowFullPageHeight, splittingRow);
 
-      const tdInternalSplitters = this._node.getSplitPoints({
+      const tdContentSplitPoints = this._node.getSplitPoints({
         rootNode: td,
         children: tdChildren,
         firstPartHeight: rowFirstPartHeight,
         fullPageHeight: rowFullPageHeight,
       });
 
-      this._debug._ && console.log(`(•) return tdInternalSplitters for ROW.${splittingRowIndex} / TD#${ind}`, tdInternalSplitters);
+      this._debug._ && console.log(`(•) return tdContentSplitPoints for ROW.${splittingRowIndex} / TD#${ind}`, tdContentSplitPoints);
 
-      this._debug._ && console.groupEnd(
-        `(•) Split TD.${ind} in ROW.${splittingRowIndex}`
-      );
+      this._debug._ && console.groupEnd(`(•) Split TD.${ind} in ROW.${splittingRowIndex}`);
 
-      return tdInternalSplitters
+      return tdContentSplitPoints
     });
 
     this._debug._ && console.log(
-      '🟣🟣🟣 \n innerTDSplitterArrayOfArray',
-      innerTDSplitterArrayOfArray
+      '🟣🟣🟣 \n splitPointsPerTD',
+      splitPointsPerTD
     );
 
-    const shouldFirstPartBeSkipped = innerTDSplitterArrayOfArray.some(obj => {
+    // shouldFirstPartBeSkipped?
+    const isFirstPartEmptyInAnyTD = splitPointsPerTD.some(obj => {
       return (obj.length && obj[0] === null)
     });
 
-    if(shouldFirstPartBeSkipped) {
-      innerTDSplitterArrayOfArray = [...splittingRowTDs]
+    if(isFirstPartEmptyInAnyTD) {
+      splitPointsPerTD = [...originalTDs]
       .map((td, ind) => {
         // FIXME
         // const tdChildren = this._node.getPreparedChildren(td);
         const tdChildren = this._node.getSplitChildren(td, rowFirstPartHeight, rowFullPageHeight, splittingRow);
         this._debug._ && console.groupCollapsed(`(••) Split TD.${ind} in ROW.${splittingRowIndex}`);
-        const tdInternalSplitters = this._node.getSplitPoints({
+        const tdContentSplitPoints = this._node.getSplitPoints({
           rootNode: td,
           children: tdChildren,
           firstPartHeight: rowFullPageHeight,
           fullPageHeight: rowFullPageHeight,
         });
-        this._debug._ && console.log(`(••) return tdInternalSplitters for ROW.${splittingRowIndex} / TD#${ind}`, tdInternalSplitters);
+        this._debug._ && console.log(`(••) return tdContentSplitPoints for ROW.${splittingRowIndex} / TD#${ind}`, tdContentSplitPoints);
         this._debug._ && console.groupEnd(`(••) Split TD.${ind} in ROW.${splittingRowIndex}`);
-        return tdInternalSplitters
+        return tdContentSplitPoints
       });
     }
 
-    // добавить в tdInternalSplitters нулевой элемент
+    // добавить в tdContentSplitPoints нулевой элемент
     // но также считать "первый пустой кусок"
 
     this._debug._ && console.log(
       '🟣🟣🟣',
-      '\n innerTDSplitterArrayOfArray(*)',
-      innerTDSplitterArrayOfArray
+      '\n splitPointsPerTD(*)',
+      splitPointsPerTD
     );
 
 
@@ -465,72 +461,45 @@ export default class Table {
 
     // Есть ли точки разбиения - будем ли мы создавать новые строки
 
-    const ifThereIsSplit = innerTDSplitterArrayOfArray.some(obj => {
+    const ifThereIsSplit = splitPointsPerTD.some(obj => {
       return obj.length
     });
     this._debug._ && console.log('🟣🟣🟢 ifThereIsSplit', ifThereIsSplit);
 
 
 
-    const theNewRows = [];
+    const newRows = [];
 
     if (ifThereIsSplit) {
 
-      // const theTdWithContentArray = innerTDSplitterArrayOfArray
-      // .map((splittersInTD, tdId) => {
-      //   const currentTD = [...splittingRowTDs][tdId];
-      //   this._debug._ && console.log('🟢 tdId / splittersInTD', tdId, splittersInTD);
-
-      //   // *  | i | startElement | endElement
-      //   // *  | 0 | undefined    | A
-      //   // *  | 1 | A            | B
-      //   // *  | 2 | B            | undefined <- last part
-
-      //   if (splittersInTD.length) {
-      //     const parts = [];
-
-      //     for (let i = 0; i <= splittersInTD.length; i++) {
-      //       const startElement = splittersInTD[i - 1]; // undefined for first part
-      //       const endElement = splittersInTD[i];       // undefined for last part
-      //       const part = this._node.cloneAndCleanOutsideRange(currentTD, startElement, endElement);
-      //       parts.push(part);
-      //     }
-
-      //     return parts;
-      //   } else {
-      //     // * arr.length === 0
-      //     // один раз полностью копируем весь TD
-
-      //     return [this._DOM.cloneNode(currentTD)] // TODO test this
-      //   }
-      // });
-
-      const theTdWithContentArray = [...splittingRowTDs].map(td => {
+      const slicedTDContentsPerTD = splitPointsPerTD
+      .map((splitPoints, index) => {
+        const td = originalTDs[index];
         return this._node.sliceNodeContentBySplitPoints({
           rootNode: td,
           splitPoints,
         });
       });
 
-      this._debug._ && console.log('🟣 theTdWithContentArray', theTdWithContentArray);
+      this._debug._ && console.log('🟣 slicedTDContentsPerTD', slicedTDContentsPerTD);
 
-      const theNewTrCount = Math.max(...theTdWithContentArray.map(arr => arr.length));
-      this._debug._ && console.log('🟣 theNewTrCount', theNewTrCount);
+      const maxSlicesPerTD = Math.max(...slicedTDContentsPerTD.map(arr => arr.length));
+      this._debug._ && console.log('🟣 maxSlicesPerTD', maxSlicesPerTD);
 
-      for (let i = 0; i < theNewTrCount; i++) {
+      for (let i = 0; i < maxSlicesPerTD; i++) {
         const rowWrapper = this._DOM.cloneNodeWrapper(splittingRow);
         this._DOM.setAttribute(rowWrapper, `.splitted_row_${splittingRowIndex}_part_${i}`);
 
-        [...splittingRowTDs].forEach(
+        [...originalTDs].forEach(
           (td, tdID) => {
-            const content = theTdWithContentArray[tdID][i];
+            const content = slicedTDContentsPerTD[tdID][i];
             const newTD = this._DOM.cloneNodeWrapper(td);
             if (content) this._DOM.insertAtEnd(newTD, content);
             this._DOM.insertAtEnd(rowWrapper, newTD);
           }
         );
 
-        theNewRows.push(rowWrapper);
+        newRows.push(rowWrapper);
       }
 
     } else {
@@ -539,7 +508,7 @@ export default class Table {
       this._debug._ && console.log('🔴 There in no Split');
     }
 
-    return theNewRows;
+    return newRows;
 
 
 
