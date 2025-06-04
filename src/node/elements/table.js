@@ -50,11 +50,7 @@ export default class Table {
     // - if null is set - the element is not created in createSignpost().
     this._signpostHeight = parseFloat(this._splitLabelHeightFromConfig) || 0;
 
-    this._minLeftRows = 1; // Minimum number of rows left on the first part
-    this._minDanglingRows = 1; // Minimum number of rows left on the last part
-    this._minBreakableRows = 1; // Minimum rows required for breaking
     // TODO move to paragraph
-    this._minBreakableLines = 4; // Minimum lines required for breaking inside a row
     this._minPartLines = 2; // Minimum lines required for a row part
 
   }
@@ -130,15 +126,7 @@ export default class Table {
       return []
     }
 
-    // * avoid < minDanglingRows rows on last page
     // ! this._currentTableDistributedRows модифицировано
-
-    // TODO
-    // * decide if the selected table will look good or if there will be very short parts:
-    // const maxSplittingId = (this._currentTableDistributedRows.length - 1) - this._minDanglingRows;
-    // if (splitsIds[splitsIds.length - 1] > maxSplittingId) {
-    //   splitsIds[splitsIds.length - 1] = maxSplittingId;
-    // }
 
     const splits = splitsIds.map((endId, index, array) => {
       const startId = index > 0 ? array[index - 1] : 0;
@@ -168,25 +156,6 @@ export default class Table {
     this.logGroupEnd(`_splitCurrentTable`);
 
     return [...splits, lastPart]
-  }
-
-  _setCurrentTableFirstSplitBottom() {
-    if (this._node.getTop(this._currentTableDistributedRows[0], this._currentTable) > this._currentTableSplitBottom) {
-      // * SPECIAL CASE: SHORT FIRST PART:
-      // * If the beginning of the first line is immediately on the second page
-      // * then even the header doesn't fit.
-      // * Go immediately to the second page, update the split bottom.
-      this._updateCurrentTableSplitBottom(
-        this._currentTableFullPartContentHeight,
-        "SPECIAL CASE: start immediately from the full height of the page"
-      );
-      this._debug._ && console.log(`The Row 0 goes to the 2nd page`);
-    } else {
-      this._updateCurrentTableSplitBottom(
-        this._currentTableFirstPartContentBottom,
-        'start with a short first part'
-      );
-    }
   }
 
   _processRow(rowIndex, splitsIds) {
@@ -277,40 +246,19 @@ export default class Table {
       } else { // isNoBreak
 
         this._debug._ && isNoBreak && console.log(
-          `%c • Row # ${rowIndex}: is noBreak`, 'color:red', currentRow,
+          `%c Row # ${rowIndex} is noBreak`, 'color:DarkOrange; font-weight:bold', currentRow,
         );
 
         if(currRowHeight > this._currentTableFullPartContentHeight) {
-          console.log('%c SUPER BIG', 'background:red;color:white', currRowHeight, '>', this._currentTableFullPartContentHeight);
+          // TODO: transform content
+          console.warn('%c SUPER BIG', 'background:red;color:white', currRowHeight, '>', this._currentTableFullPartContentHeight);
         }
 
+        splitsIds.push(rowIndex);
+        this._debug._ && console.log(`%c 📍 Row # ${rowIndex} registered as page start`, 'color:green; font-weight:bold');
 
-        // TODO проверять это ТОЛЬКО если мы не можем разбить
-        if (rowIndex >= this._minLeftRows) {
-          // * avoid < minLeftRows rows on first page
-          // *** If a table row starts in the next part,
-          // *** register the previous one as the beginning of the next part.
-          // *** In the other case, we do not register a page break,
-          // *** and the first small piece will be skipped.
-          splitsIds.push(rowIndex);
-          this._debug._ && console.log(
-            `%c • Row # ${rowIndex}: REGISTER as start, rowIndex >= ${this._minLeftRows} (_minLeftRows) `, 'color:blueviolet',
-            currentRow
-          );
-        }
-
-        this._updateCurrentTableSplitBottom(
-          this._currentTableDistributedRows[rowIndex],
-          "Row does not fit AND Row isNoBreak"
-        );
+        this._updateCurrentTableSplitBottom(this._currentTableDistributedRows[rowIndex], "Row does not fit AND Row isNoBreak");
       }
-
-
-       //? END OF trying to split long TR
-
-
-      // check if next fits
-
     }
 
     this.logGroupEnd(`Row # ${origRowIndex} (from ${origRowCount}) is checked`);
@@ -561,6 +509,25 @@ export default class Table {
   _replaceRowInDOM(row, newRows) {
     this._DOM.setAttribute(row, '.🚫_must_be_removed'); // for test, must be removed
     this._DOM.insertInsteadOf(row, ...newRows);
+  }
+
+  _setCurrentTableFirstSplitBottom() {
+    if (this._node.getTop(this._currentTableDistributedRows[0], this._currentTable) > this._currentTableSplitBottom) {
+      // * SPECIAL CASE: SHORT FIRST PART:
+      // * If the beginning of the first line is immediately on the second page
+      // * then even the header doesn't fit.
+      // * Go immediately to the second page, update the split bottom.
+      this._updateCurrentTableSplitBottom(
+        this._currentTableFullPartContentHeight,
+        "SPECIAL CASE: start immediately from the full height of the page"
+      );
+      this._debug._ && console.log(`The Row 0 goes to the 2nd page`);
+    } else {
+      this._updateCurrentTableSplitBottom(
+        this._currentTableFirstPartContentBottom,
+        'start with a short first part'
+      );
+    }
   }
 
   _updateCurrentTableSplitBottom(elementOrValue, message = 'unknown case') {
