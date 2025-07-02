@@ -1,1 +1,15 @@
-License TBD
+Copyright © 2021–2025 Stanislav Pankevich, Maryna Balioura
+
+This software is dual-licensed under the following terms:
+
+- Licensed under the Apache License, Version 2.0 **when used within the StrictDoc project**:
+  https://github.com/strictdoc-project/strictdoc
+
+- **All other use cases** — including but not limited to commercial use outside the StrictDoc ecosystem — are subject to a separate license (To Be Determined).
+
+For licensing inquiries outside the scope of StrictDoc, please contact:
+
+- Maryna Balioura: mettta@gmail.com
+- Stanislav Pankevich: s.pankevich@gmail.com
+
+See the LICENSE-APACHE file for the full text of the Apache License 2.0.
