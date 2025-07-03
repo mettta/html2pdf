@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Splits the selected piece of HTML into pages, prepared for printing, and provides a preview in the browser. Optional to add frontpage and footers.",
   "author": "mettta",
-  "license": "Custom: Apache-2.0 (only when used with StrictDoc); all other uses require a separate license.",
+  "license": "Apache-2.0",
   "keywords": [
     "print",
     "paginated",
