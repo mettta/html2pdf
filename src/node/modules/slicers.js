@@ -34,13 +34,36 @@ export function getSplitPoints({
 
   points = [],
 }) {
-  this._debug._ && console.group('✂️ getSplitPoints'); // Collapsed
+
+  const registerPoint = (element) => {
+
+    const point = this.findBetterPageStart(
+      element,
+      points.at(-1),
+      rootNode,
+      rootNode
+    );
+
+    // * If we try to register the first element as a new page: `point === children[0]`,
+    // * it is a something big that does not fit in first part.
+    if (!points.length && point === children[0]) {
+      this._debug._ && console.log('%c point === children[0]', 'color:red');
+      points.push(null)
+    } else {
+      points.push(point)
+    }
+
+    // TODO: Perhaps 👆 `point === children[0]` means 'multiple shell'-case.
+    // ? And we tried to make the break deeper, but findBetterPageStart brought us back to the top.
+    // ? Although findBetterPageStart can handle such situations, we should test it more thoroughly.
+  }
+
+  this._debug._ && console.group('🧶 getSplitPoints'); // Collapsed
   this._debug._ && console.log('points.length', points.length);
 
   const _rootComputedStyle = rootComputedStyle
     ? rootComputedStyle
     : this._DOM.getComputedStyle(rootNode);
-  const _firstStartPoint = children[0]; // FIXME
 
   // * (1)
   // * Need to make the getTop work with root = rootNode.
@@ -54,32 +77,6 @@ export function getSplitPoints({
   // * (2)
   // * We need to take row tops from top to bottom, so we need a vertical alignment.
   _setInitStyle.call(this, true, rootNode, _rootComputedStyle);
-
-  // console.log('_rootComputedStyle', _rootComputedStyle);
-  console.log('children[0]', children[0]);
-
-  const registerPoint = (element) => {
-    // !points.length && points.push(children[0])
-    const point = this.findBetterPageStart(
-      element,
-      points.at(-1),
-      rootNode,
-      rootNode
-    );
-
-    // if point === children[0]
-    // it is a something big that does not fit in first part
-    if (!points.length && point === _firstStartPoint) {
-      this._debug._ && console.log('%c point === children[0]', 'color:red');
-      points.push(null)
-    }
-
-    // if (!points.length) {
-    //   points.push(_firstStartPoint)
-    // }
-
-    points.push(point)
-  }
 
   // ⚠️ Normalizing offsetTop relative to TD.
   //
@@ -101,11 +98,15 @@ export function getSplitPoints({
 
   const rootPaddingTop = parseFloat(_rootComputedStyle.paddingTop) || 0;
 
+  this._debug._ && console.groupCollapsed(`walking through ${children.length} children`);
   for (let i = 0; i < children.length; i++) {
 
-    const previousElement = children[i - 1];
     const currentElement = children[i];
+    const previousElement = children[i - 1];
     const nextElement = children[i + 1];
+
+    this._debug._ && console.log('🍎', {currentElement, previousElement, nextElement});
+
     const nextElementTop = nextElement
       ? this.getTop(nextElement, rootNode) - rootPaddingTop // ⚠️ See comment above about normalization.
       : undefined;
@@ -125,92 +126,66 @@ export function getSplitPoints({
       // TODO #ForcedPageBreak
       // TODO MAKE IT VERY BIG
       this._debug._ && console.warn(
-        currentElement, '💟 is isForcedPageBreak'
+        '🍎', [currentElement], 'isForcedPageBreak'
       );
     }
 
+    if (nextElementTop <= floater) {
+      // * CurrentElement does fit in the remaining space on the page.
 
+      this._debug._ && console.log(`🍎 current fits: (next top) ${nextElementTop} <= ${floater} (floater)`, [currentElement]);
 
-    // TODO:
-    // nextElementTop?
-    // nextElement?
-
-    if (nextElementTop <= floater) { // -- current fits
-
-
-      // ????????????????????????????
-      // if (this.isNoHanging(currentElement)) { // TODO like in pages
-      //   // -- current fits but it can't be the last
-      //   this._debug._ && console.log('💟💟 currentElement _isNoHanging');
-      //   registerPoint(currentElement); // ????????????
-      // }
-
-      console.log('🍎 current fits (by next top)', nextElementTop, '<=', floater);
-
-
-
-      // go to next index
-    } else { // (nextElementTop > floater) --> currentElement ?
-
-      console.log('🍎 current does not fit (by next top)', nextElementTop, '>', floater);
+      // * go to next index
+    } else { // *** (nextElementTop > floater) --> currentElement ?
+      // * Next element will definitely be on the next page.
+      // * And the CurrentElement? It's not clear yet. Let's check its bottom.
 
       if (this.isSVG(currentElement) || this.isIMG(currentElement)) {
         // TODO needs testing
         this._debug._ && console.log('%cIMAGE 💟💟', 'color:red;text-weight:bold')
       }
 
-
       const currentElementBottom = this.getBottomWithMargin(currentElement, rootNode) - rootPaddingTop; // ⚠️ See comment above about normalization.
 
-      this._debug._ && console.log(
-        '💟 nextElementTop > floater 💟',
-        '\n currentElement', currentElement,
-        '\n currentElementBottom', currentElementBottom,
-        '\n floater', floater
-      );
+      this._debug._ && console.log(`🍎 current does not fit: (next top) ${nextElementTop} > ${floater} (floater)`, [currentElement]);
+      this._debug._ && console.log(`🍎 ? (curr bottom) ${currentElementBottom} // ${floater} (floater)`, [currentElement]);
 
-      // IF currentElement does fit
-      // in the remaining space on the page,
       if (currentElementBottom <= floater) {
+        // * CurrentElement does fit in the remaining space on the page.
 
-        this._debug._ && console.log('💟💟 currentElementBottom <= floater 💟');
+        this._debug._ && console.log(`🍎 (curr bottom) ${currentElementBottom} <= ${floater} (floater)`, [currentElement]);
 
-        // ** add nextElement check (undefined as end)
         if (nextElement) {
-          this._debug._ && console.log('💟💟💟 register nextElement 💟');
-          registerPoint(currentElement);
-        } // else - this is the end of element list
+          // ** the nextElement is found
+
+          // TODO like in pages?
+          // if (this.isNoHanging(currentElement)) {
+          //   // -- current fits but it can't be the last
+          //   this._debug._ && console.log('💟💟 currentElement _isNoHanging');
+          //   registerPoint(currentElement); // ????????????
+          // }
+
+          this._debug._ && console.log('🍎 register nextElement as Point:', [nextElement]);
+          registerPoint(nextElement);
+        } else {
+          // ** No nextElement - this is the end of element list.
+          this._debug._ && console.log('🍎 this is the end of element list ///');
+
+          // TODO: move this case up to `if (nextElementTop <= floater)`
+        }
 
       } else {
+        // * CurrentElement does NOT fit in the remaining space on the page.
+        this._debug._ && console.log(`🍎 current does NOT fit (curr bottom) ${currentElementBottom} > ${floater} (floater)`, [currentElement]);
+        this._debug._ && console.log(`🍎 try to split it`);
 
-        console.log('🍎 current does not fit (by own bottom)');
-
-        // currentElementBottom > floater
-        // try to split 🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎
-        this._debug._ && console.log(
-          '💟💟💟 currentElementBottom > floater,\ntry to split 💟',
-          currentElement
-        );
-
-
-
-        // // TODO TEST ME: #fewLines & PAGES
-        // if (this._DOM.getElementOffsetHeight(currentElement) < this._minimumBreakableHeight) {
-        //   this._registerPageStart(currentElement, true);
-        //   this.markProcessed(currentElement, `starts new page, #fewLines`);
-        //   this._debugMode && this._debugToggler._parseNode && console.log('%c END _parseNode #fewLines', CONSOLE_CSS_END_LABEL);
-        //   this._debugMode && this._debugToggler._parseNode && console.groupEnd();
-        //   return
-        // }
-
-        console.log('🍎 try to split)');
+        // * Try to split it.
 
         let localPoints = [];
 
+        // TODO: The code below requires further refinement.
+
         const currentElementChildren = this.getSplitChildren(currentElement, firstPartHeight, fullPageHeight, rootNode);
-
-
-
 
         // * Parse children:
         if (currentElementChildren.length) {
@@ -240,7 +215,7 @@ export function getSplitPoints({
                 (localPoints.length === 1 && localPoints[0] === null)
               );
 
-            console.log('🍎 room)', room);
+            this._debug._ && console.log('🍎 room)', room);
 
             if (isUnbreakableOversized) {
               this._debug._ && console.warn(
@@ -266,7 +241,7 @@ export function getSplitPoints({
         } else {
 
           // 🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎
-          console.log('🍎 ???)');
+          this._debug._ && console.log('🍎 ???)');
 
           // FIXME: брать для масштабирования первую часть (она у таблиц больше!) или "полную страницу"?
 
@@ -331,6 +306,7 @@ export function getSplitPoints({
 
     }
   }
+  this._debug._ && console.groupEnd(`walking through ${children.length} children`);
 
   // *** need to revert back to the original positioning & vertical align of the rootNode:
   _setInitStyle.call(this, false, rootNode, rootComputedStyle);
