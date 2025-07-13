@@ -467,7 +467,7 @@ export default class Table {
 
     // * Calculate table wrapper (empty table element) height
     // * to calculate the available space for table content
-    const tableWrapperHeight = this._node.getEmptyNodeHeight(this._currentTable, '<tr><td></td></tr>');
+    const tableWrapperHeight = this._node.getEmptyNodeHeight(this._currentTable); // '<tr><td></td></tr>'
 
     // * getTopWithMargin vs getTop
     // * The margin must be taken into account,
