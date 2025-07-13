@@ -84,8 +84,8 @@ export default class Table {
   _prepareTableForSplitting() {
     this._lockCurrentTableWidths();
     this._collectCurrentTableEntries();
-    this._collectCurrentTableMetrics();
     this._updateCurrentTableDistributedRows();
+    this._collectCurrentTableMetrics();
   }
 
   // 🪓 The basic logic of splitting:
