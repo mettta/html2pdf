@@ -477,7 +477,8 @@ export default class Table {
 
     // const tableHeight = this._DOM.getElementOffsetHeight(this._currentTable);
     const tableCaptionHeight = this._DOM.getElementOffsetHeight(this._currentTableEntries.caption) || 0;
-    const tableTheadHeight = this._DOM.getElementOffsetHeight(this._currentTableEntries.thead) || 0;
+    // const tableTheadHeight = this._DOM.getElementOffsetHeight(this._currentTableEntries.thead) || 0;
+    const tableTheadHeight = this._DOM.getElementOffsetTop(this._currentTableDistributedRows[0], this._currentTable) - tableCaptionHeight || 0;
     const tableTfootHeight = this._DOM.getElementOffsetHeight(this._currentTableEntries.tfoot) || 0;
 
     // *** Convert NULL/Undefined to 0.
