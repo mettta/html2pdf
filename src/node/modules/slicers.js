@@ -1,4 +1,15 @@
-// 🔪
+// 🔪 slicers
+
+/**
+ * Check if debug mode is enabled for this module.
+ * Usage: Call `_isDebug(this)` inside any function of this file.
+ *
+ * @param {Node} node - The Node instance, passed as `this`.
+ * @returns {boolean} True if debug mode is enabled for this module.
+ */
+function _isDebug(node) {
+    return node._config.debugMode && node._debug.slicers;
+}
 
 /**
  * High-level wrapper to slice content into parts based on height.
@@ -18,7 +29,7 @@ export function sliceNodeContent({ rootNode, firstPartHeight, fullPageHeight, ro
     splitPoints,
   });
 
-  console.log('🍇', {contentSlices})
+  _isDebug(this) && console.log('🍇', {contentSlices})
   return contentSlices;
 }
 
@@ -47,7 +58,7 @@ export function getSplitPoints({
     // * If we try to register the first element as a new page: `point === children[0]`,
     // * it is a something big that does not fit in first part.
     if (!points.length && point === children[0]) {
-      this._debug._ && console.log('%c point === children[0]', 'color:red');
+      _isDebug(this) && console.log('%c point === children[0]', 'color:red');
       points.push(null)
     } else {
       points.push(point)
@@ -58,8 +69,8 @@ export function getSplitPoints({
     // ? Although findBetterPageStart can handle such situations, we should test it more thoroughly.
   }
 
-  this._debug._ && console.group('🧶 getSplitPoints'); // Collapsed
-  this._debug._ && console.log('points.length', points.length);
+  _isDebug(this) && console.group('🧶 getSplitPoints'); // Collapsed
+  _isDebug(this) && console.log('points.length', points.length);
 
   const _rootComputedStyle = rootComputedStyle
     ? rootComputedStyle
@@ -98,14 +109,14 @@ export function getSplitPoints({
 
   const rootPaddingTop = parseFloat(_rootComputedStyle.paddingTop) || 0;
 
-  this._debug._ && console.groupCollapsed(`walking through ${children.length} children`);
+  _isDebug(this) && console.groupCollapsed(`walking through ${children.length} children`);
   for (let i = 0; i < children.length; i++) {
 
     const currentElement = children[i];
     const previousElement = children[i - 1];
     const nextElement = children[i + 1];
 
-    this._debug._ && console.log('🍎', {currentElement, previousElement, nextElement});
+    _isDebug(this) && console.log('🍎', {currentElement, previousElement, nextElement});
 
     const nextElementTop = nextElement
       ? this.getTop(nextElement, rootNode) - rootPaddingTop // ⚠️ See comment above about normalization.
@@ -125,7 +136,7 @@ export function getSplitPoints({
 
       // TODO #ForcedPageBreak
       // TODO MAKE IT VERY BIG
-      this._debug._ && console.warn(
+      _isDebug(this) && console.warn(
         '🍎', [currentElement], 'isForcedPageBreak'
       );
     }
@@ -133,7 +144,7 @@ export function getSplitPoints({
     if (nextElementTop <= floater) {
       // * CurrentElement does fit in the remaining space on the page.
 
-      this._debug._ && console.log(`🍎 current fits: (next top) ${nextElementTop} <= ${floater} (floater)`, [currentElement]);
+      _isDebug(this) && console.log(`🍎 current fits: (next top) ${nextElementTop} <= ${floater} (floater)`, [currentElement]);
 
       // * go to next index
     } else { // *** (nextElementTop > floater) --> currentElement ?
@@ -142,18 +153,18 @@ export function getSplitPoints({
 
       if (this.isSVG(currentElement) || this.isIMG(currentElement)) {
         // TODO needs testing
-        this._debug._ && console.log('%cIMAGE 💟💟', 'color:red;text-weight:bold')
+        _isDebug(this) && console.log('%cIMAGE 💟💟', 'color:red;text-weight:bold')
       }
 
       const currentElementBottom = this.getBottomWithMargin(currentElement, rootNode) - rootPaddingTop; // ⚠️ See comment above about normalization.
 
-      this._debug._ && console.log(`🍎 current does not fit: (next top) ${nextElementTop} > ${floater} (floater)`, [currentElement]);
-      this._debug._ && console.log(`🍎 ? (curr bottom) ${currentElementBottom} // ${floater} (floater)`, [currentElement]);
+      _isDebug(this) && console.log(`🍎 current does not fit: (next top) ${nextElementTop} > ${floater} (floater)`, [currentElement]);
+      _isDebug(this) && console.log(`🍎 ? (curr bottom) ${currentElementBottom} // ${floater} (floater)`, [currentElement]);
 
       if (currentElementBottom <= floater) {
         // * CurrentElement does fit in the remaining space on the page.
 
-        this._debug._ && console.log(`🍎 (curr bottom) ${currentElementBottom} <= ${floater} (floater)`, [currentElement]);
+        _isDebug(this) && console.log(`🍎 (curr bottom) ${currentElementBottom} <= ${floater} (floater)`, [currentElement]);
 
         if (nextElement) {
           // ** the nextElement is found
@@ -161,23 +172,23 @@ export function getSplitPoints({
           // TODO like in pages?
           // if (this.isNoHanging(currentElement)) {
           //   // -- current fits but it can't be the last
-          //   this._debug._ && console.log('💟💟 currentElement _isNoHanging');
+          //   _isDebug(this) && console.log('💟💟 currentElement _isNoHanging');
           //   registerPoint(currentElement); // ????????????
           // }
 
-          this._debug._ && console.log('🍎 register nextElement as Point:', [nextElement]);
+          _isDebug(this) && console.log('🍎 register nextElement as Point:', [nextElement]);
           registerPoint(nextElement);
         } else {
           // ** No nextElement - this is the end of element list.
-          this._debug._ && console.log('🍎 this is the end of element list ///');
+          _isDebug(this) && console.log('🍎 this is the end of element list ///');
 
           // TODO: move this case up to `if (nextElementTop <= floater)`
         }
 
       } else {
         // * CurrentElement does NOT fit in the remaining space on the page.
-        this._debug._ && console.log(`🍎 current does NOT fit (curr bottom) ${currentElementBottom} > ${floater} (floater)`, [currentElement]);
-        this._debug._ && console.log(`🍎 try to split it`);
+        _isDebug(this) && console.log(`🍎 current does NOT fit (curr bottom) ${currentElementBottom} > ${floater} (floater)`, [currentElement]);
+        _isDebug(this) && console.log(`🍎 try to split it`);
 
         // * Try to split it.
 
@@ -215,17 +226,17 @@ export function getSplitPoints({
                 (localPoints.length === 1 && localPoints[0] === null)
               );
 
-            this._debug._ && console.log('🍎 room)', room);
+            _isDebug(this) && console.log('🍎 room)', room);
 
             if (isUnbreakableOversized) {
-              this._debug._ && console.warn(
+              _isDebug(this) && console.warn(
                 '%c⚠️ UNSPLITTABLE OVERSIZED ELEMENT — SCALE IT',
                 'color:white; background:red; font-weight:bold;',
                 currentElement,
                 `height: ${currentElementHeight}`
               );
               if (!points.length && currentElement === children[0]) {
-                console.warn('points.push(null) 1');
+                _isDebug(this) && console.warn('⛔ points.push(null) 1');
                 points.push(null);
               }
               _scaleElementToFitHeight.call(this, currentElement, room)
@@ -241,7 +252,7 @@ export function getSplitPoints({
         } else {
 
           // 🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎
-          this._debug._ && console.log('🍎 ???)');
+          _isDebug(this) && console.log('🍎 ???)');
 
           // FIXME: брать для масштабирования первую часть (она у таблиц больше!) или "полную страницу"?
 
@@ -253,13 +264,13 @@ export function getSplitPoints({
               (localPoints.length === 1 && localPoints[0] === null)
             );
           if (isUnbreakableOversized) {
-            this._debug._ && console.warn(
+            _isDebug(this) && console.warn(
               '%c⚠️ UNSPLITTABLE OVERSIZED ELEMENT — SCALE IT',
               'color:white; background:red; font-weight:bold;',
               currentElement,
               `height: ${currentElementHeight}`
             );
-            console.warn('points.push(null) 2');
+            _isDebug(this) && console.warn('⛔ points.push(null) 2');
             if (!points.length && currentElement === children[0]) {
                 points.push(null);
             }
@@ -295,7 +306,7 @@ export function getSplitPoints({
       //   );
 
       // if (isUnbreakableOversized) {
-      //   this._debug._ && console.warn(
+      //   _isDebug(this) && console.warn(
       //     '%c⚠️ UNSPLITTABLE OVERSIZED ELEMENT — SCALE IT',
       //     'color:white; background:red; font-weight:bold;',
       //     currentElement,
@@ -306,7 +317,7 @@ export function getSplitPoints({
 
     }
   }
-  this._debug._ && console.groupEnd(`walking through ${children.length} children`);
+  _isDebug(this) && console.groupEnd(`walking through ${children.length} children`);
 
   // *** need to revert back to the original positioning & vertical align of the rootNode:
   _setInitStyle.call(this, false, rootNode, rootComputedStyle);
@@ -378,7 +389,7 @@ function _scaleElementToFitHeight(element, targetHeight) {
 
   this._DOM.wrap(element, scaler);
 
-  this._debug._ && console.warn(
+  _isDebug(this) && console.warn(
     `%c Scaled element to fit target height: ${targetHeight}px`,
     'color:orange; font-weight:bold;',
     `scale: ${scale}`,

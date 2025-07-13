@@ -1,11 +1,22 @@
-// GET PARAMS
+// 📥 getters / GET PARAMS
+
+/**
+ * Check if debug mode is enabled for this module.
+ * Usage: Call `_isDebug(this)` inside any function of this file.
+ *
+ * @param {Node} node - The Node instance, passed as `this`.
+ * @returns {boolean} True if debug mode is enabled for this module.
+ */
+function _isDebug(node) {
+    return node._config.debugMode && node._debug.getters;
+}
 
 /**
  * @this {Node}
  */
 export function getTop(element, root = null, topAcc = 0) {
   if (!element) {
-    this._debug._ && console.warn(
+    _isDebug(this) && console.warn(
       'element must be provided, but was received:', element,
       '\nThe function returned:', undefined
     );
@@ -18,7 +29,7 @@ export function getTop(element, root = null, topAcc = 0) {
   }
 
   if (!root) {
-    this._debug._ && console.warn(
+    _isDebug(this) && console.warn(
       'root must be provided, but was received:', root,
       '\nThe function returned:', undefined
     );
@@ -29,7 +40,7 @@ export function getTop(element, root = null, topAcc = 0) {
 
   // TODO element == document.body
   if (!offsetParent) {
-    this._debug._ && console.warn(
+    _isDebug(this) && console.warn(
       'Element has no offset parent.',
       '\n element:', [element],
       '\n offsetParent:', offsetParent,
@@ -52,7 +63,7 @@ export function getTop(element, root = null, topAcc = 0) {
  */
 export function getBottom(element, root = null) {
   if (!element) {
-    this._debug._ && console.warn(
+    _isDebug(this) && console.warn(
       'element must be provided, but was received:', element,
       '\nThe function returned:', undefined
     );
@@ -65,7 +76,7 @@ export function getBottom(element, root = null) {
   }
 
   if (!root) {
-    this._debug._ && console.warn(
+    _isDebug(this) && console.warn(
       'root must be provided, but was received:', root,
       '\nThe function returned:', undefined
     );
@@ -333,7 +344,7 @@ export function getTableEntries(node) {
   });
 
   if (nodeEntries.unexpected.length > 0) {
-    this._debug._ && console.warn(`something unexpected is found in the table ${node}`);
+    _isDebug(this) && console.warn(`something unexpected is found in the table ${node}`);
   }
 
   return nodeEntries;

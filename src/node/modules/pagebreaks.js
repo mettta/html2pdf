@@ -1,3 +1,16 @@
+// 🚧 pagebreaks
+
+/**
+ * Check if debug mode is enabled for this module.
+ * Usage: Call `_isDebug(this)` inside any function of this file.
+ *
+ * @param {Node} node - The Node instance, passed as `this`.
+ * @returns {boolean} True if debug mode is enabled for this module.
+ */
+function _isDebug(node) {
+    return node._config.debugMode && node._debug.pagebreaks;
+}
+
 /**
  * @this {Node}
  */
@@ -27,7 +40,7 @@ export function findBetterForcedPageStarter(element, root) {
  * @this {Node}
  */
 export function findBetterPageStart(pageStart, lastPageStart, root) {
-  this._debug._ && console.groupCollapsed('➗ findBetterPageStart');
+  _isDebug(this) && console.groupCollapsed('➗ findBetterPageStart');
 
   let interruptedWithUndefined = false;
   let interruptedWithLimit = false;
@@ -35,7 +48,7 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
   // * limited to the element from which the last registered page starts:
   const topLimit = this.getTop(lastPageStart, root);
 
-  this._debug._ && console.log(
+  _isDebug(this) && console.log(
     "Start calculations:",
     { pageStart, lastPageStart, topLimit },
   );
@@ -47,7 +60,7 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
     root
   ) || pageStart;
 
-  this._debug._ && console.log("betterCandidate:", betterCandidate,);
+  _isDebug(this) && console.log("betterCandidate:", betterCandidate,);
 
   let currentCandidate = betterCandidate;
 
@@ -59,16 +72,16 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
       root
     ); // *** returns new element, undefined or null
     if (previousCandidate === undefined) {
-      this._debug._ && console.warn('🫥 previousCandidate', previousCandidate);
+      _isDebug(this) && console.warn('🫥 previousCandidate', previousCandidate);
       interruptedWithUndefined = true;
       break;
     }
-    this._debug._ && console.log('• previousCandidate', { previousCandidate });
+    _isDebug(this) && console.log('• previousCandidate', { previousCandidate });
     if (previousCandidate) {
       currentCandidate = previousCandidate;
       continue;
     }
-    this._debug._ && console.log('• update currentCandidate', { previousCandidate });
+    _isDebug(this) && console.log('• update currentCandidate', { previousCandidate });
 
     // * ⬆ * Going up, through the first children.
     const firstChildParent = this.findFirstChildParentFromPage(
@@ -77,16 +90,16 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
       root
     ); // *** returns new element, undefined or null
     if (firstChildParent === undefined) {
-      this._debug._ && console.warn('🫥 firstChildParent', firstChildParent);
+      _isDebug(this) && console.warn('🫥 firstChildParent', firstChildParent);
       interruptedWithUndefined = true;
       break;
     }
-    this._debug._ && console.log('• firstChildParent', { firstChildParent });
+    _isDebug(this) && console.log('• firstChildParent', { firstChildParent });
     if (firstChildParent) {
       currentCandidate = firstChildParent;
       continue;
     }
-    this._debug._ && console.log('• update currentCandidate', { firstChildParent });
+    _isDebug(this) && console.log('• update currentCandidate', { firstChildParent });
 
     break;
   }
@@ -101,14 +114,14 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
 
   if (currentCandidate == lastPageStart || this.getTop(currentCandidate, root) <= topLimit) {
     interruptedWithLimit = true;
-    this._debug._ && console.log('☝️ Top page limit has been reached', betterCandidate);
+    _isDebug(this) && console.log('☝️ Top page limit has been reached', betterCandidate);
   }
 
   // TODO: needs more tests
   const prev = this._DOM.getLeftNeighbor(currentCandidate);
   if (prev == lastPageStart) {
     interruptedWithLimit = true;
-    this._debug._ && console.log('👈 Left limit has been reached (left neighbor is the last page start)', prev, betterCandidate);
+    _isDebug(this) && console.log('👈 Left limit has been reached (left neighbor is the last page start)', prev, betterCandidate);
   }
 
   //// return currentCandidate; // remove after rebase
@@ -121,7 +134,7 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
     result = pageStart;
   }
 
-  this._debug._ && console.log({
+  _isDebug(this) && console.log({
     interruptedWithUndefined,
     interruptedWithLimit,
     pageStart,
@@ -130,8 +143,8 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
     result,
   });
 
-  this._debug._ && console.log('➗ end, return:', result);
-  this._debug._ && console.groupEnd();
+  _isDebug(this) && console.log('➗ end, return:', result);
+  _isDebug(this) && console.groupEnd();
 
   return result
 }
@@ -182,7 +195,7 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
   // we don't need intermediate results,
   // (we'll want to ignore the rule for semantic break improvement).
 
-  this._debug._ && console.groupCollapsed('⬆ findFirstChildParentFromPage');
+  _isDebug(this) && console.groupCollapsed('⬆ findFirstChildParentFromPage');
 
   let firstSuitableParent = null;
   let current = element;
@@ -195,23 +208,23 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
     const isFirstChild = this._DOM.getFirstElementChild(parent) === current;
     if (!isFirstChild) {
       // First interrupt with end of nesting, with result passed to return.
-      this._debug._ && console.warn({ '!isFirstChild': parent });
+      _isDebug(this) && console.warn({ '!isFirstChild': parent });
       break;
     }
 
     if (this.isPageStartElement(parent) || this.getTop(parent, root) < topLimit) {
       // Interrupt with limit reached, with resetting the result, using interruptedByPageStart.
-      this._debug._ && console.warn('🫥 findFirstChildParentFromPage // interruptedByPageStart');
+      _isDebug(this) && console.warn('🫥 findFirstChildParentFromPage // interruptedByPageStart');
       interruptedByPageStart = true;
       break;
     }
 
-    this._debug._ && console.log({ parent });
+    _isDebug(this) && console.log({ parent });
     firstSuitableParent = parent;
     current = parent;
   }
 
-  this._debug._ && console.groupEnd('⬆ findFirstChildParentFromPage');
+  _isDebug(this) && console.groupEnd('⬆ findFirstChildParentFromPage');
   return interruptedByPageStart ? undefined : firstSuitableParent;
 }
 
@@ -241,7 +254,7 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
   // we don't need intermediate results,
   // (we'll want to ignore the rule for semantic break improvement).
 
-  this._debug._ && console.groupCollapsed('⬅ findPreviousNonHangingsFromPage');
+  _isDebug(this) && console.groupCollapsed('⬅ findPreviousNonHangingsFromPage');
 
   let suitableSibling = null;
   let current = element;
@@ -250,7 +263,7 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
   while (true) {
     const prev = this._DOM.getLeftNeighbor(current);
 
-    this._debug._ && console.log({ interruptedByPageStart, topLimit, prev, current });
+    _isDebug(this) && console.log({ interruptedByPageStart, topLimit, prev, current });
 
     if (!prev || !this.isNoHanging(prev) || prev === current) break; // * return last computed
 
@@ -265,7 +278,7 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
     current = prev;
   }
 
-  this._debug._ && console.groupEnd('⬅ findPreviousNonHangingsFromPage');
+  _isDebug(this) && console.groupEnd('⬅ findPreviousNonHangingsFromPage');
   return interruptedByPageStart ? undefined : suitableSibling;
 }
 
@@ -368,7 +381,7 @@ export function findSuitableNonHangingPageStart(element, topFloater) {
   let current = element; // * Current element being checked
   let candidate = null; // * Candidate to be returned
 
-  // this._debug._ && console.log('💠 Initial element:', current);
+  // _isDebug(this) && console.log('💠 Initial element:', current);
 
   // * === 1. Descend to find the candidate ===
   while (true) {
@@ -376,13 +389,13 @@ export function findSuitableNonHangingPageStart(element, topFloater) {
 
     // * If there are no children, stop descending
     if (!lastChild) {
-      // this._debug._ && console.log('💠 No further children, stopping descent at:', current);
+      // _isDebug(this) && console.log('💠 No further children, stopping descent at:', current);
       break;
     }
 
     // * If the last child has the isNoHanging flag, it becomes the candidate
     if (this.isNoHanging(lastChild)) {
-      // this._debug._ && console.log('💠 Found isNoHanging child:', lastChild);
+      // _isDebug(this) && console.log('💠 Found isNoHanging child:', lastChild);
       candidate = lastChild; // * Update the candidate
       break; // * Stop descending because the flag was found
     }
@@ -395,7 +408,7 @@ export function findSuitableNonHangingPageStart(element, topFloater) {
   // * and skip the wrapper search
   if (!candidate) {
     candidate = element;
-    // this._debug._ && console.log('💠 No isNoHanging element found, using initial element as candidate:', candidate);
+    // _isDebug(this) && console.log('💠 No isNoHanging element found, using initial element as candidate:', candidate);
   } else {
     // * === 2. Ascend to find the best wrapper ===
     current = candidate; // * Start moving up from the current candidate
@@ -405,31 +418,31 @@ export function findSuitableNonHangingPageStart(element, topFloater) {
 
       // * If there is no parent or we reached the initial element, stop
       if (!parent || parent === element) {
-        // this._debug._ && console.log('💠 Reached top or initial element, stopping ascent.');
+        // _isDebug(this) && console.log('💠 Reached top or initial element, stopping ascent.');
         break;
       }
 
       // * Check if the current element is the first child of its parent
       if (this._DOM.getFirstElementChild(parent) === current) {
-        // this._debug._ && console.log('💠 Parent satisfies the condition, updating candidate to:', parent);
+        // _isDebug(this) && console.log('💠 Parent satisfies the condition, updating candidate to:', parent);
         candidate = parent; // * Update the candidate to its parent
         current = parent; // * Move up to the parent
       } else {
-        // this._debug._ && console.log('💠 Parent does NOT satisfy the condition, stopping ascent.');
+        // _isDebug(this) && console.log('💠 Parent does NOT satisfy the condition, stopping ascent.');
         break; // * Stop ascending if the condition is not met
       }
     }
   }
 
-  // this._debug._ && console.log('💠 Final candidate after ascent:', candidate);
+  // _isDebug(this) && console.log('💠 Final candidate after ascent:', candidate);
 
   // * === 3. Position check ===
   if (this.getTop(candidate) > topFloater) {
-    // this._debug._ && console.log('💠 Candidate satisfies position check, returning:', candidate);
+    // _isDebug(this) && console.log('💠 Candidate satisfies position check, returning:', candidate);
     return candidate;
   }
 
-  // this._debug._ && console.log('💠 Candidate does not satisfy position check, returning null');
+  // _isDebug(this) && console.log('💠 Candidate does not satisfy position check, returning null');
   return null;
 
 }

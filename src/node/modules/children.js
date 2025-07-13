@@ -1,3 +1,15 @@
+// 🪴 work with children
+
+/**
+ * Check if debug mode is enabled for this module.
+ * Usage: Call `_isDebug(this)` inside any function of this file.
+ *
+ * @param {Node} node - The Node instance, passed as `this`.
+ * @returns {boolean} True if debug mode is enabled for this module.
+ */
+function _isDebug(node) {
+    return node._config.debugMode && node._debug.children;
+}
 
 /**
  * Returns a cleaned and normalized list of children for the given element.
@@ -22,7 +34,7 @@
  * @this {Node}
  */
 export function getPreparedChildren(element) {
-  this._debugMode && console.groupCollapsed(`getPreparedChildren of`, [element]);
+  _isDebug(this) && console.groupCollapsed(`getPreparedChildren of`, [element]);
   let children = [];
 
   // Check children:
@@ -41,7 +53,7 @@ export function getPreparedChildren(element) {
   // * _collectAndBundleInlineElements (makes ComplexTextBlock) is running extra on complex nodes
   if (this.isComplexTextBlock(element)) {
     children = [...this._DOM.getChildren(element)];
-    this._debugMode && console.info('🚸 getPreparedChildren: return children for complexTextBlock', children);
+    _isDebug(this) && console.info('🚸 getPreparedChildren: return children for complexTextBlock', children);
     // return children
 
   } else {
@@ -52,7 +64,7 @@ export function getPreparedChildren(element) {
 
           // * filter STYLE, use element.tagName
           if (this.isSTYLE(item)) {
-            this._debugMode && console.info('🚸 (getPreparedChildren) ignore STYLE', [item]);
+            _isDebug(this) && console.info('🚸 (getPreparedChildren) ignore STYLE', [item]);
             return acc;
           }
 
@@ -61,7 +73,7 @@ export function getPreparedChildren(element) {
             const textNodeWrapper = this.createTextNodeWrapper();
             this._DOM.wrap(item, textNodeWrapper);
             acc.push(textNodeWrapper);
-            this._debugMode && console.info('🚸 (getPreparedChildren) wrap and return TEXT NODE', [item]);
+            _isDebug(this) && console.info('🚸 (getPreparedChildren) wrap and return TEXT NODE', [item]);
             return acc;
           }
 
@@ -78,25 +90,25 @@ export function getPreparedChildren(element) {
               if (position === 'absolute' || position === 'fixed') {
                 // ⚠️ position: fixed/absolute elements are excluded from layout flow.
                 // They are intentionally skipped and not added to children.
-                this._debugMode && console.info('🚸 (getPreparedChildren) * absolute/fixed — skipped', [item]);
+                _isDebug(this) && console.info('🚸 (getPreparedChildren) * absolute/fixed — skipped', [item]);
                 return acc;
               } else {
                 // Likely a flowless container (e.g., display: contents).
                 // Recursively unwrap its children into the current context.
                 const ch = this.getPreparedChildren(item);
                 ch.length > 0 && acc.push(...ch);
-                this._debugMode && console.info('%c🚸 (getPreparedChildren) * no offset parent — unwrapped', 'color:green', ch, [item]);
+                _isDebug(this) && console.info('%c🚸 (getPreparedChildren) * no offset parent — unwrapped', 'color:green', ch, [item]);
               }
             } else {
 
               acc.push(item);
-              this._debugMode && console.info('🚸 (getPreparedChildren) * normal node', [item]);
+              _isDebug(this) && console.info('🚸 (getPreparedChildren) * normal node', [item]);
             }
 
             return acc;
           };
 
-          this._debugMode && console.info('%c🚸 (getPreparedChildren) IGNORE whitespace / comment ...', 'color:red', [item]);
+          _isDebug(this) && console.info('%c🚸 (getPreparedChildren) IGNORE whitespace / comment ...', 'color:red', [item]);
           return acc;
 
         }, [])
@@ -104,14 +116,15 @@ export function getPreparedChildren(element) {
     if (_isVerticalFlowDisrupted.call(this, children)) {
       // * If the vertical flow is disturbed and the elements are side by side:
       // *** bundle and return complexTextBlock
-      this._debugMode && console.info('🚸 (getPreparedChildren) isVerticalFlowDisrupted in children of', [element]);
+      _isDebug(this) && console.info('🚸 (getPreparedChildren) isVerticalFlowDisrupted in children of', [element]);
       children = _collectAndBundleInlineElements.call(this, children);
     }
 
   }
 
   this.logGroupEnd(`getPreparedChildren`);
-  this._debugMode && console.info('🚸 getPreparedChildren:', children);
+  // console.groupEnd();
+  _isDebug(this) && console.info('🚸 getPreparedChildren:', children);
   return children;
 }
 
@@ -139,21 +152,21 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
   let children = [];
 
   // if (nodeMinHeight && this.isTooSmall(node, nodeMinHeight)) {
-  //   this._debugMode && console.info('🤎 isTooSmall, return []', node);
+  //   _isDebug(this) && console.info('🤎 isTooSmall, return []', node);
   //   return children = [];
   // }
 
   if (this.isNoBreak(node)) {
     // don't break apart, thus keep an empty children array
-    this._debugMode && console.info('🧡 isNoBreak', node);
+    _isDebug(this) && console.info('🧡 isNoBreak', node);
     return children = [];
 
   } else if (this.isComplexTextBlock(node)) {
-    this._debugMode && console.info('💚 ComplexTextBlock', node);
+    _isDebug(this) && console.info('💚 ComplexTextBlock', node);
     return children = this._paragraph.split(node) || [];
 
   } else if (this.isWrappedTextNode(node)) {
-    this._debugMode && console.info('💚 TextNode', node);
+    _isDebug(this) && console.info('💚 TextNode', node);
 
     return children = this._paragraph.split(node) || [];
 
@@ -165,7 +178,7 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
   // ? so let's check it first.
   // FIXME the order of checks
   if (this.isTableLikeNode(node, nodeComputedStyle)) {
-    this._debugMode && console.info('💚 TABLE like', node);
+    _isDebug(this) && console.info('💚 TABLE like', node);
     children = this._tableLike.split(
       node,
       firstPageBottom,
@@ -175,7 +188,7 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
     ) || [];
 
   } else if (this.isTableNode(node, nodeComputedStyle)) {
-    this._debugMode && console.info('💚 TABLE', node);
+    _isDebug(this) && console.info('💚 TABLE', node);
     children = this._table.split(
       node,
       firstPageBottom,
@@ -184,7 +197,7 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
     ) || [];
 
   } else if (this.isPRE(node, nodeComputedStyle)) {
-    this._debugMode && console.info('💚 PRE', node);
+    _isDebug(this) && console.info('💚 PRE', node);
     children = this._pre.split(
       node,
       firstPageBottom,
@@ -199,7 +212,7 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
     // ***** But since the check for inline is below and real inline children don't get here,
     // ***** it is expected that the current element is either block or actually
     // ***** behaves as a block element in the flow thanks to its content.
-    this._debugMode && console.info('💜 GRID');
+    _isDebug(this) && console.info('💜 GRID');
     children = this._grid.split(
       node,
       firstPageBottom,
@@ -229,7 +242,7 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
     //     }, []);
 
   } else {
-    this._debugMode && console.info('💚 some node', [node]);
+    _isDebug(this) && console.info('💚 some node', [node]);
     children = this.getPreparedChildren(node);
   }
 

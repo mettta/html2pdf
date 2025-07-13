@@ -1,11 +1,22 @@
-// SELECTORS
+// ✅ SELECTORS
+
+/**
+ * Check if debug mode is enabled for this module.
+ * Usage: Call `_isDebug(this)` inside any function of this file.
+ *
+ * @param {Node} node - The Node instance, passed as `this`.
+ * @returns {boolean} True if debug mode is enabled for this module.
+ */
+function _isDebug(node) {
+    return node._config.debugMode && node._debug.selectors;
+}
 
 /**
  * @this {Node}
  */
 export function isSelectorMatching(element, selector) {
   if (!element || !selector) {
-    this._debug._ && console.warn('isSelectorMatching() must have 2 params',
+    _isDebug(this) && console.warn('isSelectorMatching() must have 2 params',
       '\n element: ', element,
       '\n selector: ', selector);
     return;
@@ -22,7 +33,7 @@ export function isSelectorMatching(element, selector) {
     return this._DOM.hasID(element, id);
 
   } else if (first === '[') {
-    this._debug._ && console.assert(
+    _isDebug(this) && console.assert(
       selector.at(-1) === ']', `the ${selector} selector is not OK.`
     );
     const attr = selector.substring(1, selector.length - 1);

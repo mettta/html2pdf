@@ -1,3 +1,15 @@
+// 🧭 positioning
+
+/**
+ * Check if debug mode is enabled for this module.
+ * Usage: Call `_isDebug(this)` inside any function of this file.
+ *
+ * @param {Node} node - The Node instance, passed as `this`.
+ * @returns {boolean} True if debug mode is enabled for this module.
+ */
+function _isDebug(node) {
+    return node._config.debugMode && node._debug.positioning;
+}
 
 /**
  * @this {Node}
@@ -93,8 +105,8 @@ export function isLineKept(current, next) {
   const nextTop = this._DOM.getElementOffsetTop(next);
   const delta = currentBottom - nextTop;
   const vert = delta >= 2;
-  this._debug._ && console.group('isLineKept?')
-  this._debug._ && console.log(
+  _isDebug(this) && console.group('isLineKept?')
+  _isDebug(this) && console.log(
     '\n',
     vert,
     '\n',
@@ -102,6 +114,6 @@ export function isLineKept(current, next) {
     '\n nextTop', nextTop, [next],
     '\n delta', delta,
   );
-  this._debug._ && console.groupEnd('isLineKept?')
+  _isDebug(this) && console.groupEnd('isLineKept?')
   return vert;
 }
