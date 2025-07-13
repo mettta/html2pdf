@@ -201,14 +201,14 @@ export function getLineHeight(node) {
  * @this {Node}
  *
  * Create an empty row by cloning the TR, insert it into the table,
- * add the specified number of lines to it (num),
+ * add the specified number of lines to it (lines),
  * and detect its actual height through the delta
  * of the tops of the TR following it.
  */
-export function getTableRowHeight(tr, num = 0) {
+export function getTableRowHeight(tr, lines = 0) {
   const initialTop = this._DOM.getElementOffsetTop(tr);
   const clone = this._DOM.cloneNode(tr);
-  const text = '!<br />'.repeat(num);
+  const text = '!<br />'.repeat(lines);
   [...clone.children].forEach(td => this._DOM.setInnerHTML(td, text));
   this._DOM.insertBefore(tr, clone);
   const endTop = this._DOM.getElementOffsetTop(tr);
