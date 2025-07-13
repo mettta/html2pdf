@@ -273,7 +273,6 @@ export default class Pages {
       pageStart = this._node.findBetterPageStart(
         pageStart,
         this.pages.at(-1)?.pageStart,
-        // this._contentFlow, // delete after rebase
         this._root
       )
     }
@@ -780,7 +779,6 @@ export default class Pages {
         // * If a node has its height set with styles, we handle it as a non-breaking object,
         // * and can just scale it if it doesn't fit on the page.
 
-        // got to top, delete after rebase: const currentElementTop = this._node.getTop(currentElement, this._root);
         const availableSpace = newPageBottom - currentElementTop;
         const currentElementContextualHeight = nextElementTop - currentElementTop;
 

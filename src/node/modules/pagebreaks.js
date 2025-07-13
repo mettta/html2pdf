@@ -124,7 +124,6 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
     _isDebug(this) && console.log('👈 Left limit has been reached (left neighbor is the last page start)', prev, betterCandidate);
   }
 
-  //// return currentCandidate; // remove after rebase
   // If `undefined` is returned, it means that we have reached the limit
   // in one of the directions (past page start). Therefore we cancel attempts
   // to improve the page break semantically and leave only geometric improvement.
