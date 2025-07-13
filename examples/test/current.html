@@ -23,6 +23,10 @@
     data-console-assert="true"
     src="bundle.js"></script>
 </head>
+<style>
+  .t1 {border: 1px solid blue;}
+  .t1 td {border: 1px solid red; vertical-align: top;}
+</style>
 
 <body>
   <!-- line-height = 1.25 (20) -->
@@ -30,7 +34,7 @@
   <!-- Case #1 -->
   <!-- <div filler style="height:80px"></div> -->
 
-  <table class="t1" border="1" width="100%" style="margin: 10px 0; font-size:9px; line-height:10px;">
+  <table class="t1" border="1" width="100%" style="margin: 10px 0; font-size:9px; line-height:10px; border-spacing: 2px;">
     <caption>Table: caption</caption>
     <colgroup>
       <col width="20%">
@@ -44,26 +48,56 @@
     </thead>
     <tbody>
 
-
-
-      <tr class="tr__Yellow">
-        <td>
-          <div filler="yellow" style="height:20px">Y_0</div>
+      <tr class="tr__Yellow__1">
+        <td style="vertical-align: top;">
+          <div filler="yellow" style="height:20px">Y1_0</div>
           <div floater></div>
-          <div filler="yellow" style="height:20px">Y_1</div>
+          <div filler="yellow" style="height:20px">Y1_1</div>
           <div floater></div>
-          <div filler="yellow" style="height:20px">Y_2</div>
+          <div filler="yellow" style="height:20px">Y1_2</div>
           <div floater></div>
-          <div filler="yellow" style="height:20px">Y_3 last</div>
+          <div filler="yellow" style="height:20px">Y1_3 last</div>
         </td>
-        <td>
-          <div filler="yellow" style="height:20px">Y0</div>
+        <td style="vertical-align: top;">
+          <div filler="yellow" style="height:20px">Y1__0</div>
           <div floater></div>
-          <div filler="yellow" style="height:20px">Y1</div>
+          <div filler="yellow" style="height:20px">Y1__1</div>
           <div floater></div>
-          <div filler="yellow" style="height:20px">Y2</div>
+          <div filler="yellow" style="height:20px">Y1__2</div>
           <div floater></div>
-          <div filler="yellow" style="height:20px">Y3 last</div>
+          <div filler="yellow" style="height:20px">Y1__3</div>
+          <div floater></div>
+          <div filler="yellow" style="height:40px" html2pdf-flag-no-break>Y1__4 last</div>
+        </td>
+      </tr>
+      <tr class="tr__Yellow__2">
+        <td style="vertical-align: top;">  <!-- padding-top:40px; -->
+          <div filler="yellow" style="height:20px">Y2_0</div>
+          <div floater></div>
+          <div filler="yellow" style="height:20px">Y2_1</div>
+          <div floater></div>
+          <div filler="yellow" style="height:20px">Y2_2</div>
+          <div floater></div>
+          <div filler="yellow" style="height:20px">Y2_3 last</div>
+          <div filler="yellow" style="height:10px" html2pdf-flag-no-break>test last left</div>
+        </td>
+        <!-- ⚠️ TD always has 1 px padding by default! -->
+        <!-- padding-top:0px; padding-bottom:0px; -->
+        <td style="vertical-align: top;">  <!-- padding-top:20px; ...... padding-bottom:37px; -->
+          <!-- 20 + 20 + 20 + 20 + 16 == match -->
+          <!-- padding-top: 1 → fix margin 16! -->
+          <!-- padding-top: 2 → fix margin 15! -->
+          <!-- padding-top: 6 → fix margin 11! -->
+          <div filler="yellow" style="height:20px">Y2__0</div>
+          <div floater></div>
+          <div filler="yellow" style="height:20px">Y2__1</div>
+          <div floater></div>
+          <div filler="yellow" style="height:20px">Y2__2</div>
+          <div floater></div>
+          <div filler="yellow" style="height:20px">Y2__3</div>
+          <div floater></div>
+          <!-- 40 - 24 = 16 -->
+          <div filler="yellow" style="height:16px" html2pdf-flag-no-break>Y2__4 last</div>
         </td>
       </tr>
 

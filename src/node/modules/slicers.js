@@ -81,19 +81,41 @@ export function getSplitPoints({
     points.push(point)
   }
 
+  // ⚠️ Normalizing offsetTop relative to TD.
+  //
+  // The available height (firstPartHeight / fullPageHeight) for TD content
+  // is already calculated without TD's padding-top.
+  // However, element.offsetTop inside TD starts from padding-top.
+  //
+  // If we directly use offsetTop (which starts from padding-top) to check
+  // whether the element fits into the allowed space, we will accidentally
+  // count padding-top twice:
+  //  - Once when we reduced the available height by TD's padding-top.
+  //  - Again because offsetTop inside TD starts after TD's padding-top.
+  //
+  // As a result, the actual usable space would appear smaller than it is
+  // by the value of padding-top.
+  //
+  // To avoid this, we subtract padding-top from offsetTop.
+  // This normalization is specific to this TD context.
+
+  const rootPaddingTop = parseFloat(_rootComputedStyle.paddingTop) || 0;
+
   for (let i = 0; i < children.length; i++) {
 
     const previousElement = children[i - 1];
     const currentElement = children[i];
     const nextElement = children[i + 1];
-    const nextElementTop = nextElement ? this.getTop(nextElement, rootNode) : undefined;
+    const nextElementTop = nextElement
+      ? this.getTop(nextElement, rootNode) - rootPaddingTop // ⚠️ See comment above about normalization.
+      : undefined;
 
     const floater = (points.length === 0) // * empty array => process first slice
       ? firstPartHeight
       : (
         (points.at(-1) === null) // * case with empty first slice
           ? fullPageHeight
-          : fullPageHeight + this.getTop(points.at(-1), rootNode)
+          : fullPageHeight + this.getTop(points.at(-1), rootNode) - rootPaddingTop // ⚠️ See comment above about normalization.
       );
 
     if (this.isForcedPageBreak(currentElement)) {
@@ -138,7 +160,7 @@ export function getSplitPoints({
       }
 
 
-      const currentElementBottom = this.getBottomWithMargin(currentElement, rootNode);
+      const currentElementBottom = this.getBottomWithMargin(currentElement, rootNode) - rootPaddingTop; // ⚠️ See comment above about normalization.
 
       this._debug._ && console.log(
         '💟 nextElementTop > floater 💟',
