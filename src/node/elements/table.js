@@ -153,7 +153,7 @@ export default class Table {
       this._currentTable
     );
 
-    console.log(lastPart)
+    this._debug._ && console.log('lastPart', lastPart)
 
     this.logGroupEnd(`_splitCurrentTable`);
 
@@ -189,17 +189,22 @@ export default class Table {
           `%c 🔳 Try to split the ROW ${rowIndex} %c (from ${this._currentTableDistributedRows.length})`, 'color:magenta;', ''
         );
 
-        const currEmptyRowHeight = this._node.getTableRowHeight(currentRow);
         const _minMeaningfulRowSpace = this._node.getTableRowHeight(currentRow, this._minPartLines); // ? paragraph inside
-        const rowFullPageHeight = this._currentTableFullPartContentHeight - currEmptyRowHeight;
         const currRowTop = this._node.getTop(currentRow, this._currentTable) + this._currentTableCaptionFirefoxAmendment;
-        let rowFirstPartHeight = this._currentTableSplitBottom - currRowTop - currEmptyRowHeight;
+
+        let rowFirstPartHeight = this._currentTableSplitBottom - currRowTop;
+
+        this._assert && console.assert(
+          this._currentTableSplitBottom >= currRowTop,
+          `It seems that the previous row will not fit into the page (it crosses the slice line): split bottom (${this._currentTableSplitBottom}) < currRowTop ${currRowTop}`
+        );
+
         if (rowFirstPartHeight < _minMeaningfulRowSpace) {
           this._debug._ && console.log(
             `%c ${rowFirstPartHeight} < ${_minMeaningfulRowSpace} %c (rowFirstPartHeight < _minMeaningfulRowSpace) And we are going to the "full page size"`,
             'color:red; font-weight:bold; background:#F1E9D2', '',
           );
-          rowFirstPartHeight = rowFullPageHeight;
+          rowFirstPartHeight = this._currentTableFullPartContentHeight;
         }
 
         this._debug._ && console.info(
@@ -208,9 +213,8 @@ export default class Table {
             currRowTop,
             '• splitBottom': this._currentTableSplitBottom,
             '• is breakable?': !isNoBreak,
-            currEmptyRowHeight,
-            rowFirstPartHeight,
-            rowFullPageHeight,
+            first: rowFirstPartHeight,
+            full: this._currentTableFullPartContentHeight,
           },
         );
 
@@ -218,7 +222,7 @@ export default class Table {
           rowIndex,
           currentRow,
           rowFirstPartHeight,
-          rowFullPageHeight,
+          this._currentTableFullPartContentHeight,
         );
         this._debug._ && console.log('%c newRows \n', 'color:magenta; font-weight:bold', newRows);
 
@@ -324,6 +328,9 @@ export default class Table {
       `%c ➗ Split the ROW ${splittingRowIndex}`, 'color:magenta;', ''
     );
 
+    const splittingRowTdShellHeights = this._node.getTableRowShellHeightByTD(splittingRow);
+    this._debug._ && console.log(`🧿 currentRowTdHeights`, splittingRowTdShellHeights);
+
     //* The splitting row and each clone gets the flag:
     this._node.setFlagNoBreak(splittingRow);
 
@@ -334,13 +341,17 @@ export default class Table {
 
       // 🔁 potential recursion because of getSplitChildren()
       // TODO: test complex nested elements
-      const tdChildren = this._node.getSplitChildren(td, rowFirstPartHeight, rowFullPageHeight, splittingRow);
+
+      const currentTdFirstPartHeight = rowFirstPartHeight - splittingRowTdShellHeights[ind];
+      const currentTdFullPageHeight = rowFullPageHeight - splittingRowTdShellHeights[ind];
+
+      const tdChildren = this._node.getSplitChildren(td, currentTdFirstPartHeight, currentTdFullPageHeight, splittingRow);
 
       const tdContentSplitPoints = this._node.getSplitPoints({
         rootNode: td,
         children: tdChildren,
-        firstPartHeight: rowFirstPartHeight,
-        fullPageHeight: rowFullPageHeight,
+        firstPartHeight: currentTdFirstPartHeight,
+        fullPageHeight: currentTdFullPageHeight,
       });
 
       this._debug._ && console.log(`(•) return tdContentSplitPoints for ROW.${splittingRowIndex} / TD#${ind}`, tdContentSplitPoints);
@@ -363,15 +374,19 @@ export default class Table {
     if(isFirstPartEmptyInAnyTD) {
       splitPointsPerTD = [...originalTDs]
       .map((td, ind) => {
+
+        const currentTdFirstPartHeight = rowFirstPartHeight - splittingRowTdShellHeights[ind];
+        const currentTdFullPageHeight = rowFullPageHeight - splittingRowTdShellHeights[ind];
+
         // FIXME
         // const tdChildren = this._node.getPreparedChildren(td);
-        const tdChildren = this._node.getSplitChildren(td, rowFirstPartHeight, rowFullPageHeight, splittingRow);
+        const tdChildren = this._node.getSplitChildren(td, currentTdFirstPartHeight, currentTdFullPageHeight, splittingRow);
         this._debug._ && console.groupCollapsed(`(••) Split TD.${ind} in ROW.${splittingRowIndex}`);
         const tdContentSplitPoints = this._node.getSplitPoints({
           rootNode: td,
           children: tdChildren,
-          firstPartHeight: rowFullPageHeight,
-          fullPageHeight: rowFullPageHeight,
+          firstPartHeight: currentTdFullPageHeight,
+          fullPageHeight: currentTdFullPageHeight,
         });
         this._debug._ && console.log(`(••) return tdContentSplitPoints for ROW.${splittingRowIndex} / TD#${ind}`, tdContentSplitPoints);
         this._debug._ && console.groupEnd(`(••) Split TD.${ind} in ROW.${splittingRowIndex}`);

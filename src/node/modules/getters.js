@@ -218,6 +218,68 @@ export function getTableRowHeight(tr, num = 0) {
 
 /**
  * @this {Node}
+ *
+ * Measures the visual height of a cloned <tr>
+ * when one original <td> (without content) is inserted at a time,
+ * while all other <td> elements are replaced with minimal placeholders
+ * that aim to minimize their impact on row height.
+ *
+ * This is used to estimate the structural contribution of each TD
+ * (its padding, borders, alignment, etc.)
+ * to the overall height of the table row, independent of its content.
+ *
+ * Returns: number[] — an array of heights, where each value represents
+ * the height of the <tr> when the corresponding TD is present
+ * (in its original DOM position), and the others are minimized.
+ */
+export function getTableRowShellHeightByTD(tr) {
+  const initialTop = this._DOM.getElementOffsetTop(tr);
+  const trClone = this._DOM.cloneNodeWrapper(tr);
+  const tdCount = tr.children.length;
+  const originalTDs = [...tr.children];
+
+  this._DOM.insertBefore(tr, trClone);
+
+  const trByTdHeights = [];
+
+  for (let i = 0; i < tdCount; i++) {
+    const tdPlaceholders = [];
+
+    for (let j = 0; j < tdCount; j++) {
+      let td;
+      if (j === i) {
+        td = this._DOM.cloneNodeWrapper(originalTDs[j]);
+        this._DOM.setInnerHTML(td, '');
+      } else {
+        td = document.createElement('td');
+        this._DOM.setInnerHTML(td, '');
+        this._DOM.setStyles(td, {
+          padding: '0',
+          border: 'none',
+          verticalAlign: 'top',
+          lineHeight: '0',
+          minHeight: '0',
+          fontSize: '0',
+        });
+      }
+      tdPlaceholders.push(td);
+    }
+
+    this._DOM.insertAtEnd(trClone, ...tdPlaceholders);
+
+    const topAfterInsert = this._DOM.getElementOffsetTop(tr);
+    const height = topAfterInsert - initialTop;
+    trByTdHeights.push(height);
+
+    tdPlaceholders.forEach(td => this._DOM.removeNode(td));
+  }
+
+  this._DOM.removeNode(trClone);
+  return trByTdHeights;
+}
+
+/**
+ * @this {Node}
  */
 export function getTableEntries(node) {
   if (!(node instanceof HTMLElement) || node.tagName !== 'TABLE') {
