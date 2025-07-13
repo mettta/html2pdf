@@ -122,8 +122,7 @@ export function getPreparedChildren(element) {
 
   }
 
-  this.logGroupEnd(`getPreparedChildren`);
-  // console.groupEnd();
+  _isDebug(this) && console.groupEnd(`getPreparedChildren`);
   _isDebug(this) && console.info('🚸 getPreparedChildren:', children);
   return children;
 }

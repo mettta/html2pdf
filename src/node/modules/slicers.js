@@ -322,7 +322,7 @@ export function getSplitPoints({
   // *** need to revert back to the original positioning & vertical align of the rootNode:
   _setInitStyle.call(this, false, rootNode, rootComputedStyle);
 
-  this.logGroupEnd(`getSplitPoints`);
+  _isDebug(this) && console.groupEnd(`getSplitPoints`);
 
   return points
 }
