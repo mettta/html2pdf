@@ -9,6 +9,8 @@ export default class Table {
   }) {
     // * From config:
     this._debug = config.debugMode ? { ...config.debugConfig.table } : {};
+    this._assert = config.consoleAssert ? true : false;
+
     // * Private
     this._DOM = DOM;
     this._selector = selector;
