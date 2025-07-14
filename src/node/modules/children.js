@@ -1,15 +1,7 @@
 // 🪴 work with children
 
-/**
- * Check if debug mode is enabled for this module.
- * Usage: Call `_isDebug(this)` inside any function of this file.
- *
- * @param {Node} node - The Node instance, passed as `this`.
- * @returns {boolean} True if debug mode is enabled for this module.
- */
-function _isDebug(node) {
-    return node._config.debugMode && node._debug.children;
-}
+import { debugFor } from '../utils/debugFor.js';
+const _isDebug = debugFor('children');
 
 /**
  * Returns a cleaned and normalized list of children for the given element.

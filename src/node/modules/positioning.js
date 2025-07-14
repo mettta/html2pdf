@@ -1,15 +1,7 @@
 // 🧭 positioning
 
-/**
- * Check if debug mode is enabled for this module.
- * Usage: Call `_isDebug(this)` inside any function of this file.
- *
- * @param {Node} node - The Node instance, passed as `this`.
- * @returns {boolean} True if debug mode is enabled for this module.
- */
-function _isDebug(node) {
-    return node._config.debugMode && node._debug.positioning;
-}
+import { debugFor } from '../utils/debugFor.js';
+const _isDebug = debugFor('positioning');
 
 /**
  * @this {Node}
