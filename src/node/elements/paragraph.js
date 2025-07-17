@@ -251,70 +251,12 @@ export default class Paragraph {
     const parts = splitters.map((splitter, i) => {
       const startElement = linedChildren[splitter];
       const endElement = linedChildren[splitters[i + 1]];
-      return this._cloneAndCleanOutsideRange(node, startElement, endElement);
+      return this._node.cloneAndCleanOutsideRange(node, startElement, endElement);
     });
     this._DOM.insertInsteadOf(node, ...parts);
 
     this.logGroupEnd('Nested Inline parts');
     return parts;
-  }
-
-  _cloneAndCleanOutsideRange(root, startElement, endElement) {
-    startElement && startElement.setAttribute('split', `start`);
-    endElement && endElement.setAttribute('split', `end`);
-    let clone = root.cloneNode(true);
-
-    // Delete elements before startPoint (if startPoint is not the first)
-    if (startElement) {
-      // * remove siblings to left
-      let startEl = clone.querySelector(`[split="start"]`);
-      let prev = startEl.previousElementSibling;
-      while (prev) {
-        let toRemove = prev;
-        prev = prev.previousElementSibling;
-        toRemove.remove();
-      }
-      // * remove ancestors outside range
-      let ancestor = startEl.parentElement;
-      while (ancestor && ancestor !== root) {
-        let sibling = ancestor.previousElementSibling;
-        while (sibling) {
-          let toRemove = sibling;
-          sibling = sibling.previousElementSibling;
-          toRemove.remove();
-        }
-        ancestor = ancestor.parentElement;
-      }
-      startEl.removeAttribute('split'); // * Clear attribute
-    }
-
-    // Delete elements after and including endPoint (if endPoint is not the last)
-    if (endElement) {
-      // * remove siblings to right and element
-      let endEl = clone.querySelector(`[split="end"]`);
-      let next = endEl.nextElementSibling;
-      while (next) {
-        let toRemove = next;
-        next = next.nextElementSibling;
-        toRemove.remove();
-      }
-      // * remove ancestors outside range
-      let ancestor = endEl.parentElement;
-      while (ancestor && ancestor !== root) {
-        let sibling = ancestor.nextElementSibling;
-        while (sibling) {
-          let toRemove = sibling;
-          sibling = sibling.nextElementSibling;
-          toRemove.remove();
-        }
-        ancestor = ancestor.parentElement;
-      }
-      endEl.remove(); // * remove end element
-    }
-    // * Clear attributes
-    startElement && startElement.removeAttribute('split');
-    endElement && endElement.removeAttribute('split');
-    return clone;
   }
 
   _getNestedInlineChildren(element) {
