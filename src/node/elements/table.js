@@ -116,8 +116,8 @@ export default class Table {
 
     // * Walk through table rows to find where to split.
     for (let index = 0; index < this._currentTableDistributedRows.length; index++) {
-      // * _processRow() can move index back to recheck newly inserted rows after splitting:
-      index = this._processRow(index, splitStartRowIndexes);
+      // * _evaluateRowForSplitting() can move index back to recheck newly inserted rows after splitting:
+      index = this._evaluateRowForSplitting(index, splitStartRowIndexes);
     };
 
     this._debug._ && console.log(
@@ -190,7 +190,7 @@ export default class Table {
     return [...splits, lastPart]
   }
 
-  _processRow(rowIndex, splitStartRowIndexes) {
+  _evaluateRowForSplitting(rowIndex, splitStartRowIndexes) {
     const origRowIndex = rowIndex;
     const origRowCount = this._currentTableDistributedRows.length;
     this._debug._ && console.groupCollapsed(`🔲 %c Check the Row # ${origRowIndex} (from ${origRowCount})`, '',);
