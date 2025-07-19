@@ -323,7 +323,7 @@ export function getSplitPoints({
  * Split rootNode content based on calculated split points.
  * @this {Node}
  */
-export function sliceNodeContentBySplitPoints({ rootNode, splitPoints }) {
+export function sliceNodeContentBySplitPoints({ index, rootNode, splitPoints }) {
   const allChildren = [...rootNode.childNodes];
   const parts = [];
 

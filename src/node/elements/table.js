@@ -408,6 +408,7 @@ export default class Table {
       .map((splitPoints, index) => {
         const td = originalTDs[index];
         return this._node.sliceNodeContentBySplitPoints({
+          index,
           rootNode: td,
           splitPoints,
         });
