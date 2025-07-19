@@ -81,20 +81,24 @@ export default class Table {
     this._currentRoot = _root;
   }
 
-  _prepareTableForSplitting() {
+  _prepareCurrentTableForSplitting() {
     this._lockCurrentTableWidths();
     this._collectCurrentTableEntries();
     this._updateCurrentTableDistributedRows();
     this._collectCurrentTableMetrics();
   }
 
-  // 🪓 The basic logic of splitting:
-
+  // 🪓 The basic logic of splitting.
   // TODO test more complex tables
   _splitCurrentTable() {
-    // FIXME: Split simple tables, without regard to col-span and the like.
 
-    this._prepareTableForSplitting();
+    // * Prepare table.
+    this._prepareCurrentTableForSplitting();
+    // * Start with a short first part or immediately from the full height of the page.
+    this._setCurrentTableFirstSplitBottom();
+
+    // FIXME: It splits simple tables, without regard to col-span and the like.
+
     this._debug._ && console.group('%c📊 _splitCurrentTable()', 'color:green; background:#eee; padding:3px',
       '\n•', this._currentTableFirstPartContentBottom, '(1st bottom)',
       '\n•', this._currentTableFullPartContentHeight, '(full part height)',
@@ -106,15 +110,12 @@ export default class Table {
       },
     );
 
-    // * start with a short first part or immediately from the full height of the page:
-    this._setCurrentTableFirstSplitBottom();
-
     // * This variable accumulates the row numbers
     // * from which to start a new part of the table when splitting.
     let splitStartRowIndexes = [];
 
+    // * Walk through table rows to find where to split.
     for (let index = 0; index < this._currentTableDistributedRows.length; index++) {
-      // * Walk through table rows to find where to split.
       // * _processRow() can move index back to recheck newly inserted rows after splitting:
       index = this._processRow(index, splitStartRowIndexes);
     };
@@ -124,6 +125,22 @@ export default class Table {
       '\n Distributed Rows', [...this._currentTableDistributedRows]
     );
 
+    this._assert && console.assert(
+      // 🚨 No 0 indexes. First split cannot start from 0.
+      splitStartRowIndexes.every(i => Number.isInteger(i) && i > 0 && i <= this._currentTableDistributedRows.length),
+      'splitStartRowIndexes contains invalid indexes'
+    );
+    this._assert && console.assert(
+      // 🚨 Strictly increasing, no duplicates.
+      splitStartRowIndexes.every((val, i, arr) => i === 0 || val > arr[i - 1]),
+      'splitStartRowIndexes must be strictly ascending and without duplicates'
+    );
+    this._assert && console.assert(
+      // 🚨 Last split must not consume 100% of the table, original must keep rows.
+      splitStartRowIndexes.at(-1) !== this._currentTableDistributedRows.length,
+      'Last split index should not equal rows.length, or the original table will be empty.'
+    );
+
     if (!splitStartRowIndexes.length) {
       this.logGroupEnd(`_splitCurrentTable !splitStartRowIndexes.length`);
       return []
@@ -131,8 +148,19 @@ export default class Table {
 
     // ! this._currentTableDistributedRows модифицировано
 
+    // * Iterate over splitStartRowIndexes.
+    // * For each split point: create a new <table> element with its own structure.
+    // * Repeated structural elements (colgroup, caption, thead) are cloned.
+    // * tbody is newly built from rows between startId and endId (excluding endId).
+    // * The original table will contain rows from the last split point to the end,
+    // * and will be inserted separately below.
     const splits = splitStartRowIndexes.map((endId, index, array) => {
+
+      // * For the first table part, start from 0 (the first row of the table).
+      // * For all subsequent parts, start from the previous split index.
       const startId = index > 0 ? array[index - 1] : 0;
+
+      // * Insert a new table part that will contain rows from startId up to endId (excluding endId).
       return this._insertTableSplit({
         startId: startId,
         endId: endId,
@@ -145,7 +173,8 @@ export default class Table {
       'splits', splits
     );
 
-    // create LAST PART
+    // * Insert the original table as the last part.
+    // * It contains all rows from the last split point to the end.
     const lastPart = this._node.createWithFlagNoBreak();
     this._currentTable.before(lastPart);
     this._DOM.insertAtEnd(
@@ -164,7 +193,7 @@ export default class Table {
   _processRow(rowIndex, splitStartRowIndexes) {
     const origRowIndex = rowIndex;
     const origRowCount = this._currentTableDistributedRows.length;
-    this._debug._ && console.group(`🔲 %c Check the Row # ${origRowIndex} (from ${origRowCount})`, '',);
+    this._debug._ && console.groupCollapsed(`🔲 %c Check the Row # ${origRowIndex} (from ${origRowCount})`, '',);
 
     const currentRow = this._currentTableDistributedRows[rowIndex];
     const currRowHeight = this._DOM.getElementOffsetHeight(currentRow);
