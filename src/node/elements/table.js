@@ -109,28 +109,29 @@ export default class Table {
     // * start with a short first part or immediately from the full height of the page:
     this._setCurrentTableFirstSplitBottom();
 
-    // * Calculate Table Splits Ids
-    let splitsIds = [];
+    // * This variable accumulates the row numbers
+    // * from which to start a new part of the table when splitting.
+    let splitStartRowIndexes = [];
 
     for (let index = 0; index < this._currentTableDistributedRows.length; index++) {
       // * Walk through table rows to find where to split.
-      // * _processRow() can move index back to recheck newly inserted rows after splitting.
-      index = this._processRow(index, splitsIds);
+      // * _processRow() can move index back to recheck newly inserted rows after splitting:
+      index = this._processRow(index, splitStartRowIndexes);
     };
 
     this._debug._ && console.log(
-      '\n splitsIds', splitsIds,
+      '\n splitStartRowIndexes', splitStartRowIndexes,
       '\n Distributed Rows', [...this._currentTableDistributedRows]
     );
 
-    if (!splitsIds.length) {
-      this.logGroupEnd(`_splitCurrentTable !splitsIds.length`);
+    if (!splitStartRowIndexes.length) {
+      this.logGroupEnd(`_splitCurrentTable !splitStartRowIndexes.length`);
       return []
     }
 
     // ! this._currentTableDistributedRows модифицировано
 
-    const splits = splitsIds.map((endId, index, array) => {
+    const splits = splitStartRowIndexes.map((endId, index, array) => {
       const startId = index > 0 ? array[index - 1] : 0;
       return this._insertTableSplit({
         startId: startId,
@@ -160,7 +161,7 @@ export default class Table {
     return [...splits, lastPart]
   }
 
-  _processRow(rowIndex, splitsIds) {
+  _processRow(rowIndex, splitStartRowIndexes) {
     const origRowIndex = rowIndex;
     const origRowCount = this._currentTableDistributedRows.length;
     this._debug._ && console.group(`🔲 %c Check the Row # ${origRowIndex} (from ${origRowCount})`, '',);
@@ -260,7 +261,7 @@ export default class Table {
           console.warn('%c SUPER BIG', 'background:red;color:white', currRowHeight, '>', this._currentTableFullPartContentHeight);
         }
 
-        splitsIds.push(rowIndex);
+        splitStartRowIndexes.push(rowIndex);
         this._debug._ && console.log(`%c 📍 Row # ${rowIndex} registered as page start`, 'color:green; font-weight:bold');
 
         this._updateCurrentTableSplitBottom(this._currentTableDistributedRows[rowIndex], "Row does not fit AND Row isNoBreak");
