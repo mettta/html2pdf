@@ -5,6 +5,9 @@ const _isDebug = debugFor('slicers');
 
 /**
  * High-level wrapper to slice content into parts based on height.
+ * * Here, the split points are searched for once without additional checks.
+ * * Therefore, in the context of the table, the functions `getSplitPoints()`
+ * * and `sliceNodeContentBySplitPoints()` are used separately.
  * @this {Node}
  */
 export function sliceNodeContent({ rootNode, firstPartHeight, fullPageHeight, root }) {
@@ -244,7 +247,7 @@ export function getSplitPoints({
         } else {
 
           // 🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎
-          _isDebug(this) && console.log('🍎 ???)');
+          _isDebug(this) && console.log('🍎 currentElementChildren.length == 0');
 
           // FIXME: брать для масштабирования первую часть (она у таблиц больше!) или "полную страницу"?
 
@@ -324,23 +327,33 @@ export function getSplitPoints({
  * @this {Node}
  */
 export function sliceNodeContentBySplitPoints({ index, rootNode, splitPoints }) {
+  _isDebug(this) && console.group(`🔪 (${index}) sliceNodeContentBySplitPoints`);
+
   const allChildren = [...rootNode.childNodes];
   const parts = [];
+
+  console.log('allChildren', allChildren);
+  console.log('splitPoints', splitPoints);
 
   const indexes = splitPoints
     .map(point => allChildren.indexOf(point))
     .filter(i => i !== -1)
     .sort((a, b) => a - b);
 
+  _isDebug(this) && console.log('indexes', indexes);
+
   let startIdx = 0;
 
   for (let i = 0; i <= indexes.length; i++) {
 
     const endIdx = indexes[i] ?? allChildren.length;
+    _isDebug(this) && console.log('endIdx', endIdx);
+
     const wrapper = this.createNeutralBlock();
 
     for (let j = startIdx; j < endIdx; j++) {
       const clonedNode = allChildren[j].cloneNode(true);
+      _isDebug(this) && console.log('clonedNode', clonedNode);
       wrapper.appendChild(clonedNode);
     }
 
@@ -351,6 +364,8 @@ export function sliceNodeContentBySplitPoints({ index, rootNode, splitPoints }) 
     startIdx = endIdx;
   }
 
+  _isDebug(this) && console.log(parts);
+  _isDebug(this) && console.groupEnd(`🔪 (${index}) sliceNodeContentBySplitPoints`);
   return parts;
 }
 
