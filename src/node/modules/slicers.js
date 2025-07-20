@@ -396,7 +396,13 @@ export function sliceNodeContentBySplitPointsFlat({ index, rootNode, splitPoints
 }
 
 /**
- * Splits `rootNode`'s content into parts by `splitPoints` (nested elements supported).
+ * Splits rootNode content into slices by splitPoints (supports nested elements).
+ *
+ * Each slice is created by cloning rootNode and removing content outside the range
+ * between split points (via cloneAndCleanOutsideRange).
+ *
+ * The cloned rootNode acts as a temporary wrapper. Since we split content, not the wrapper itself,
+ * we extract inner content and place it into a neutral block.
  *
  * @param {Object} param0
  * @param {number} index - Debug index for logging purposes.
@@ -407,14 +413,36 @@ export function sliceNodeContentBySplitPointsFlat({ index, rootNode, splitPoints
  * @this {Node}
  */
 export function sliceNodeContentBySplitPoints({ index, rootNode, splitPoints }) {
-  _isDebug(this) && console.group(`🔪 (${index}) sliceNodeContentBySplitPoints (nested)`);
+  _isDebug(this) && console.group(`🔪 (${index}) sliceNodeContentBySplitPoints`);
 
-  // TODO: Implement version that works with nested splitPoints.
+  const slices = [];
 
-  _isDebug(this) && console.warn('sliceNodeContentBySplitPoints is not implemented yet');
+  for (let i = 0; i <= splitPoints.length; i++) {
+    const startElement = splitPoints[i - 1] ?? null;
+    const endElement = splitPoints[i] ?? null;
 
-  _isDebug(this) && console.groupEnd(`🔪 (${index}) sliceNodeContentBySplitPoints (nested)`);
-  return [];
+    // * Clone rootNode and remove content outside [startElement, endElement)
+    const slice = this.cloneAndCleanOutsideRange(rootNode, startElement, endElement);
+    _isDebug(this) && console.log({slice});
+
+    // * Create a neutral wrapper for extracted content
+    const wrapper = this.createNeutralBlock();
+
+    // * Move inner content from the cloned rootNode slice to the neutral wrapper.
+    // * The cloned rootNode itself is discarded: we split content, not root wrapper.
+    while (slice.firstChild) {
+      wrapper.appendChild(slice.firstChild);
+    }
+
+    if (wrapper.childNodes.length > 0) {
+      slices.push(wrapper);
+    }
+  }
+
+  _isDebug(this) && console.log(slices);
+
+  _isDebug(this) && console.groupEnd(`🔪 (${index}) sliceNodeContentBySplitPoints`);
+  return slices;
 }
 
 // 🔒 private
