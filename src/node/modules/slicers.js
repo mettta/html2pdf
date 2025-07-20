@@ -29,6 +29,18 @@ export function sliceNodeContent({ rootNode, firstPartHeight, fullPageHeight, ro
 }
 
 /**
+ * Find split points inside rootNode content.
+ *
+ * Walks through rootNode's children recursively (including nested).
+ * Returns elements where content should break into pages.
+ *
+ * @param {Node} rootNode - The container node (e.g., TD).
+ * @param {Element[]} children - Children of rootNode (direct, but may descend recursively).
+ * @param {number} firstPartHeight - Available height for the first part.
+ * @param {number} fullPageHeight - Available height for full page parts.
+ * @param {Element[]} points - Collected split points.
+ * @returns {Element[]|null[]} - Array of elements marking split points (can include null).
+ *
  * @this {Node}
  */
 export function getSplitPoints({
@@ -323,11 +335,25 @@ export function getSplitPoints({
 }
 
 /**
- * Split rootNode content based on calculated split points.
+ * Splits `rootNode`'s direct children into parts by `splitPoints`.
+ *
+ * Each part contains consecutive child nodes between split points.
+ *
+ * Child nodes are deep-cloned into new wrapper elements.
+ *
+ * * Important: `splitPoints` must reference direct children of `rootNode`,
+ * * not nested inside them.
+ *
+ * @param {Object} param0
+ * @param {number} index - Debug index for logging purposes.
+ * @param {Node} rootNode - The container node whose children will be split.
+ * @param {Element[]} splitPoints - Elements marking where each split should occur.
+ * @returns {Node[]} - An array of wrapper nodes, each containing a portion of the content.
+ *
  * @this {Node}
  */
-export function sliceNodeContentBySplitPoints({ index, rootNode, splitPoints }) {
-  _isDebug(this) && console.group(`🔪 (${index}) sliceNodeContentBySplitPoints`);
+export function sliceNodeContentBySplitPointsFlat({ index, rootNode, splitPoints }) {
+  _isDebug(this) && console.group(`🔪 (${index}) sliceNodeContentBySplitPointsFlat`);
 
   const allChildren = [...rootNode.childNodes];
   const parts = [];
@@ -365,8 +391,30 @@ export function sliceNodeContentBySplitPoints({ index, rootNode, splitPoints }) 
   }
 
   _isDebug(this) && console.log(parts);
-  _isDebug(this) && console.groupEnd(`🔪 (${index}) sliceNodeContentBySplitPoints`);
+  _isDebug(this) && console.groupEnd(`🔪 (${index}) sliceNodeContentBySplitPointsFlat`);
   return parts;
+}
+
+/**
+ * Splits `rootNode`'s content into parts by `splitPoints` (nested elements supported).
+ *
+ * @param {Object} param0
+ * @param {number} index - Debug index for logging purposes.
+ * @param {Node} rootNode - The container node whose content will be split.
+ * @param {Element[]} splitPoints - Elements marking where each split should occur.
+ * @returns {Node[]} - An array of wrapper nodes, each containing a portion of the content.
+ *
+ * @this {Node}
+ */
+export function sliceNodeContentBySplitPoints({ index, rootNode, splitPoints }) {
+  _isDebug(this) && console.group(`🔪 (${index}) sliceNodeContentBySplitPoints (nested)`);
+
+  // TODO: Implement version that works with nested splitPoints.
+
+  _isDebug(this) && console.warn('sliceNodeContentBySplitPoints is not implemented yet');
+
+  _isDebug(this) && console.groupEnd(`🔪 (${index}) sliceNodeContentBySplitPoints (nested)`);
+  return [];
 }
 
 // 🔒 private
