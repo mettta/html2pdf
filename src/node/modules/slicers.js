@@ -396,6 +396,41 @@ export function sliceNodeContentBySplitPointsFlat({ index, rootNode, splitPoints
 }
 
 /**
+ * Splits rootNode with content into parts by splitPoints (supports nested elements).
+ *
+ * Each slice is returned as a cloned rootNode with content trimmed to the range.
+ * Reuses cloneAndCleanOutsideRange directly.
+ *
+ * @param {Object} param0
+ * @param {number} index - Debug index for logging purposes.
+ * @param {Node} rootNode - The container node whose content will be split.
+ * @param {Element[]} splitPoints - Elements marking where each split should occur.
+ * @returns {Node[]} - An array of rootNode clones, each containing a portion of the content.
+ *
+ * @this {Node}
+ */
+export function sliceNodeBySplitPoints({ index, rootNode, splitPoints }) {
+  _isDebug(this) && console.group(`🔪 (${index}) sliceNodeBySplitPoints`);
+
+  const slices = [];
+
+  for (let i = 0; i <= splitPoints.length; i++) {
+    const startElement = splitPoints[i - 1] ?? null;
+    const endElement = splitPoints[i] ?? null;
+
+    const slice = this.cloneAndCleanOutsideRange(rootNode, startElement, endElement);
+
+    if (slice.childNodes.length > 0) {
+      slices.push(slice);
+    }
+  }
+
+  _isDebug(this) && console.log(slices);
+  _isDebug(this) && console.groupEnd(`🔪 (${index}) sliceNodeBySplitPoints`);
+  return slices;
+}
+
+/**
  * Splits rootNode content into slices by splitPoints (supports nested elements).
  *
  * Each slice is created by cloning rootNode and removing content outside the range
