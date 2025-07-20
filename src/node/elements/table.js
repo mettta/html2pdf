@@ -110,13 +110,12 @@ export default class Table {
       },
     );
 
-    // * This variable accumulates the row numbers
-    // * from which to start a new part of the table when splitting.
+    // * This array collects row indexes where new table parts should start after splitting.
     let splitStartRowIndexes = [];
 
     // * Walk through table rows to find where to split.
     for (let index = 0; index < this._currentTableDistributedRows.length; index++) {
-      // * _evaluateRowForSplitting() can move index back to recheck newly inserted rows after splitting:
+      // * _evaluateRowForSplitting() may roll back index to re-check newly inserted rows after splitting.
       index = this._evaluateRowForSplitting(index, splitStartRowIndexes);
     };
 
@@ -191,13 +190,13 @@ export default class Table {
   }
 
   _evaluateRowForSplitting(rowIndex, splitStartRowIndexes) {
+    // * Keep the original parameters for logging.
     const origRowIndex = rowIndex;
     const origRowCount = this._currentTableDistributedRows.length;
     this._debug._ && console.groupCollapsed(`🔲 %c Check the Row # ${origRowIndex} (from ${origRowCount})`, '',);
 
+    // * Start with the row.
     const currentRow = this._currentTableDistributedRows[rowIndex];
-    const currRowHeight = this._DOM.getElementOffsetHeight(currentRow);
-    const isNoBreak = this._node.isNoBreak(currentRow);
 
     this._debug._ && console.info(
       {
@@ -207,11 +206,17 @@ export default class Table {
     );
 
     if (this._isCurrentRowFits(rowIndex)) {
+      // * evaluate next Row Top OR Table Bottom (for the last row).
+      // * This is why the end of the table (the last piece) is not registered
+      // * in splitStartRowIndexes — we simply skip it here.
       this._debug._ && console.log(`%c ✓ Row # ${rowIndex}: PASS`, 'color:green'); // background:#CCFF00
+
     } else {
       // * currRowTop => this._currentTableSplitBottom
-      // * If the end of the row is on the second page
+      // * If the end of the current row is on the second page -
       // * TRY TO SPLIT CURRENT ROW
+
+      const isNoBreak = this._node.isNoBreak(currentRow);
 
       if (!isNoBreak) {
         // * Let's split table row [rowIndex]
@@ -222,12 +227,15 @@ export default class Table {
         const _minMeaningfulRowSpace = this._node.getTableRowHeight(currentRow, this._minPartLines); // ? paragraph inside
         const currRowTop = this._node.getTop(currentRow, this._currentTable) + this._currentTableCaptionFirefoxAmendment;
 
-        let rowFirstPartHeight = this._currentTableSplitBottom - currRowTop;
-
         this._assert && console.assert(
           this._currentTableSplitBottom >= currRowTop,
           `It seems that the previous row will not fit into the page (it crosses the slice line): split bottom (${this._currentTableSplitBottom}) < currRowTop ${currRowTop}`
         );
+
+        // * We check whether there is enough space left on the current page
+        // * to accommodate a reasonable portion of the broken line,
+        // * or whether it is worth considering a full-size page.
+        let rowFirstPartHeight = this._currentTableSplitBottom - currRowTop;
 
         if (rowFirstPartHeight < _minMeaningfulRowSpace) {
           this._debug._ && console.log(
@@ -238,16 +246,16 @@ export default class Table {
         }
 
         this._debug._ && console.info(
-          [currentRow],
           {
             currRowTop,
             '• splitBottom': this._currentTableSplitBottom,
             '• is breakable?': !isNoBreak,
-            first: rowFirstPartHeight,
-            full: this._currentTableFullPartContentHeight,
+            'first part height': rowFirstPartHeight,
+            'full part height': this._currentTableFullPartContentHeight,
           },
         );
 
+        // * We split the row and obtain an array of new rows that should replace the old one.
         const newRows = this._splitTableRow(
           rowIndex,
           currentRow,
@@ -257,18 +265,22 @@ export default class Table {
         this._debug._ && console.log('%c newRows \n', 'color:magenta; font-weight:bold', newRows);
 
         if (newRows.length) {
+          // * If the split was successful and the array of new rows is not empty,
+          // * we insert the new rows instead of the old ones.
+
           // * Update the DOM and state with the new table rows.
           this._replaceRowInDOM(currentRow, newRows);
           this._updateCurrentTableEntriesAfterSplit(rowIndex, newRows);
           this._updateCurrentTableDistributedRows();
 
-          // * To check all new parts over again, we take a step back.
-          // * Then, in the loop, we will start checking again
-          // * from the same index that the split node had before.
+          // * Roll back index to re-check newly inserted rows starting from this position.
+          // * Outer loop will pick up the first new row in the next iteration.
           rowIndex -= 1;
 
         } else {
 
+          // * If the split failed and the array of new rows is empty,
+          // * we need to take action, because the row did not fit.
           this._debug._ && console.log(
             `%c The row is not split. (ROW.${rowIndex})`, 'color:orange', this._currentTableDistributedRows[rowIndex],);
 
@@ -279,17 +291,27 @@ export default class Table {
         }
 
         this.logGroupEnd(`🔳 Try to split the ROW ${rowIndex} (from ${this._currentTableDistributedRows.length}) (...if canSplitRow)`);
-      } else { // isNoBreak
+      } else { // isNoBreak + TODO: transform content
 
         this._debug._ && isNoBreak && console.log(
           `%c Row # ${rowIndex} is noBreak`, 'color:DarkOrange; font-weight:bold', currentRow,
         );
 
+        // * If splitting is not possible because the row has the isNoBreak flag
+        // * consider the cases (why this flag appeared)
+        // *** ( the splitting row and each clone gets the isNoBreak flag!
+        // ***   and such a row cannot be bigger, and this may be an error),
+        // TODO: (make special flag for splitted row)
+        // * and try to fit large row by transforming the content.
+
+        const currRowHeight = this._DOM.getElementOffsetHeight(currentRow);
         if(currRowHeight > this._currentTableFullPartContentHeight) {
           // TODO: transform content
           console.warn('%c SUPER BIG', 'background:red;color:white', currRowHeight, '>', this._currentTableFullPartContentHeight);
         }
 
+        // TODO: Above, we made the row fit on the page.
+        // * Register the row index as the start of a new page and update the splitBottom for nex page.
         splitStartRowIndexes.push(rowIndex);
         this._debug._ && console.log(`%c 📍 Row # ${rowIndex} registered as page start`, 'color:green; font-weight:bold');
 
@@ -363,6 +385,7 @@ export default class Table {
 
     //* The splitting row and each clone gets the flag:
     this._node.setFlagNoBreak(splittingRow);
+    // TODO: make special flag for splitted row
 
     const originalTDs = [...this._DOM.getChildren(splittingRow)];
 
