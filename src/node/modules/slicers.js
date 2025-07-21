@@ -4,35 +4,11 @@ import { debugFor } from '../utils/debugFor.js';
 const _isDebug = debugFor('slicers');
 
 /**
- * High-level wrapper to slice content into parts based on height.
- * * Here, the split points are searched for once without additional checks.
- * * Therefore, in the context of the table, the functions `getSplitPoints()`
- * * and `sliceNodeContentBySplitPoints()` are used separately.
- * @this {Node}
- */
-export function sliceNodeContent({ rootNode, firstPartHeight, fullPageHeight, root }) {
-  const tdChildren = this.getSplitChildren(rootNode, firstPartHeight, fullPageHeight, root);
-  const splitPoints = getSplitPoints.call(this, {
-    rootNode: rootNode,
-    children: tdChildren,
-    firstPartHeight,
-    fullPageHeight,
-  });
-
-  const contentSlices = sliceNodeContentBySplitPoints.call(this, {
-    rootNode: rootNode,
-    splitPoints,
-  });
-
-  _isDebug(this) && console.log('🍇', {contentSlices})
-  return contentSlices;
-}
-
-/**
  * Find split points inside rootNode content.
  *
  * Walks through rootNode's children recursively (including nested).
- * Returns elements where content should break into pages.
+ * Returns elements where content should be split.
+ * Split points are later used by slicing functions.
  *
  * @param {Node} rootNode - The container node (e.g., TD).
  * @param {Element[]} children - Children of rootNode (direct, but may descend recursively).
@@ -335,71 +311,13 @@ export function getSplitPoints({
 }
 
 /**
- * Splits `rootNode`'s direct children into parts by `splitPoints`.
+ * Slices rootNode content (supports nested elements) into parts by splitPoints.
  *
- * Each part contains consecutive child nodes between split points.
+ * 1. Clones rootNode.
+ * 2. Removes content outside the split range.
+ * 3. Returns each clone as-is (rootNode preserved as wrapper).
  *
- * Child nodes are deep-cloned into new wrapper elements.
- *
- * * Important: `splitPoints` must reference direct children of `rootNode`,
- * * not nested inside them.
- *
- * @param {Object} param0
- * @param {number} index - Debug index for logging purposes.
- * @param {Node} rootNode - The container node whose children will be split.
- * @param {Element[]} splitPoints - Elements marking where each split should occur.
- * @returns {Node[]} - An array of wrapper nodes, each containing a portion of the content.
- *
- * @this {Node}
- */
-export function sliceNodeContentBySplitPointsFlat({ index, rootNode, splitPoints }) {
-  _isDebug(this) && console.group(`🔪 (${index}) sliceNodeContentBySplitPointsFlat`);
-
-  const allChildren = [...rootNode.childNodes];
-  const parts = [];
-
-  console.log('allChildren', allChildren);
-  console.log('splitPoints', splitPoints);
-
-  const indexes = splitPoints
-    .map(point => allChildren.indexOf(point))
-    .filter(i => i !== -1)
-    .sort((a, b) => a - b);
-
-  _isDebug(this) && console.log('indexes', indexes);
-
-  let startIdx = 0;
-
-  for (let i = 0; i <= indexes.length; i++) {
-
-    const endIdx = indexes[i] ?? allChildren.length;
-    _isDebug(this) && console.log('endIdx', endIdx);
-
-    const wrapper = this.createNeutralBlock();
-
-    for (let j = startIdx; j < endIdx; j++) {
-      const clonedNode = allChildren[j].cloneNode(true);
-      _isDebug(this) && console.log('clonedNode', clonedNode);
-      wrapper.appendChild(clonedNode);
-    }
-
-    if (wrapper.childNodes.length > 0) {
-      parts.push(wrapper);
-    }
-
-    startIdx = endIdx;
-  }
-
-  _isDebug(this) && console.log(parts);
-  _isDebug(this) && console.groupEnd(`🔪 (${index}) sliceNodeContentBySplitPointsFlat`);
-  return parts;
-}
-
-/**
- * Splits rootNode with content into parts by splitPoints (supports nested elements).
- *
- * Each slice is returned as a cloned rootNode with content trimmed to the range.
- * Reuses cloneAndCleanOutsideRange directly.
+ * Differs from sliceNodeContentBySplitPoints: returns rootNode clones, not neutral blocks.
  *
  * @param {Object} param0
  * @param {number} index - Debug index for logging purposes.
@@ -431,13 +349,13 @@ export function sliceNodeBySplitPoints({ index, rootNode, splitPoints }) {
 }
 
 /**
- * Splits rootNode content into slices by splitPoints (supports nested elements).
+ * Slices rootNode content (supports nested elements) into parts by splitPoints.
  *
- * Each slice is created by cloning rootNode and removing content outside the range
- * between split points (via cloneAndCleanOutsideRange).
+ * 1. Clones rootNode.
+ * 2. Removes content outside the split range.
+ * 3. Extracts inner content into neutral containers.
  *
- * The cloned rootNode acts as a temporary wrapper. Since we split content, not the wrapper itself,
- * we extract inner content and place it into a neutral block.
+ * Returns neutral containers with content slices, discards rootNode itself.
  *
  * @param {Object} param0
  * @param {number} index - Debug index for logging purposes.
