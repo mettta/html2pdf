@@ -456,30 +456,29 @@ export default class Table {
     const ifThereIsSplit = splitPointsPerTD.some(obj => obj.length);
     if (ifThereIsSplit) {
 
-      const slicedTDContentsPerTD = splitPointsPerTD
+      const slicedTDsPerOrigTD = splitPointsPerTD
       .map((splitPoints, index) => {
         const td = originalTDs[index];
-        return this._node.sliceNodeContentBySplitPoints({
+        return this._node.sliceNodeBySplitPoints({
           index,
           rootNode: td,
           splitPoints,
         });
       });
 
-      this._debug._ && console.log('🟣 slicedTDContentsPerTD', slicedTDContentsPerTD);
+      this._debug._ && console.log('🟣 slicedTDsPerOrigTD', slicedTDsPerOrigTD);
 
-      const maxSlicesPerTD = Math.max(...slicedTDContentsPerTD.map(arr => arr.length));
+      const maxSlicesPerTD = Math.max(...slicedTDsPerOrigTD.map(arr => arr.length));
 
       for (let i = 0; i < maxSlicesPerTD; i++) {
         const rowWrapper = this._DOM.cloneNodeWrapper(splittingRow);
         this._DOM.setAttribute(rowWrapper, `.splitted_row_${splittingRowIndex}_part_${i}`);
 
         [...originalTDs].forEach(
-          (td, tdID) => {
-            const content = slicedTDContentsPerTD[tdID][i];
-            const newTD = this._DOM.cloneNodeWrapper(td);
-            if (content) this._DOM.insertAtEnd(newTD, content);
-            this._DOM.insertAtEnd(rowWrapper, newTD);
+          (origTd, origTdIdx) => {
+            const newTDwithContent = slicedTDsPerOrigTD[origTdIdx][i];
+            const newTDtoInsert = newTDwithContent || this._DOM.cloneNodeWrapper(origTd);
+            this._DOM.insertAtEnd(rowWrapper, newTDtoInsert);
           }
         );
 
