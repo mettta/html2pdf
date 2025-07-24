@@ -173,6 +173,13 @@ export function isNoHanging(element) {
 /**
  * @this {Node}
  */
+export function isSlice(element) {
+  return this.isSelectorMatching(element, this._selector.flagSlice)
+}
+
+/**
+ * @this {Node}
+ */
 export function isForcedPageBreak(element) {
   return this.isSelectorMatching(element, this._selector.printForcedPageBreak)
 }

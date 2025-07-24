@@ -27,6 +27,13 @@ export function setFlagNoHanging(element, value) {
 /**
  * @this {Node}
  */
+export function setFlagSlice(element) {
+  this._DOM.setAttribute(element, this._selector.flagSlice)
+}
+
+/**
+ * @this {Node}
+ */
 export function markPageStartElement(element, page) {
   this._DOM.setAttribute(element, this._selector.pageStartMarker, page)
 }

@@ -217,8 +217,9 @@ export default class Table {
       // * TRY TO SPLIT CURRENT ROW
 
       const isNoBreak = this._node.isNoBreak(currentRow);
+      const isRowSliced = this._node.isSlice(currentRow);
 
-      if (!isNoBreak) {
+      if (!isNoBreak && !isRowSliced) {
         // * Let's split table row [rowIndex]
         this._debug._ && console.group( // Collapsed
           `%c 🔳 Try to split the ROW ${rowIndex} %c (from ${this._currentTableDistributedRows.length})`, 'color:magenta;', ''
@@ -291,7 +292,7 @@ export default class Table {
         }
 
         this.logGroupEnd(`🔳 Try to split the ROW ${rowIndex} (from ${this._currentTableDistributedRows.length}) (...if canSplitRow)`);
-      } else { // isNoBreak + TODO: transform content
+      } else { // isNoBreak + isSlice + TODO: transform content
 
         this._debug._ && isNoBreak && console.log(
           `%c Row # ${rowIndex} is noBreak`, 'color:DarkOrange; font-weight:bold', currentRow,
@@ -301,7 +302,7 @@ export default class Table {
         // * consider the cases (why this flag appeared)
         // *** ( the splitting row and each clone gets the isNoBreak flag!
         // ***   and such a row cannot be bigger, and this may be an error),
-        // TODO: (make special flag for splitted row)
+        // !!!!!!!! (made special flag for sliced row - use it
         // * and try to fit large row by transforming the content.
 
         const currRowHeight = this._DOM.getElementOffsetHeight(currentRow);
@@ -385,7 +386,7 @@ export default class Table {
 
     //* The splitting row and each clone gets the flag:
     this._node.setFlagNoBreak(splittingRow);
-    // TODO: make special flag for splitted row
+    this._node.setFlagSlice(splittingRow);
 
     const originalTDs = [...this._DOM.getChildren(splittingRow)];
 
