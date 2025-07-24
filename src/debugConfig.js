@@ -27,7 +27,7 @@ const debugConfig = {
     // * `Node` modules
     children: true,
     creators: false,
-    fitters: false,
+    fitters: true,
     getters: false,
     markers: false,
     pagebreaks: true,

@@ -222,7 +222,7 @@ export function getSplitPoints({
                 _isDebug(this) && console.warn('⛔ points.push(null) 1');
                 points.push(null);
               }
-              _scaleElementToFitHeight.call(this, currentElement, room)
+              this.fitElementWithinHeight(currentElement, room)
               if (nextElement) { registerPoint(nextElement) }
             } else {
 
@@ -257,7 +257,7 @@ export function getSplitPoints({
             if (!points.length && currentElement === children[0]) {
                 points.push(null);
             }
-            _scaleElementToFitHeight.call(this, currentElement, fullPageHeight)
+            this.fitElementWithinHeight(currentElement, fullPageHeight)
             if (nextElement) { registerPoint(nextElement) }
           } else {
 
@@ -295,7 +295,7 @@ export function getSplitPoints({
       //     currentElement,
       //     `height: ${currentElementHeight}`
       //   );
-      //   _scaleElementToFitHeight.call(this, currentElement, fullPageHeight);
+      //   this.fitElementWithinHeight(currentElement, fullPageHeight);
       // }
 
     }
@@ -396,41 +396,6 @@ export function sliceNodeContentBySplitPoints({ index, rootNode, splitPoints }) 
 
   _isDebug(this) && console.groupEnd(`🔪 (${index}) sliceNodeContentBySplitPoints`);
   return slices;
-}
-
-// 🔒 private
-
-/**
- * @this {Node}
- */
-function _scaleElementToFitHeight(element, targetHeight) {
-  // `transform: scale` does not affect the element’s box model or its parent’s layout
-  //  because scaling is a visual transformation only, not part of normal document flow.
-  // `transform: scale` visually changes the size of an element, but its actual size in the layout
-  //  stays the same — so the parent doesn’t shrink or grow based on the scaled size.
-  const actualHeight = this._DOM.getElementOffsetHeight(element);
-
-  if (actualHeight <= targetHeight) return;
-
-  const scale = targetHeight / actualHeight;
-
-  element.style.transformOrigin = 'top left';
-  element.style.transform = `scale(${scale})`;
-
-  // const scaler = this.create('div');
-  const scaler = this.createNeutral();
-  scaler.style.display = 'inline-block';
-  scaler.style.width = '100%';
-  scaler.style.height = targetHeight + 'px';
-
-  this._DOM.wrap(element, scaler);
-
-  _isDebug(this) && console.warn(
-    `%c Scaled element to fit target height: ${targetHeight}px`,
-    'color:orange; font-weight:bold;',
-    `scale: ${scale}`,
-    element
-  );
 }
 
 /**
