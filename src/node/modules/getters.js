@@ -4,6 +4,39 @@ import { debugFor } from '../utils/debugFor.js';
 const _isDebug = debugFor('getters');
 
 /**
+ * Returns offsetTop of element relative to root, normalized by root's padding-top.
+ *
+ * In layouts like TD, the available height is usually precomputed excluding padding-top.
+ * But element.offsetTop starts after padding-top — leading to double-counting it.
+ *
+ * This function compensates by subtracting padding-top, so positioning aligns
+ * with the precomputed height budget.
+ *
+ * @this {Node}
+ */
+export function getNormalizedTop(element, root, rootComputedStyle) {
+  const _rootComputedStyle = rootComputedStyle ? rootComputedStyle : this._DOM.getComputedStyle(root);
+  const rootPaddingTop = parseFloat(_rootComputedStyle.paddingTop) || 0;
+  return this.getTop(element, root) - rootPaddingTop;
+}
+
+/**
+ * Returns offsetBottom (with margins) of element relative to root, normalized by root's padding-top.
+ *
+ * In layouts like TD, the available height is usually precomputed excluding padding-top.
+ * But element.offsetTop starts after padding-top — leading to double-counting it.
+ *
+ * This function compensates by subtracting padding-top, so positioning aligns
+ * with the precomputed height budget.
+ * @this {Node}
+ */
+export function getNormalizedBottomWithMargin(element, root, rootComputedStyle) {
+  const _rootComputedStyle = rootComputedStyle ? rootComputedStyle : this._DOM.getComputedStyle(root);
+  const rootPaddingTop = parseFloat(_rootComputedStyle.paddingTop) || 0;
+  return this.getBottomWithMargin(element, root) - rootPaddingTop;
+}
+
+/**
  * @this {Node}
  */
 export function getTop(element, root = null, topAcc = 0) {
@@ -213,6 +246,22 @@ export function getTableRowHeight(tr, lines = 0) {
   const clone = this._DOM.cloneNode(tr);
   const text = '!<br />'.repeat(lines);
   [...clone.children].forEach(td => this._DOM.setInnerHTML(td, text));
+  this._DOM.insertBefore(tr, clone);
+  const endTop = this._DOM.getElementOffsetTop(tr);
+  this._DOM.removeNode(clone);
+  return endTop - initialTop;
+}
+
+/**
+ * @this {Node}
+ *
+ * Create an empty row by cloning the TR, insert it into the table,
+ * and detect its actual height through the delta
+ * of the tops of the TR following it.
+ */
+export function getTableEmptyRowHeight(tr) {
+  const initialTop = this._DOM.getElementOffsetTop(tr);
+  const clone = this._DOM.cloneNodeWrapper(tr);
   this._DOM.insertBefore(tr, clone);
   const endTop = this._DOM.getElementOffsetTop(tr);
   this._DOM.removeNode(clone);

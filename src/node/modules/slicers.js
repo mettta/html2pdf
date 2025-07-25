@@ -101,9 +101,8 @@ export function getSplitPoints({
 
     _isDebug(this) && console.log('🍎', {currentElement, previousElement, nextElement});
 
-    const nextElementTop = nextElement
-      ? this.getTop(nextElement, rootNode) - rootPaddingTop // ⚠️ See comment above about normalization.
-      : undefined;
+    // ⚠️ See comment above about normalization.
+    const nextElementTop = nextElement ? this.getNormalizedTop(nextElement, rootNode, _rootComputedStyle) : undefined;
 
     const floater = (points.length === 0) // * empty array => process first slice
       ? firstPartHeight
@@ -139,7 +138,7 @@ export function getSplitPoints({
         _isDebug(this) && console.log('%cIMAGE 💟💟', 'color:red;text-weight:bold')
       }
 
-      const currentElementBottom = this.getBottomWithMargin(currentElement, rootNode) - rootPaddingTop; // ⚠️ See comment above about normalization.
+      const currentElementBottom = this.getNormalizedBottomWithMargin(currentElement, rootNode, _rootComputedStyle); // ⚠️ See comment above about normalization.
 
       _isDebug(this) && console.log(`🍎 current does not fit: (next top) ${nextElementTop} > ${floater} (floater)`, [currentElement]);
       _isDebug(this) && console.log(`🍎 ? (curr bottom) ${currentElementBottom} // ${floater} (floater)`, [currentElement]);
