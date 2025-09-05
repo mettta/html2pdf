@@ -8,7 +8,7 @@ const _isDebug = debugFor('wrappers');
 */
 export function wrapNodeChildrenWithNeutralBlock(node) {
   const children = this._DOM.getChildren(node);
-  const wrapper = this._node.createNeutralBlock();
+  const wrapper = this.createNeutralBlock();
   this._DOM.insertAtStart(wrapper, ...children);
   this._DOM.insertAtStart(node, wrapper);
   return wrapper
