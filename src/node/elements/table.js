@@ -219,10 +219,9 @@ export default class Table {
       // * If the end of the current row is on the second page -
       // * 🏴 TRY TO SPLIT CURRENT ROW
 
-      const isNoBreak = this._node.isNoBreak(currentRow);
       const isRowSliced = this._node.isSlice(currentRow);
 
-      if (!isNoBreak && !isRowSliced) {
+      if (!isRowSliced) {
         // * Let's split table row [rowIndex]
         this._debug._ && console.group( // Collapsed
           `%c 🔳 Try to split the ROW ${rowIndex} %c (from ${this._currentTableDistributedRows.length})`, 'color:magenta;', ''
@@ -253,7 +252,7 @@ export default class Table {
           {
             currRowTop,
             '• splitBottom': this._currentTableSplitBottom,
-            '• is breakable?': !isNoBreak,
+            '• is row sliced?': !isRowSliced,
             'first part height': rowFirstPartHeight,
             'full part height': this._currentTableFullPartContentHeight,
           },
@@ -295,31 +294,38 @@ export default class Table {
         }
 
         this.logGroupEnd(`🔳 Try to split the ROW ${rowIndex} (from ${this._currentTableDistributedRows.length}) (...if canSplitRow)`);
-      } else { // isNoBreak + isSlice + TODO: transform content
+      } else { // isRowSliced + DON'T FIT (currentRowFitDelta > 0)
 
-        this._debug._ && isNoBreak && console.log(
-          `%c Row # ${rowIndex} is noBreak`, 'color:DarkOrange; font-weight:bold', currentRow,
+        this._debug._ && isRowSliced && console.log(
+          `%c Row # ${rowIndex} is slice! but don't fit`, 'color:DarkOrange; font-weight:bold', currentRow,
         );
 
-        // * If splitting is not possible because the row has the isNoBreak flag
-        // * consider the cases (why this flag appeared)
-        // *** ( the splitting row and each clone gets the isNoBreak flag!
-        // ***   and such a row cannot be bigger, and this may be an error),
-        // !!!!!!!! (made special flag for sliced row - use it
-        // * and try to fit large row by transforming the content.
+        // * If splitting is not possible because the row has the isRowSliced flag:
+        // * try to fit large row by transforming the content.
+        // * We check the actual resulting height of new lines here,
+        // * after they have been inserted into the DOM, and they have been rechecked for fit.
 
-        const currRowHeight = this._DOM.getElementOffsetHeight(currentRow);
-        if(currRowHeight > this._currentTableFullPartContentHeight) {
-          // TODO: transform content
-          console.warn('%c SUPER BIG', 'background:red;color:white', currRowHeight, '>', this._currentTableFullPartContentHeight);
-        }
+        // * And we need to know exactly how much the new line exceeds the limit.
+
+
+        // *** currentRowFitDelta = nextRowTopOrTableBottom - this._currentTableSplitBottom;
+        // * need to reduce row BIG content on currentRowFitDelta
+
+        // TODO: transform content
+        console.warn('%c SUPER BIG', 'background:red;color:white', currentRowFitDelta,
+          {
+            // rowH: currRowHeight,
+            part: this._currentTableFullPartContentHeight
+          }
+        );
+
 
         // TODO: Above, we made the row fit on the page.
         // * Register the row index as the start of a new page and update the splitBottom for nex page.
         splitStartRowIndexes.push(rowIndex);
         this._debug._ && console.log(`%c 📍 Row # ${rowIndex} registered as page start`, 'color:green; font-weight:bold');
 
-        this._updateCurrentTableSplitBottom(this._currentTableDistributedRows[rowIndex], "Row does not fit AND Row isNoBreak");
+        this._updateCurrentTableSplitBottom(this._currentTableDistributedRows[rowIndex], "Row does not fit & Row is SLICE");
       }
     }
 
@@ -388,7 +394,6 @@ export default class Table {
     this._debug._ && console.log(`🧿 currentRowTdHeights`, splittingRowTdShellHeights);
 
     //* The splitting row and each clone gets the flag:
-    this._node.setFlagNoBreak(splittingRow);
     this._node.setFlagSlice(splittingRow);
 
     const originalTDs = [...this._DOM.getChildren(splittingRow)];
