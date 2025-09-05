@@ -72,6 +72,8 @@ export default class Table {
     // ** current Table parameters updated dynamically during splitting
     this._currentTableSplitBottom = undefined;
     this._logSplitBottom_ = [];
+    // ** current per-run caches
+    this._currentRowShellCache = undefined;
   }
 
   _setCurrent(_table, _pageBottom, _fullPageHeight, _root) {
@@ -79,6 +81,7 @@ export default class Table {
     this._currentFirstPageBottom = _pageBottom;
     this._currentFullPageHeight = _fullPageHeight;
     this._currentRoot = _root;
+    this._currentRowShellCache = new WeakMap();
   }
 
   _prepareCurrentTableForSplitting() {
@@ -248,6 +251,11 @@ export default class Table {
           rowFirstPartHeight = this._currentTableFullPartContentHeight;
         }
 
+        // * Short-tail fallback: remaining space cannot host a meaningful short fragment
+        // * for this row on the current page, so we escalated to full-page height for the
+        // * first part. Semantically this means: "no short first fragment is feasible here".
+        const noShortFirstFragment = (rowFirstPartHeight === this._currentTableFullPartContentHeight);
+
         this._debug._ && console.info(
           {
             currRowTop,
@@ -259,7 +267,7 @@ export default class Table {
         );
 
         // * We split the row and obtain an array of new rows that should replace the old one.
-        const newRows = this._splitTableRow(
+        const { newRows, isFirstPartEmptyInAnyTD } = this._splitTableRow(
           rowIndex,
           currentRow,
           rowFirstPartHeight,
@@ -276,8 +284,16 @@ export default class Table {
           this._updateCurrentTableEntriesAfterSplit(rowIndex, newRows);
           this._updateCurrentTableDistributedRows();
 
-          // * Roll back index to re-check newly inserted rows starting from this position.
-          // * Outer loop will pick up the first new row in the next iteration.
+          // * Start the row on the next page if no valid short first fragment fits.
+          // * 1) Content-level: isFirstPartEmptyInAnyTD — splitPoints reported an empty first fragment in some TD.
+          // * 2) Geometry-level: noShortFirstFragment — short tail forced escalation to full-page height.
+          const mustStartOnNextPage = isFirstPartEmptyInAnyTD || noShortFirstFragment;
+          const nextStartIndex = mustStartOnNextPage ? rowIndex : (rowIndex + 1);
+          this._registerPageStartAt(nextStartIndex, splitStartRowIndexes, isFirstPartEmptyInAnyTD
+            ? 'Empty first part — move row to next page'
+            : 'Row split — next slice starts new page');
+
+          // * Roll back index to re-check from the newly updated splitBottom context.
           rowIndex -= 1;
 
         } else {
@@ -287,10 +303,26 @@ export default class Table {
           this._debug._ && console.log(
             `%c The row is not split. (ROW.${rowIndex})`, 'color:orange', this._currentTableDistributedRows[rowIndex],);
 
-          rowIndex -= 1;
+          // * If only short tail space is available, move the row to next page (no scaling on tail).
+          // * If we are already in full-page context, scale ONLY problematic TD content to fit full-page height.
 
-          // TODO
-          // todo что-то тут не так - если мы не разбили длинную строку - просто перелистываем? нет нет
+          const currRowTop = this._node.getTop(currentRow, this._currentTable) + this._currentTableCaptionFirefoxAmendment;
+          const availableRowHeight = this._currentTableSplitBottom - currRowTop;
+          const fullPageHeight = this._currentTableFullPartContentHeight;
+
+          if (availableRowHeight < fullPageHeight) {
+            // * Short remaining space → move row to next page.
+            this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Split failed — move row to next page');
+            // * Re-check under new splitBottom
+            rowIndex -= 1;
+          } else {
+            // * Full-page context → scale problematic TDs only.
+            this._scaleProblematicTDs(currentRow, fullPageHeight, this._getRowShellHeights(currentRow));
+
+            // * Place scaled row on next page start and re-check.
+            this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Split failed — scaled TDs for full-page');
+            rowIndex -= 1;
+          }
         }
 
         this.logGroupEnd(`🔳 Try to split the ROW ${rowIndex} (from ${this._currentTableDistributedRows.length}) (...if canSplitRow)`);
@@ -312,20 +344,37 @@ export default class Table {
         // * need to reduce row BIG content on currentRowFitDelta
 
         // TODO: transform content
-        console.warn('%c SUPER BIG', 'background:red;color:white', currentRowFitDelta,
+        this._debug._ && console.warn('%c SUPER BIG', 'background:red;color:white', currentRowFitDelta,
           {
             // rowH: currRowHeight,
             part: this._currentTableFullPartContentHeight
           }
         );
 
+        // * Transform TD content.
+        // * - If we are at the tail of a page (short first part), do NOT scale — move row to next page.
+        // * - If at a full-page context and TD still can’t fit, scale ONLY problematic TD contents to fit full-page height.
+        // * Note: fine-grained scaling may have already been applied in slicers.js (getSplitPoints).
+        // * This is a row-level fallback to guarantee geometry and prevent overflow.
 
-        // TODO: Above, we made the row fit on the page.
-        // * Register the row index as the start of a new page and update the splitBottom for nex page.
-        splitStartRowIndexes.push(rowIndex);
-        this._debug._ && console.log(`%c 📍 Row # ${rowIndex} registered as page start`, 'color:green; font-weight:bold');
+        const currRowTopForSlice = this._node.getTop(currentRow, this._currentTable) + this._currentTableCaptionFirefoxAmendment;
+        const availableRowHeight = this._currentTableSplitBottom - currRowTopForSlice;
+        const fullPageHeight = this._currentTableFullPartContentHeight;
 
-        this._updateCurrentTableSplitBottom(this._currentTableDistributedRows[rowIndex], "Row does not fit & Row is SLICE");
+        if (availableRowHeight < fullPageHeight) {
+          // * Short remaining space: move the whole (sliced) row to the next page.
+          this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Slice doesn\'t fit tail — move to next page');
+          // * Re-check the same row under the new split bottom (next page context).
+          rowIndex -= 1;
+        } else {
+          // * Full-page context: scale only problematic TDs to fit the page height.
+          this._scaleProblematicTDs(currentRow, fullPageHeight, this._getRowShellHeights(currentRow));
+
+          // * Place scaled row at the top of the next page.
+          this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Scaled TD content to fit full page');
+          rowIndex -= 1;
+        }
+
       }
     }
 
@@ -502,7 +551,8 @@ export default class Table {
 
     this.logGroupEnd(`%c ➗ Split the ROW ${splittingRowIndex}`);
 
-    return newRows;
+    // * Return both the new rows and a flag indicating if the first part is empty
+    return { newRows, isFirstPartEmptyInAnyTD };
 
   }
 
@@ -639,6 +689,117 @@ export default class Table {
   }
 
   // 🧮 Utilities / calculations:
+
+  // Two-tier safety note:
+  // - Fine-grained scaling may already occur inside slicers.js (getSplitPoints),
+  //   targeting specific inner elements that cannot be split.
+  // - This helper is a coarser, row/TD-level fallback used by table.js to ensure
+  //   geometry in full-page context. Tail cases are moved to the next page without scaling.
+  //
+  // Scale only problematic TDs within the given row to fit into totalRowHeight.
+  // Computes per-TD content budget as (totalRowHeight - TD shell height) and
+  // scales inner content if it exceeds the budget.
+  // Returns true if any TD was scaled.
+  _scaleProblematicTDs(row, totalRowHeight, shellsOpt) {
+    const tds = [...this._DOM.getChildren(row)];
+    // Use cached shells if possible: compute-once per TR per split run.
+    const shells = Array.isArray(shellsOpt) ? shellsOpt : this._getRowShellHeights(row);
+    let scaled = false;
+
+    for (let i = 0; i < tds.length; i++) {
+      const td = tds[i];
+      const shellH = shells[i] || 0;
+      const target = Math.max(0, totalRowHeight - shellH);
+      if (target <= 0) continue;
+
+      const onlyOneElementChild = this._DOM.getChildren(td).length === 1;
+      const firstChildEl = this._DOM.getFirstElementChild(td);
+
+      let contentWrapper = null;
+      let contentH;
+
+      if (onlyOneElementChild && firstChildEl && this._node.isNeutral(firstChildEl)) {
+        contentWrapper = firstChildEl;
+        contentH = this._DOM.getElementOffsetHeight(contentWrapper);
+      } else {
+        contentH = this._measureTdContentHeight(td);
+      }
+
+      if (contentH > target) {
+        if (!contentWrapper) {
+          contentWrapper = this._node.wrapNodeChildrenWithNeutralBlock(td);
+        }
+        this._node.fitElementWithinHeight(contentWrapper, target);
+        scaled = true;
+        this._debug._ && console.log('💢 RESIZED:', contentWrapper);
+      }
+    }
+
+    return scaled;
+  }
+
+  // Measure effective TD content height via a temporary neutral probe appended to TD.
+  // The probe's normalized top (relative to TD) equals the content height because
+  // it's placed after all flow content. The probe is removed immediately.
+  _measureTdContentHeight(td) {
+    const tdStyle = this._DOM.getComputedStyle(td);
+    const probe = this._node.createNeutralBlock();
+    this._DOM.setStyles(probe, {
+      display: 'block',
+      padding: '0',
+      margin: '0',
+      border: '0',
+      height: '0',
+      clear: 'both',
+      visibility: 'hidden',
+      contain: 'layout',
+    });
+    this._DOM.insertAtEnd(td, probe);
+    const h = this._node.getNormalizedTop(probe, td, tdStyle);
+    this._DOM.removeNode(probe);
+    return h;
+  }
+
+  // Get per-TD shell heights for a TR with caching.
+  // Uses a WeakMap per split run to avoid recomputation and to ensure automatic cleanup
+  // after TR nodes are replaced by splitting.
+  _getRowShellHeights(row) {
+    if (!this._currentRowShellCache) {
+      // Fallback: if cache is not initialized for some reason, compute directly.
+      return this._node.getTableRowShellHeightByTD(row);
+    }
+    if (this._currentRowShellCache.has(row)) {
+      return this._currentRowShellCache.get(row);
+    }
+    const shells = this._node.getTableRowShellHeightByTD(row);
+    this._currentRowShellCache.set(row, shells);
+    return shells;
+  }
+
+  // Register the start of a new page at a given row index and
+  // immediately update splitBottom to reflect the new page context.
+  // Keeps splitStartRowIndexes strictly increasing; ignores invalid/duplicate indices.
+  _registerPageStartAt(index, splitStartRowIndexes, reason = 'register page start') {
+    const rowsLen = this._currentTableDistributedRows?.length || 0;
+
+    const isInt = Number.isInteger(index);
+    this._assert && console.assert(isInt, `_registerPageStartAt: index must be an integer, got: ${index}`);
+    if (!isInt) return;
+    const gtZero = index > 0; // first split cannot start from 0
+    this._assert && console.assert(gtZero, `_registerPageStartAt: index must be > 0, got: ${index}`);
+    if (!gtZero) return;
+    const ltRowsLen = index < rowsLen; // avoid creating an empty final part
+    this._assert && console.assert(ltRowsLen, `_registerPageStartAt: index (${index}) must be < rowsLen (${rowsLen})`);
+    if (!ltRowsLen) return;
+    const last = splitStartRowIndexes.at(-1);
+    const strictlyAsc = (last == null) || index > last; // strictly increasing, no dups
+    this._assert && console.assert(strictlyAsc, `_registerPageStartAt: index (${index}) must be strictly > last (${last})`);
+    if (!strictlyAsc) return;
+
+    splitStartRowIndexes.push(index);
+    this._debug._ && console.log(`%c 📍 Row # ${index} registered as page start`, 'color:green; font-weight:bold');
+    this._updateCurrentTableSplitBottom(this._currentTableDistributedRows[index], reason);
+  }
 
   _getRowFitDelta(rowIndex) {
     const currentRow = this._currentTableDistributedRows[rowIndex];
