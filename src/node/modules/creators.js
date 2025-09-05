@@ -47,6 +47,7 @@ export function createNeutralBlock() {
   // that affect its height and has a block model.
   const element = this.createNeutral();
   element.style.display = 'block';
+  element.style.clear = 'both';
   return element
 }
 
