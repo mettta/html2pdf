@@ -205,16 +205,19 @@ export default class Table {
       }
     );
 
-    if (this._isCurrentRowFits(rowIndex)) {
+    const currentRowFitDelta = this._getRowFitDelta(rowIndex); // nextRowTopOrTableBottom - this._currentTableSplitBottom;
+    const _isCurrentRowFits = currentRowFitDelta <= 0;
+
+    if (_isCurrentRowFits) {
       // * evaluate next Row Top OR Table Bottom (for the last row).
       // * This is why the end of the table (the last piece) is not registered
       // * in splitStartRowIndexes — we simply skip it here.
       this._debug._ && console.log(`%c ✓ Row # ${rowIndex}: PASS`, 'color:green'); // background:#CCFF00
 
     } else {
-      // * currRowTop => this._currentTableSplitBottom
+      // * currentRowFitDelta > 0
       // * If the end of the current row is on the second page -
-      // * TRY TO SPLIT CURRENT ROW
+      // * 🏴 TRY TO SPLIT CURRENT ROW
 
       const isNoBreak = this._node.isNoBreak(currentRow);
       const isRowSliced = this._node.isSlice(currentRow);
@@ -632,29 +635,30 @@ export default class Table {
 
   // 🧮 Utilities / calculations:
 
-  _isCurrentRowFits(rowIndex) {
+  _getRowFitDelta(rowIndex) {
     const currentRow = this._currentTableDistributedRows[rowIndex];
     const currRowBottom = this._node.getBottom(currentRow, this._currentTable) + this._currentTableCaptionFirefoxAmendment;
     const nextRow = this._currentTableDistributedRows[rowIndex + 1];
     const nextRowTopOrTableBottom = nextRow
       ? this._node.getTop(nextRow, this._currentTable) + this._currentTableCaptionFirefoxAmendment
       : currRowBottom; // for the last row
-    const isCurrentRowFits = nextRowTopOrTableBottom <= this._currentTableSplitBottom;
+
+    const delta = nextRowTopOrTableBottom - this._currentTableSplitBottom;
+    const isCurrentRowFits = delta <= 0;
 
     if (isCurrentRowFits) {
       this._debug._ && console.log(
-        `%c📐 isCurrentRowFits? %c ${isCurrentRowFits} %c ( ${nextRowTopOrTableBottom} <= ${this._currentTableSplitBottom} )`,
+        `%c📐 isCurrentRowFits? %c ${isCurrentRowFits} %c ( ${nextRowTopOrTableBottom} <= ${this._currentTableSplitBottom} ) delta=${delta}`,
         '', 'font-weight:bold;color:green;', '', //background:#CCFF00
       );
     } else {
       this._debug._ && console.log(
-        `%c📐 isCurrentRowFits? %c ${isCurrentRowFits} %c ( ${nextRowTopOrTableBottom} => ${this._currentTableSplitBottom} )`,
+        `%c📐 isCurrentRowFits? %c ${isCurrentRowFits} %c ( ${nextRowTopOrTableBottom} > ${this._currentTableSplitBottom} ) delta=${delta}`,
         '', 'font-weight:bold;color:red;', '', //background:#FFDDDD
       );
     }
 
-
-    return isCurrentRowFits;
+    return delta;
   }
 
   _lockCurrentTableWidths() {
