@@ -284,14 +284,25 @@ export default class Table {
           this._updateCurrentTableEntriesAfterSplit(rowIndex, newRows);
           this._updateCurrentTableDistributedRows();
 
-          // * Start the row on the next page if no valid short first fragment fits.
+          // * Decide if we must start the row on the next page.
           // * 1) Content-level: isFirstPartEmptyInAnyTD — splitPoints reported an empty first fragment in some TD.
           // * 2) Geometry-level: noShortFirstFragment — short tail forced escalation to full-page height.
           const mustStartOnNextPage = isFirstPartEmptyInAnyTD || noShortFirstFragment;
-          const nextStartIndex = mustStartOnNextPage ? rowIndex : (rowIndex + 1);
-          this._registerPageStartAt(nextStartIndex, splitStartRowIndexes, isFirstPartEmptyInAnyTD
-            ? 'Empty first part — move row to next page'
-            : 'Row split — next slice starts new page');
+
+          if (!mustStartOnNextPage) {
+            // * Ensure the first slice fits the current page window (before registration).
+            const firstSlice = newRows[0];
+            const firstSliceTop = this._node.getTop(firstSlice, this._currentTable) + this._currentTableCaptionFirefoxAmendment;
+            const availableTailHeight = this._currentTableSplitBottom - firstSliceTop;
+            if (availableTailHeight > 0) {
+              this._scaleProblematicTDs(firstSlice, availableTailHeight, this._getRowShellHeights(firstSlice));
+            }
+            // * Now register the next slice as the start of the next page.
+            this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Row split — next slice starts new page');
+          } else {
+            // * No feasible short first fragment → move the whole row to the next page.
+            this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Empty first part — move row to next page');
+          }
 
           // * Roll back index to re-check from the newly updated splitBottom context.
           rowIndex -= 1;
