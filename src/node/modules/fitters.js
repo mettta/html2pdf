@@ -56,6 +56,7 @@ export function fitElementWithinHeight(element, targetHeight) {
   // const scaler = this.create('div');
   const scaler = this.createNeutral();
   scaler.style.display = 'inline-block';
+  scaler.style.verticalAlign = 'top';
   scaler.style.width = '100%';
   scaler.style.height = targetHeight + 'px';
 
