@@ -319,21 +319,9 @@ export default class Table {
 
           const currRowTop = this._node.getTop(currentRow, this._currentTable) + this._currentTableCaptionFirefoxAmendment;
           const availableRowHeight = this._currentTableSplitBottom - currRowTop;
-          const fullPageHeight = this._currentTableFullPartContentHeight;
-
-          if (availableRowHeight < fullPageHeight) {
-            // * Short remaining space → move row to next page.
-            this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Split failed — move row to next page');
-            // * Re-check under new splitBottom
-            rowIndex -= 1;
-          } else {
-            // * Full-page context → scale problematic TDs only.
-            this._scaleProblematicTDs(currentRow, fullPageHeight, this._getRowShellHeights(currentRow));
-
-            // * Place scaled row on next page start and re-check.
-            this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Split failed — scaled TDs for full-page');
-            rowIndex -= 1;
-          }
+          rowIndex = this._handleRowOverflow(rowIndex, currentRow, availableRowHeight, this._currentTableFullPartContentHeight, splitStartRowIndexes,
+            'Split failed — move row to next page',
+            'Split failed — scaled TDs for full-page');
         }
 
         this.logGroupEnd(`🔳 Try to split the ROW ${rowIndex} (from ${this._currentTableDistributedRows.length}) (...if canSplitRow)`);
@@ -370,21 +358,9 @@ export default class Table {
 
         const currRowTopForSlice = this._node.getTop(currentRow, this._currentTable) + this._currentTableCaptionFirefoxAmendment;
         const availableRowHeight = this._currentTableSplitBottom - currRowTopForSlice;
-        const fullPageHeight = this._currentTableFullPartContentHeight;
-
-        if (availableRowHeight < fullPageHeight) {
-          // * Short remaining space: move the whole (sliced) row to the next page.
-          this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Slice doesn\'t fit tail — move to next page');
-          // * Re-check the same row under the new split bottom (next page context).
-          rowIndex -= 1;
-        } else {
-          // * Full-page context: scale only problematic TDs to fit the page height.
-          this._scaleProblematicTDs(currentRow, fullPageHeight, this._getRowShellHeights(currentRow));
-
-          // * Place scaled row at the top of the next page.
-          this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Scaled TD content to fit full page');
-          rowIndex -= 1;
-        }
+        rowIndex = this._handleRowOverflow(rowIndex, currentRow, availableRowHeight, this._currentTableFullPartContentHeight, splitStartRowIndexes,
+          `Slice doesn't fit tail — move to next page`,
+          'Scaled TD content to fit full page');
 
       }
     }
@@ -770,6 +746,21 @@ export default class Table {
     this._DOM.removeNode(probe);
     return h;
   }
+
+  // Decide how to resolve overflow for the current row against the current window.
+  // Tail → move row to next page; Full-page → scale TDs, then move row.
+  // Returns rowIndex - 1 to trigger re-check under the new window.
+  _handleRowOverflow(rowIndex, row, availableRowHeight, fullPageHeight, splitStartRowIndexes, reasonTail, reasonFull) {
+    if (availableRowHeight < fullPageHeight) {
+      this._registerPageStartAt(rowIndex, splitStartRowIndexes, reasonTail);
+      return rowIndex - 1;
+    }
+    this._scaleProblematicTDs(row, fullPageHeight, this._getRowShellHeights(row));
+    this._registerPageStartAt(rowIndex, splitStartRowIndexes, reasonFull);
+    return rowIndex - 1;
+  }
+
+  
 
   // Get per-TD shell heights for a TR with caching.
   // Uses a WeakMap per split run to avoid recomputation and to ensure automatic cleanup
