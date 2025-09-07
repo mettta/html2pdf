@@ -63,6 +63,18 @@ body {
   );
 }
 
+.checkerboard {
+  --size: 10px;
+  --g: 120 100% 40%;
+  --c1: hsl(var(--g) / 0.3);/* 50% opacity */
+  --c2: hsl(var(--g) / 0.1);/* 30% opacity */
+
+  background:
+    repeating-linear-gradient(0deg, var(--c1) 0 var(--size), var(--c2) var(--size) calc(var(--size) * 2)),
+    repeating-linear-gradient(90deg, var(--c1) 0 var(--size), var(--c2) var(--size) calc(var(--size) * 2));
+  background-blend-mode: multiply;
+}
+
 [floater] {
   outline: rgba(255, 0, 200, 0.2) 1px solid;
 }
