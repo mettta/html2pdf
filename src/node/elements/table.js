@@ -682,7 +682,7 @@ export default class Table {
     this._logSplitBottom_.push(this._currentTableSplitBottom);
 
     this._debug._ && console.log(
-      `%c♻️ Update splitBottom (${message})`, 'color: green; font-weight: bold',
+      `%c♻️ Update splitBottom (with ${elementOrValue}) \n • ${message}`, 'color: green; font-weight: bold',
       '\n', _loggedPrevTableSplitBottom, '->', this._currentTableSplitBottom,
       `\n _logSplitBottom_: ${this._logSplitBottom_}`, this._logSplitBottom_,
     );
@@ -780,25 +780,44 @@ export default class Table {
   // immediately update splitBottom to reflect the new page context.
   // Keeps splitStartRowIndexes strictly increasing; ignores invalid/duplicate indices.
   _registerPageStartAt(index, splitStartRowIndexes, reason = 'register page start') {
-    const rowsLen = this._currentTableDistributedRows?.length || 0;
+    const rows = this._currentTableDistributedRows || [];
+    const rowsLen = rows.length;
 
+    // 1) Validate basics
     const isInt = Number.isInteger(index);
     this._assert && console.assert(isInt, `_registerPageStartAt: index must be an integer, got: ${index}`);
     if (!isInt) return;
-    const gtZero = index > 0; // first split cannot start from 0
-    this._assert && console.assert(gtZero, `_registerPageStartAt: index must be > 0, got: ${index}`);
-    if (!gtZero) return;
-    const ltRowsLen = index < rowsLen; // avoid creating an empty final part
-    this._assert && console.assert(ltRowsLen, `_registerPageStartAt: index (${index}) must be < rowsLen (${rowsLen})`);
-    if (!ltRowsLen) return;
-    const last = splitStartRowIndexes.at(-1);
-    const strictlyAsc = (last == null) || index > last; // strictly increasing, no dups
-    this._assert && console.assert(strictlyAsc, `_registerPageStartAt: index (${index}) must be strictly > last (${last})`);
-    if (!strictlyAsc) return;
 
-    splitStartRowIndexes.push(index);
-    this._debug._ && console.log(`%c 📍 Row # ${index} registered as page start`, 'color:green; font-weight:bold');
-    this._updateCurrentTableSplitBottom(this._currentTableDistributedRows[index], reason);
+    this._assert && console.assert(rowsLen > 0, `_registerPageStartAt: no rows to register`);
+    if (rowsLen === 0) return;
+
+    // 2) Special case: index === 0
+    // Do NOT push 0 (would create an empty first part); just advance geometry.
+    if (index === 0) {
+      this._debug._ && console.log(`%c 📍 Row #0 forced to next page (no short first fragment)`, 'color:green; font-weight:bold');
+      this._updateCurrentTableSplitBottom(rows[0], `${reason} (index=0)`);
+      return;
+    }
+
+    // 3) Clamp into [1 .. rowsLen-1] to avoid empty first/last parts
+    let idx = Math.max(1, Math.min(index, rowsLen - 1));
+
+    // 4) Enforce strictly ascending sequence (no dups)
+    const last = splitStartRowIndexes.at(-1);
+    if (last != null && idx <= last) {
+      idx = last + 1;
+    }
+
+    // 5) If clamped beyond range, do not push (would empty final/original)
+    if (idx >= rowsLen) {
+      this._assert && console.assert(false, `_registerPageStartAt: computed index (${idx}) >= rowsLen (${rowsLen})`);
+      return;
+    }
+
+    // 6) Register and advance geometry
+    splitStartRowIndexes.push(idx);
+    this._debug._ && console.log(`%c 📍 Row # ${idx} registered as page start`, 'color:green; font-weight:bold');
+    this._updateCurrentTableSplitBottom(rows[idx], reason);
   }
 
   _getRowFitDelta(rowIndex) {
