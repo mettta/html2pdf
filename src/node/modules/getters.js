@@ -150,10 +150,9 @@ export function getBottomWithMargin(element, root) {
     result = testTop;
   } else {
     // * Otherwise, we'll have to use a less accurate but stable method.
-    const bottomMargin = this._DOM.getComputedStyle(element).marginBottom;
+    const bottomMargin = parseInt(this._DOM.getComputedStyle(element).marginBottom);
     result = _elementBottom + bottomMargin;
   }
-
   return result;
 }
 
