@@ -44,6 +44,13 @@ export default merge(common, {
 
     new HtmlWebpackPlugin({
       appMountId: 'app',
+      filename: 'table.html',
+      template: './examples/test/table.html',
+      title: '📈 table',
+      inject: false,
+    }),
+    new HtmlWebpackPlugin({
+      appMountId: 'app',
       filename: 'current.html',
       template: './examples/test/current.html',
       title: '🥁 current test',
