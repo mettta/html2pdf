@@ -39,9 +39,11 @@ export function getSplitPoints({
     );
 
     // * If we try to register the first element as a new page: `point === children[0]`,
-    // * it is a something big that does not fit in first part.
-    if (!points.length && point === children[0]) {
-      _isDebug(this) && console.log('%c point === children[0]', 'color:red');
+    // * it is a something big that does not fit in first (short) tail part.
+    // * And this candidate should not be an only child. So there is at least one more (children[1]).
+    if (!points.length && point === children[0] && children[1]) {
+      _isDebug(this) && console.log('%c !points.length && point === children[0] && children[1]', 'color:red');
+      _isDebug(this) && console.log('%c 🅾️ push(null) in registerPoint()', 'color:red');
       points.push(null)
     } else {
       points.push(point)
@@ -218,7 +220,7 @@ export function getSplitPoints({
                 `height: ${currentElementHeight}`
               );
               if (!points.length && currentElement === children[0]) {
-                _isDebug(this) && console.warn('⛔ points.push(null) 1');
+                _isDebug(this) && console.warn('🅾️ (1) points.push(null) in isUnbreakableOversized');
                 points.push(null);
               }
               this.fitElementWithinHeight(currentElement, room)
@@ -226,6 +228,8 @@ export function getSplitPoints({
             } else {
 
               // FIXME: быстрый фикс, но помог. Проверить тщательно логику.
+              // Element is unbreakable and fits a full page, but does not fit the tail.
+              // Start the next page from currentElement (first slice may be empty when it is the first).
               registerPoint(currentElement)
             }
           }
@@ -252,7 +256,7 @@ export function getSplitPoints({
               currentElement,
               `height: ${currentElementHeight}`
             );
-            _isDebug(this) && console.warn('⛔ points.push(null) 2');
+            _isDebug(this) && console.warn('🅾️ (2) points.push(null) in isUnbreakableOversized');
             if (!points.length && currentElement === children[0]) {
                 points.push(null);
             }
