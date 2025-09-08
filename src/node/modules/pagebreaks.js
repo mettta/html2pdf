@@ -42,15 +42,20 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
 
   _isDebug(this) && console.log(
     "Start calculations:",
-    { pageStart, lastPageStart, topLimit },
+    { pageStart, lastPageStart, root, topLimit },
   );
 
   // * Let's keep a stable intermediate improvement here, based on findFirstChildParent.
-  let betterCandidate = this.findFirstChildParentFromPage(
-    pageStart,
-    topLimit,
-    root
-  ) || pageStart;
+  // * If helper fails (null/undefined), do not pick a candidate above the limit.
+  const fcpp = this.findFirstChildParentFromPage(pageStart, topLimit, root);
+  let betterCandidate;
+  if (fcpp) {
+    betterCandidate = fcpp;
+  } else {
+    const psTop = this.getTop(pageStart, root);
+    // * If pageStart is above the limit, fall back to lastPageStart; else keep pageStart.
+    betterCandidate = (psTop < topLimit) ? lastPageStart : pageStart;
+  }
 
   _isDebug(this) && console.log("betterCandidate:", betterCandidate,);
 
@@ -104,9 +109,9 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
   // - as the previous element (left)
   // - as the parent element (up)
 
-  if (currentCandidate == lastPageStart || this.getTop(currentCandidate, root) <= topLimit) {
+  if (currentCandidate == lastPageStart || this.getTop(currentCandidate, root) < topLimit) {
     interruptedWithLimit = true;
-    _isDebug(this) && console.log('☝️ Top page limit has been reached', betterCandidate);
+    _isDebug(this) && console.log('☝️ Top page limit has been reached', currentCandidate);
   }
 
   // TODO: needs more tests
@@ -120,6 +125,11 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
   // in one of the directions (past page start). Therefore we cancel attempts
   // to improve the page break semantically and leave only geometric improvement.
   let result = (interruptedWithUndefined || interruptedWithLimit) ? betterCandidate : currentCandidate;
+
+  // * Normalize: never return a candidate above the limit.
+  if (this.getTop(result, root) < topLimit) {
+    result = lastPageStart;
+  }
 
   if (this.isAfterContentFlowStart(result)) {
     result = pageStart;
@@ -187,6 +197,7 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
   // (we'll want to ignore the rule for semantic break improvement).
 
   _isDebug(this) && console.groupCollapsed('⬆ findFirstChildParentFromPage');
+  _isDebug(this) && console.log({element, topLimit, root});
 
   let firstSuitableParent = null;
   let current = element;
@@ -195,6 +206,11 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
   while (true) {
     const parent = this._DOM.getParentNode(current);
     if (!parent) break;
+
+    // Stop at root boundary: do not climb to or above root.
+    if (parent === root) {
+      break;
+    }
 
     const isFirstChild = this._DOM.getFirstElementChild(parent) === current;
     if (!isFirstChild) {
