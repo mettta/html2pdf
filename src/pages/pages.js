@@ -78,14 +78,6 @@ export default class Pages {
     this._commonLineHeight = this._node.getLineHeight(this._root);
     this._minimumBreakableHeight = this._commonLineHeight * this._minBreakableLines;
 
-    // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browsers
-    // Firefox 1.0+
-    // https://bugzilla.mozilla.org/show_bug.cgi?id=820891
-    // * Reason: caption is considered as an external element
-    // * and is not taken into account in calculation
-    // * of offset parameters of table rows.
-    this._isFirefox = typeof InstallTrigger !== 'undefined';
-
     // * Public
 
     this.pages = [];
@@ -216,8 +208,6 @@ export default class Pages {
       'this._forcedPageBreakSelectors', this._forcedPageBreakSelectors,
       '\n',
       'this._noBreakSelectors', this._noBreakSelectors,
-      '\n',
-      'isFirefox', this._isFirefox,
     );
     this._debug._ && console.groupEnd('•• init data ••');
 

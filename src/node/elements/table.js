@@ -21,14 +21,6 @@ export default class Table {
     // Table splitting constraints and constants
     this._initConstants();
 
-    // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browsers
-    // Firefox 1.0+
-    // https://bugzilla.mozilla.org/show_bug.cgi?id=820891
-    // * Reason: caption is considered as an external element
-    // * and is not taken into account in calculation
-    // * of offset parameters of table rows.
-    this._isFirefox = typeof InstallTrigger !== 'undefined';
-
     Object.assign(this, Logging);
 
     // ** sets current parameters to undefined
@@ -66,7 +58,6 @@ export default class Table {
     // ** current Table parameters calculated during preparation
     this._currentTableEntries = undefined;
     this._currentTableDistributedRows = undefined;
-    this._currentTableCaptionFirefoxAmendment = undefined;
     this._currentTableFirstPartContentBottom = undefined;
     this._currentTableFullPartContentHeight = undefined;
     // ** current Table parameters updated dynamically during splitting
@@ -231,7 +222,7 @@ export default class Table {
         );
 
         const _minMeaningfulRowSpace = this._node.getTableRowHeight(currentRow, this._minPartLines); // ? paragraph inside
-        const currRowTop = this._node.getTop(currentRow, this._currentTable) + this._currentTableCaptionFirefoxAmendment;
+        const currRowTop = this._node.getTop(currentRow, this._currentTable);
 
         this._assert && console.assert(
           this._currentTableSplitBottom >= currRowTop,
@@ -292,7 +283,7 @@ export default class Table {
           if (!mustStartOnNextPage) {
             // * Ensure the first slice fits the current page window (before registration).
             const firstSlice = newRows[0];
-            const firstSliceTop = this._node.getTop(firstSlice, this._currentTable) + this._currentTableCaptionFirefoxAmendment;
+            const firstSliceTop = this._node.getTop(firstSlice, this._currentTable);
             const availableTailHeight = this._currentTableSplitBottom - firstSliceTop;
             if (availableTailHeight > 0) {
               this._scaleProblematicTDs(firstSlice, availableTailHeight, this._getRowShellHeights(firstSlice));
@@ -317,7 +308,7 @@ export default class Table {
           // * If only short tail space is available, move the row to next page (no scaling on tail).
           // * If we are already in full-page context, scale ONLY problematic TD content to fit full-page height.
 
-          const currRowTop = this._node.getTop(currentRow, this._currentTable) + this._currentTableCaptionFirefoxAmendment;
+          const currRowTop = this._node.getTop(currentRow, this._currentTable);
           const availableRowHeight = this._currentTableSplitBottom - currRowTop;
           rowIndex = this._handleRowOverflow(rowIndex, currentRow, availableRowHeight, this._currentTableFullPartContentHeight, splitStartRowIndexes,
             'Split failed — move row to next page',
@@ -356,7 +347,7 @@ export default class Table {
         // * Note: fine-grained scaling may have already been applied in slicers.js (getSplitPoints).
         // * This is a row-level fallback to guarantee geometry and prevent overflow.
 
-        const currRowTopForSlice = this._node.getTop(currentRow, this._currentTable) + this._currentTableCaptionFirefoxAmendment;
+        const currRowTopForSlice = this._node.getTop(currentRow, this._currentTable);
         const availableRowHeight = this._currentTableSplitBottom - currRowTopForSlice;
         rowIndex = this._handleRowOverflow(rowIndex, currentRow, availableRowHeight, this._currentTableFullPartContentHeight, splitStartRowIndexes,
           `Slice doesn't fit tail — move to next page`,
@@ -602,10 +593,6 @@ export default class Table {
     const tableTheadHeight = this._DOM.getElementOffsetTop(this._currentTableDistributedRows[0], this._currentTable) - tableCaptionHeight || 0;
     const tableTfootHeight = this._DOM.getElementOffsetHeight(this._currentTableEntries.tfoot) || 0;
 
-    // *** Convert NULL/Undefined to 0.
-    // *** Nullish coalescing assignment (??=), Nullish coalescing operator (??)
-    this._currentTableCaptionFirefoxAmendment = (tableCaptionHeight ?? 0) * (this._isFirefox ?? 0);
-
     this._currentTableFirstPartContentBottom = this._currentFirstPageBottom
       - tableTopWithTopMargin
       - tableWrapperHeight
@@ -665,7 +652,6 @@ export default class Table {
       // If it is an element - calculate by DOM
       this._currentTableSplitBottom =
         this._node.getTop(elementOrValue, this._currentTable) +
-        this._currentTableCaptionFirefoxAmendment +
         this._currentTableFullPartContentHeight;
     } else {
       throw new Error(`_updateCurrentTableSplitBottom: unexpected value type: ${typeof elementOrValue}`);
@@ -829,10 +815,10 @@ export default class Table {
 
   _getRowFitDelta(rowIndex) {
     const currentRow = this._currentTableDistributedRows[rowIndex];
-    const currRowBottom = this._node.getBottom(currentRow, this._currentTable) + this._currentTableCaptionFirefoxAmendment;
+    const currRowBottom = this._node.getBottom(currentRow, this._currentTable);
     const nextRow = this._currentTableDistributedRows[rowIndex + 1];
     const nextRowTopOrTableBottom = nextRow
-      ? this._node.getTop(nextRow, this._currentTable) + this._currentTableCaptionFirefoxAmendment
+      ? this._node.getTop(nextRow, this._currentTable)
       : currRowBottom; // for the last row
 
     const delta = nextRowTopOrTableBottom - this._currentTableSplitBottom;
