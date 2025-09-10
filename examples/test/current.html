@@ -39,10 +39,13 @@
         width: 100%;
         margin: 0;
 
-        border-collapse: collapse;
-
         font-size: 9px;
         line-height: 10px;
+
+        border-collapse: collapse;
+        /*
+        border-bottom:8px solid;
+        */
       }
 
       .problematic_td {
@@ -55,10 +58,14 @@
 
 <body>
   <!--
-    height 101 makes an error:
-    space = 99, table h=100
+    Chrome: height:99px
+    FF: height:98px
+
+    1st page has 5 lines
+
+    +1px -> 4 lines on 1st page
   -->
-  <div filler style="height:101px"></div>
+  <div filler style="height:98px"></div>
   <table class="table-testing" border="1">
     <caption>Table: caption</caption>
     <colgroup>

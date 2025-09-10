@@ -582,8 +582,13 @@ export default class Table {
     // Prepare node parameters
 
     // * Calculate table wrapper (empty table element) height
-    // * to calculate the available space for table content
-    const tableWrapperHeight = this._node.getEmptyNodeHeight(this._currentTable); // '<tr><td></td></tr>'
+    // * to estimate the available space for table content.
+    const tableWrapperHeight = this._node.getEmptyNodeHeight(
+      this._currentTable,
+      // * We need content for the outer table tag to be rendered, but we reset
+      // * the TD/TR styles because they are later considered individually for each cell.
+      '<tr style="padding:0;border:0;"><td style="padding:0;border:0;"></td></tr>'
+    );
 
     // * getTopWithMargin vs getTop
     // * The margin must be taken into account,
