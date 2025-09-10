@@ -37,12 +37,16 @@
       .table-testing {
         font-family: Arial, Helvetica, sans-serif;
         width: 100%;
-        margin: 10px 0;
+        margin: 0;
 
         border-collapse: collapse;
 
         font-size: 9px;
         line-height: 10px;
+      }
+
+      .problematic_td {
+        padding-top: 0;
       }
     </style>
     <!-- line-height = 1 (10) -->
@@ -50,8 +54,11 @@
 </head>
 
 <body>
-  <!-- height 99 - 100 - 101 (100 makes an error) -->
-  <div filler style="height:100px"></div>
+  <!--
+    height 101 makes an error:
+    space = 99, table h=100
+  -->
+  <div filler style="height:101px"></div>
   <table class="table-testing" border="1">
     <caption>Table: caption</caption>
     <colgroup>
@@ -66,7 +73,7 @@
     </thead>
     <tbody>
       <tr>
-        <td>
+        <td class="problematic_td">
           <div data-testid="R_0" filler="red" class="line-red">R_0</div>
           <div floater></div>
           <div data-testid="R_1" filler="red" class="line-red">R_1</div>
@@ -82,7 +89,7 @@
           <div data-testid="R_6" filler="red" class="line-red">R_6</div>
           <div floater></div>
         </td>
-        <td>
+        <td class="problematic_td">
           <div data-testid="R0" filler="red" class="line-red">R0</div>
           <div floater></div>
           <div data-testid="R1" filler="red" class="line-red">R1</div>
