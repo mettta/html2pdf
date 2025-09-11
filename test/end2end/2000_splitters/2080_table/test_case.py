@@ -27,10 +27,16 @@ case10_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "case10.html")
 )
 case11_html_file_url = (
-    "file:///" + os.path.join(path_to_this_test_file_folder, "case10.html")
+    "file:///" + os.path.join(path_to_this_test_file_folder, "case11.html")
 )
 case12_html_file_url = (
-    "file:///" + os.path.join(path_to_this_test_file_folder, "case10.html")
+    "file:///" + os.path.join(path_to_this_test_file_folder, "case12.html")
+)
+case13_html_file_url = (
+    "file:///" + os.path.join(path_to_this_test_file_folder, "case13.html")
+)
+case14_html_file_url = (
+    "file:///" + os.path.join(path_to_this_test_file_folder, "case14.html")
 )
 
 
@@ -104,16 +110,21 @@ class Test(BaseCase):
         self.helper.assert_element_on_the_page('//*[@data-testid="R7"]', 2)
         self.helper.assert_element_on_the_page('//*[@data-testid="R11"]', 2)
         self.helper.assert_element_on_the_page('//*[@data-testid="G0"]', 2)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G3"]', 2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G4"]', 2)
         self.helper.assert_element_on_the_page('//*[@data-testid="G_0"]', 2)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G_3"]', 2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G_4"]', 2)
         # 3
-        self.helper.assert_element_on_the_page('//*[@data-testid="G4"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G5"]', 3)
         self.helper.assert_element_on_the_page('//*[@data-testid="G11"]', 3)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G_4"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G_5"]', 3)
         self.helper.assert_element_on_the_page('//*[@data-testid="G_7"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="B_0"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="B_2"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="B0"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="B2"]', 3)
         # 4
-        self.helper.assert_element_on_the_page('//*[@data-testid="B0"]', 4)
+        self.helper.assert_element_on_the_page('//*[@data-testid="B_3"]', 4)
+        self.helper.assert_element_on_the_page('//*[@data-testid="B3"]', 4)
         self.helper.assert_element_on_the_page('//*[@data-testid="B5"]', 4)
 
     def test_4(self):
@@ -141,14 +152,14 @@ class Test(BaseCase):
         self.helper.assert_element_on_the_page('//*[@data-testid="B5"]', 4)
 
     def test_5(self):
-        # 6 pages
+        # 5 pages
         # The service element moves the beginning of the table downwards.
         # But the first line has a large unbreakable object that will be reduced
         # (to the minimum extent necessary).
         # So the whole table is moved to a new page, because the first row with
         # the object wants to occupy the maximum space (a whole page).
         self.helper.do_open(case5_html_file_url)
-        self.helper.assert_document_has_pages(6)
+        self.helper.assert_document_has_pages(5)
         # 1
         self.helper.assert_element_on_the_page('//*[@data-testid="pusher"]', 1)
         # 2
@@ -160,20 +171,16 @@ class Test(BaseCase):
         self.helper.assert_element_on_the_page('//*[@data-testid="R10"]', 4)
         self.helper.assert_element_on_the_page('//*[@data-testid="R11"]', 4)
         self.helper.assert_element_on_the_page('//*[@data-testid="G0"]', 4)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G6"]', 4)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G7"]', 4)
         self.helper.assert_element_on_the_page('//*[@data-testid="G_0"]', 4)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G_6"]', 4)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G_7"]', 4)
         # 5
-        self.helper.assert_element_on_the_page('//*[@data-testid="G7"]', 5)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G8"]', 5)
         self.helper.assert_element_on_the_page('//*[@data-testid="G11"]', 5)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G_7"]', 5)
         self.helper.assert_element_on_the_page('//*[@data-testid="B0"]', 5)
-        self.helper.assert_element_on_the_page('//*[@data-testid="B3"]', 5)
+        self.helper.assert_element_on_the_page('//*[@data-testid="B5"]', 5)
         self.helper.assert_element_on_the_page('//*[@data-testid="B_0"]', 5)
         self.helper.assert_element_on_the_page('//*[@data-testid="B_3"]', 5)
-        # 6
-        self.helper.assert_element_on_the_page('//*[@data-testid="B4"]', 6)
-        self.helper.assert_element_on_the_page('//*[@data-testid="B5"]', 6)
 
     def test_6(self):
         # 2 pages
@@ -243,7 +250,7 @@ class Test(BaseCase):
         self.helper.assert_element_on_the_page('//*[@data-testid="A0"]', 3)
 
     def test_12(self):
-        # 3 pages.
+        # 4 pages.
         self.helper.do_open(case12_html_file_url)
         self.helper.assert_document_has_pages(4)
         # 3
@@ -252,6 +259,21 @@ class Test(BaseCase):
         self.helper.assert_element_on_the_page('//*[@data-testid="B4"]', 3)
         # 4
         # The last TR "A" (4 lines) is here in its entirety:
-        self.helper.assert_element_on_the_page('//*[@data-testid="A_0"]', 3)
-        self.helper.assert_element_on_the_page('//*[@data-testid="A0"]', 3)
-        self.helper.assert_element_on_the_page('//*[@data-testid="A3"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="A_0"]', 4)
+        self.helper.assert_element_on_the_page('//*[@data-testid="A0"]', 4)
+        self.helper.assert_element_on_the_page('//*[@data-testid="A3"]', 4)
+
+    def test_13(self):
+        # 3 pages.
+        self.helper.do_open(case13_html_file_url)
+        self.helper.assert_document_has_pages(1)
+        # 3
+        self.helper.assert_element_on_the_page('//*[@data-testid="R16"]', 1)
+
+    def test_14(self):
+        # 3 pages.
+        self.helper.do_open(case14_html_file_url)
+        self.helper.assert_document_has_pages(3)
+        # 3
+        self.helper.assert_element_on_the_page('//*[@data-testid="R26"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="R39"]', 3)

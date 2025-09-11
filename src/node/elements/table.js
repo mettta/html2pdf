@@ -60,6 +60,7 @@ export default class Table {
     this._currentTableDistributedRows = undefined;
     this._currentTableFirstPartContentBottom = undefined;
     this._currentTableFullPartContentHeight = undefined;
+    this._currentTableTfootHeight = undefined;
     // ** current Table parameters updated dynamically during splitting
     this._currentTableSplitBottom = undefined;
     this._logSplitBottom_ = [];
@@ -209,6 +210,28 @@ export default class Table {
       this._debug._ && console.log(`%c ✓ Row # ${rowIndex}: PASS`, 'color:green'); // background:#CCFF00
 
     } else {
+      // 🫟 Special case: last row can fit if we remove the bottom signpost (final chunk has no footer label).
+      const nextRow = this._currentTableDistributedRows[rowIndex + 1];
+      const isLastRow = !nextRow;
+      const extraCapacity = this._signpostHeight + this._currentTableTfootHeight; // what we regain in the final part
+
+      // TODO: make a function #last_tail
+      // 🫟 Early tail drop for a row with one split:
+      // If this is the last data row and the last slice height is small enough
+      // to fit into the extra capacity of the final chunk (no bottom signpost + TFOOT),
+      // skip creating the last slice row entirely.
+      if (isLastRow) {
+        // FIXME: currRowBottom is calculated in this._getRowFitDelta, reuse it!
+        const currRowBottom = this._node.getBottom(currentRow, this._currentTable);
+        const overflow = currRowBottom - this._currentTableSplitBottom;
+        this._debug._ && console.log('🫟 last-row-extra-check', { overflow, extraCapacity, currRowBottom, splitBottom: this._currentTableSplitBottom });
+        if (overflow <= extraCapacity) {
+          // Treat as fitting the final window: do not split and do not register a new chunk.
+          this._debug._ && console.log('🫟 last-row-fits-without-bottom-signpost: skip split');
+          this.logGroupEnd(`Row # ${origRowIndex} (from ${origRowCount}) is checked`);
+          return rowIndex;
+        }
+      }
       // * currentRowFitDelta > 0
       // * If the end of the current row is on the second page -
       // * 🏴 TRY TO SPLIT CURRENT ROW
@@ -272,6 +295,23 @@ export default class Table {
 
           // * Update the DOM and state with the new table rows.
           this._replaceRowInDOM(currentRow, newRows);
+
+          // TODO: make a function #last_tail
+          // 🔂 evaluate the last new row of newRows for old LastRow
+          // 🫟 Tail drop for a row with multiple splits:
+          // If this is the last data row and the last slice height is small enough
+          // to fit into the extra capacity of the final chunk (no bottom signpost + TFOOT),
+          // skip creating the last slice row entirely.
+          if (isLastRow) {
+            this._debug._ && console.log('🫟 Tail drop');
+            const heightOfLastNewRow = this._DOM.getElementOffsetHeight(newRows.at(-1));
+            if (heightOfLastNewRow <= extraCapacity) {
+              this._DOM.moveRowContent(newRows.at(-1), newRows.at(-2));
+              this._DOM.removeNode(newRows.at(-1));
+              newRows.pop();
+            }
+          }
+
           this._updateCurrentTableEntriesAfterSplit(rowIndex, newRows);
           this._updateCurrentTableDistributedRows();
 
@@ -425,6 +465,7 @@ export default class Table {
 
     const originalTDs = [...this._DOM.getChildren(splittingRow)];
 
+    // *️⃣ [•] splitPointsPerTD
     let splitPointsPerTD = originalTDs.map((td, ind) => {
       this._debug._ && console.groupCollapsed(`(•) Split TD.${ind} in ROW.${splittingRowIndex}`);
 
@@ -449,7 +490,6 @@ export default class Table {
 
       return tdContentSplitPoints
     });
-
     this._debug._ && console.log('[•] splitPointsPerTD', splitPointsPerTD);
 
     // * shouldFirstPartBeSkipped?
@@ -460,9 +500,9 @@ export default class Table {
       return (obj.length && obj[0] === null)
     });
 
+    // *️⃣ [••] splitPointsPerTD
     if(isFirstPartEmptyInAnyTD) {
-      splitPointsPerTD = [...originalTDs]
-      .map((td, ind) => {
+      splitPointsPerTD = [...originalTDs].map((td, ind) => {
 
         const currentTdFirstPartHeight = rowFirstPartHeight - splittingRowTdShellHeights[ind];
         const currentTdFullPageHeight = rowFullPageHeight - splittingRowTdShellHeights[ind];
@@ -486,7 +526,6 @@ export default class Table {
 
     // добавить в tdContentSplitPoints нулевой элемент
     // но также считать "первый пустой кусок"
-
 
     const newRows = [];
     const ifThereIsSplit = splitPointsPerTD.some(obj => obj.length);
@@ -591,7 +630,7 @@ export default class Table {
     const tableCaptionHeight = this._DOM.getElementOffsetHeight(this._currentTableEntries.caption) || 0;
     // const tableTheadHeight = this._DOM.getElementOffsetHeight(this._currentTableEntries.thead) || 0;
     const tableTheadHeight = this._DOM.getElementOffsetTop(this._currentTableDistributedRows[0], this._currentTable) - tableCaptionHeight || 0;
-    const tableTfootHeight = this._DOM.getElementOffsetHeight(this._currentTableEntries.tfoot) || 0;
+    this._currentTableTfootHeight = this._DOM.getElementOffsetHeight(this._currentTableEntries.tfoot) || 0;
 
     this._currentTableFirstPartContentBottom = this._currentFirstPageBottom
       - tableTopWithTopMargin
@@ -601,7 +640,7 @@ export default class Table {
     this._currentTableFullPartContentHeight = this._currentFullPageHeight
       - tableCaptionHeight // * copied into each part
       - tableTheadHeight // * copied into each part
-      - tableTfootHeight // * remains in the last part (in the table)
+      - this._currentTableTfootHeight // * remains in the last part (in the table)
       - tableWrapperHeight
       - 2 * this._signpostHeight;
   }

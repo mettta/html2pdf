@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+  <script
+    defer
+    data-debug-mode="true"
+    data-markup-debug-mode="true"
+    data-print-height='300px'
+    data-print-width='600px'
+    data-print-left-margin= '50px'
+    data-print-right-margin= '50px'
+    data-print-top-margin= '50px'
+    data-print-bottom-margin= '50px'
+    data-print-font-size='16px'
+    src="../../../../dist/bundle.js"></script>
+
+    <!-- styles for test element -->
+    <style>
+      .line-red {
+        height: 10px
+      }
+
+      .line-green {
+        height: 10px
+      }
+
+      .line-blue {
+        height: 10px
+      }
+
+      .table-testing {
+        font-family: Arial, Helvetica, sans-serif;
+        width: 100%;
+        margin: 0;
+
+        font-size: 9px;
+        line-height: 10px;
+
+        border-collapse: collapse;
+        /*
+        border-bottom:8px solid;
+        */
+      }
+
+      .problematic_td {
+        padding-top: 0;
+      }
+    </style>
+    <!-- line-height = 1 (10) -->
+    <!-- 1 step to shift by 1 line is 20 pixels -->
+</head>
+
+<body>
+  <table class="table-testing" border="1">
+    <caption>Table: caption</caption>
+    <colgroup>
+      <col width="20%">
+      <col width="80%">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>TH1</th>
+        <th>TH2</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="problematic_td">
+          <div data-testid="R_0" filler="red" class="line-red">R_0</div>
+          <div floater></div>
+          <div data-testid="R_1" filler="red" class="line-red">R_1</div>
+          <div floater></div>
+          <div data-testid="R_2" filler="red" class="line-red">R_2</div>
+          <div floater></div>
+          <div data-testid="R_3" filler="red" class="line-red">R_3</div>
+          <div floater></div>
+          <div data-testid="R_4" filler="red" class="line-red">R_4</div>
+          <div floater></div>
+        </td>
+        <td class="problematic_td">
+          <div data-testid="R0" filler="red" class="line-red">R0</div>
+          <div floater></div>
+          <div data-testid="R1" filler="red" class="line-red">R1</div>
+          <div floater></div>
+          <div data-testid="R2" filler="red" class="line-red">R2</div>
+          <div floater></div>
+          <div data-testid="R3" filler="red" class="line-red">R3</div>
+          <div floater></div>
+          <div data-testid="R4" filler="red" class="line-red">R4</div>
+          <div floater></div>
+          <div data-testid="R5" filler="red" class="line-red">R5</div>
+          <div floater></div>
+          <div data-testid="R6" filler="red" class="line-red">R6</div>
+          <div floater></div>
+          <div data-testid="R7" filler="red" class="line-red">R7</div>
+          <div floater></div>
+          <div data-testid="R8" filler="red" class="line-red">R8</div>
+          <div floater></div>
+          <div data-testid="R9" filler="red" class="line-red">R9</div>
+          <div floater></div>
+          <div data-testid="R10" filler="red" class="line-red">R10</div>
+          <div floater></div>
+          <div data-testid="R11" filler="red" class="line-red">R11</div>
+          <div floater></div>
+          <div data-testid="R12" filler="red" class="line-red">R12</div>
+          <div floater></div>
+          <div data-testid="R13" filler="red" class="line-red">R13</div>
+          <div floater></div>
+          <div data-testid="R14" filler="red" class="line-red">R14</div>
+          <div floater></div>
+          <div data-testid="R15" filler="red" class="line-red">R15</div>
+          <div floater></div>
+          <div data-testid="R16" filler="red" class="line-red">R16</div>
+          <div floater></div>
+          <div data-testid="R17" filler="red" class="line-red">R17</div>
+          <div floater></div>
+          <div data-testid="R18" filler="red" class="line-red">R18</div>
+          <div floater></div>
+          <div data-testid="R19" filler="red" class="line-red">R19</div>
+          <div floater></div>
+          <div data-testid="R20" filler="red" class="line-red">R20</div>
+          <div floater></div>
+          <div data-testid="R21" filler="red" class="line-red">R21</div>
+          <div floater></div>
+          <div data-testid="R22" filler="red" class="line-red">R22</div>
+          <div floater></div>
+          <div data-testid="R23" filler="red" class="line-red">R23</div>
+          <div floater></div>
+          <div data-testid="R24" filler="red" class="line-red">R24</div>
+          <div floater></div>
+          <div data-testid="R25" filler="red" class="line-red">R25</div>
+          <div floater></div>
+          <div data-testid="R26" filler="red" class="line-red">R26</div>
+          <div floater></div>
+          <div data-testid="R27" filler="red" class="line-red">R27</div>
+          <div floater></div>
+          <div data-testid="R28" filler="red" class="line-red">R28</div>
+          <div floater></div>
+          <div data-testid="R29" filler="red" class="line-red">R29</div>
+          <div floater></div>
+          <div data-testid="R30" filler="red" class="line-red">R30</div>
+          <div floater></div>
+          <div data-testid="R31" filler="red" class="line-red">R31</div>
+          <div floater></div>
+          <div data-testid="R32" filler="red" class="line-red">R32</div>
+          <div floater></div>
+          <div data-testid="R33" filler="red" class="line-red">R33</div>
+          <div floater></div>
+          <div data-testid="R34" filler="red" class="line-red">R34</div>
+          <div floater></div>
+          <div data-testid="R35" filler="red" class="line-red">R35</div>
+          <div floater></div>
+          <div data-testid="R36" filler="red" class="line-red">R36</div>
+          <div floater></div>
+          <div data-testid="R37" filler="red" class="line-red">R37</div>
+          <div floater></div>
+          <div data-testid="R38" filler="red" class="line-red">R38</div>
+          <div floater></div>
+          <div data-testid="R39" filler="red" class="line-red">R39</div>
+          <div floater></div>
+          <!-- Short tail: -->
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+
+</html>
