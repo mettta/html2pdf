@@ -32,7 +32,7 @@ export function findBetterForcedPageStarter(element, root) {
  * @this {Node}
  */
 export function findBetterPageStart(pageStart, lastPageStart, root) {
-  _isDebug(this) && console.groupCollapsed('➗ findBetterPageStart');
+  _isDebug(this) && console.group('➗ findBetterPageStart');
 
   let interruptedWithUndefined = false;
   let interruptedWithLimit = false;
@@ -196,7 +196,7 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
   // we don't need intermediate results,
   // (we'll want to ignore the rule for semantic break improvement).
 
-  _isDebug(this) && console.groupCollapsed('⬆ findFirstChildParentFromPage');
+  _isDebug(this) && console.group('⬆ findFirstChildParentFromPage');
   _isDebug(this) && console.log({element, topLimit, root});
 
   let firstSuitableParent = null;
@@ -261,7 +261,7 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
   // we don't need intermediate results,
   // (we'll want to ignore the rule for semantic break improvement).
 
-  _isDebug(this) && console.groupCollapsed('⬅ findPreviousNonHangingsFromPage');
+  _isDebug(this) && console.group('⬅ findPreviousNonHangingsFromPage');
 
   let suitableSibling = null;
   let current = element;

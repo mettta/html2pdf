@@ -26,7 +26,7 @@ const _isDebug = debugFor('children');
  * @this {Node}
  */
 export function getPreparedChildren(element) {
-  _isDebug(this) && console.groupCollapsed(`getPreparedChildren of`, [element]);
+  _isDebug(this) && console.groupCollapsed(`getPreparedChildren of`, element);
   let children = [];
 
   // Check children:
@@ -233,7 +233,7 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
     //     }, []);
 
   } else {
-    _isDebug(this) && console.info('💚 some node', [node]);
+    _isDebug(this) && console.info(`💚 found some node - use main this.getPreparedChildren() for:`, node);
     children = this.getPreparedChildren(node);
   }
 

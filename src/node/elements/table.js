@@ -188,7 +188,7 @@ export default class Table {
     // * Keep the original parameters for logging.
     const origRowIndex = rowIndex;
     const origRowCount = this._currentTableDistributedRows.length;
-    this._debug._ && console.groupCollapsed(`🔲 %c Check the Row # ${origRowIndex} (from ${origRowCount})`, '',);
+    this._debug._ && console.group(`🔲 %c Check the Row # ${origRowIndex} (from ${origRowCount})`, '',);
 
     // * Start with the row.
     const currentRow = this._currentTableDistributedRows[rowIndex];
@@ -467,7 +467,7 @@ export default class Table {
 
     // *️⃣ [•] splitPointsPerTD
     let splitPointsPerTD = originalTDs.map((td, ind) => {
-      this._debug._ && console.groupCollapsed(`(•) Split TD.${ind} in ROW.${splittingRowIndex}`);
+      this._debug._ && console.group(`(•) Split TD.${ind} in ROW.${splittingRowIndex}`);
 
       // 🔁 potential recursion because of getSplitChildren()
       // TODO: test complex nested elements
@@ -509,8 +509,8 @@ export default class Table {
 
         // FIXME
         // const tdChildren = this._node.getPreparedChildren(td);
+        this._debug._ && console.group(`(••) Split TD.${ind} in ROW.${splittingRowIndex}`);
         const tdChildren = this._node.getSplitChildren(td, currentTdFirstPartHeight, currentTdFullPageHeight, splittingRow);
-        this._debug._ && console.groupCollapsed(`(••) Split TD.${ind} in ROW.${splittingRowIndex}`);
         const tdContentSplitPoints = this._node.getSplitPoints({
           rootNode: td,
           children: tdChildren,

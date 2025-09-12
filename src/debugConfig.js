@@ -30,7 +30,7 @@ const debugConfig = {
     fitters: true,
     getters: false,
     markers: false,
-    pagebreaks: true,
+    pagebreaks: false,
     positioning: false,
     selectors: false,
     slicers: true,

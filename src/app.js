@@ -142,7 +142,7 @@ export default class App {
     // * calculate pages (DOM manipulation)
 
     this.debugMode && console.time("⏱️ Pages time");
-    this.debugMode && console.groupCollapsed('%c Pages ', CONSOLE_CSS_LABEL); // Collapsed
+    this.debugMode && console.group('%c Pages ', CONSOLE_CSS_LABEL); // Collapsed
     const pages = new Pages({
       config: this.config,
       DOM: DOM,
