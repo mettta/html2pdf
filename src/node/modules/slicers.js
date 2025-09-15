@@ -342,15 +342,33 @@ export function getSplitPoints({
  * @this {Node}
  */
 export function sliceNodeBySplitPoints({ index, rootNode, splitPoints }) {
-  _isDebug(this) && console.group(`🔪 (${index}) sliceNodeBySplitPoints`);
+  _isDebug(this) && console.group(`🔪 (${index}) sliceNodeBySplitPoints`, splitPoints);
 
   const slices = [];
+
+  // Expectations for input:
+  // - splitPoints is sanitized upstream (no sentinel/null markers).
+  // - An empty array means "no split" and yields a single full-content slice.
+  // - Every point must be an Element contained within rootNode's subtree.
+  if (this._assert) {
+    if (splitPoints.length > 0) {
+      console.assert(
+        splitPoints.every(p => p !== null),
+        'sliceNodeBySplitPoints: splitPoints contains null — sanitize upstream before slicing'
+      );
+    }
+    console.assert(
+      splitPoints.every(p => !p || (p.nodeType === Node.ELEMENT_NODE && (rootNode === p || rootNode.contains(p)))),
+      'sliceNodeBySplitPoints: split point is not an Element within rootNode'
+    );
+  }
 
   for (let i = 0; i <= splitPoints.length; i++) {
     const startElement = splitPoints[i - 1] ?? null;
     const endElement = splitPoints[i] ?? null;
 
     const slice = this.cloneAndCleanOutsideRange(rootNode, startElement, endElement);
+    // * Range is [startElement .. endElement) — end is exclusive.
 
     if (slice.childNodes.length > 0) {
       slices.push(slice);
