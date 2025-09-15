@@ -92,8 +92,6 @@ export function getSplitPoints({
   // To avoid this, we subtract padding-top from offsetTop.
   // This normalization is specific to this TD context.
 
-  const rootPaddingTop = parseFloat(_rootComputedStyle.paddingTop) || 0;
-
   _isDebug(this) && console.groupCollapsed(`walking through ${children.length} children`);
   for (let i = 0; i < children.length; i++) {
 
@@ -106,13 +104,26 @@ export function getSplitPoints({
     // ⚠️ See comment above about normalization.
     const nextElementTop = nextElement ? this.getNormalizedTop(nextElement, rootNode, _rootComputedStyle) : undefined;
 
-    const floater = (points.length === 0) // * empty array => process first slice
-      ? firstPartHeight
-      : (
-        (points.at(-1) === null) // * case with empty first slice
-          ? fullPageHeight
-          : fullPageHeight + this.getTop(points.at(-1), rootNode) - rootPaddingTop // ⚠️ See comment above about normalization.
-      );
+    let floater; // * floater: bottom boundary (in rootNode coordinates) for the current slice.
+    let capacity; // * capacity: vertical height budget for the current slice’s content.
+    if (points.length === 0) { // * empty array => process first slice
+      floater = firstPartHeight;
+
+      // TODO: Not implemented: when we calculate the height of the first slice, but for the entire page.
+      // `firstPartHeight is calculated minus the top and bottom signpostHeight.
+      //  But for the first slice, it is sufficient to subtract only the bottom signpostHeight.
+      // ! Simple correction doesn't work here:
+      // capacity = fullPageHeight + 24;
+
+      capacity = firstPartHeight;
+    } else if (points.at(-1) === null) { // * case with empty first slice
+      floater = fullPageHeight;
+      capacity = fullPageHeight;
+    } else {
+      // ⚠️ See comment above about normalization.
+      floater = this.getNormalizedTop(points.at(-1), rootNode, _rootComputedStyle) + fullPageHeight;
+      capacity = fullPageHeight;
+    }
 
     if (this.isForcedPageBreak(currentElement)) {
       //register
@@ -244,7 +255,7 @@ export function getSplitPoints({
 
           const currentElementHeight = this._DOM.getElementOffsetHeight(currentElement);
           const isUnbreakableOversized =
-            currentElementHeight > fullPageHeight &&
+            currentElementHeight > capacity &&
             (
               !localPoints.length ||
               (localPoints.length === 1 && localPoints[0] === null)
@@ -260,7 +271,7 @@ export function getSplitPoints({
             if (!points.length && currentElement === children[0]) {
                 points.push(null);
             }
-            this.fitElementWithinHeight(currentElement, fullPageHeight)
+            this.fitElementWithinHeight(currentElement, capacity)
             if (nextElement) { registerPoint(nextElement) }
           } else {
 
