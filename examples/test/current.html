@@ -57,15 +57,7 @@
 </head>
 
 <body>
-  <!--
-    Chrome: height:99px
-    FF: height:98px
-
-    1st page has 5 lines
-
-    +1px -> 4 lines on 1st page
-  -->
-  <div filler style="height:98px"></div>
+  <!-- <div data-testid="pusher" filler style="height:50px"></div> -->
   <table class="table-testing" border="1">
     <caption>Table: caption</caption>
     <colgroup>
@@ -80,7 +72,13 @@
     </thead>
     <tbody>
       <tr>
-        <td class="problematic_td">
+        <td></td>
+        <td>
+          <div data-testid="box" filler="yellow" style="height: 200px;"></div>
+        </td>
+      </tr>
+      <tr>
+        <td>
           <div data-testid="R_0" filler="red" class="line-red">R_0</div>
           <div floater></div>
           <div data-testid="R_1" filler="red" class="line-red">R_1</div>
@@ -96,7 +94,7 @@
           <div data-testid="R_6" filler="red" class="line-red">R_6</div>
           <div floater></div>
         </td>
-        <td class="problematic_td">
+        <td>
           <div data-testid="R0" filler="red" class="line-red">R0</div>
           <div floater></div>
           <div data-testid="R1" filler="red" class="line-red">R1</div>
