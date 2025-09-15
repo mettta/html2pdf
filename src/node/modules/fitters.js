@@ -71,6 +71,65 @@ export function fitElementWithinHeight(element, targetHeight) {
 }
 
 /**
+ * Scales only those cell contents that overflow their per-cell height budget
+ * to fit totalRowHeight.
+ *
+ * Intended to be generic across layouts (tables, grids, etc.). The caller
+ * provides the list of cell elements and the total target height for the
+ * whole row (or logical line). Each cell’s budget is computed as
+ *   target = max(0, totalRowHeight - shellHeight[cellIndex])
+ * where shellHeight is the structural contribution of the cell (padding,
+ * borders, alignment), measured by the caller. If a cell’s content exceeds
+ * its budget, the content is wrapped in a neutral block (if not already)
+ * and visually scaled to fit using fitElementWithinHeight.
+ *
+ * Reuses a neutral wrapper (single neutral child) or wraps all children.
+ * Measures via getContentHeightByProbe; scales with fitElementWithinHeight.
+ * Returns true if any cell was scaled. Layout‑agnostic (table/grid).
+ *
+ * @this {Node}
+ * @param {Element[]} list of cell elements (e.g., TDs or grid cells)
+ * @param {number} totalRowHeight - total allowed height for the row/line
+ * @param {number[]} [shellsOpt] - per-cell shell heights; if absent, treated as zeros
+ * @returns {boolean} whether any cell was scaled
+ */
+export function scaleCellsToHeight(cells, totalRowHeight, shellsOpt) {
+  const shells = Array.isArray(shellsOpt) ? shellsOpt : new Array(cells.length).fill(0);
+  let scaled = false;
+
+  for (let i = 0; i < cells.length; i++) {
+    const cell = cells[i];
+    const shellH = shells[i] || 0;
+    const target = Math.max(0, totalRowHeight - shellH);
+    if (target <= 0) continue;
+
+    const onlyOneElementChild = this._DOM.getChildren(cell).length === 1;
+    const firstChildEl = this._DOM.getFirstElementChild(cell);
+
+    let contentWrapper = null;
+    let contentH;
+
+    if (onlyOneElementChild && firstChildEl && this.isNeutral(firstChildEl)) {
+      contentWrapper = firstChildEl;
+      contentH = this._DOM.getElementOffsetHeight(contentWrapper);
+    } else {
+      contentH = this.getContentHeightByProbe(cell);
+    }
+
+    if (contentH > target) {
+      if (!contentWrapper) {
+        contentWrapper = this.wrapNodeChildrenWithNeutralBlock(cell);
+      }
+      this.fitElementWithinHeight(contentWrapper, target);
+      scaled = true;
+      _isDebug(this) && console.warn('💢 scaleCellsToHeight: resized cell content', { cell, target });
+    }
+  }
+
+  return scaled;
+}
+
+/**
  * @this {Node}
  */
 export function copyNodeWidth(clone, node) {

@@ -737,46 +737,17 @@ export default class Table {
   // - This helper is a coarser, row/TD-level fallback used by table.js to ensure
   //   geometry in full-page context. Tail cases are moved to the next page without scaling.
   //
-  // Scale only problematic TDs within the given row to fit into totalRowHeight.
-  // Computes per-TD content budget as (totalRowHeight - TD shell height) and
-  // scales inner content if it exceeds the budget.
-  // Returns true if any TD was scaled.
+  // Delegation:
+  // - Uses generic fitters.scaleCellsToHeight via this._node to scale only
+  //   overflowing TD contents within a row.
+  // - Per‑TD budget: target = max(0, totalRowHeight - TD shell height).
+  // - Returns true if any TD was scaled.
   _scaleProblematicTDs(row, totalRowHeight, shellsOpt) {
     const tds = [...this._DOM.getChildren(row)];
     // Use cached shells if possible: compute-once per TR per split run.
     const shells = Array.isArray(shellsOpt) ? shellsOpt : this._getRowShellHeights(row);
-    let scaled = false;
-
-    for (let i = 0; i < tds.length; i++) {
-      const td = tds[i];
-      const shellH = shells[i] || 0;
-      const target = Math.max(0, totalRowHeight - shellH);
-      if (target <= 0) continue;
-
-      const onlyOneElementChild = this._DOM.getChildren(td).length === 1;
-      const firstChildEl = this._DOM.getFirstElementChild(td);
-
-      let contentWrapper = null;
-      let contentH;
-
-      if (onlyOneElementChild && firstChildEl && this._node.isNeutral(firstChildEl)) {
-        contentWrapper = firstChildEl;
-        contentH = this._DOM.getElementOffsetHeight(contentWrapper);
-      } else {
-        contentH = this._node.getContentHeightByProbe(td);
-      }
-
-      if (contentH > target) {
-        if (!contentWrapper) {
-          contentWrapper = this._node.wrapNodeChildrenWithNeutralBlock(td);
-        }
-        this._node.fitElementWithinHeight(contentWrapper, target);
-        scaled = true;
-        this._debug._ && console.log('💢 RESIZED:', contentWrapper);
-      }
-    }
-
-    return scaled;
+    // Delegate to generic scaler available on Node (fitters.scaleCellsToHeight)
+    return this._node.scaleCellsToHeight(tds, totalRowHeight, shells);
   }
 
   // Decide how to resolve overflow for the current row against the current window.
