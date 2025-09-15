@@ -284,7 +284,7 @@ export default class Table {
         );
 
         // * We split the row and obtain an array of new rows that should replace the old one.
-        const { newRows, isFirstPartEmptyInAnyTD } = this._splitTableRow(
+        const { newRows, isFirstPartEmptyInAnyTD, needsScalingInFullPage } = this._splitTableRow(
           rowIndex,
           currentRow,
           rowFirstPartHeight,
@@ -325,6 +325,8 @@ export default class Table {
           const mustStartOnNextPage = isFirstPartEmptyInAnyTD || insufficientRemainingPageSpace;
 
           if (!mustStartOnNextPage) {
+            // * A) Tail case: keep the first slice on the current page.
+            // * Scale only the first slice to fit the remaining page space.
             // * Ensure the first slice fits the current page window (before registration).
             const firstSlice = newRows[0];
             const firstSliceTop = this._node.getTop(firstSlice, this._currentTable);
@@ -332,9 +334,16 @@ export default class Table {
             if (availableTailHeight > 0) {
               this._scaleProblematicTDs(firstSlice, availableTailHeight, this._getRowShellHeights(firstSlice));
             }
-            // * Now register the next slice as the start of the next page.
+            // * Register the next slice (part 2 of this row) as a new page start.
             this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Row split — next slice starts new page');
           } else {
+            // * B) Full‑page case: move the whole row to the next page.
+            // * If second pass of getSplitPoints() still reported unsplittable content,
+            // * scale (reduce) the first slice to full‑page height.
+            if (needsScalingInFullPage && newRows[0]) {
+              this._debug._ && console.log('⚖️ _scaleProblematicTDs');
+              this._scaleProblematicTDs(newRows[0], this._currentTableFullPartContentHeight, this._getRowShellHeights(newRows[0]));
+            }
             // * No feasible short first fragment → move the whole row to the next page.
             this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Empty first part — move row to next page');
           }
@@ -342,7 +351,7 @@ export default class Table {
           // * Roll back index to re-check from the newly updated splitBottom context.
           rowIndex -= 1;
 
-        } else {
+        } else { // (!newRows.length)
 
           // * If the split failed and the array of new rows is empty,
           // * we need to take action, because the row did not fit.
@@ -505,6 +514,7 @@ export default class Table {
     });
 
     // *️⃣ [••] splitPointsPerTD
+    let needsScalingInFullPage = false; // flag: some TD reported [null] even after full-page pass
     if(isFirstPartEmptyInAnyTD) {
       splitPointsPerTD = [...originalTDs].map((td, ind) => {
 
@@ -526,6 +536,16 @@ export default class Table {
         return tdContentSplitPoints
       });
       this._debug._ && console.log('[••] splitPointsPerTD',splitPointsPerTD);
+
+      // Sanitize: after second pass (full-page), null should not persist.
+      // If a TD still returns [null], treat as unsplittable oversized and mark for scaling.
+      for (let i = 0; i < splitPointsPerTD.length; i++) {
+        const pts = splitPointsPerTD[i];
+        if (pts && pts.length === 1 && pts[0] === null) {
+          splitPointsPerTD[i] = [];
+          needsScalingInFullPage = true;
+        }
+      }
     }
 
     // добавить в tdContentSplitPoints нулевой элемент
@@ -573,7 +593,7 @@ export default class Table {
     this.logGroupEnd(`%c ➗ Split the ROW ${splittingRowIndex}`);
 
     // * Return both the new rows and a flag indicating if the first part is empty
-    return { newRows, isFirstPartEmptyInAnyTD };
+    return { newRows, isFirstPartEmptyInAnyTD, needsScalingInFullPage };
 
   }
 
