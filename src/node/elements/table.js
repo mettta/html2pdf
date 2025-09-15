@@ -255,26 +255,29 @@ export default class Table {
         // * We check whether there is enough space left on the current page
         // * to accommodate a reasonable portion of the broken line,
         // * or whether it is worth considering a full-size page.
-        let rowFirstPartHeight = this._currentTableSplitBottom - currRowTop;
+        const remainingPageSpace = this._currentTableSplitBottom - currRowTop;
+        // * Budget for the first part:
+        let rowFirstPartHeight = remainingPageSpace;
+        let insufficientRemainingPageSpace = false;
 
-        if (rowFirstPartHeight < _minMeaningfulRowSpace) {
+        if (remainingPageSpace < _minMeaningfulRowSpace) {
           this._debug._ && console.log(
-            `%c ${rowFirstPartHeight} < ${_minMeaningfulRowSpace} %c (rowFirstPartHeight < _minMeaningfulRowSpace) And we are going to the "full page size"`,
+            `%c ${remainingPageSpace} < ${_minMeaningfulRowSpace} %c (remainingPageSpace < _minMeaningfulRowSpace) → use full-page budget for the first part`,
             'color:red; font-weight:bold; background:#F1E9D2', '',
           );
+          // * Insufficient remaining page space:
+          // * Remaining space cannot host a meaningful fragment of the row on the current page,
+          // * so we escalated to full-page height for the first part.
           rowFirstPartHeight = this._currentTableFullPartContentHeight;
+          insufficientRemainingPageSpace = true;
         }
-
-        // * Short-tail fallback: remaining space cannot host a meaningful short fragment
-        // * for this row on the current page, so we escalated to full-page height for the
-        // * first part. Semantically this means: "no short first fragment is feasible here".
-        const noShortFirstFragment = (rowFirstPartHeight === this._currentTableFullPartContentHeight);
 
         this._debug._ && console.info(
           {
             currRowTop,
             '• splitBottom': this._currentTableSplitBottom,
             '• is row sliced?': !isRowSliced,
+            'remaining page space': remainingPageSpace,
             'first part height': rowFirstPartHeight,
             'full part height': this._currentTableFullPartContentHeight,
           },
@@ -317,8 +320,9 @@ export default class Table {
 
           // * Decide if we must start the row on the next page.
           // * 1) Content-level: isFirstPartEmptyInAnyTD — splitPoints reported an empty first fragment in some TD.
-          // * 2) Geometry-level: noShortFirstFragment — short tail forced escalation to full-page height.
-          const mustStartOnNextPage = isFirstPartEmptyInAnyTD || noShortFirstFragment;
+          // * 2) Geometry-level: insufficientRemainingPageSpace — the little page space left forced escalation to full-page height.
+          // * If either is true, place first slice in a full‑page window on the next page.
+          const mustStartOnNextPage = isFirstPartEmptyInAnyTD || insufficientRemainingPageSpace;
 
           if (!mustStartOnNextPage) {
             // * Ensure the first slice fits the current page window (before registration).
