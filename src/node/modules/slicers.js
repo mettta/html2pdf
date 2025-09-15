@@ -325,6 +325,87 @@ export function getSplitPoints({
 }
 
 /**
+ * Compute split points per cell for a row-like item.
+ * Performs two passes:
+ * 1) First pass with (firstPartHeight, fullPageHeight) per cell (minus shell).
+ * 2) If any cell reports an empty first part ([null] sentinel), rerun with
+ *    fullPageHeight for both budgets. After second pass, sanitize [null] → []
+ *    and set needsScalingInFullPage=true if any persisted.
+ *
+ * Returns:
+ *  - splitPointsPerCell: Element[][] per cell
+ *  - isFirstPartEmptyInAnyCell: boolean
+ *  - needsScalingInFullPage: boolean
+ *
+ * @this {Node}
+ * @param {Element[]} cells
+ * @param {number[]} shells - per-cell shell heights
+ * @param {number} rowFirstPartHeight
+ * @param {number} rowFullPageHeight
+ * @param {Element} parentItem - parent row/container (for getSplitChildren)
+ */
+export function getSplitPointsPerCells(
+  cells,
+  shells,
+  rowFirstPartHeight,
+  rowFullPageHeight,
+  parentItem
+) {
+  _isDebug(this) && console.group('[✖️] getSplitPointsPerCells');
+
+  const firstPass = cells.map((cell, ind) => {
+    _isDebug(this) && console.group(`(•) Split CELL.${ind} in:`, parentItem);
+    const firstH = rowFirstPartHeight - (shells[ind] || 0);
+    const fullH = rowFullPageHeight - (shells[ind] || 0);
+    const ch = this.getSplitChildren(cell, firstH, fullH, parentItem);
+    const pts = this.getSplitPoints({
+      rootNode: cell,
+      children: ch,
+      firstPartHeight: firstH,
+      fullPageHeight: fullH,
+    });
+    _isDebug(this) && console.log(`(•) return splitPoints for CELL#${ind}`, pts);
+    _isDebug(this) && console.groupEnd();
+    return pts;
+  });
+
+  const isFirstPartEmptyInAnyCell = firstPass.some(pts => pts.length && pts[0] === null);
+
+  let splitPointsPerCell = firstPass;
+  let needsScalingInFullPage = false;
+
+  if (isFirstPartEmptyInAnyCell) {
+    splitPointsPerCell = cells.map((cell, ind) => {
+      _isDebug(this) && console.group(`(••) Split CELL.${ind} in:`, parentItem);
+      const firstH = rowFirstPartHeight - (shells[ind] || 0); // for symmetry
+      const fullH = rowFullPageHeight - (shells[ind] || 0);
+      const ch = this.getSplitChildren(cell, firstH, fullH, parentItem);
+      const pts = this.getSplitPoints({
+        rootNode: cell,
+        children: ch,
+        firstPartHeight: fullH,
+        fullPageHeight: fullH,
+      });
+      _isDebug(this) && console.log(`(••) return splitPoints for CELL#${ind}`, pts);
+      _isDebug(this) && console.groupEnd();
+      return pts;
+    });
+    _isDebug(this) && console.log('[••] splitPointsPerCell', splitPointsPerCell);
+
+    for (let i = 0; i < splitPointsPerCell.length; i++) {
+      const pts = splitPointsPerCell[i];
+      if (pts && pts.length === 1 && pts[0] === null) {
+        splitPointsPerCell[i] = [];
+        needsScalingInFullPage = true;
+      }
+    }
+  }
+
+  _isDebug(this) && console.groupEnd('[✖️] getSplitPointsPerCells');
+  return { splitPointsPerCell, isFirstPartEmptyInAnyCell, needsScalingInFullPage };
+}
+
+/**
  * Slices rootNode content (supports nested elements) into parts by splitPoints.
  *
  * 1. Clones rootNode.

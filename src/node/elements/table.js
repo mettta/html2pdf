@@ -478,75 +478,18 @@ export default class Table {
 
     const originalTDs = [...this._DOM.getChildren(splittingRow)];
 
-    // *️⃣ [•] splitPointsPerTD
-    let splitPointsPerTD = originalTDs.map((td, ind) => {
-      this._debug._ && console.group(`(•) Split TD.${ind} in ROW.${splittingRowIndex}`);
-
-      // 🔁 potential recursion because of getSplitChildren()
-      // TODO: test complex nested elements
-
-      const currentTdFirstPartHeight = rowFirstPartHeight - splittingRowTdShellHeights[ind];
-      const currentTdFullPageHeight = rowFullPageHeight - splittingRowTdShellHeights[ind];
-
-      const tdChildren = this._node.getSplitChildren(td, currentTdFirstPartHeight, currentTdFullPageHeight, splittingRow);
-
-      const tdContentSplitPoints = this._node.getSplitPoints({
-        rootNode: td,
-        children: tdChildren,
-        firstPartHeight: currentTdFirstPartHeight,
-        fullPageHeight: currentTdFullPageHeight,
-      });
-
-      this._debug._ && console.log(`(•) return tdContentSplitPoints for ROW.${splittingRowIndex} / TD#${ind}`, tdContentSplitPoints);
-
-      this._debug._ && console.groupEnd(`(•) Split TD.${ind} in ROW.${splittingRowIndex}`);
-
-      return tdContentSplitPoints
-    });
-    this._debug._ && console.log('[•] splitPointsPerTD', splitPointsPerTD);
-
-    // * shouldFirstPartBeSkipped?
-    // * For example, an image is only placed in a “full-page” fragment,
-    // * not in a smaller first fragment. Or the title or first lines
-    // * of a paragraph have been moved to the main paragraph in the second fragment.
-    const isFirstPartEmptyInAnyTD = splitPointsPerTD.some(obj => {
-      return (obj.length && obj[0] === null)
-    });
-
-    // *️⃣ [••] splitPointsPerTD
-    let needsScalingInFullPage = false; // flag: some TD reported [null] even after full-page pass
-    if(isFirstPartEmptyInAnyTD) {
-      splitPointsPerTD = [...originalTDs].map((td, ind) => {
-
-        const currentTdFirstPartHeight = rowFirstPartHeight - splittingRowTdShellHeights[ind];
-        const currentTdFullPageHeight = rowFullPageHeight - splittingRowTdShellHeights[ind];
-
-        // FIXME
-        // const tdChildren = this._node.getPreparedChildren(td);
-        this._debug._ && console.group(`(••) Split TD.${ind} in ROW.${splittingRowIndex}`);
-        const tdChildren = this._node.getSplitChildren(td, currentTdFirstPartHeight, currentTdFullPageHeight, splittingRow);
-        const tdContentSplitPoints = this._node.getSplitPoints({
-          rootNode: td,
-          children: tdChildren,
-          firstPartHeight: currentTdFullPageHeight,
-          fullPageHeight: currentTdFullPageHeight,
-        });
-        this._debug._ && console.log(`(••) return tdContentSplitPoints for ROW.${splittingRowIndex} / TD#${ind}`, tdContentSplitPoints);
-        this._debug._ && console.groupEnd(`(••) Split TD.${ind} in ROW.${splittingRowIndex}`);
-        return tdContentSplitPoints
-      });
-      this._debug._ && console.log('[••] splitPointsPerTD',splitPointsPerTD);
-
-      // Sanitize: after second pass (full-page), null should not persist.
-      // If a TD still returns [null], treat as unsplittable oversized and mark for scaling.
-      for (let i = 0; i < splitPointsPerTD.length; i++) {
-        const pts = splitPointsPerTD[i];
-        if (pts && pts.length === 1 && pts[0] === null) {
-          splitPointsPerTD[i] = [];
-          needsScalingInFullPage = true;
-        }
-      }
-    }
+    // *️⃣ Compute per‑TD split points (with second pass + sanitization) via slicers module.
+    const computed = this._node.getSplitPointsPerCells(
+      originalTDs,
+      splittingRowTdShellHeights,
+      rowFirstPartHeight,
+      rowFullPageHeight,
+      splittingRow
+    );
+    this._debug._ && console.log('[✖️] getSplitPointsPerCells result:', computed);
+    let splitPointsPerTD = computed.splitPointsPerCell;
+    const isFirstPartEmptyInAnyTD = computed.isFirstPartEmptyInAnyCell;
+    let needsScalingInFullPage = computed.needsScalingInFullPage;
 
     // добавить в tdContentSplitPoints нулевой элемент
     // но также считать "первый пустой кусок"
