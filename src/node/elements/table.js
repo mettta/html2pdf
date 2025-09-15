@@ -28,6 +28,11 @@ export default class Table {
   }
 
   split(_table, _pageBottom, _fullPageHeight, _root) {
+    // Paginate a <table> into print-sized parts.
+    // - Clones caption/thead (and colgroup) into each part; keeps tfoot only in the final part.
+    // - Adds continuation signposts above/below parts per configuration.
+    // - Returns an array of part wrappers with the original table as the last entry;
+    //   returns [] when the table fits without splitting.
     this._setCurrent(_table, _pageBottom, _fullPageHeight, _root);
     const splits = this._splitCurrentTable();
     this._resetCurrent();
@@ -86,6 +91,10 @@ export default class Table {
   // 🪓 The basic logic of splitting.
   // TODO test more complex tables
   _splitCurrentTable() {
+    // High-level flow:
+    // 1) Prepare table state and metrics
+    // 2) Walk rows to register page starts
+    // 3) Build parts by split indexes and append the original as the last part
 
     // * Prepare table.
     this._prepareCurrentTableForSplitting();
@@ -105,7 +114,7 @@ export default class Table {
       },
     );
 
-    // * This array collects row indexes where new table parts should start after splitting.
+    // * Collect row indexes where new table parts should start after splitting.
     let splitStartRowIndexes = [];
 
     // * Walk through table rows to find where to split.
@@ -362,9 +371,15 @@ export default class Table {
 
           const currRowTop = this._node.getTop(currentRow, this._currentTable);
           const availableRowHeight = this._currentTableSplitBottom - currRowTop;
-          rowIndex = this._handleRowOverflow(rowIndex, currentRow, availableRowHeight, this._currentTableFullPartContentHeight, splitStartRowIndexes,
+          rowIndex = this._handleRowOverflow(
+            rowIndex,
+            currentRow,
+            availableRowHeight,
+            this._currentTableFullPartContentHeight,
+            splitStartRowIndexes,
             'Split failed — move row to next page',
-            'Split failed — scaled TDs for full-page');
+            'Split failed — scaled TDs for full-page'
+          );
         }
 
         this.logGroupEnd(`🔳 Try to split the ROW ${rowIndex} (from ${this._currentTableDistributedRows.length}) (...if canSplitRow)`);
@@ -521,7 +536,7 @@ export default class Table {
     } else {
 
       // rowFullPageHeight
-      this._debug._ && console.log('🔴 There in no Split');
+      this._debug._ && console.log('🔴 There is no Split');
     }
 
     this.logGroupEnd(`%c ➗ Split the ROW ${splittingRowIndex}`);
@@ -567,8 +582,6 @@ export default class Table {
   }
 
   _collectCurrentTableMetrics() {
-    // Prepare node parameters
-
     // * Calculate table wrapper (empty table element) height
     // * to estimate the available space for table content.
     const tableWrapperHeight = this._node.getEmptyNodeHeight(
@@ -613,7 +626,7 @@ export default class Table {
   }
 
   _replaceRowInDOM(row, newRows) {
-    this._DOM.setAttribute(row, '.🚫_must_be_removed'); // for test, must be removed
+    this._debug._ && this._DOM.setAttribute(row, '.🚫_must_be_removed');
     this._DOM.insertInsteadOf(row, ...newRows);
   }
 
