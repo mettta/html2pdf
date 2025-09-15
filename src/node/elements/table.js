@@ -763,7 +763,7 @@ export default class Table {
         contentWrapper = firstChildEl;
         contentH = this._DOM.getElementOffsetHeight(contentWrapper);
       } else {
-        contentH = this._measureTdContentHeight(td);
+        contentH = this._node.getContentHeightByProbe(td);
       }
 
       if (contentH > target) {
@@ -777,28 +777,6 @@ export default class Table {
     }
 
     return scaled;
-  }
-
-  // Measure effective TD content height via a temporary neutral probe appended to TD.
-  // The probe's normalized top (relative to TD) equals the content height because
-  // it's placed after all flow content. The probe is removed immediately.
-  _measureTdContentHeight(td) {
-    const tdStyle = this._DOM.getComputedStyle(td);
-    const probe = this._node.createNeutralBlock();
-    this._DOM.setStyles(probe, {
-      display: 'block',
-      padding: '0',
-      margin: '0',
-      border: '0',
-      height: '0',
-      clear: 'both',
-      visibility: 'hidden',
-      contain: 'layout',
-    });
-    this._DOM.insertAtEnd(td, probe);
-    const h = this._node.getNormalizedTop(probe, td, tdStyle);
-    this._DOM.removeNode(probe);
-    return h;
   }
 
   // Decide how to resolve overflow for the current row against the current window.

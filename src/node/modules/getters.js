@@ -389,3 +389,29 @@ export function getTableEntries(node) {
 
   return nodeEntries;
 }
+
+/**
+ * @this {Node}
+ *
+ * Measure effective Node content height via a temporary neutral probe appended to the Node.
+ * The probe's normalized top (relative to Node padding issues) equals the content height because
+ * it's placed after all flow content. The probe is removed immediately.
+ */
+export function getContentHeightByProbe(container, containerComputedStyle) {
+  const containerStyle = containerComputedStyle ? containerComputedStyle : this._DOM.getComputedStyle(container);
+  const probe = this.createNeutralBlock();
+  this._DOM.setStyles(probe, {
+    display: 'block',
+    padding: '0',
+    margin: '0',
+    border: '0',
+    height: '0',
+    clear: 'both',
+    visibility: 'hidden',
+    contain: 'layout',
+  });
+  this._DOM.insertAtEnd(container, probe);
+  const h = this.getNormalizedTop(probe, container, containerStyle);
+  this._DOM.removeNode(probe);
+  return h;
+}
