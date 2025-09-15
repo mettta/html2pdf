@@ -211,9 +211,8 @@ export default class Table {
 
     } else {
       // 🫟 Special case: last row can fit if we remove the bottom signpost (final chunk has no footer label).
-      const nextRow = this._currentTableDistributedRows[rowIndex + 1];
-      const isLastRow = !nextRow;
-      const extraCapacity = this._signpostHeight + this._currentTableTfootHeight; // what we regain in the final part
+      const isLastRow = !this._currentTableDistributedRows[rowIndex + 1];
+      const extraCapacity = this._getFinalPartReclaimedHeight(); // what we regain in the final part
 
       // TODO: make a function #last_tail
       // 🫟 Early tail drop for a row with one split:
@@ -498,15 +497,7 @@ export default class Table {
     const ifThereIsSplit = splitPointsPerTD.some(obj => obj.length);
     if (ifThereIsSplit) {
 
-      const slicedTDsPerOrigTD = splitPointsPerTD
-      .map((splitPoints, index) => {
-        const td = originalTDs[index];
-        return this._node.sliceNodeBySplitPoints({
-          index,
-          rootNode: td,
-          splitPoints,
-        });
-      });
+      const slicedTDsPerOrigTD = this._sliceCellsBySplitPoints(originalTDs, splitPointsPerTD);
 
       this._debug._ && console.log('🟣 slicedTDsPerOrigTD', slicedTDsPerOrigTD);
 
@@ -806,6 +797,18 @@ export default class Table {
   }
 
   // 🧬 Working with nested blocks:
+
+  // Local helpers:
+  _getFinalPartReclaimedHeight() {
+    return (this._signpostHeight || 0) + (this._currentTableTfootHeight || 0);
+  }
+
+  _sliceCellsBySplitPoints(cells, splitPointsPerCell) {
+    return splitPointsPerCell.map((splitPoints, index) => {
+      const cell = cells[index];
+      return this._node.sliceNodeBySplitPoints({ index, rootNode: cell, splitPoints });
+    });
+  }
 
 
 
