@@ -163,29 +163,25 @@ export default class Table {
       // * For all subsequent parts, start from the previous split index.
       const startId = index > 0 ? array[index - 1] : 0;
 
-      // * Insert a new table part that will contain rows from startId up to endId (excluding endId).
-      return this._insertTableSplit({
+      // * Create and insert a new table part that will contain rows from startId up to endId (excluding endId).
+      const tableSliceWrapper = this._createAndInsertTableSlice({
         startId: startId,
         endId: endId,
         table: this._currentTable,
         tableEntries: this._currentTableEntries,
       });
-    })
 
-    this._debug._ && console.log(
-      'splits', splits
-    );
+      // * Return new table part to register in splits array.
+      return tableSliceWrapper;
+    });
+
+    // * Use the rest of the original table to create the last slice.
 
     // * Insert the original table as the last part.
     // * It contains all rows from the last split point to the end.
-    const lastPart = this._node.createWithFlagNoBreak();
-    this._currentTable.before(lastPart);
-    this._DOM.insertAtEnd(
-      lastPart,
-      this._node.createSignpost('(table continued)', this._signpostHeight),
-      this._currentTable
-    );
+    const lastPart = this._createAndInsertTableFinalSlice({ table: this._currentTable });
 
+    this._debug._ && console.log('splits', splits);
     this._debug._ && console.log('lastPart', lastPart)
 
     this.logGroupEnd(`_splitCurrentTable`);
@@ -827,37 +823,81 @@ export default class Table {
 
   // 👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪
 
+  _createTopSignpost() {
+    return this._node.createSignpost('(table continued)', this._signpostHeight)
+  }
 
-  _insertTableSplit({ startId, endId, table, tableEntries }) {
+  _createBottomSignpost() {
+    return this._node.createSignpost('(table continues on the next page)', this._signpostHeight)
+  }
 
-    // this._debug._ && console.log(`=> _insertTableSplit(${startId}, ${endId})`);
 
-    const tableWrapper = this._DOM.cloneNodeWrapper(table);
+  _createAndInsertTableSlice({ startId, endId, table, tableEntries }) {
+    // * Creates and insert a non-final table slice.
+    // * Creates `flagged slice wrapper`, fills it with
+    // * - cloned wrapper/colgroup/caption/thead,
+    // * - tbody [startId, endId),
+    // * - top signpost for non-first, bottom signpost always.
+    // * Returns `flagged slice wrapper`.
+
+    // Guard slice bounds (debug-only): 0 <= startId < endId <= rows.length
+    if (this._assert) {
+      const rowsLen = (tableEntries && tableEntries.rows) ? tableEntries.rows.length : 0;
+      console.assert(Number.isInteger(startId) && Number.isInteger(endId),
+        `_createAndInsertTableSlice: non-integer bounds: startId=${startId}, endId=${endId}`);
+      console.assert(rowsLen >= 0, `_createAndInsertTableSlice: invalid rows length: ${rowsLen}`);
+      console.assert(startId >= 0 && endId >= 0 && startId < endId && endId <= rowsLen,
+        `_createAndInsertTableSlice: out-of-range slice [${startId}, ${endId}) for rowsLen=${rowsLen}`);
+    }
+
+    const tableSliceWrapper = this._node.createWithFlagNoBreak();
+
+    // * Insert a new table part.
+    this._DOM.insertBefore(table, tableSliceWrapper);
 
     const partEntries = tableEntries.rows.slice(startId, endId);
 
-    const part = this._node.createWithFlagNoBreak();
-    table.before(part);
-
     if (startId) {
-      // if is not first part
-      this._DOM.insertAtEnd(part, this._node.createSignpost('(table continued)', this._signpostHeight));
+      // * if is not first table slice
+      this._DOM.insertAtEnd(
+        tableSliceWrapper,
+        this._createTopSignpost(),
+      );
     }
 
-    this._DOM.insertAtEnd(
-      part,
-      this._node.createTable({
-        wrapper: tableWrapper,
+    const tableSlice = this._node.createTable({
+        wrapper: this._DOM.cloneNodeWrapper(table),
         colgroup: this._DOM.cloneNode(tableEntries.colgroup),
         caption: this._DOM.cloneNode(tableEntries.caption),
         thead: this._DOM.cloneNode(tableEntries.thead),
-        // tfoot,
+        // tfoot, // * included only in the last part
         tbody: partEntries,
-      }),
-      this._node.createSignpost('(table continues on the next page)', this._signpostHeight)
+      });
+
+    this._DOM.insertAtEnd(
+      tableSliceWrapper,
+      tableSlice,
+      this._createBottomSignpost(),
     );
 
-    return part
-  };
+    return tableSliceWrapper
+  }
+
+  _createAndInsertTableFinalSlice({ table }) {
+    // * Creates and inserts the final table slice:
+    // * - creates `flagged slice wrapper`, and moves the rest of the table into it,
+    // * - adds a top signpost (final slice has no bottom signpost here).
+    // * Returns `flagged slice wrapper`.
+
+    const tableSliceWrapper = this._node.createWithFlagNoBreak();
+    this._DOM.insertBefore(table, tableSliceWrapper);
+    this._DOM.insertAtEnd(
+      tableSliceWrapper,
+      this._createTopSignpost(),
+      table // * including tfoot if available
+    );
+
+    return tableSliceWrapper
+  }
 
 }
