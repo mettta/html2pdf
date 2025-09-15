@@ -368,6 +368,8 @@ export function getTableEntries(node) {
       return { ...acc, rows: [...acc.rows, ...curr] };
     }
 
+    _isDebug(this) && curr && console.warn('unexpected:', curr);
+
     return {
       ...acc,
       unexpected: [
