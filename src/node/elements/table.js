@@ -27,6 +27,14 @@ export default class Table {
     this._resetCurrent();
   }
 
+  /**
+   * Paginate a <table> into print-sized parts.
+   *
+   * - Clones caption/thead/colgroup into each non-final part; keeps tfoot only in the final part.
+   * - Adds continuation signposts according to configured split label height.
+   * - Returns an array of part wrappers with the original table as the last entry;
+   *   returns [] if no splitting is required.
+   */
   split(_table, _pageBottom, _fullPageHeight, _root) {
     // Paginate a <table> into print-sized parts.
     // - Clones caption/thead (and colgroup) into each part; keeps tfoot only in the final part.
@@ -39,7 +47,7 @@ export default class Table {
     return splits;
   }
 
-  // ⚙️ Preparation Methods
+  // ⚙️ Init / Reset / Constants
 
   _initConstants() {
     // Table splitting constraints
@@ -90,6 +98,10 @@ export default class Table {
 
   // 🪓 The basic logic of splitting.
   // TODO test more complex tables
+  /**
+   * Core pagination loop for the current table instance.
+   * Prepares metrics, walks distributed rows to register page starts, builds parts.
+   */
   _splitCurrentTable() {
     // High-level flow:
     // 1) Prepare table state and metrics
@@ -190,6 +202,11 @@ export default class Table {
   }
 
   _evaluateRowForSplitting(rowIndex, splitStartRowIndexes) {
+    // Input: rowIndex; mutates splitStartRowIndexes
+    // May split/replace TRs and advance splitBottom;
+    // returns possibly decremented index (re-check under new window).
+    // Honors final-part reclaimed height.
+
     // * Keep the original parameters for logging.
     const origRowIndex = rowIndex;
     const origRowCount = this._currentTableDistributedRows.length;
@@ -475,6 +492,10 @@ export default class Table {
     rowFirstPartHeight,
     rowFullPageHeight,
   ) {
+    // * Split row into TR clones by TD split points
+    // * - compute per‑TD split points
+    // * - slice TD content and assemble TR parts
+    // * Returns: { newRows, isFirstPartEmptyInAnyTD, needsScalingInFullPage }
 
     this._debug._ && console.group( // Collapsed
       `%c ➗ Split the ROW ${splittingRowIndex}`, 'color:magenta;', ''
