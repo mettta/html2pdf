@@ -221,13 +221,13 @@ export function getSplitPoints({
           if (localPoints.length === 0) {
             // 🤖 Case: current element (with children) did not produce inner split points
             //     in the first slice. This is the "tail window" scenario.
-            //     Current code escalates `room` to max(firstPartHeight, fullPageHeight),
-            //     which effectively ignores the small tail and behaves as full-page here.
-            //     This leads to EARLY scaling before the paginator actually moves to
-            //     the next page, causing double handling and geometry drift.
-            //     Suggestion: prefer using current `capacity` (tail) to decide and
-            //     defer any scaling decisions to the row/table layer.
-            const room = Math.max(firstPartHeight, fullPageHeight); // 🤖 candidate for `capacity`
+            //     We use `room = max(firstPartHeight, fullPageHeight)` here ON PURPOSE:
+            //       - The first part can be as large as, or even larger than, a full page
+            //         (e.g., no top signpost deducted for the first part), so `room` is the
+            //         maximum admissible height for a non‑breakable element in the first slice.
+            //       - The action (move to next page vs. scale) is STILL deferred to the
+            //         row/table layer to maintain strict geometry; slicers only classify.
+            const room = Math.max(firstPartHeight, fullPageHeight);
 
             const currentElementHeight = this._DOM.getElementOffsetHeight(currentElement);
             const isUnbreakableOversized =
