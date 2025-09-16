@@ -1,5 +1,10 @@
 import * as Logging from '../../utils/logging.js';
 
+// TODO(table): Unsupported features planned later
+// - colSpan/rowSpan splitting across pages (complex layout heuristics)
+// - Inner scroll containers unwrapping; currently printed as-is
+// - Externalize signpost texts/height to config (align with document headers/footers)
+
 export default class Table {
   constructor({
     config,
@@ -44,12 +49,12 @@ export default class Table {
   _initConstants() {
     // Table splitting constraints
 
-    // TODO make function
+    // TODO(config): move signpost text/height to external config
     // * From config:
     // - if null is set - the element is not created in createSignpost().
     this._signpostHeight = parseFloat(this._splitLabelHeightFromConfig) || 0;
 
-    // TODO move to paragraph
+    // TODO(table): consider moving `_minPartLines` to paragraph/general splitting policy
     this._minPartLines = 2; // Minimum lines required for a row part
 
   }
@@ -114,7 +119,7 @@ export default class Table {
     // * Start with a short first part or immediately from the full height of the page.
     this._setCurrentTableFirstSplitBottom();
 
-    // FIXME: It splits simple tables, without regard to col-span and the like.
+    // TODO(table): colSpan/rowSpan are not supported yet; guard later in split path
 
     this._debug._ && console.group('%c📊 _splitCurrentTable()', 'color:green; background:#eee; padding:3px',
       '\n•', this._currentTableFirstPartContentBottom, '(1st bottom)',
@@ -766,10 +771,12 @@ export default class Table {
   // 👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪
 
   _createTopSignpost() {
+    // TODO(config): move signpost text/height to external config
     return this._node.createSignpost('(table continued)', this._signpostHeight)
   }
 
   _createBottomSignpost() {
+    // TODO(config): move signpost text/height to external config
     return this._node.createSignpost('(table continues on the next page)', this._signpostHeight)
   }
 
