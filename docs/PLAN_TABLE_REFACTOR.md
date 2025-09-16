@@ -66,3 +66,10 @@ Scope: keep current behavior; extract reusable logic; prepare for Grid adapter.
 Notes
 - Do not switch to BCR globally; use existing offset/probe methods for stability and speed.
 - Keep behavior identical while extracting; validate with existing examples/tests.
+
+## Slicers Follow-ups (TODO)
+- Add helpers: `isFirstSliceEmpty(points)` and `sanitizeFirstSlice(points)` to centralize null handling.
+- Prefer `capacity` (tail window) over `max(first, full)` in first pass; avoid early window escalation in slicers.
+- Ensure early-abort after first `null` is consistently respected by all call sites (already added in slicers; audit usages).
+- Keep scaling out of slicers: only signal via second pass (`needsScalingInFullPage`), scaling lives in element layer.
+- Unit tests for slicers: first-pass abort on null, no early scaling, recursion with shared points semantics.
