@@ -311,6 +311,8 @@ export default class DocumentObjectModel {
       element.removeAttribute(attr);
       return
     } else { // a-zA-Z
+      // FIXME: invalid attribute variable. `attr` is undefined here and will throw.
+      // Leave as-is for now; proper fix is to remove this branch or pass a real attribute name.
       element.removeAttribute(attr);
     }
   }

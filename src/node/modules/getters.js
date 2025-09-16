@@ -374,6 +374,8 @@ export function getTableEntries(node) {
       ...acc,
       unexpected: [
         ...acc.unexpected,
+        // FIXME: `curr` is a DOM element (non-iterable); spreading will throw.
+        // Replace with `[curr]` in a dedicated fix commit.
         ...curr, // BUG: Uncaught TypeError: t is not iterable
       ]
     };
