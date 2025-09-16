@@ -407,7 +407,7 @@ export function getSplitPointsPerCells(
     return pts;
   });
 
-  const isFirstPartEmptyInAnyCell = firstPass.some(pts => pts.length && pts[0] === null);
+  const isFirstPartEmptyInAnyCell = firstPass.some(isFirstSliceEmpty);
 
   let splitPointsPerCell = firstPass;
   let needsScalingInFullPage = false;
@@ -432,7 +432,7 @@ export function getSplitPointsPerCells(
 
     for (let i = 0; i < splitPointsPerCell.length; i++) {
       const pts = splitPointsPerCell[i];
-      if (pts && pts.length === 1 && pts[0] === null) {
+      if (isFirstSliceEmpty(pts) && pts.length === 1) {
         splitPointsPerCell[i] = [];
         needsScalingInFullPage = true;
       }
@@ -547,6 +547,11 @@ export function sliceNodeContentBySplitPoints({ index, rootNode, splitPoints }) 
 
   _isDebug(this) && console.groupEnd(`🔪 (${index}) sliceNodeContentBySplitPoints`);
   return slices;
+}
+
+// 🤖 Helper: check sentinel that marks an empty first slice in split points result
+export function isFirstSliceEmpty(points) {
+  return Array.isArray(points) && points.length > 0 && points[0] === null;
 }
 
 /**
