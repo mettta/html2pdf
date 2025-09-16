@@ -20,7 +20,8 @@ Scope: keep current behavior; extract reusable logic; prepare for Grid adapter.
    - Move slice builders into `TableAdapter`:
      - Create non-final slice with cloned `caption/colgroup/thead`, own `tbody` and signposts.
      - Create final slice (move original table), add only top signpost.
-   - Add TODO: externalize signpost texts/height to config.
+     - Add TODO: externalize signpost texts/height to config.
+   - File: `src/node/elements/table.adapter.js` (done)
 
 3) Metrics and caches
    - Keep current `offset*` + probe approach for performance and browser-conformity.
