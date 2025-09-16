@@ -9,10 +9,12 @@ Scope: keep current behavior; extract reusable logic; prepare for Grid adapter.
 - TFOOT only in the final slice.
 
 ## Milestones
-1) Core paginator interface
-   - Extract `updateSplitBottom(refElOrValue, reason)` from Table.
-   - Extract `registerPageStartAt(index, rows, reason)` from Table.
+1) Core paginator interface (ElementPaginator)
+   - File: `src/node/modules/paginator.js`
+   - API: `updateSplitBottom(refElOrValue, reason)`, `registerPageStartAt(index, rows, reason)`.
    - Keep offset/probe-based metrics; no functional changes.
+   - Note: This is element-level paginator used by Table/Grid; document-level paginator remains in `Pages.js`.
+   - TODO(later): compare with `Pages.js` and evaluate unification.
 
 2) Table adapter (builders)
    - Move slice builders into `TableAdapter`:
@@ -42,4 +44,3 @@ Scope: keep current behavior; extract reusable logic; prepare for Grid adapter.
 Notes
 - Do not switch to BCR globally; use existing offset/probe methods for stability and speed.
 - Keep behavior identical while extracting; validate with existing examples/tests.
-
