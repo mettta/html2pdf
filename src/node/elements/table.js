@@ -663,6 +663,11 @@ export default class Table {
 
     // Walk rows and inspect cells
     for (const tr of rows) {
+      // Skip TFOOT in consistency check (it may have different internal structure)
+      const containerTag = this._DOM.getElementTagName(tr);
+      if (containerTag === 'TFOOT') {
+        continue;
+      }
       const cells = [...this._DOM.getChildren(tr)].filter(el => {
         const tag = this._DOM.getElementTagName(el);
         return tag === 'TD' || tag === 'TH';
