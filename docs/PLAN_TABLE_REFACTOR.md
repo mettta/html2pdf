@@ -48,6 +48,16 @@ Scope: keep current behavior; extract reusable logic; prepare for Grid adapter.
    - TFOOT only in the final slice.
    - Borders mode:
      - border-collapse: separate vs collapse; thick borders — ensure no off-by-one overflows.
+   - ROWSPAN conservative fallback (table):
+      - Row with rowspan>1 does not get sliced; if it overflows tail window → moved to next page; if it overflows full-page window → TD contents are scaled to fit full page, then moved. Assert geometry holds and no empty parts.
+      - Logging: expect `warn` mentioning ROWSPAN fallback.
+      - TODO: detection of rows affected by a rowspan starting above (not in the current row) — add e2e coverage when implemented.
+   - COLSPAN presence (table):
+      - With colspan>1 in row, slicing proceeds within the row; assert strict geometry, no crashes; expect a `warn` about COLSPAN presence.
+   - Inconsistent cell counts (table):
+      - Table where rows have different TD/TH counts. Split proceeds; assert strict geometry and warn emitted.
+   - Unexpected children in <table>:
+      - Inject non-TABLE structural children; assert warn is emitted and splitting still works or safely no-ops.
 
 6) Grid adapter (next phase)
    - Div-based grid items as rows; no signposts/thead/tfoot; reclaimed height = 0.
