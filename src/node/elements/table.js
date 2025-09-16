@@ -1,5 +1,6 @@
 import * as Logging from '../../utils/logging.js';
 import * as Paginator from './table.paginator.js';
+import * as TableAdapter from './table.adapter.js';
 
 // TODO(table): Unsupported features planned later
 // - colSpan/rowSpan splitting across pages (complex layout heuristics)
@@ -726,71 +727,13 @@ export default class Table {
   }
 
   _createAndInsertTableSlice({ startId, endId, table, tableEntries }) {
-    // * Creates and insert a non-final table slice.
-    // * Creates `flagged slice wrapper`, fills it with
-    // * - cloned wrapper/colgroup/caption/thead,
-    // * - tbody [startId, endId),
-    // * - top signpost for non-first, bottom signpost always.
-    // * Returns `flagged slice wrapper`.
-
-    // Guard slice bounds (debug-only): 0 <= startId < endId <= rows.length
-    if (this._assert) {
-      const rowsLen = (tableEntries && tableEntries.rows) ? tableEntries.rows.length : 0;
-      console.assert(Number.isInteger(startId) && Number.isInteger(endId),
-        `_createAndInsertTableSlice: non-integer bounds: startId=${startId}, endId=${endId}`);
-      console.assert(rowsLen >= 0, `_createAndInsertTableSlice: invalid rows length: ${rowsLen}`);
-      console.assert(startId >= 0 && endId >= 0 && startId < endId && endId <= rowsLen,
-        `_createAndInsertTableSlice: out-of-range slice [${startId}, ${endId}) for rowsLen=${rowsLen}`);
-    }
-
-    const tableSliceWrapper = this._node.createWithFlagNoBreak();
-
-    // * Insert a new table part.
-    this._DOM.insertBefore(table, tableSliceWrapper);
-
-    const partEntries = tableEntries.rows.slice(startId, endId);
-
-    if (startId) {
-      // * if is not first table slice
-      this._DOM.insertAtEnd(
-        tableSliceWrapper,
-        this._createTopSignpost(),
-      );
-    }
-
-    const tableSlice = this._node.createTable({
-        wrapper: this._DOM.cloneNodeWrapper(table),
-        colgroup: this._DOM.cloneNode(tableEntries.colgroup),
-        caption: this._DOM.cloneNode(tableEntries.caption),
-        thead: this._DOM.cloneNode(tableEntries.thead),
-        // tfoot, // * included only in the last part
-        tbody: partEntries,
-      });
-
-    this._DOM.insertAtEnd(
-      tableSliceWrapper,
-      tableSlice,
-      this._createBottomSignpost(),
-    );
-
-    return tableSliceWrapper
+    // Delegate to adapter. No behavior change.
+    return TableAdapter.createAndInsertTableSlice(this, { startId, endId, table, tableEntries });
   }
 
   _createAndInsertTableFinalSlice({ table }) {
-    // * Creates and inserts the final table slice:
-    // * - creates `flagged slice wrapper`, and moves the rest of the table into it,
-    // * - adds a top signpost (final slice has no bottom signpost here).
-    // * Returns `flagged slice wrapper`.
-
-    const tableSliceWrapper = this._node.createWithFlagNoBreak();
-    this._DOM.insertBefore(table, tableSliceWrapper);
-    this._DOM.insertAtEnd(
-      tableSliceWrapper,
-      this._createTopSignpost(),
-      table // * including tfoot if available
-    );
-
-    return tableSliceWrapper
+    // Delegate to adapter. No behavior change.
+    return TableAdapter.createAndInsertTableFinalSlice(this, { table });
   }
 
 }
