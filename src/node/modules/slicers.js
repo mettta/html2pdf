@@ -92,7 +92,7 @@ export function getSplitPoints({
   // To avoid this, we subtract padding-top from offsetTop.
   // This normalization is specific to this TD context.
 
-  _isDebug(this) && console.groupCollapsed(`walking through ${children.length} children`);
+  _isDebug(this) && console.group(`walking through ${children.length} children`); // Collapsed
   for (let i = 0; i < children.length; i++) {
 
     const currentElement = children[i];
@@ -197,6 +197,11 @@ export function getSplitPoints({
         if (currentElementChildren.length) {
 
           // * Process children if exist:
+          // 🤖 Intentional: we pass the SAME `points` array into recursion.
+          //     This accumulates split markers for the whole TD content and
+          //     allows checks like `localPoints.length === 0` to mean
+          //     "we are still in the first slice (tail window) of this TD".
+          //     Do NOT replace with a new array — first-slice semantics would break.
           localPoints = getSplitPoints.call(this, {
             rootNode,
             rootComputedStyle: _rootComputedStyle,
@@ -210,8 +215,15 @@ export function getSplitPoints({
           // *** END of 'has children'
 
           if (localPoints.length === 0) {
-            // не разбито - потому выбираем первую часть - если она больше, то есть - бОльшую часть
-            const room = Math.max(firstPartHeight, fullPageHeight);
+            // 🤖 Case: current element (with children) did not produce inner split points
+            //     in the first slice. This is the "tail window" scenario.
+            //     Current code escalates `room` to max(firstPartHeight, fullPageHeight),
+            //     which effectively ignores the small tail and behaves as full-page here.
+            //     This leads to EARLY scaling before the paginator actually moves to
+            //     the next page, causing double handling and geometry drift.
+            //     Suggestion: prefer using current `capacity` (tail) to decide and
+            //     defer any scaling decisions to the row/table layer.
+            const room = Math.max(firstPartHeight, fullPageHeight); // 🤖 candidate for `capacity`
 
             const currentElementHeight = this._DOM.getElementOffsetHeight(currentElement);
             const isUnbreakableOversized =
@@ -234,7 +246,12 @@ export function getSplitPoints({
                 _isDebug(this) && console.warn('🅾️ (1) points.push(null) in isUnbreakableOversized');
                 points.push(null);
               }
-              this.fitElementWithinHeight(currentElement, room)
+              // 🤖 Early scaling here breaks strict geometry when the paginator
+              //     later re-computes the window (moves to full-page). Better approach:
+              //     - Register split (null/next) and let table.js decide scaling:
+              //       either scale tail (if really tail case) or scale in full-page.
+              //     - Leave this call disabled (see similar handling in the 'no children' branch).
+              // this.fitElementWithinHeight(currentElement, room)
               if (nextElement) { registerPoint(nextElement) }
             } else {
 
@@ -251,7 +268,9 @@ export function getSplitPoints({
           // 🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎
           _isDebug(this) && console.log('🍎 currentElementChildren.length == 0');
 
-          // FIXME: брать для масштабирования первую часть (она у таблиц больше!) или "полную страницу"?
+          // 🤖 NOTE: scaling is intentionally disabled here (see commented code below).
+          //     Tail vs full-page decisions are handled in a higher layer (row/table),
+          //     which ensures consistent window geometry before any scaling occurs.
 
           const currentElementHeight = this._DOM.getElementOffsetHeight(currentElement);
           const isUnbreakableOversized =
@@ -271,8 +290,13 @@ export function getSplitPoints({
             if (!points.length && currentElement === children[0]) {
                 points.push(null);
             }
-            this.fitElementWithinHeight(currentElement, capacity)
-            if (nextElement) { registerPoint(nextElement) }
+            // 🤖 Keep scaling disabled here for the same reason as above: avoid early
+            //     visual transform before the paginator repositions the window.
+            // this.fitElementWithinHeight(currentElement, capacity)
+            if (nextElement) {
+              console.warn('🅾️🅾️🅾️🅾️🅾️🅾️🅾️🅾️ registerPoint(nextElement)');
+              registerPoint(nextElement)
+            }
           } else {
 
 
