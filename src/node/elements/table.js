@@ -78,6 +78,16 @@ export default class Table {
     this._logSplitBottom_ = [];
     // ** current per-run caches
     this._currentRowShellCache = undefined;
+
+    // ** analysis flags (guards) — set by _analyzeCurrentTableStructure()
+    // Whether any row contains ROWSPAN>1; triggers conservative fallback (no slicing for that row)
+    this._currentTableHasRowspan = undefined;
+    // Whether any row contains COLSPAN>1; handled within-row slicing but warn to monitor results
+    this._currentTableHasColspan = undefined;
+    // Whether the number of TD/TH per row varies; indicates non-uniform row structure
+    this._currentTableInconsistentCells = undefined;
+    // Whether getTableEntries() detected unexpected children in <table>
+    this._currentTableHasUnexpectedChildren = undefined;
   }
 
   _setCurrent(_table, _pageBottom, _fullPageHeight, _root) {
@@ -94,6 +104,9 @@ export default class Table {
     this._lockCurrentTableWidths();
     this._collectCurrentTableEntries();
     this._updateCurrentTableDistributedRows();
+    // Run structural guards (non-fatal): detect spans/inconsistencies and log.
+    // TODO(table): consider early fallback (no split + scaling) on irregular tables.
+    this._analyzeCurrentTableStructure();
     this._collectCurrentTableMetrics();
   }
 
@@ -266,6 +279,30 @@ export default class Table {
       // * 🏴 TRY TO SPLIT CURRENT ROW
 
       const isRowSliced = this._node.isSlice(currentRow);
+      const hasSpanInRow = this._rowHasSpan(currentRow);
+
+      // Conservative fallback for rows with ROWSPAN: don't slice TDs
+      // - If doesn't fit tail → move to next page
+      // - If doesn't fit full-page → scale problematic TDs to full-page height
+      if (hasSpanInRow) {
+        this._debug._ && console.log('%c ⚠️ Row has ROWSPAN; use conservative fallback (no slicing)', 'color:DarkOrange; font-weight:bold');
+        const currRowTop = this._node.getTop(currentRow, this._currentTable);
+        const availableRowHeight = this._currentTableSplitBottom - currRowTop;
+        rowIndex = this._handleRowOverflow(
+          rowIndex,
+          currentRow,
+          availableRowHeight,
+          this._currentTableFullPartContentHeight,
+          splitStartRowIndexes,
+          'Row with ROWSPAN — move to next page',
+          'Row with ROWSPAN — scaled TDs to full page'
+        );
+        if (this._debug._ && availableRowHeight >= this._currentTableFullPartContentHeight) {
+          console.warn('[table.fallback] ROWSPAN row required full-page scaling to fit.');
+        }
+        this.logGroupEnd(`Row # ${origRowIndex} (from ${origRowCount}) is checked`);
+        return rowIndex;
+      }
 
       if (!isRowSliced) {
         // * Let's split table row [rowIndex]
@@ -541,6 +578,20 @@ export default class Table {
     this._currentTableEntries = this._node.getTableEntries(this._currentTable);
   }
 
+  _rowHasSpan(tr) {
+    // Returns true if any TD/TH in this row has ROWSPAN > 1
+    // Note: we intentionally ignore COLSPAN here — it's within a single row
+    // and can be handled by the regular slicing logic.
+    const cells = [...this._DOM.getChildren(tr)];
+    for (const td of cells) {
+      const tag = this._DOM.getElementTagName(td);
+      if (tag !== 'TD' && tag !== 'TH') continue;
+      const rs = parseInt(td.getAttribute('rowspan'));
+      if (Number.isFinite(rs) && rs > 1) return true;
+    }
+    return false;
+  }
+
   _collectCurrentTableMetrics() {
     // * Calculate table wrapper (empty table element) height
     // * to estimate the available space for table content.
@@ -586,6 +637,74 @@ export default class Table {
   _updateCurrentTableDistributedRows() {
     // * Rows that we distribute across the partitioned table
     this._currentTableDistributedRows = this._getDistributedRows(this._currentTableEntries);
+  }
+
+  // ===== Guards / Analysis =====
+
+  _analyzeCurrentTableStructure() {
+    // Analyze rows/columns for unsupported features and irregularities.
+    // Sets non-fatal flags; current behavior is unchanged.
+
+    const entries = this._currentTableEntries;
+    const rows = (this._currentTableDistributedRows || []);
+
+    let hasRowspan = false;
+    let hasColspan = false;
+    let inconsistentCells = false;
+    let hasUnexpected = false;
+    let baselineCount = null;
+
+    // Detect unexpected children collected by getTableEntries
+    try {
+      if (Array.isArray(entries.unexpected) && entries.unexpected.length > 0) {
+        hasUnexpected = true;
+      }
+    } catch (_) { /* safe */ }
+
+    // Walk rows and inspect cells
+    for (const tr of rows) {
+      const cells = [...this._DOM.getChildren(tr)].filter(el => {
+        const tag = this._DOM.getElementTagName(el);
+        return tag === 'TD' || tag === 'TH';
+      });
+
+      // Baseline column count
+      if (baselineCount == null) baselineCount = cells.length;
+      if (cells.length !== baselineCount) inconsistentCells = true;
+
+      for (const td of cells) {
+        const cs = parseInt(td.getAttribute('colspan'));
+        const rs = parseInt(td.getAttribute('rowspan'));
+        if (Number.isFinite(cs) && cs > 1) hasColspan = true;
+        if (Number.isFinite(rs) && rs > 1) { hasRowspan = true; break; }
+      }
+      if (hasRowspan) break;
+    }
+
+    // Flags are consumed by split flow for logging/fallback decisions
+    this._currentTableHasRowspan = hasRowspan;            // rows with ROWSPAN>1 — slicing not implemented (fallback applies)
+    this._currentTableHasColspan = hasColspan;            // rows with COLSPAN>1 — handled within-row slicing (warn only)
+    this._currentTableInconsistentCells = inconsistentCells; // unequal TD/TH counts across rows — non-uniform structure
+    this._currentTableHasUnexpectedChildren = hasUnexpected; // non-TABLE structural children present
+
+    if (this._debug._) {
+      if (hasRowspan) {
+        console.warn('[table.guard] ROWSPAN detected — slicing not implemented; applying conservative fallback.', { table: this._currentTable });
+      }
+      if (hasColspan) {
+        console.warn('[table.guard] COLSPAN present — handled within-row slicing; monitor results.', { table: this._currentTable });
+      }
+      if (inconsistentCells) {
+        console.warn('[table.guard] Inconsistent cell counts across rows — results may vary.', { table: this._currentTable });
+      }
+      if (hasUnexpected) {
+        console.warn('[table.guard] Unexpected children found in table; verify structure.', { table: this._currentTable });
+      }
+    }
+
+    // TODO(table): if irregular, prefer fallback strategy:
+    // - avoid physical split; scale problematic rows to full-page window;
+    // - or early return [] to keep the original table intact.
   }
 
   _updateCurrentTableEntriesAfterSplit(index, newRows) {
