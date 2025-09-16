@@ -10,11 +10,11 @@ Scope: keep current behavior; extract reusable logic; prepare for Grid adapter.
 
 ## Milestones
 1) Core paginator interface (ElementPaginator)
-   - File: `src/node/modules/paginator.js`
+   - File: `src/node/elements/table.paginator.js` (table-specific for now).
    - API: `updateSplitBottom(refElOrValue, reason)`, `registerPageStartAt(index, rows, reason)`.
    - Keep offset/probe-based metrics; no functional changes.
-   - Note: This is element-level paginator used by Table/Grid; document-level paginator remains in `Pages.js`.
-   - TODO(later): compare with `Pages.js` and evaluate unification.
+   - Note: This is element-level paginator for Table. Grid may get its own adapter or reuse later.
+   - TODO(later): compare with `Pages.js` (document paginator) and evaluate unification.
 
 2) Table adapter (builders)
    - Move slice builders into `TableAdapter`:
@@ -33,9 +33,20 @@ Scope: keep current behavior; extract reusable logic; prepare for Grid adapter.
    - Signpost config: move texts/height under external config (same style as headers/footers).
 
 5) Tests (unit/integration)
-   - collapse vs separate borders; thick borders.
-   - Short-first-part; last-tail reclaimed height; no empty slices; strict indexes.
-   - Multi-page table with tfoot only in final slice.
+   Specs to implement (add here, keep behavior strict; layout in real browser for e2e, jsdom for unit invariants):
+   - Split indexes monotonicity:
+     - Given rowsLen=5 and attempts [0,2,2,5,10] → registered [1,3,4].
+   - Split bottom updates:
+     - Start 100 → updateSplitBottom(250) → 250; then registerPageStartAt(2) → top(rows[2])+fullPart.
+   - Short-first-part handling:
+     - If top(row0) > firstPartBottom → first window uses full-page budget.
+   - No empty parts:
+     - Last index never equals rows.length; clamping protects final slice.
+   - Final reclaimed height:
+     - Table: reclaimed = signpostBottom + tfoot height; tail drop allowed if overflow <= reclaimed.
+   - TFOOT only in the final slice.
+   - Borders mode:
+     - border-collapse: separate vs collapse; thick borders — ensure no off-by-one overflows.
 
 6) Grid adapter (next phase)
    - Div-based grid items as rows; no signposts/thead/tfoot; reclaimed height = 0.
