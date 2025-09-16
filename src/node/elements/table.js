@@ -1,4 +1,5 @@
 import * as Logging from '../../utils/logging.js';
+import * as Paginator from './table.paginator.js';
 
 // TODO(table): Unsupported features planned later
 // - colSpan/rowSpan splitting across pages (complex layout heuristics)
@@ -616,74 +617,13 @@ export default class Table {
   }
 
   _updateCurrentTableSplitBottom(elementOrValue, message = 'unknown case') {
-    // Can take a numeric value or
-    // an element to calculate a numeric value
-
-    const _loggedPrevTableSplitBottom = this._currentTableSplitBottom;
-
-    if (typeof elementOrValue === 'number') {
-      // If it is a number, just assign it to
-      this._currentTableSplitBottom = elementOrValue;
-    } else if (elementOrValue instanceof HTMLElement) {
-      // If it is an element - calculate by DOM
-      this._currentTableSplitBottom =
-        this._node.getTop(elementOrValue, this._currentTable) +
-        this._currentTableFullPartContentHeight;
-    } else {
-      throw new Error(`_updateCurrentTableSplitBottom: unexpected value type: ${typeof elementOrValue}`);
-    }
-
-    this._logSplitBottom_.push(this._currentTableSplitBottom);
-
-    this._debug._ && console.log(
-      `%c♻️ Update splitBottom (with ${elementOrValue}) \n • ${message}`, 'color: green; font-weight: bold',
-      '\n', _loggedPrevTableSplitBottom, '->', this._currentTableSplitBottom,
-      `\n _logSplitBottom_: ${this._logSplitBottom_}`, this._logSplitBottom_,
-    );
+    // Delegate to element-level paginator helper (no behavior change)
+    Paginator.updateSplitBottom(this, elementOrValue, message);
   }
 
   _registerPageStartAt(index, splitStartRowIndexes, reason = 'register page start') {
-    // * Register the start of a new page at a given row index and
-    // * immediately update splitBottom to reflect the new page context.
-    // * Keeps splitStartRowIndexes strictly increasing; ignores invalid/duplicate indices.
-    const rows = this._currentTableDistributedRows || [];
-    const rowsLen = rows.length;
-
-    // 1) Validate basics
-    const isInt = Number.isInteger(index);
-    this._assert && console.assert(isInt, `_registerPageStartAt: index must be an integer, got: ${index}`);
-    if (!isInt) return;
-
-    this._assert && console.assert(rowsLen > 0, `_registerPageStartAt: no rows to register`);
-    if (rowsLen === 0) return;
-
-    // 2) Special case: index === 0
-    // Do NOT push 0 (would create an empty first part); just advance geometry.
-    if (index === 0) {
-      this._debug._ && console.log(`%c 📍 Row #0 forced to next page (no short first fragment)`, 'color:green; font-weight:bold');
-      this._updateCurrentTableSplitBottom(rows[0], `${reason} (index=0)`);
-      return;
-    }
-
-    // 3) Clamp into [1 .. rowsLen-1] to avoid empty first/last parts
-    let idx = Math.max(1, Math.min(index, rowsLen - 1));
-
-    // 4) Enforce strictly ascending sequence (no dups)
-    const last = splitStartRowIndexes.at(-1);
-    if (last != null && idx <= last) {
-      idx = last + 1;
-    }
-
-    // 5) If clamped beyond range, do not push (would empty final/original)
-    if (idx >= rowsLen) {
-      this._assert && console.assert(false, `_registerPageStartAt: computed index (${idx}) >= rowsLen (${rowsLen})`);
-      return;
-    }
-
-    // 6) Register and advance geometry
-    splitStartRowIndexes.push(idx);
-    this._debug._ && console.log(`%c 📍 Row # ${idx} registered as page start`, 'color:green; font-weight:bold');
-    this._updateCurrentTableSplitBottom(rows[idx], reason);
+    // Delegate to element-level paginator helper (no behavior change)
+    Paginator.registerPageStartAt(this, index, splitStartRowIndexes, reason);
   }
 
   // ===== Overflow / Scaling =====
