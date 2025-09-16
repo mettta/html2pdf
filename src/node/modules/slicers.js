@@ -45,8 +45,12 @@ export function getSplitPoints({
       _isDebug(this) && console.log('%c !points.length && point === children[0] && children[1]', 'color:red');
       _isDebug(this) && console.log('%c 🅾️ push(null) in registerPoint()', 'color:red');
       points.push(null)
+      // 🤖 Early abort: null means "empty first slice" — no need to keep scanning.
+      //     Caller can immediately trigger the second pass with full-page window.
+      return true;
     } else {
       points.push(point)
+      return false;
     }
 
     // TODO: Perhaps 👆 `point === children[0]` means 'multiple shell'-case.
@@ -245,6 +249,8 @@ export function getSplitPoints({
               if (!points.length && currentElement === children[0]) {
                 _isDebug(this) && console.warn('🅾️ (1) points.push(null) in isUnbreakableOversized');
                 points.push(null);
+                // 🤖 Early abort after placing sentinel: let the second pass handle next window.
+                return points;
               }
               // 🤖 Early scaling here breaks strict geometry when the paginator
               //     later re-computes the window (moves to full-page). Better approach:
@@ -252,13 +258,19 @@ export function getSplitPoints({
               //       either scale tail (if really tail case) or scale in full-page.
               //     - Leave this call disabled (see similar handling in the 'no children' branch).
               // this.fitElementWithinHeight(currentElement, room)
-              if (nextElement) { registerPoint(nextElement) }
+              if (nextElement) {
+                const pushedNull = registerPoint(nextElement);
+                if (pushedNull) return points;
+              }
             } else {
 
               // FIXME: быстрый фикс, но помог. Проверить тщательно логику.
               // Element is unbreakable and fits a full page, but does not fit the tail.
               // Start the next page from currentElement (first slice may be empty when it is the first).
-              registerPoint(currentElement)
+              // 🤖 If this starts the next page from currentElement, and it happens to be
+              //     the very first child (empty first slice), registerPoint will push null
+              //     and we should abort to let the second pass run immediately.
+              if (registerPoint(currentElement)) return points;
             }
           }
 
@@ -288,7 +300,9 @@ export function getSplitPoints({
             );
             _isDebug(this) && console.warn('🅾️ (2) points.push(null) in isUnbreakableOversized');
             if (!points.length && currentElement === children[0]) {
-                points.push(null);
+              points.push(null);
+              // 🤖 Early abort after placing sentinel: proceed to second pass.
+              return points;
             }
             // 🤖 Keep scaling disabled here for the same reason as above: avoid early
             //     visual transform before the paginator repositions the window.
@@ -302,7 +316,7 @@ export function getSplitPoints({
 
             // * If no children,
             // * move element to the next page.
-            registerPoint(currentElement);
+            if (registerPoint(currentElement)) return points;
             // ** But,
 
           }
