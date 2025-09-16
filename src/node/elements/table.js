@@ -27,27 +27,19 @@ export default class Table {
     this._resetCurrent();
   }
 
-  /**
-   * Paginate a <table> into print-sized parts.
-   *
-   * - Clones caption/thead/colgroup into each non-final part; keeps tfoot only in the final part.
-   * - Adds continuation signposts according to configured split label height.
-   * - Returns an array of part wrappers with the original table as the last entry;
-   *   returns [] if no splitting is required.
-   */
   split(_table, _pageBottom, _fullPageHeight, _root) {
-    // Paginate a <table> into print-sized parts.
-    // - Clones caption/thead (and colgroup) into each part; keeps tfoot only in the final part.
-    // - Adds continuation signposts above/below parts per configuration.
-    // - Returns an array of part wrappers with the original table as the last entry;
-    //   returns [] when the table fits without splitting.
+    // * Paginate a <table> into print-sized parts.
+    // * - Clones caption/thead/colgroup into each non-final part; keeps tfoot only in the final part.
+    // * - Adds continuation signposts above/below parts per configuration.
+    // * - Returns an array of part wrappers with the original table as the last entry;
+    // *   returns [] when the table fits without splitting.
     this._setCurrent(_table, _pageBottom, _fullPageHeight, _root);
     const splits = this._splitCurrentTable();
     this._resetCurrent();
     return splits;
   }
 
-  // ⚙️ Init / Reset / Constants
+  // ===== Init / Reset / Constants =====
 
   _initConstants() {
     // Table splitting constraints
@@ -89,6 +81,8 @@ export default class Table {
     this._currentRowShellCache = new WeakMap();
   }
 
+  // ===== Preparation =====
+
   _prepareCurrentTableForSplitting() {
     this._lockCurrentTableWidths();
     this._collectCurrentTableEntries();
@@ -96,13 +90,20 @@ export default class Table {
     this._collectCurrentTableMetrics();
   }
 
-  // 🪓 The basic logic of splitting.
-  // TODO test more complex tables
-  /**
-   * Core pagination loop for the current table instance.
-   * Prepares metrics, walks distributed rows to register page starts, builds parts.
-   */
+  _lockCurrentTableWidths() {
+    // * Keep table widths stable before measuring/splitting
+    this._node.lockTableWidths(this._currentTable);
+  }
+
+  // ===== Split Flow =====
+
   _splitCurrentTable() {
+    // TODO test more complex tables
+
+
+    //  * Core pagination loop for the current table instance.
+    //  * Prepares metrics, walks distributed rows to register page starts, builds parts.
+
     // High-level flow:
     // 1) Prepare table state and metrics
     // 2) Walk rows to register page starts
@@ -440,52 +441,8 @@ export default class Table {
     return rowIndex;
   }
 
+  // ===== Row Split Internals =====
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // !isCurrentRowFits
-  // if (canSplitRow)
   _splitTableRow(
     splittingRowIndex,
     splittingRow,
@@ -563,36 +520,15 @@ export default class Table {
 
   }
 
+  _sliceCellsBySplitPoints(cells, splitPointsPerCell) {
+    // * Slice each TD by split points and return slices per TD
+    return splitPointsPerCell.map((splitPoints, index) => {
+      const cell = cells[index];
+      return this._node.sliceNodeBySplitPoints({ index, rootNode: cell, splitPoints });
+    });
+  }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // 📐 Metric Functions:
+  // ===== 📐 Metrics =====
 
   _collectCurrentTableEntries() {
     this._currentTableEntries = this._node.getTableEntries(this._currentTable);
@@ -633,6 +569,13 @@ export default class Table {
       - 2 * this._signpostHeight;
   }
 
+  _getDistributedRows(entries) {
+    return [
+      ...entries.rows,
+      ...(entries.tfoot ? [entries.tfoot] : [])
+    ]
+  }
+
   _updateCurrentTableDistributedRows() {
     // * Rows that we distribute across the partitioned table
     this._currentTableDistributedRows = this._getDistributedRows(this._currentTableEntries);
@@ -642,10 +585,11 @@ export default class Table {
     this._currentTableEntries.rows.splice(index, 1, ...newRows);
   }
 
-  _replaceRowInDOM(row, newRows) {
-    this._debug._ && this._DOM.setAttribute(row, '.🚫_must_be_removed');
-    this._DOM.insertInsteadOf(row, ...newRows);
+  _getFinalPartReclaimedHeight() {
+    return (this._signpostHeight || 0) + (this._currentTableTfootHeight || 0);
   }
+
+  // ===== Split Geometry =====
 
   _setCurrentTableFirstSplitBottom() {
     if (this._node.getTop(this._currentTableDistributedRows[0], this._currentTable) > this._currentTableSplitBottom) {
@@ -693,62 +637,10 @@ export default class Table {
     );
   }
 
-  // 🧮 Utilities / calculations:
-
-  // Two-tier safety note:
-  // - Fine-grained scaling may already occur inside slicers.js (getSplitPoints),
-  //   targeting specific inner elements that cannot be split.
-  // - This helper is a coarser, row/TD-level fallback used by table.js to ensure
-  //   geometry in full-page context. Tail cases are moved to the next page without scaling.
-  //
-  // Delegation:
-  // - Uses generic fitters.scaleCellsToHeight via this._node to scale only
-  //   overflowing TD contents within a row.
-  // - Per‑TD budget: target = max(0, totalRowHeight - TD shell height).
-  // - Returns true if any TD was scaled.
-  _scaleProblematicTDs(row, totalRowHeight, shellsOpt) {
-    const tds = [...this._DOM.getChildren(row)];
-    // Use cached shells if possible: compute-once per TR per split run.
-    const shells = Array.isArray(shellsOpt) ? shellsOpt : this._getRowShellHeights(row);
-    // Delegate to generic scaler available on Node (fitters.scaleCellsToHeight)
-    return this._node.scaleCellsToHeight(tds, totalRowHeight, shells);
-  }
-
-  // Decide how to resolve overflow for the current row against the current window.
-  // Tail → move row to next page; Full-page → scale TDs, then move row.
-  // Returns rowIndex - 1 to trigger re-check under the new window.
-  _handleRowOverflow(rowIndex, row, availableRowHeight, fullPageHeight, splitStartRowIndexes, reasonTail, reasonFull) {
-    if (availableRowHeight < fullPageHeight) {
-      this._registerPageStartAt(rowIndex, splitStartRowIndexes, reasonTail);
-      return rowIndex - 1;
-    }
-    this._scaleProblematicTDs(row, fullPageHeight, this._getRowShellHeights(row));
-    this._registerPageStartAt(rowIndex, splitStartRowIndexes, reasonFull);
-    return rowIndex - 1;
-  }
-
-  
-
-  // Get per-TD shell heights for a TR with caching.
-  // Uses a WeakMap per split run to avoid recomputation and to ensure automatic cleanup
-  // after TR nodes are replaced by splitting.
-  _getRowShellHeights(row) {
-    if (!this._currentRowShellCache) {
-      // Fallback: if cache is not initialized for some reason, compute directly.
-      return this._node.getTableRowShellHeightByTD(row);
-    }
-    if (this._currentRowShellCache.has(row)) {
-      return this._currentRowShellCache.get(row);
-    }
-    const shells = this._node.getTableRowShellHeightByTD(row);
-    this._currentRowShellCache.set(row, shells);
-    return shells;
-  }
-
-  // Register the start of a new page at a given row index and
-  // immediately update splitBottom to reflect the new page context.
-  // Keeps splitStartRowIndexes strictly increasing; ignores invalid/duplicate indices.
   _registerPageStartAt(index, splitStartRowIndexes, reason = 'register page start') {
+    // * Register the start of a new page at a given row index and
+    // * immediately update splitBottom to reflect the new page context.
+    // * Keeps splitStartRowIndexes strictly increasing; ignores invalid/duplicate indices.
     const rows = this._currentTableDistributedRows || [];
     const rowsLen = rows.length;
 
@@ -789,6 +681,57 @@ export default class Table {
     this._updateCurrentTableSplitBottom(rows[idx], reason);
   }
 
+  // ===== Overflow / Scaling =====
+
+  _scaleProblematicTDs(row, totalRowHeight, shellsOpt) {
+    // Two-tier safety note:
+    // - Fine-grained scaling may already occur inside slicers.js (getSplitPoints),
+    //   targeting specific inner elements that cannot be split.
+    // - This helper is a coarser, row/TD-level fallback used by table.js to ensure
+    //   geometry in full-page context. Tail cases are moved to the next page without scaling.
+    //
+    // Delegation:
+    // - Uses generic fitters.scaleCellsToHeight via this._node to scale only
+    //   overflowing TD contents within a row.
+    // - Per‑TD budget: target = max(0, totalRowHeight - TD shell height).
+    // - Returns true if any TD was scaled.
+
+    const tds = [...this._DOM.getChildren(row)];
+    // Use cached shells if possible: compute-once per TR per split run.
+    const shells = Array.isArray(shellsOpt) ? shellsOpt : this._getRowShellHeights(row);
+    // Delegate to generic scaler available on Node (fitters.scaleCellsToHeight)
+    return this._node.scaleCellsToHeight(tds, totalRowHeight, shells);
+  }
+
+  _handleRowOverflow(rowIndex, row, availableRowHeight, fullPageHeight, splitStartRowIndexes, reasonTail, reasonFull) {
+    // * Decide how to resolve overflow for the current row against the current window.
+    // * Tail → move row to next page; Full-page → scale TDs, then move row.
+    // * Returns rowIndex - 1 to trigger re-check under the new window.
+    if (availableRowHeight < fullPageHeight) {
+      this._registerPageStartAt(rowIndex, splitStartRowIndexes, reasonTail);
+      return rowIndex - 1;
+    }
+    this._scaleProblematicTDs(row, fullPageHeight, this._getRowShellHeights(row));
+    this._registerPageStartAt(rowIndex, splitStartRowIndexes, reasonFull);
+    return rowIndex - 1;
+  }
+
+  _getRowShellHeights(row) {
+    // * Get per-TD shell heights for a TR with caching.
+    // * Uses a WeakMap per split run to avoid recomputation and to ensure automatic cleanup
+    // * after TR nodes are replaced by splitting.
+    if (!this._currentRowShellCache) {
+      // Fallback: if cache is not initialized for some reason, compute directly.
+      return this._node.getTableRowShellHeightByTD(row);
+    }
+    if (this._currentRowShellCache.has(row)) {
+      return this._currentRowShellCache.get(row);
+    }
+    const shells = this._node.getTableRowShellHeightByTD(row);
+    this._currentRowShellCache.set(row, shells);
+    return shells;
+  }
+
   _getRowFitDelta(rowIndex) {
     const currentRow = this._currentTableDistributedRows[rowIndex];
     const currRowBottom = this._node.getBottom(currentRow, this._currentTable);
@@ -819,29 +762,7 @@ export default class Table {
     this._node.lockTableWidths(this._currentTable);
   }
 
-  _getDistributedRows(entries) {
-    return [
-      ...entries.rows,
-      ...(entries.tfoot ? [entries.tfoot] : [])
-    ]
-  }
-
-  // 🧬 Working with nested blocks:
-
-  // Local helpers:
-  _getFinalPartReclaimedHeight() {
-    return (this._signpostHeight || 0) + (this._currentTableTfootHeight || 0);
-  }
-
-  _sliceCellsBySplitPoints(cells, splitPointsPerCell) {
-    return splitPointsPerCell.map((splitPoints, index) => {
-      const cell = cells[index];
-      return this._node.sliceNodeBySplitPoints({ index, rootNode: cell, splitPoints });
-    });
-  }
-
-
-
+  // ===== Builders =====
   // 👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪
 
   _createTopSignpost() {
@@ -852,6 +773,10 @@ export default class Table {
     return this._node.createSignpost('(table continues on the next page)', this._signpostHeight)
   }
 
+  _replaceRowInDOM(row, newRows) {
+    this._debug._ && this._DOM.setAttribute(row, '.🚫_must_be_removed');
+    this._DOM.insertInsteadOf(row, ...newRows);
+  }
 
   _createAndInsertTableSlice({ startId, endId, table, tableEntries }) {
     // * Creates and insert a non-final table slice.
