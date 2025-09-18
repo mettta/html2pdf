@@ -27,3 +27,5 @@
 ## Test Backlog
 - Simple two-column grid without explicit `grid-column` assignments should split correctly.
 - Grid container with default `position: static` must be handled without requiring inline overrides.
+
+See `docs/GRID_SPLIT_EDGE_CASES.md` for the full catalogue of grid-specific edge cases, detection hints, and current strategies.
