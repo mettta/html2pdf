@@ -51,91 +51,39 @@ export default class Grid {
 
     this._debug._ && console.group('%c_splitGridNode', 'background:#00FFFF');
 
-    // ** Take the node children.
     const children = this._node.getPreparedChildren(node);
-    this._debug._ && console.log(
-      '💠 children', children
-    );
+    if (!children.length) {
+      this._debug._ && console.groupEnd();
+      return [];
+    }
 
-    this._debug._ && console.groupCollapsed('make childrenGroups');
-    // ** Organize the children into groups by rows.
-    const childrenGroups = children.reduce(
-      (result, currentElement, currentIndex, array) => {
+    const nodeComputedStyle = this._DOM.getComputedStyle(node);
+    const initialInlinePosition = node.style.position;
+    const needsTempPosition = nodeComputedStyle.position === 'static';
+    if (needsTempPosition) {
+      // In some layouts grid stays `position: static`; force a relative context so
+      // offset-based getters work (otherwise offsets are taken from body and rows
+      // start looking like a single chunk).
+      this._DOM.setStyles(node, { position: 'relative' });
+    }
 
-        const currentStyle = this._DOM.getComputedStyle(currentElement);
+    const ROW_TOP_STEP = 0.5; // tolerate sub-pixel jitter when detecting row breaks
+    const rowGroups = [];
+    const rowTops = [];
 
-        // TODO: grid auto flow variants
-        const start = currentStyle.getPropertyValue("grid-column-start");
-        const end = currentStyle.getPropertyValue("grid-column-end");
-        const currentColumnStart = (start === 'auto') ? 'auto' : parseInt(currentStyle.getPropertyValue("grid-column-start"));
-        const currentColumnEnd = (end === 'auto') ? 'auto' : parseInt(currentStyle.getPropertyValue("grid-column-end"));
+    children.forEach((child) => {
+      const top = this._node.getTop(child, node);
+      const lastTop = rowTops.length ? rowTops[rowTops.length - 1] : null;
+      if (!rowGroups.length || Math.abs(top - lastTop) > ROW_TOP_STEP) {
+        rowGroups.push([child]);
+        rowTops.push(top);
+        return;
+      }
+      // Rely on vertical position only: we support linear, monotonic grids for now.
+      rowGroups[rowGroups.length - 1].push(child);
+    });
 
-        const newItem = {
-          element: currentElement,
-          start: currentColumnStart,
-          end: currentColumnEnd,
-          top: this._DOM.getElementOffsetTop(currentElement)
-        };
-
-        if (
-          !result.length                                    // * beginning
-          || (result.at(-1).at(-1).start >= newItem.start)  // * newItem is to the left or in the same position as the previous one
-          || result.at(-1).at(-1).start === 'auto'
-          || newItem.start === 'auto'
-        ) {
-          // * If this is the beginning, or if a new line.
-          if (
-            result.at(-1)
-            && this._node.isNoHanging(result.at(-1).at(-1).element)
-          ) {
-            // ** If the previous last element cannot be the last element,
-            // ** add newItem to the previous group.
-
-            result.at(-1).push(newItem);
-            this._debug._ && console.log(
-             `Add to group (after no-hang.)`, newItem
-            );
-          } else {
-            // * Add a new group and a new item in it:
-            result.push([newItem]);
-            this._debug._ && console.log(
-              'Start new group:', newItem,
-            );
-          }
-          this._debug._ && console.log(
-            'result:', [...result]
-          );
-          return result
-        }
-
-        if (
-          result.length
-          && (result.at(-1).at(-1).start < newItem.start) // * newItem is to the right
-        ) {
-          // * If the order number is increasing, it is a grid row continuation.
-          // * Add a new element to the end of the last group:
-          result.at(-1).push(newItem);
-          this._debug._ && console.log(
-            'Add to group:', newItem, [...result]
-          );
-          return result
-        }
-
-        this._debug._
-          && console.assert(
-            true,
-            '_splitGridNode: An unexpected case of splitting a grid.',
-            '\nOn the element:',
-            currentElement
-        );
-      }, []
-    );
-    this._debug._ && console.groupEnd('make childrenGroups');
-    this._debug._ && console.log(
-      '%c childrenGroups', 'font-weight:bold', childrenGroups
-    );
-
-    const gridNodeRows = childrenGroups.length;
+    const gridNodeRows = rowGroups.length;
     const gridNodeHeight = this._DOM.getElementOffsetHeight(node);
 
     // ** If there are enough rows for the split to be readable,
@@ -145,7 +93,10 @@ export default class Grid {
     if (gridNodeRows < this._minBreakableGridRows && gridNodeHeight < fullPageHeight) {
       // ** Otherwise, we don't split it.
       this._debug._ && console.log(`%c END DONT _splitGridNode`, CONSOLE_CSS_END_LABEL);
-      this._debug._ && console.groupEnd()
+      if (needsTempPosition) {
+        this._DOM.setStyles(node, { position: initialInlinePosition || '' });
+      }
+      this._debug._ && console.groupEnd();
       return []
     }
 
@@ -155,14 +106,7 @@ export default class Grid {
     // [ [top, top, top], [top, top, top], [top, top, top] ] =>
     // [ [min-top, top, max-top], [min-top, top, max-top], [min-top, top, max-top] ] =>
     // [min-top, min-top, min-top]
-    const gridPseudoRowsTopPoints = [
-      ...childrenGroups
-        .map(row => row.map(obj => obj.top).sort())
-        .map(arr => arr[0]),
-      gridNodeHeight
-    ];
-      // ,
-      // this._node.getTop(nodeEntries.tfoot, node) || gridNodeHeight
+    const gridPseudoRowsTopPoints = [...rowTops, gridNodeHeight];
 
 
     this._debug._ && console.log(
@@ -227,10 +171,9 @@ export default class Grid {
       this._debug._ && console.log(`=> insertGridSplit(${startId}, ${endId})`);
 
       // const partEntries = nodeEntries.rows.slice(startId, endId);
-      const partEntries = childrenGroups
+      const partEntries = rowGroups
         .slice(startId, endId)
-        .flat()
-        .map(obj => obj.element);
+        .flat();
       this._debug._ && console.log(`partEntries`, partEntries);
 
       // const part = this._node.createWithFlagNoBreak();
@@ -290,6 +233,10 @@ export default class Grid {
     splits.forEach((part, index) => this._DOM.setAttribute(part, '[part]', `${index}`));
     // LAST PART handling
     this._node.setFlagNoBreak(node);
+
+    if (needsTempPosition) {
+      this._DOM.setStyles(node, { position: initialInlinePosition || '' });
+    }
 
     this._debug._ && console.log(`%c END _splitGridNode`, CONSOLE_CSS_END_LABEL);
     this._debug._ && console.groupEnd()

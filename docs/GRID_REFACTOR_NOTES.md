@@ -23,3 +23,7 @@
 
 ## Work Log
 - 2025-09-18: Prioritize regression tests for strictdoc grids, then extract reusable pagination steps incrementally (state prep, metrics, builders) with functional parity at each step.
+
+## Test Backlog
+- Simple two-column grid without explicit `grid-column` assignments should split correctly.
+- Grid container with default `position: static` must be handled without requiring inline overrides.
