@@ -87,18 +87,9 @@ export default class Grid {
       this._DOM.setStyles(node, { position: 'relative' });
     }
 
-    // === Guards: skip complex layouts until dedicated support ===
-    const gridAutoFlow = nodeComputedStyle.gridAutoFlow || '';
-    if (!gridAutoFlow.startsWith('row')) {
-      this._debug._ && console.warn('[grid.split] skip: unsupported grid-auto-flow', gridAutoFlow);
-      restorePosition();
-      this._debug._ && console.groupEnd();
-      return [];
-    }
-
-    const templateAreas = nodeComputedStyle.gridTemplateAreas || 'none';
-    if (templateAreas !== 'none') {
-      this._debug._ && console.warn('[grid.split] skip: grid-template-areas present');
+    const layoutScan = this._scanGridLayout(node, nodeComputedStyle);
+    if (!layoutScan.safe) {
+      this._debug._ && console.warn('[grid.split] skip:', layoutScan.reason);
       restorePosition();
       this._debug._ && console.groupEnd();
       return [];
@@ -109,6 +100,7 @@ export default class Grid {
     const rowTops = [];
     let hasRowSpan = false;
     let hasColumnSpan = false;
+    const rowIndexSet = new Set();
 
     children.forEach((child) => {
       const top = this._node.getTop(child, node);
@@ -126,10 +118,21 @@ export default class Grid {
       const colEnd = childStyle.gridColumnEnd || '';
       hasRowSpan = hasRowSpan || rowEnd.includes('span');
       hasColumnSpan = hasColumnSpan || colEnd.includes('span');
+
+      const rowStart = parseInt(childStyle.gridRowStart, 10);
+      Number.isFinite(rowStart) && rowIndexSet.add(rowStart);
     });
 
     const gridNodeRows = rowGroups.length;
     const gridNodeHeight = this._DOM.getElementOffsetHeight(node);
+
+    const hasImplicitRowGaps = rowIndexSet.size > 0 && Math.max(...rowIndexSet) > gridNodeRows;
+    if (hasImplicitRowGaps) {
+      this._debug._ && console.warn('[grid.split] skip: implicit row gaps detected');
+      restorePosition();
+      this._debug._ && console.groupEnd();
+      return [];
+    }
 
     if (hasRowSpan || hasColumnSpan) {
       this._debug._ && console.warn('[grid.split] skip: span detected (row or column)');
@@ -303,6 +306,42 @@ export default class Grid {
     this._debug._ && console.groupEnd()
 
     return splits
+  }
+
+  _scanGridLayout(_node, nodeComputedStyle) {
+    const autoFlow = nodeComputedStyle.gridAutoFlow || '';
+    if (!autoFlow.startsWith('row')) {
+      return { safe: false, reason: `grid-auto-flow=${autoFlow}` };
+    }
+    if (autoFlow.includes('dense')) {
+      // TODO(grid): support dense flow by re-evaluating row ordering.
+      return { safe: false, reason: 'grid-auto-flow dense not supported yet' };
+    }
+
+    const templateAreas = nodeComputedStyle.gridTemplateAreas || 'none';
+    if (templateAreas !== 'none') {
+      return { safe: false, reason: 'grid-template-areas present' };
+    }
+
+    const templateColumns = nodeComputedStyle.gridTemplateColumns || '';
+    const templateRows = nodeComputedStyle.gridTemplateRows || '';
+    const complexTemplate = (value) => (
+      value.includes('subgrid') ||
+      value.includes('auto-fit') ||
+      value.includes('auto-fill') ||
+      value.includes('fit-content')
+    );
+    if (complexTemplate(templateColumns) || complexTemplate(templateRows)) {
+      return { safe: false, reason: 'complex track sizing (subgrid/auto-fit/fit-content)' };
+    }
+
+    const hasNamedLines = /\[.*?\]/.test(templateColumns) || /\[.*?\]/.test(templateRows);
+    if (hasNamedLines) {
+      // TODO(grid): replicate named lines per slice once templates are copied over.
+      return { safe: false, reason: 'named grid lines detected' };
+    }
+
+    return { safe: true };
   }
 
 }

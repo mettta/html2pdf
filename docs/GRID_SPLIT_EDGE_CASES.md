@@ -78,8 +78,9 @@ Goal: map out grid-specific risks before we extend the splitter beyond simple mo
 - **Strategy**: expose stable hooks (data attributes, original node kept as final slice) so re-rendering can rehydrate.
 
 ## 13. Debug-only guards (current implementation)
-- grid-auto-flow must start with `row`.
-- grid-template-areas must be `none`.
-- No `span` in `grid-row-end`/`grid-column-end`.
+- `grid-auto-flow` must start with `row` and not contain `dense`.
+- `grid-template-areas` must be `none`.
+- No `span` in `grid-row-end` / `grid-column-end`.
+- No named grid lines (`[line-name]`) or complex track sizing (`subgrid`, `auto-fit`, `auto-fill`, `fit-content`).
+- No implicit row gaps (`grid-row-start` indices higher than row count).
 - These checks currently result in "skip splitting"; revisit once dedicated support is in place.
-
