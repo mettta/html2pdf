@@ -741,14 +741,29 @@ export default class Table {
     }
   }
 
+  _getPaginatorAdapter() {
+    return {
+      label: 'table',
+      getSplitBottom: () => this._currentTableSplitBottom,
+      setSplitBottom: (value) => { this._currentTableSplitBottom = value; },
+      computeSplitBottomForElement: (element) => (
+        this._node.getTop(element, this._currentTable) + this._currentTableFullPartContentHeight
+      ),
+      getRows: () => this._currentTableDistributedRows,
+      shouldAssert: () => this._assert,
+      getDebug: () => this._debug,
+      getSplitBottomLog: () => this._logSplitBottom_,
+    };
+  }
+
   _updateCurrentTableSplitBottom(elementOrValue, message = 'unknown case') {
     // Delegate to element-level paginator helper (no behavior change)
-    Paginator.updateSplitBottom(this, elementOrValue, message);
+    Paginator.updateSplitBottom(this._getPaginatorAdapter(), elementOrValue, message);
   }
 
   _registerPageStartAt(index, splitStartRowIndexes, reason = 'register page start') {
     // Delegate to element-level paginator helper (no behavior change)
-    Paginator.registerPageStartAt(this, index, splitStartRowIndexes, reason);
+    Paginator.registerPageStartAt(this._getPaginatorAdapter(), index, splitStartRowIndexes, reason);
   }
 
   // ===== Overflow / Scaling =====
