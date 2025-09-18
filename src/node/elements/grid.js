@@ -44,10 +44,19 @@ export default class Grid {
   }
 
   split(node, pageBottom, fullPageHeight, root) {
-    // * Split simple grids,
-    // * consider that templating is used, but there is no content in complex areas.
-    // * If something unclear is encountered - do not split at all.
-    // TODO (shall we scale?).
+    // Flow outline (parity with simple tables):
+    // 1. Collect children and partition them into visual rows.
+    // 2. Measure available space: short first window vs full-page window.
+    // 3. Walk rows, registering split indexes when the next row would overflow.
+    //    • If the first row itself does not fit → move whole row to next page (🚧 refine logic).
+    //    • If rows can be sliced into parts → reuse slicers (🚧 not implemented yet).
+    // 4. Build parts by cloning wrappers and moving row groups.
+    // 5. Leave original grid as the final slice; no signposts / reclaimed height for now.
+    //
+    // Long-term grid targets:
+    // - support deep slicing of a row's content (mirroring table TD splitting).
+    // - fallback for non-breakable items (IMG/SVG) via scaling similar to Table.
+    // - guard/skip complex layouts (non-monotonic placement, spans) with explicit logs.
 
     this._debug._ && console.group('%c_splitGridNode', 'background:#00FFFF');
 
@@ -78,9 +87,28 @@ export default class Grid {
       this._DOM.setStyles(node, { position: 'relative' });
     }
 
+    // === Guards: skip complex layouts until dedicated support ===
+    const gridAutoFlow = nodeComputedStyle.gridAutoFlow || '';
+    if (!gridAutoFlow.startsWith('row')) {
+      this._debug._ && console.warn('[grid.split] skip: unsupported grid-auto-flow', gridAutoFlow);
+      restorePosition();
+      this._debug._ && console.groupEnd();
+      return [];
+    }
+
+    const templateAreas = nodeComputedStyle.gridTemplateAreas || 'none';
+    if (templateAreas !== 'none') {
+      this._debug._ && console.warn('[grid.split] skip: grid-template-areas present');
+      restorePosition();
+      this._debug._ && console.groupEnd();
+      return [];
+    }
+
     const ROW_TOP_STEP = 0.5; // tolerate sub-pixel jitter when detecting row breaks
     const rowGroups = [];
     const rowTops = [];
+    let hasRowSpan = false;
+    let hasColumnSpan = false;
 
     children.forEach((child) => {
       const top = this._node.getTop(child, node);
@@ -92,10 +120,23 @@ export default class Grid {
       }
       // Rely on vertical position only: we support linear, monotonic grids for now.
       rowGroups[rowGroups.length - 1].push(child);
+
+      const childStyle = this._DOM.getComputedStyle(child);
+      const rowEnd = childStyle.gridRowEnd || '';
+      const colEnd = childStyle.gridColumnEnd || '';
+      hasRowSpan = hasRowSpan || rowEnd.includes('span');
+      hasColumnSpan = hasColumnSpan || colEnd.includes('span');
     });
 
     const gridNodeRows = rowGroups.length;
     const gridNodeHeight = this._DOM.getElementOffsetHeight(node);
+
+    if (hasRowSpan || hasColumnSpan) {
+      this._debug._ && console.warn('[grid.split] skip: span detected (row or column)');
+      restorePosition();
+      this._debug._ && console.groupEnd();
+      return [];
+    }
 
     // ** If there are enough rows for the split to be readable,
     // ** and the node is not too big (because of the content),
@@ -154,19 +195,21 @@ export default class Grid {
 
       if (topsArr[index] > currentPageBottom) {
 
-        // TODO split long TR
-        // когда много диаграмм, или очень длинный текст
+        // CASE: row `index` would overflow the current window.
+        // TODO split long row: when a single row is taller than the window, slice content.
 
-        if (index > this._minLeftRows) {
-          // * avoid < minLeftRows rows on first page
-          // *** If a table row starts in the next part,
-          // *** register the previous one as the beginning of the next part.
+        if (index > 0) {
+          // Normal case: keep at least one row per slice, register previous row as split.
           splitsIds.push(index - 1);
+        } else {
+          // First row does not fit tail window.
+          // For now we move it to the next page by stepping currentPageBottom forward.
+          this._debug._ && console.warn('[grid.split] row0 overflow tail window → use full-page window');
         }
 
-        currentPageBottom = topsArr[index - 1] + fullPagePartHeight;
+        currentPageBottom = topsArr[Math.max(index - 1, 0)] + fullPagePartHeight;
 
-        // check if next fits
+        // 🚧 Future: if still overflowing after escalation, fall back to scaling.
 
       }
     };
@@ -176,6 +219,12 @@ export default class Grid {
     const insertGridSplit = (startId, endId) => {
       // * The function is called later.
       // TODO Put it in a separate method: THIS AND TABLE
+
+      if (startId === endId) {
+        // ⚠️ unexpected empty slice, do not build chunk
+        this._debug._ && console.warn('[grid.split] skip empty slice request', startId, endId);
+        return null;
+      }
 
       this._debug._ && console.log(`=> insertGridSplit(${startId}, ${endId})`);
 
@@ -222,7 +271,12 @@ export default class Grid {
     };
 
 
-    const splits = [...splitsIds.map((value, index, array) => insertGridSplit(array[index - 1] || 0, value)), node]
+    const splits = [
+      ...splitsIds
+        .map((value, index, array) => insertGridSplit(array[index - 1] || 0, value))
+        .filter(Boolean),
+      node
+    ];
 
     this._debug._ && console.log(
       'splits', splits

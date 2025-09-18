@@ -77,3 +77,9 @@ Goal: map out grid-specific risks before we extend the splitter beyond simple mo
 - **Detection**: beyond our control; note in docs that splitting manipulates DOM directly.
 - **Strategy**: expose stable hooks (data attributes, original node kept as final slice) so re-rendering can rehydrate.
 
+## 13. Debug-only guards (current implementation)
+- grid-auto-flow must start with `row`.
+- grid-template-areas must be `none`.
+- No `span` in `grid-row-end`/`grid-column-end`.
+- These checks currently result in "skip splitting"; revisit once dedicated support is in place.
+
