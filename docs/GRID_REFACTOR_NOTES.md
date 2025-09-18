@@ -19,6 +19,7 @@
 - Evaluate reuse of `TableAdapter` patterns for Grid/TableLike builders and slice lifecycle.
 - Revisit configuration placement for signpost text/height once adapters are unified.
 - Capture per-item shell measurements for Grid to improve split budgets and scaling heuristics.
+- Add automated coverage for existing grid examples before attempting deeper refactors.
 
 ## Work Log
-- 2025-09-18: Rewired Grid splitter to share the paginator adapter with Table, added row-level slicing via existing slicers (shells stubbed to zero pending dedicated measurements).
+- 2025-09-18: Prioritize regression tests for strictdoc grids, then extract reusable pagination steps incrementally (state prep, metrics, builders) with functional parity at each step.
