@@ -52,14 +52,25 @@ export default class Grid {
     this._debug._ && console.group('%c_splitGridNode', 'background:#00FFFF');
 
     const children = this._node.getPreparedChildren(node);
-    if (!children.length) {
-      this._debug._ && console.groupEnd();
-      return [];
-    }
 
     const nodeComputedStyle = this._DOM.getComputedStyle(node);
     const initialInlinePosition = node.style.position;
     const needsTempPosition = nodeComputedStyle.position === 'static';
+    const restorePosition = () => {
+      if (!needsTempPosition) return;
+      if (initialInlinePosition) {
+        this._DOM.setStyles(node, { position: initialInlinePosition });
+      } else {
+        node.style.removeProperty('position');
+      }
+    };
+
+    if (!children.length) {
+      restorePosition();
+      this._debug._ && console.groupEnd();
+      return [];
+    }
+
     if (needsTempPosition) {
       // In some layouts grid stays `position: static`; force a relative context so
       // offset-based getters work (otherwise offsets are taken from body and rows
@@ -93,9 +104,7 @@ export default class Grid {
     if (gridNodeRows < this._minBreakableGridRows && gridNodeHeight < fullPageHeight) {
       // ** Otherwise, we don't split it.
       this._debug._ && console.log(`%c END DONT _splitGridNode`, CONSOLE_CSS_END_LABEL);
-      if (needsTempPosition) {
-        this._DOM.setStyles(node, { position: initialInlinePosition || '' });
-      }
+      restorePosition();
       this._debug._ && console.groupEnd();
       return []
     }
@@ -234,9 +243,7 @@ export default class Grid {
     // LAST PART handling
     this._node.setFlagNoBreak(node);
 
-    if (needsTempPosition) {
-      this._DOM.setStyles(node, { position: initialInlinePosition || '' });
-    }
+    restorePosition();
 
     this._debug._ && console.log(`%c END _splitGridNode`, CONSOLE_CSS_END_LABEL);
     this._debug._ && console.groupEnd()
