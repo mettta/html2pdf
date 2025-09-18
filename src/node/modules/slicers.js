@@ -96,14 +96,14 @@ export function getSplitPoints({
   // To avoid this, we subtract padding-top from offsetTop.
   // This normalization is specific to this TD context.
 
-  _isDebug(this) && console.group(`walking through ${children.length} children`); // Collapsed
+  _isDebug(this) && console.group(`walking through ${children.length} children`, children); // Collapsed
   for (let i = 0; i < children.length; i++) {
 
     const currentElement = children[i];
     const previousElement = children[i - 1];
     const nextElement = children[i + 1];
 
-    _isDebug(this) && console.log('🍎', {currentElement, previousElement, nextElement});
+    _isDebug(this) && console.log({currentElement, previousElement, nextElement});
 
     // ⚠️ See comment above about normalization.
     const nextElementTop = nextElement ? this.getNormalizedTop(nextElement, rootNode, _rootComputedStyle) : undefined;
@@ -143,7 +143,7 @@ export function getSplitPoints({
     if (nextElementTop <= floater) {
       // * CurrentElement does fit in the remaining space on the page.
 
-      _isDebug(this) && console.log(`🍎 current fits: (next top) ${nextElementTop} <= ${floater} (floater)`, [currentElement]);
+      _isDebug(this) && console.log(`current fits: (next top) ${nextElementTop} <= ${floater} (floater)`, [currentElement]);
 
       // * go to next index
     } else { // *** (nextElementTop > floater) --> currentElement ?
@@ -152,18 +152,18 @@ export function getSplitPoints({
 
       if (this.isSVG(currentElement) || this.isIMG(currentElement)) {
         // TODO needs testing
-        _isDebug(this) && console.log('%cIMAGE 💟💟', 'color:red;text-weight:bold')
+        _isDebug(this) && console.log('%cIMAGE', 'color:red;text-weight:bold')
       }
 
       const currentElementBottom = this.getNormalizedBottomWithMargin(currentElement, rootNode, _rootComputedStyle); // ⚠️ See comment above about normalization.
 
-      _isDebug(this) && console.log(`🍎 current does not fit: (next top) ${nextElementTop} > ${floater} (floater)`, [currentElement]);
-      _isDebug(this) && console.log(`🍎 ? (curr bottom) ${currentElementBottom} // ${floater} (floater)`, [currentElement]);
+      _isDebug(this) && console.log(`current does not fit: (next top) ${nextElementTop} > ${floater} (floater)`, [currentElement]);
+      _isDebug(this) && console.log(`? (curr bottom) ${currentElementBottom} // ${floater} (floater)`, [currentElement]);
 
       if (currentElementBottom <= floater) {
         // * CurrentElement does fit in the remaining space on the page.
 
-        _isDebug(this) && console.log(`🍎 (curr bottom) ${currentElementBottom} <= ${floater} (floater)`, [currentElement]);
+        _isDebug(this) && console.log(`(curr bottom) ${currentElementBottom} <= ${floater} (floater)`, [currentElement]);
 
         if (nextElement) {
           // ** the nextElement is found
@@ -179,15 +179,18 @@ export function getSplitPoints({
           registerPoint(nextElement);
         } else {
           // ** No nextElement - this is the end of element list.
-          _isDebug(this) && console.log('🍎 this is the end of element list ///');
+          _isDebug(this) && console.log('=== this is the end of element list ///');
 
           // TODO: move this case up to `if (nextElementTop <= floater)`
         }
 
       } else {
         // * CurrentElement does NOT fit in the remaining space on the page.
-        _isDebug(this) && console.log(`🍎 current does NOT fit (curr bottom) ${currentElementBottom} > ${floater} (floater)`, [currentElement]);
-        _isDebug(this) && console.log(`🍎 try to split it`);
+        _isDebug(this) && console.log(
+          `current does NOT fit (curr bottom) ${currentElementBottom} > ${floater} (floater)`,
+          [currentElement],
+          `🍎 try to split it`
+        );
 
         // * Try to split it.
 
@@ -237,7 +240,7 @@ export function getSplitPoints({
                 (localPoints.length === 1 && localPoints[0] === null)
               );
 
-            _isDebug(this) && console.log('🍎 room)', room);
+            _isDebug(this) && console.log('room (Math.max)', room);
 
             if (isUnbreakableOversized) {
               _isDebug(this) && console.warn(
@@ -277,7 +280,7 @@ export function getSplitPoints({
 
         } else {
 
-          // 🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎
+          // !currentElementChildren.length
           _isDebug(this) && console.log('🍎 currentElementChildren.length == 0');
 
           // 🤖 NOTE: scaling is intentionally disabled here (see commented code below).
