@@ -17,29 +17,13 @@ export default class Grid {
 
     // todo
     // 1) move to config
-    // Paragraph:
-    this._minLeftLines = 2;
-    this._minDanglingLines = 2;
-    this._minBreakableLines = this._minLeftLines + this._minDanglingLines;
-    // Table:
-    // # can be a single row with long content
-    this._minLeftRows = 1; // ! min 1!
-    this._minDanglingRows = 1;  // ! min 1!
-    this._minBreakableRows = 1; // this._minLeftRows + this._minDanglingRows;
-    // Code:
-    this._minPreFirstBlockLines = 3;
-    this._minPreLastBlockLines = 3;
-    this._minPreBreakableLines = this._minPreFirstBlockLines + this._minPreLastBlockLines;
     // Grid:
     this._minBreakableGridRows = 4;
-
-    this._imageReductionRatio = 0.8;
 
     // TODO make function
     // * From config:
     // - if null is set - the element is not created in createSignpost().
     this._signpostHeight = parseFloat(config.splitLabelHeight) || 0;
-
 
   }
 
