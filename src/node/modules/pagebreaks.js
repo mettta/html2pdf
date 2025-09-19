@@ -219,7 +219,16 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
       break;
     }
 
-    if (this.isPageStartElement(parent) || this.getTop(parent, root) < topLimit) {
+    const flowParent = this.resolveFlowElement(parent, { prefer: 'first' });
+    if (!flowParent) {
+      current = parent;
+      continue;
+    }
+
+    const parentIsPageStart = this.isPageStartElement(parent) || this.isPageStartElement(flowParent);
+    const parentTop = this.getTop(flowParent, root);
+
+    if (parentIsPageStart || parentTop < topLimit) {
       // Interrupt with limit reached, with resetting the result, using interruptedByPageStart.
       _isDebug(this) && console.warn('🫥 findFirstChildParentFromPage // interruptedByPageStart');
       interruptedByPageStart = true;
@@ -227,7 +236,7 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
     }
 
     _isDebug(this) && console.log({ parent });
-    firstSuitableParent = parent;
+    firstSuitableParent = flowParent;
     current = parent;
   }
 
@@ -274,15 +283,24 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
 
     if (!prev || !this.isNoHanging(prev) || prev === current) break; // * return last computed
 
-    if (this.isPageStartElement(prev) || this.getTop(prev, root) < topLimit) {
+    const flowPrev = this.resolveFlowElement(prev, { prefer: 'last' });
+    if (!flowPrev) {
+      current = prev;
+      continue;
+    }
+
+    const prevIsPageStart = this.isPageStartElement(prev) || this.isPageStartElement(flowPrev);
+    const prevTop = this.getTop(flowPrev, root);
+
+    if (prevIsPageStart || prevTop < topLimit) {
       interruptedByPageStart = true;
       break;
     }
 
     // * isNoHanging(prev) && !isPageStartElement(prev)
     // I'm looking at the previous element:
-    suitableSibling = prev;
-    current = prev;
+    suitableSibling = flowPrev;
+    current = flowPrev;
   }
 
   _isDebug(this) && console.groupEnd('⬅ findPreviousNonHangingsFromPage');
