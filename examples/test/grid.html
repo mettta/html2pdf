@@ -37,11 +37,14 @@
     place-items: stretch stretch;
     place-content: stretch stretch;
     gap: 4px;
-    background-color: rgba(0, 250, 250, 0.2);
     /* position: relative; */
   }
 
+  .grid > *,
   .grid-cell {
+    border: 1px solid #006;
+    box-sizing: border-box;
+    background: #fff;
   }
 
   .col1 {
@@ -58,16 +61,17 @@
   }
 
   .content {
-    /* content line height + gap = 30px */
-    /* content line height = 1px*2 border + line-height 16px + 4*2 padding = 26px */
     box-sizing: border-box;
-    border: 1px solid blue;
     background-color: rgba(0, 250, 250, 0.2);
     padding: 4px;
-    min-height: 26px;
+    min-height: 24px;
     font-size: 14px;
     line-height: 16px;
   }
+
+    /* content line height + gap = 30px */
+    /* grid-cell = 24px + 1px*2 border */
+    /* content line height = line-height 16px + 4*2 padding = 24px */
 </style>
 
 <body>
