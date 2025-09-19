@@ -109,3 +109,49 @@ export function isLineKept(current, next) {
   _isDebug(this) && console.groupEnd('isLineKept?')
   return vert;
 }
+
+/**
+ * @this {Node}
+ */
+export  function setInitStyle(on, rootNode, rootComputedStyle) {
+  const INIT_POS_SELECTOR = '[init-position]';
+  const INIT_ALI_SELECTOR = '[init-vertical-align]';
+  const UTILITY_POS = 'relative';
+  const UTILITY_ALI = 'top';
+
+  const _rootComputedStyle = rootComputedStyle
+    ? rootComputedStyle
+    : this._DOM.getComputedStyle(rootNode);
+
+  const initPositionValue = _rootComputedStyle.position;
+  const initVerticalAlignValue = _rootComputedStyle.verticalAlign;
+
+  if (on) {
+    // set
+    if (initPositionValue != UTILITY_POS) {
+      this._DOM.setStyles(rootNode, { 'position': UTILITY_POS });
+      this._DOM.setAttribute(rootNode, INIT_POS_SELECTOR, initPositionValue);
+    }
+    if (initVerticalAlignValue != UTILITY_ALI) {
+      this._DOM.setStyles(rootNode, { 'vertical-align': UTILITY_ALI });
+      this._DOM.setAttribute(rootNode, INIT_ALI_SELECTOR, initVerticalAlignValue);
+    }
+  } else {
+    // back
+    // * We need to return exactly the value (backPosition & backVerticalAlign),
+    // * not just delete the utility value (like { position: '' }),
+    // * because we don't store the data, where exactly the init value was taken from,
+    // * and maybe it's not in CSS and it's not inherited -
+    // * and it's overwritten in the tag attributes.
+    const backPosition = this._DOM.getAttribute(rootNode, INIT_POS_SELECTOR);
+    const backVerticalAlign = this._DOM.getAttribute(rootNode, INIT_ALI_SELECTOR);
+    if (backPosition) {
+      this._DOM.setStyles(rootNode, { position: backPosition });
+      this._DOM.removeAttribute(rootNode, INIT_POS_SELECTOR);
+    }
+    if (backVerticalAlign) {
+      this._DOM.setStyles(rootNode, { 'vertical-align': backVerticalAlign });
+      this._DOM.removeAttribute(rootNode, INIT_ALI_SELECTOR);
+    }
+  }
+}
