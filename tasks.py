@@ -91,6 +91,11 @@ def test_end2end(
     exit_first=False,
     parallelize=False,
     long_timeouts=False,
+    silent=False,
+    q=False,
+    headless=False,
+    headless2=False,
+    headed=False,
 ):
     long_timeouts_argument = (
         "--strictdoc-long-timeouts" if long_timeouts else ""
@@ -107,6 +112,20 @@ def test_end2end(
 
     focus_argument = f"-k {focus}" if focus is not None else ""
     exit_first_argument = "--exitfirst" if exit_first else ""
+    quiet_requested = silent or q
+    silent_argument = "-q" if quiet_requested else ""
+
+    head_modes = [headless, headless2, headed]
+    if sum(1 for mode in head_modes if mode) > 1:
+        raise ValueError("Choose at most one of --headless/--headless2/--headed")
+
+    head_mode_argument = ""
+    if headless:
+        head_mode_argument = "--headless"
+    elif headless2:
+        head_mode_argument = "--headless2"
+    elif headed:
+        head_mode_argument = "--headed"
 
     test_command = f"""
         pytest
@@ -116,6 +135,8 @@ def test_end2end(
             {parallelize_argument}
             {focus_argument}
             {exit_first_argument}
+            {silent_argument}
+            {head_mode_argument}
             {long_timeouts_argument}
             test/end2end
     """
@@ -130,6 +151,11 @@ def test_end2end_random(
     exit_first=False,
     parallelize=False,
     long_timeouts=False,
+    silent=False,
+    q=False,
+    headless=False,
+    headless2=False,
+    headed=False,
 ):
     long_timeouts_argument = (
         "--strictdoc-long-timeouts" if long_timeouts else ""
@@ -146,6 +172,20 @@ def test_end2end_random(
 
     focus_argument = f"-k {focus}" if focus is not None else ""
     exit_first_argument = "--exitfirst" if exit_first else ""
+    quiet_requested = silent or q
+    silent_argument = "-q" if quiet_requested else ""
+
+    head_modes = [headless, headless2, headed]
+    if sum(1 for mode in head_modes if mode) > 1:
+        raise ValueError("Choose at most one of --headless/--headless2/--headed")
+
+    head_mode_argument = ""
+    if headless:
+        head_mode_argument = "--headless"
+    elif headless2:
+        head_mode_argument = "--headless2"
+    elif headed:
+        head_mode_argument = "--headed"
 
     test_command = f"""
         PYTHONPATH=.
@@ -156,6 +196,8 @@ def test_end2end_random(
             {parallelize_argument}
             {focus_argument}
             {exit_first_argument}
+            {silent_argument}
+            {head_mode_argument}
             {long_timeouts_argument}
             test/random_test/output
     """
