@@ -664,19 +664,19 @@ export default class Pages {
       // IMAGE with optional resizing
       // TODO float images
 
-      if (this._node.isSVG(currentElement)
-       || this._node.isIMG(currentElement)
-       || this._node.isOBJECT(currentElement)
-      ) {
+      const mediaElement = this._node.resolveReplacedElement(currentElement, { prefer: 'first' });
+
+      if (mediaElement) {
 
         // TODO needs testing
 
         // svg has not offset props
-        const currentImage = this._node.isSVG(currentElement)
+        const isSvgMedia = this._node.isSVG(mediaElement);
+        const currentImage = isSvgMedia
         // TODO replace with setFlag... and remove wrapper function
         // TODO process at the beginning, find all SVG and set Flag
-          ? this._node.createSignpost(currentElement)
-          : currentElement;
+          ? this._node.createSignpost(mediaElement)
+          : mediaElement;
 
         // if parent: the node is first,
         // so let's include the parent's top margins:
@@ -738,7 +738,7 @@ export default class Pages {
           this._node.markProcessed(currentElement, `IMG with ratio ${ratio}, and next starts on next`);
           // reduce it a bit
           this._node.fitElementWithinBoundaries({
-            element: currentElement,
+            element: mediaElement,
             height: currentImageHeight,
             width: currentImageWidth,
             vspace: availableImageNodeSpace,
@@ -756,12 +756,13 @@ export default class Pages {
         // *** add the possibility of moving it with the wrap tag
         // *** if it's the first child
         this._node.markProcessed(currentElement, `IMG starts on next`);
-        this._registerPageStart(currentImage, true);
+        const pageStartElement = isSvgMedia ? currentImage : mediaElement;
+        this._registerPageStart(pageStartElement, true);
         this._debug._parseNode && console.log('🖼️ register Page Start', currentElement);
         // and avoid page overflow if the picture is too big to fit on the page as a whole
         if (currentImageHeight > fullPageImageNodeSpace) {
           this._node.fitElementWithinBoundaries({
-            element: currentElement,
+            element: mediaElement,
             height: currentImageHeight,
             width: currentImageWidth,
             vspace: fullPageImageNodeSpace,

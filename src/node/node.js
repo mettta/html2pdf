@@ -9,6 +9,7 @@ import * as Wrappers from './modules/wrappers.js';
 import * as Fitters from './modules/fitters.js';
 import * as Pagebreaks from './modules/pagebreaks.js';
 import * as Children from './modules/children.js';
+import * as Media from './modules/media.js';
 import * as Slicers from './modules/slicers.js';
 import Paragraph from './elements/paragraph.js';
 import Table from './elements/table.js';
@@ -43,6 +44,7 @@ export default class Node {
     Object.assign(this, Fitters);
     Object.assign(this, Pagebreaks);
     Object.assign(this, Children);
+    Object.assign(this, Media);
     Object.assign(this, Slicers);
 
     this._paragraph = new Paragraph({
