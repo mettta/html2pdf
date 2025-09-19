@@ -72,31 +72,34 @@ export function getPreparedChildren(element) {
           // * normal
           if (this._DOM.isElementNode(item)) {
 
-            // If the element has no offset parent but is absolutely/fixed positioned,
-            // keep it as-is — don't unwrap (not display: contents).
-            // Only unwrap when it's likely display: contents or similar flowless container.
+            const computedStyle = this._DOM.getComputedStyle(item);
+            const position = computedStyle?.position;
+            const display = computedStyle?.display;
+
+            if (display === 'none') {
+              _isDebug(this) && console.info('🚸 (getPreparedChildren) * display:none — skipped', [item]);
+              return acc;
+            }
+            if (position === 'absolute' || position === 'fixed') {
+              // *** ⚠️ position: fixed/absolute elements are excluded from layout flow:
+              // Absolutely/fixed positioned nodes sit outside normal flow:
+              // they do not contribute vertical height when we paginate.
+              // Skip them from the flow list.
+              _isDebug(this) && console.info('🚸 (getPreparedChildren) * absolute/fixed — skipped', [item]);
+              return acc;
+            }
             const offsetParent = this._DOM.getElementOffsetParent(item);
             if (!offsetParent) {
-              const computedStyle = this._DOM.getComputedStyle(item);
-              const position = computedStyle?.position;
-              if (position === 'absolute' || position === 'fixed') {
-                // ⚠️ position: fixed/absolute elements are excluded from layout flow.
-                // They are intentionally skipped and not added to children.
-                _isDebug(this) && console.info('🚸 (getPreparedChildren) * absolute/fixed — skipped', [item]);
-                return acc;
-              } else {
-                // Likely a flowless container (e.g., display: contents).
-                // Recursively unwrap its children into the current context.
-                const ch = this.getPreparedChildren(item);
-                ch.length > 0 && acc.push(...ch);
-                _isDebug(this) && console.info('%c🚸 (getPreparedChildren) * no offset parent — unwrapped', 'color:green', ch, [item]);
-              }
-            } else {
-
-              acc.push(item);
-              _isDebug(this) && console.info('🚸 (getPreparedChildren) * normal node', [item]);
+              // Likely a flowless container (e.g., display: contents).
+              // Recursively unwrap its children into the current context.
+              const ch = this.getPreparedChildren(item);
+              ch.length > 0 && acc.push(...ch);
+              _isDebug(this) && console.info('%c🚸 (getPreparedChildren) * no offset parent — unwrapped', 'color:green', ch, [item]);
+              return acc;
             }
 
+            acc.push(item);
+            _isDebug(this) && console.info('🚸 (getPreparedChildren) * normal node', [item]);
             return acc;
           };
 
