@@ -536,12 +536,27 @@ export default class Pages {
     if ((currentElementTop >= newPageBottom) && (currentElementBottom - currentElementTop)) {
       const parentTop = parent ? this._node.getTopWithMargin(parent, this._root) : undefined;
       const beginningTail = parent && parentTop && (currentElementTop - parentTop >= this._referenceHeight);
-      this._debug._parseNode && console.warn(
-        '🪀 currentElementTop >= newPageBottom',
-        currentElementTop, '>=', newPageBottom,
-        '\n beginningTail:', beginningTail,
-        currentElementTop - parentTop, '>=', this._referenceHeight
-      );
+
+      if (!beginningTail) {
+        // Thin wrappers (e.g. inline or contents containers) contribute almost no
+        // intrinsic height: their children carry the layout box. Once such a wrapper
+        // crosses the page boundary, repeating the tail logic on it only triggers the
+        // “improve page start” flow again and produces duplicate breaks
+        // (StrictDoc "Image in autogen >.document@ case).
+        // Block wrappers, on the other hand, still need the tail loop.
+        // To differentiate, look at the computed display; inline/contents are treated
+        // as thin wrappers, block-level displays continue with the original flow.
+        const currentDisplay = this._DOM.getComputedStyle(currentElement)?.display || '';
+        const isInlineWrapper = currentDisplay.includes('inline');
+        const isContentsWrapper = currentDisplay === 'contents';
+        if (isInlineWrapper || isContentsWrapper) {
+          this._registerPageStart(currentElement, true);
+          this._debug._parseNode && console.log('%c END _parseNode (registered new page start)', CONSOLE_CSS_END_LABEL);
+          this._debug._parseNode && console.groupEnd();
+          return
+        }
+      }
+
       this._registerPageStart(currentElement, !beginningTail);
     }
 
