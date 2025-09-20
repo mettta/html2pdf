@@ -410,9 +410,11 @@ export default class Pages {
 
     const currentElementTop = this._node.getTop(currentElement, this._root);
 
-    // TODO: We have to rely on the top or bottom here? currentElementBottom vs currentElementTop
-    const _isTileLongerThanPage = parentBottom > (currentElementTop + this._referenceHeight);
-    if (parentBottom && _isTileLongerThanPage) {
+    // Tail exists only if the space between the current element’s bottom and its parent’s bottom
+    // exceeds a full page (i.e., the tail of wrappers below the current element is longer than a page).
+    // Using `top` here misclassifies long elements as a tail; rely on `currentElementBottom` instead.
+    const _isTailLongerThanPage = parentBottom && ((parentBottom - currentElementBottom) >= this._referenceHeight);
+    if (parentBottom && _isTailLongerThanPage) {
       // ** if parentBottom ---> current is LAST
       // ** if parentBottom > (currentElementTop + this._referenceHeight) ---> we have a “tail” of the lower bounds of the parent tags,
       // * and there are obviously set margins or paddings that take up space.
@@ -424,13 +426,13 @@ export default class Pages {
       currentParentBottom = undefined;
 
       this._debug._parseNode && console.log(
-        '🪁 Tile: We got a tail from the lower shells of the last child. Giving up our “last child” rule here and will try to insert a page break at the end of some parent. ',
+        '🪁 Tail: We got a tail from the lower shells of the last child. Giving up our “last child” rule here and will try to insert a page break at the end of some parent. ',
         {parentBottom, currentParentBottom,  currentElementBottom, newPageBottom,},
         {currentElement, parent},
       );
 
       if (currentElementBottom <= newPageBottom) {
-        this._debug._parseNode && console.log('🪁 Tile: currentElementBottom <= newPageBottom', );
+        this._debug._parseNode && console.log('🪁 Tail: currentElementBottom <= newPageBottom', );
 
 
 
@@ -439,7 +441,7 @@ export default class Pages {
         const _parents = [];
         let _el = currentElement;
 
-        this._debug._parseNode && console.log('🪁 Tile: currentElement', currentElement);
+        this._debug._parseNode && console.log('🪁 Tail: currentElement', currentElement);
 
         while (_el && _el !== parent) {
           _parents.push({
@@ -458,23 +460,23 @@ export default class Pages {
           throw new Error("parent not found in the ancestor chain");
         }
 
-        this._debug._parseNode && console.log('🪁 Tile: _parents', _parents);
+        this._debug._parseNode && console.log('🪁 Tail: _parents', _parents);
 
         // We start checking the current page. But if this “tail” is longer than the page,
         // we may need to break it more than once.
         // In that case, we will increase this parameter within the parent loop:
         let _currentPageBottom = newPageBottom;
 
-        this._debug._parseNode && console.log('🪁 Tile: _currentPageBottom = newPageBottom', _currentPageBottom);
+        this._debug._parseNode && console.log('🪁 Tail: _currentPageBottom = newPageBottom', _currentPageBottom);
 
         for (let i = 0; i < _parents.length; i++) {
-            this._debug._parseNode && console.log('🪁 Tile: _parents[i].bottom', _parents[i].bottom, _parents[i].element);
+            this._debug._parseNode && console.log('🪁 Tail: _parents[i].bottom', _parents[i].bottom, _parents[i].element);
 
           // We go down, that is, we assume that the previous element has been validated and fits in the page.
           // The very first one is the current one, and it fits.
           // If the i-th parent doesn't fit - we insert a page break after its last child (as its last child).
           if (_parents[i].bottom > _currentPageBottom) {
-            this._debug._parseNode && console.log('🪁 Tile: _parents[i].bottom > _currentPageBottom', _parents[i].bottom, '>', _currentPageBottom, _parents[i].element);
+            this._debug._parseNode && console.log('🪁 Tail: _parents[i].bottom > _currentPageBottom', _parents[i].bottom, '>', _currentPageBottom, _parents[i].element);
 
             const _newPageStarter = this._node.createNeutral();
             _newPageStarter.classList.add('service');
@@ -497,7 +499,7 @@ export default class Pages {
               // and go to next index
             } else {
               // stop iterating
-              this._debug._parseNode && console.log('%c END _parseNode (bottom tile of parents)', CONSOLE_CSS_END_LABEL);
+              this._debug._parseNode && console.log('%c END _parseNode (bottom Tail of parents)', CONSOLE_CSS_END_LABEL);
               this._debug._parseNode && console.groupEnd();
               return
             }
@@ -505,12 +507,12 @@ export default class Pages {
           }
         }
 
-        this._debug._parseNode && console.log('%c END _parseNode (bottom tile of parents)', CONSOLE_CSS_END_LABEL);
+        this._debug._parseNode && console.log('%c END _parseNode (bottom Tail of parents)', CONSOLE_CSS_END_LABEL);
         this._debug._parseNode && console.groupEnd();
         return
 
       } else {
-        this._debug._parseNode && console.log('🪁 Tile: currentElementBottom > newPageBottom', 'DOING NOTHING' );
+        this._debug._parseNode && console.log('🪁 Tail: currentElementBottom > newPageBottom', 'DOING NOTHING' );
       }
     }
 
