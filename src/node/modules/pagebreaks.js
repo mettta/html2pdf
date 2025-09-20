@@ -1,7 +1,7 @@
-// 🚧 pagebreaks
+// 🚧 pageBreaks
 
 import { debugFor } from '../utils/debugFor.js';
-const _isDebug = debugFor('pagebreaks');
+const _isDebug = debugFor('pageBreaks');
 
 /**
  * @this {Node}
