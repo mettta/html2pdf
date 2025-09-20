@@ -155,6 +155,8 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
 
   const nodeComputedStyle = this._DOM.getComputedStyle(node);
 
+  // TODO: Keep nodeComputedStyle in Set for the parent node so that it does not need to be recalculated when queried from within it.
+
   // ? TABLE now has conditions that overlap with PRE (except for the tag name),
   // ? so let's check it first.
   // FIXME the order of checks
@@ -184,6 +186,7 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
       firstPageBottom,
       fullPageHeight,
       root,
+      nodeComputedStyle,
     ) || [];
 
   } else if (this.isGridAutoFlowRow(this._DOM.getComputedStyle(node))) {

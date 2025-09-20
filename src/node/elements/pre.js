@@ -31,7 +31,13 @@ export default class Grid {
   }
 
 
-  split(node, pageBottom, fullPageHeight, nodeComputedStyle, root) {
+  split(
+    node,
+    pageBottom,
+    fullPageHeight,
+    root,
+    nodeComputedStyle,
+  ) {
     // ['pre', 'pre-wrap', 'pre-line', 'break-spaces']
 
     // * If we call the function in a context where
