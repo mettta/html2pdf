@@ -720,10 +720,9 @@ export default class Pages {
         );
 
         // TODO !!! page width overflow for SVG
-        if (currentImageHeight < this._referenceWidth) {
+        if (currentImageWidth > this._referenceWidth) {
           // just leave it on the current page
-          this._debug._parseNode
-          && console.warn('%c IMAGE is too wide', 'color: red');
+          this._debug._parseNode && console.warn('%c IMAGE is too wide', 'color: red');
         }
 
         // if it fits
