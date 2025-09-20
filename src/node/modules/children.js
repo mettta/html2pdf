@@ -26,7 +26,7 @@ const _isDebug = debugFor('children');
  * @this {Node}
  */
 export function getPreparedChildren(element) {
-  _isDebug(this) && console.groupCollapsed(`getPreparedChildren of`, element);
+  _isDebug(this) && console.group(`getPreparedChildren of`, element);
   let children = [];
 
   // Check children:
@@ -72,20 +72,7 @@ export function getPreparedChildren(element) {
           // * normal
           if (this._DOM.isElementNode(item)) {
 
-            const computedStyle = this._DOM.getComputedStyle(item);
-            const position = computedStyle?.position;
-            const display = computedStyle?.display;
-
-            if (display === 'none') {
-              _isDebug(this) && console.info('🚸 (getPreparedChildren) * display:none — skipped', [item]);
-              return acc;
-            }
-            if (position === 'absolute' || position === 'fixed') {
-              // *** ⚠️ position: fixed/absolute elements are excluded from layout flow:
-              // Absolutely/fixed positioned nodes sit outside normal flow:
-              // they do not contribute vertical height when we paginate.
-              // Skip them from the flow list.
-              _isDebug(this) && console.info('🚸 (getPreparedChildren) * absolute/fixed — skipped', [item]);
+            if (this.shouldSkipFlowElement(item, { context: 'getPreparedChildren' })) {
               return acc;
             }
             const offsetParent = this._DOM.getElementOffsetParent(item);

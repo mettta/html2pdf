@@ -267,6 +267,13 @@ export default class Pages {
       )
     }
 
+    if (!this._DOM.getElementOffsetParent(pageStart)) {
+      this._debug._registerPageStart && console.warn(
+        '🚨 pageStart has no offsetParent. Check the caller.',
+        pageStart,
+      );
+    }
+
     const pageTop = this._node.getTopWithMargin(pageStart, this._root);
     const pageBottom = pageTop + this._referenceHeight;
     this.pages.push({

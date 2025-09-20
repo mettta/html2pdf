@@ -35,6 +35,7 @@ const debugConfig = {
     selectors: true,
     slicers: true,
     splitters: true,
+    flowFilters: true,
     wrappers: true,
   },
   paragraph: {

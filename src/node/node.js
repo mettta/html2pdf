@@ -11,6 +11,7 @@ import * as PageBreaks from './modules/pageBreaks.js';
 import * as Children from './modules/children.js';
 import * as Media from './modules/media.js';
 import * as Slicers from './modules/slicers.js';
+import * as FlowFilters from './modules/flowFilters.js';
 import Paragraph from './elements/paragraph.js';
 import Table from './elements/table.js';
 import TableLike from './elements/tableLike.js';
@@ -46,6 +47,7 @@ export default class Node {
     Object.assign(this, Children);
     Object.assign(this, Media);
     Object.assign(this, Slicers);
+    Object.assign(this, FlowFilters);
 
     this._paragraph = new Paragraph({
       config: this._config,

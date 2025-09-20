@@ -17,6 +17,11 @@ export function findBetterForcedPageStarter(element, root) {
     }
 
     const left = this._DOM.getLeftNeighbor(current);
+    if (left && this.shouldSkipFlowElement(left, { context: 'findBetterForcedPageStarter:left' })) {
+      current = left;
+      continue;
+    }
+
     if (left && this.isNoHanging(left)) {
       current = left;
       continue;
@@ -33,7 +38,6 @@ export function findBetterForcedPageStarter(element, root) {
  */
 export function findBetterPageStart(pageStart, lastPageStart, root) {
   _isDebug(this) && console.group('➗ findBetterPageStart');
-
   let interruptedWithUndefined = false;
   let interruptedWithLimit = false;
 
@@ -135,6 +139,19 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
     result = pageStart;
   }
 
+  if (this.shouldSkipFlowElement(result, { context: 'findBetterPageStart:result' })) {
+    let fallback = lastPageStart;
+    if (betterCandidate !== result) {
+      const fallbackCandidate = this.shouldSkipFlowElement(betterCandidate, { context: 'findBetterPageStart:fallback' })
+        ? null
+        : betterCandidate;
+      if (fallbackCandidate) {
+        fallback = fallbackCandidate;
+      }
+    }
+    result = fallback;
+  }
+
   _isDebug(this) && console.log({
     interruptedWithUndefined,
     interruptedWithLimit,
@@ -212,10 +229,18 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
       break;
     }
 
-    const isFirstChild = this._DOM.getFirstElementChild(parent) === current;
+    // Hidden wrappers (e.g. display:none labels) are skipped so that
+    // "first child" checks use the first element that actually participates in flow.
+    const firstFlowChild = _getFirstFlowChild.call(this, parent, 'findFirstChildParentFromPage:firstChild');
+    if (!firstFlowChild) {
+      current = parent;
+      continue;
+    }
+
+    const isFirstChild = firstFlowChild === current;
     if (!isFirstChild) {
       // First interrupt with end of nesting, with result passed to return.
-      _isDebug(this) && console.warn({ '!isFirstChild': parent });
+      _isDebug(this) && console.log('parent is NOT the First Child', { parent });
       break;
     }
 
@@ -281,11 +306,23 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
 
     _isDebug(this) && console.log({ interruptedByPageStart, topLimit, prev, current });
 
-    if (!prev || !this.isNoHanging(prev) || prev === current) break; // * return last computed
+    if (!prev || prev === current) break; // * return last computed
+
+    if (this.shouldSkipFlowElement(prev, { context: 'findPreviousNonHangingsFromPage:left' })) {
+      current = prev;
+      continue;
+    }
+
+    if (!this.isNoHanging(prev)) break;
 
     const flowPrev = this.resolveFlowElement(prev, { prefer: 'last' });
     if (!flowPrev) {
       current = prev;
+      continue;
+    }
+
+    if (this.shouldSkipFlowElement(flowPrev, { context: 'findPreviousNonHangingsFromPage:flow' })) {
+      current = flowPrev;
       continue;
     }
 
@@ -305,6 +342,32 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
 
   _isDebug(this) && console.groupEnd('⬅ findPreviousNonHangingsFromPage');
   return interruptedByPageStart ? undefined : suitableSibling;
+}
+
+// Returns the first child that participates in layout, skipping nodes that
+// flowfilters.shouldSkipFlowElement() would remove from pagination decisions.
+function _getFirstFlowChild(element, context) {
+  if (!element || typeof this._DOM?.getFirstElementChild !== 'function') {
+    return null;
+  }
+
+  let child = this._DOM.getFirstElementChild(element);
+  const visited = new Set();
+
+  while (child && !visited.has(child)) {
+    visited.add(child);
+
+    if (typeof this.shouldSkipFlowElement === 'function'
+      && this.shouldSkipFlowElement(child, { context })) {
+      // Skip and look at the next sibling in document order.
+      child = this._DOM.getRightNeighbor(child);
+      continue;
+    }
+
+    return child;
+  }
+
+  return null;
 }
 
 // ***
