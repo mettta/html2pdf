@@ -26,6 +26,8 @@ case6_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "case6.html")
 )
 
+w1 = '//*[@data-testid="top-node-wrapper"]'
+w2 = '//*[@data-testid="last-page-node-wrapper"]'
 
 class Test(BaseCase):
     def __init__(self, *args, **kwargs):
@@ -56,3 +58,5 @@ class Test(BaseCase):
         # long inline image in inline .document
         self.helper.do_open(case6_html_file_url)
         self.helper.assert_document_has_pages(3, True)
+        self.helper.assert_element_on_the_page(w1, 2)
+        self.helper.assert_element_on_the_page(w2, 3)
