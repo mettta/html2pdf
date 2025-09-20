@@ -16,10 +16,10 @@ export function findBetterForcedPageStarter(element, root) {
       continue;
     }
 
-    const left = this._DOM.getLeftNeighbor(current);
-    if (left && this.shouldSkipFlowElement(left, { context: 'findBetterForcedPageStarter:left' })) {
-      current = left;
-      continue;
+    let left = this._DOM.getLeftNeighbor(current);
+    while (left && this.shouldSkipFlowElement(left, { context: 'findBetterForcedPageStarter:left' })) {
+      // ⚗️ filter out hidden wrappers on the left side
+      left = this._DOM.getLeftNeighbor(left);
     }
 
     if (left && this.isNoHanging(left)) {
@@ -119,7 +119,11 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
   }
 
   // TODO: needs more tests
-  const prev = this._DOM.getLeftNeighbor(currentCandidate);
+  let prev = this._DOM.getLeftNeighbor(currentCandidate);
+  while (prev && this.shouldSkipFlowElement(prev, { context: 'findBetterPageStart:leftCheck' })) {
+    // ⚗️ filter out hidden wrappers near the current candidate
+    prev = this._DOM.getLeftNeighbor(prev);
+  }
   if (prev == lastPageStart) {
     interruptedWithLimit = true;
     _isDebug(this) && console.log('👈 Left limit has been reached (left neighbor is the last page start)', prev, betterCandidate);
@@ -221,23 +225,26 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
   let interruptedByPageStart = false;
 
   while (true) {
-    const parent = this._DOM.getParentNode(current);
-    if (!parent) break;
-
-    // Stop at root boundary: do not climb to or above root.
-    if (parent === root) {
+    let parent = this._DOM.getParentNode(current);
+    while (parent && this.shouldSkipFlowElement(parent, { context: 'findFirstChildParentFromPage:parent' })) {
+      // ⚗️ skip non-flow parents while moving upward
+      parent = this._DOM.getParentNode(parent);
+    }
+    if (!parent || parent === root) {
       break;
     }
 
-    // Hidden wrappers (e.g. display:none labels) are skipped so that
-    // "first child" checks use the first element that actually participates in flow.
-    const firstFlowChild = _getFirstFlowChild.call(this, parent, 'findFirstChildParentFromPage:firstChild');
-    if (!firstFlowChild) {
+    let firstChild = this._DOM.getFirstElementChild(parent);
+    while (firstChild && this.shouldSkipFlowElement(firstChild, { context: 'findFirstChildParentFromPage:firstChild' })) {
+      // ⚗️ advance to the first child that participates in the flow
+      firstChild = this._DOM.getRightNeighbor(firstChild);
+    }
+    if (!firstChild) {
       current = parent;
       continue;
     }
 
-    const isFirstChild = firstFlowChild === current;
+    const isFirstChild = firstChild === current;
     if (!isFirstChild) {
       // First interrupt with end of nesting, with result passed to return.
       _isDebug(this) && console.log('parent is NOT the First Child', { parent });
@@ -302,27 +309,29 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
   let interruptedByPageStart = false;
 
   while (true) {
-    const prev = this._DOM.getLeftNeighbor(current);
+    let prev = this._DOM.getLeftNeighbor(current);
+    while (prev && this.shouldSkipFlowElement(prev, { context: 'findPreviousNonHangingsFromPage:left' })) {
+      // ⚗️ skip hidden siblings while scanning backwards
+      prev = this._DOM.getLeftNeighbor(prev);
+    }
 
     _isDebug(this) && console.log({ interruptedByPageStart, topLimit, prev, current });
 
     if (!prev || prev === current) break; // * return last computed
 
-    if (this.shouldSkipFlowElement(prev, { context: 'findPreviousNonHangingsFromPage:left' })) {
-      current = prev;
-      continue;
-    }
-
     if (!this.isNoHanging(prev)) break;
 
-    const flowPrev = this.resolveFlowElement(prev, { prefer: 'last' });
+    let flowPrev = this.resolveFlowElement(prev, { prefer: 'last' });
     if (!flowPrev) {
       current = prev;
       continue;
     }
-
-    if (this.shouldSkipFlowElement(flowPrev, { context: 'findPreviousNonHangingsFromPage:flow' })) {
-      current = flowPrev;
+    while (flowPrev && this.shouldSkipFlowElement(flowPrev, { context: 'findPreviousNonHangingsFromPage:flow' })) {
+      // ⚗️ keep resolving flow element until it is part of the layout
+      flowPrev = this.resolveFlowElement(this._DOM.getLeftNeighbor(flowPrev), { prefer: 'last' });
+    }
+    if (!flowPrev) {
+      current = prev;
       continue;
     }
 
@@ -342,32 +351,6 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
 
   _isDebug(this) && console.groupEnd('⬅ findPreviousNonHangingsFromPage');
   return interruptedByPageStart ? undefined : suitableSibling;
-}
-
-// Returns the first child that participates in layout, skipping nodes that
-// flowfilters.shouldSkipFlowElement() would remove from pagination decisions.
-function _getFirstFlowChild(element, context) {
-  if (!element || typeof this._DOM?.getFirstElementChild !== 'function') {
-    return null;
-  }
-
-  let child = this._DOM.getFirstElementChild(element);
-  const visited = new Set();
-
-  while (child && !visited.has(child)) {
-    visited.add(child);
-
-    if (typeof this.shouldSkipFlowElement === 'function'
-      && this.shouldSkipFlowElement(child, { context })) {
-      // Skip and look at the next sibling in document order.
-      child = this._DOM.getRightNeighbor(child);
-      continue;
-    }
-
-    return child;
-  }
-
-  return null;
 }
 
 // ***
@@ -397,7 +380,22 @@ export function findFirstChildParent(element, rootElement) {
   let firstSuitableParent = null;
 
   while (parent && parent !== rootElement) {
-    const firstChild = this._DOM.getFirstElementChild(parent);
+    if (parent === rootElement) break;
+    while (parent && this.shouldSkipFlowElement(parent, { context: 'findFirstChildParent:parent' })) {
+      // ⚗️ skip non-flow parents while climbing the tree
+      parent = this._DOM.getParentNode(parent);
+    }
+    if (!parent || parent === rootElement) break;
+
+    let firstChild = this._DOM.getFirstElementChild(parent);
+    while (firstChild && this.shouldSkipFlowElement(firstChild, { context: 'findFirstChildParent:firstChild' })) {
+      // ⚗️ move to next sibling to find flow-participating first child
+      firstChild = this._DOM.getRightNeighbor(firstChild);
+    }
+    if (!firstChild) {
+      parent = this._DOM.getParentNode(parent);
+      continue;
+    }
 
     if (element === firstChild) {
       firstSuitableParent = parent;
@@ -434,7 +432,22 @@ export function findLastChildParent(element, rootElement) {
   let lastSuitableParent = null;
 
   while (parent && parent !== rootElement) {
-    const lastChild = this._DOM.getLastElementChild(parent);
+    if (parent === rootElement) break;
+    while (parent && this.shouldSkipFlowElement(parent, { context: 'findLastChildParent:parent' })) {
+      // ⚗️ skip hidden parents while climbing upwards
+      parent = this._DOM.getParentNode(parent);
+    }
+    if (!parent || parent === rootElement) break;
+
+    let lastChild = this._DOM.getLastElementChild(parent);
+    while (lastChild && this.shouldSkipFlowElement(lastChild, { context: 'findLastChildParent:lastChild' })) {
+      // ⚗️ shift left until the last child contributes to layout
+      lastChild = this._DOM.getLeftNeighbor(lastChild);
+    }
+    if (!lastChild) {
+      parent = this._DOM.getParentNode(parent);
+      continue;
+    }
 
     if (element === lastChild) {
       lastSuitableParent = parent;
@@ -473,7 +486,11 @@ export function findSuitableNonHangingPageStart(element, topFloater) {
 
   // * === 1. Descend to find the candidate ===
   while (true) {
-    const lastChild = this._DOM.getLastElementChild(current);
+    let lastChild = this._DOM.getLastElementChild(current);
+    while (lastChild && this.shouldSkipFlowElement(lastChild, { context: 'findSuitableNonHangingPageStart:descend' })) {
+      // ⚗️ during descent, ignore non-flow descendants
+      lastChild = this._DOM.getLeftNeighbor(lastChild);
+    }
 
     // * If there are no children, stop descending
     if (!lastChild) {
@@ -502,7 +519,11 @@ export function findSuitableNonHangingPageStart(element, topFloater) {
     current = candidate; // * Start moving up from the current candidate
 
     while (current && current !== element) {
-      const parent = current.parentElement;
+      let parent = this._DOM.getParentNode(current);
+      while (parent && this.shouldSkipFlowElement(parent, { context: 'findSuitableNonHangingPageStart:ascend' })) {
+        // ⚗️ while ascending, skip wrappers that do not contribute to flow
+        parent = this._DOM.getParentNode(parent);
+      }
 
       // * If there is no parent or we reached the initial element, stop
       if (!parent || parent === element) {
@@ -511,7 +532,13 @@ export function findSuitableNonHangingPageStart(element, topFloater) {
       }
 
       // * Check if the current element is the first child of its parent
-      if (this._DOM.getFirstElementChild(parent) === current) {
+      let firstChild = this._DOM.getFirstElementChild(parent);
+      while (firstChild && this.shouldSkipFlowElement(firstChild, { context: 'findSuitableNonHangingPageStart:ascendFirst' })) {
+        // ⚗️ locate the true first child when climbing up wrappers
+        firstChild = this._DOM.getRightNeighbor(firstChild);
+      }
+
+      if (firstChild && firstChild === current) {
         // _isDebug(this) && console.log('💠 Parent satisfies the condition, updating candidate to:', parent);
         candidate = parent; // * Update the candidate to its parent
         current = parent; // * Move up to the parent

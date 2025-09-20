@@ -8,6 +8,9 @@ path_to_this_test_file_folder = os.path.dirname(os.path.abspath(__file__))
 index_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "index.html")
 )
+index2_html_file_url = (
+    "file:///" + os.path.join(path_to_this_test_file_folder, "index2.html")
+)
 
 test_element11 = '//*[@data-testid="testPoint11"]'
 test_element12 = '//*[@data-testid="testPoint12"]'
@@ -53,3 +56,11 @@ class Test(BaseCase):
         # last "after" is the last in content flow,
         # so it shouldn't trigger and create a blank page
         self.helper.assert_element_on_the_page(test_element72, 7, True)
+
+    def test_002(self):
+        helper = Helper(self)
+        helper.do_open(index2_html_file_url)
+        # Before the page start trigger, there is an invisible element that
+        # should not prevent climbing up the “first children” and assigning
+        # the outermost wrapper as the best candidate for page break.
+        self.helper.assert_document_has_pages(1, True)
