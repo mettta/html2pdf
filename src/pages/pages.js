@@ -686,10 +686,11 @@ export default class Pages {
           : mediaElement;
 
         // if parent: the node is first,
-        // so let's include the parent's top margins:
+        // include the parent's top margins by measuring from the parent's top;
+        // otherwise measure from the current image top.
         let availableImageNodeSpace = parent
-        ? (newPageBottom - this._node.getTop(currentImage, this._root))
-        : (newPageBottom - this._node.getTop(parent, this._root));
+        ? (newPageBottom - this._node.getTop(parent, this._root))
+        : (newPageBottom - this._node.getTop(currentImage, this._root));
         // if parentBottom: the node is last,
         // so let's subtract the probable margins at the bottom of the node,
         // which take away the available space for image-node placement:
