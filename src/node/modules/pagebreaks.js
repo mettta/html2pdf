@@ -3,8 +3,22 @@
 import { debugFor } from '../utils/debugFor.js';
 const _isDebug = debugFor('pageBreaks');
 
+// * CONTRACTS:  helper functions may return tri-state values
+// - Element   → success (always a NEW candidate, never the origin element).
+// - null      → searched but found nothing usable within bounds
+//               (skip rules have already passed through hidden wrappers).
+// - undefined → interrupted by page start / vertical limit;
+//               indicates “stop semantic improvement” rather than “not found”.
+
 /**
+ * Try to improve a forcibly requested page start by walking to a better anchor.
+ * Moves up via first-child parents and then left via no-hanging siblings
+ * until no further safe movement is possible.
+ *
  * @this {Node}
+ * @param {Element} element - Starting element (current page-start candidate).
+ * @param {Element} root - Pagination root (upper boundary for traversals).
+ * @returns {Element} - Final anchor element to use as the forced page start.
  */
 export function findBetterForcedPageStarter(element, root) {
   let current = element;
@@ -34,13 +48,34 @@ export function findBetterForcedPageStarter(element, root) {
 }
 
 /**
+ * Compute a semantically better page-start candidate within limits.
+ *
+ * Algorithm:
+ * 1) Establish a stable baseline `betterCandidate` using `findFirstChildParentFromPage`.
+ * 2) Iteratively improve by scanning left (`findPreviousNonHangingsFromPage`) and up
+ *    (`findFirstChildParentFromPage`) while staying within the page/top limits.
+ * 3) If we hit a limit (tri-state `undefined`) or cross the top boundary, stop semantic
+ *    improvement and fall back to `betterCandidate`.
+ * 4) Normalize the result so it never goes above the limit, is not after the flow start,
+ *    and is not a skipped/hidden element.
+ *
+ * Returns an {Element} that is inside limits.
+ * It may equal `pageStart` or `lastPageStart` after normalization.
+ *
  * @this {Node}
+ * @param {Element} pageStart - Current page-start anchor of the page being laid out.
+ * @param {Element} lastPageStart - Anchor of the previous page (left/top limit).
+ * @param {Element} root - Pagination root container.
+ * @returns {Element} - A safe, normalized page-start element for the current page.
  */
 export function findBetterPageStart(pageStart, lastPageStart, root) {
   _isDebug(this) && console.group('➗ findBetterPageStart');
   let interruptedWithUndefined = false;
+  // ** undefined from helpers => we touched a hard limit (page start / top limit)
   let interruptedWithLimit = false;
+  // ** secondary guard: we crossed or touched boundaries during local checks below
 
+  // * Y-threshold: nothing above (smaller than) this coordinate can be returned;
   // * limited to the element from which the last registered page starts:
   const topLimit = this.getTop(lastPageStart, root);
 
@@ -49,6 +84,7 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
     { pageStart, lastPageStart, root, topLimit },
   );
 
+  // ** Stable baseline: prefer upward first-child parent unless it crosses the top limit.
   // * Let's keep a stable intermediate improvement here, based on findFirstChildParent.
   // * If helper fails (null/undefined), do not pick a candidate above the limit.
   const fcpp = this.findFirstChildParentFromPage(pageStart, topLimit, root);
@@ -65,6 +101,7 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
 
   let currentCandidate = betterCandidate;
 
+  // ** Improvement passes: try left (no-hanging) then up (first-child parent)
   while (true) {
     // * ⬅ * Going left/up on “no hanging” until we reach the limit.
     const previousCandidate = this.findPreviousNonHangingsFromPage(
@@ -109,9 +146,9 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
   // ! we abolish the rule at all, and split the node inside the shell
   // ! with a single child (like headers).
 
-  // We should be able to check “start of last page” here:
-  // - as the previous element (left)
-  // - as the parent element (up)
+  // * We should be able to check “start of last page” here:
+  // * - as the previous element (left)
+  // * - as the parent element (up)
 
   if (currentCandidate == lastPageStart || this.getTop(currentCandidate, root) < topLimit) {
     interruptedWithLimit = true;
@@ -129,30 +166,44 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
     _isDebug(this) && console.log('👈 Left limit has been reached (left neighbor is the last page start)', prev, betterCandidate);
   }
 
-  // If `undefined` is returned, it means that we have reached the limit
-  // in one of the directions (past page start). Therefore we cancel attempts
-  // to improve the page break semantically and leave only geometric improvement.
+  // ** If we hit any limit, fall back to the baseline; otherwise take the improved candidate
+  // * If `undefined` is returned, it means that we have reached the limit
+  // * in one of the directions (past page start). Therefore we cancel attempts
+  // * to improve the page break semantically and leave only geometric improvement.
   let result = (interruptedWithUndefined || interruptedWithLimit) ? betterCandidate : currentCandidate;
 
-  // * Normalize: never return a candidate above the limit.
+  // ** Normalize 1/3: never return a node physically above the limit
   if (this.getTop(result, root) < topLimit) {
     result = lastPageStart;
   }
 
+  // ** Normalize 2/3: don't start immediately after the content flow start marker
   if (this.isAfterContentFlowStart(result)) {
     result = pageStart;
   }
 
+  // ** Normalize 3/3: avoid returning a skipped/hidden wrapper; prefer baseline fallback.
+  // **    If the chosen candidate is skipped/hidden,
+  // **    we do NOT accept it as a final anchor. We are no longer searching
+  // **    (no further left/up passes), so instead of “continuing past”,
+  // **    we resolve or roll back:
+  // **      - Prefer `betterCandidate` if it is flow-visible.
+  // **      - Otherwise fall back to `lastPageStart`.
   if (this.shouldSkipFlowElement(result, { context: 'findBetterPageStart:result' })) {
+    // ** default fallback: monotonic, always-safe anchor from the previous page
     let fallback = lastPageStart;
+    // ** consider the semantic baseline if it differs from the rejected result
     if (betterCandidate !== result) {
+      // ** accept baseline only if it is flow-visible; otherwise ignore it
       const fallbackCandidate = this.shouldSkipFlowElement(betterCandidate, { context: 'findBetterPageStart:fallback' })
         ? null
         : betterCandidate;
+      // ** prefer the visible baseline over lastPageStart
       if (fallbackCandidate) {
         fallback = fallbackCandidate;
       }
     }
+    // ** replace the invalid (skipped/hidden) result with the selected visible fallback
     result = fallback;
   }
 
@@ -174,8 +225,6 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
 // GET SERVICE ELEMENTS
 
 /**
- * Returns all forced page break markers inside the given element.
- *
  * @relation(PAGINATION-6, scope=function)
  *
  * INTENTION: Locate explicit user-defined page break markers inside a container element.
@@ -185,15 +234,17 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
  * EXPECTED_RESULTS: Array of matching elements (or empty).
  */
 /**
+ * Returns all forced page-break markers inside the given element.
+ *
  * @this {Node}
+ * @param {Element} element - Container to search within.
+ * @returns {Element[]} - Array of matched elements (may be empty).
  */
 export function findAllForcedPageBreakInside(element) {
   return this._DOM.getAll(this._selector.printForcedPageBreak, element);
 }
 
 /**
-* Finds the topmost parent where the element is the first child, within vertical limits.
-*
 * @relation(PAGINATION-7, scope=function)
 *
 * INTENTION: Identify a suitable wrapper that may influence page break logic, unless interrupted.
@@ -205,18 +256,25 @@ export function findAllForcedPageBreakInside(element) {
 * EXPECTED_RESULTS: DOM element, or null if not found, or undefined if interrupted.
 */
 /**
+ * Finds the topmost parent where `element` is the first child, constrained by a vertical limit.
+ *
+ * Returns:
+ * - {Element}   → found a **new** suitable parent (distinct from input).
+ * - {null}      → no suitable parent found; traversal ended normally.
+ * - {undefined} → interrupted by isPageStartElement() or crossing the top limit;
+ *                 semantic improvement should stop for this direction.
+ *
+ * *      If we reached PageStart while moving UP the tree -
+ * *      we don't need intermediate results,
+ * *      (we'll want to ignore the rule for semantic break improvement).
+ *
  * @this {Node}
+ * @param {Element} element - Start element.
+ * @param {number} topLimit - Y threshold; anything above (smaller than) this is out of bounds.
+ * @param {Element} root - Pagination root; traversal stops at this boundary.
+ * @returns {Element|null|undefined}
  */
 export function findFirstChildParentFromPage(element, topLimit, root) {
-  // Returns:
-  // ** Nothing found, loop terminated normally  |  null
-  // ** Found matching parent                    |  DOM element
-  // ** Interrupted by isPageStartElement()      |  undefined
-  //
-  // If we reached PageStart while moving UP the tree -
-  // we don't need intermediate results,
-  // (we'll want to ignore the rule for semantic break improvement).
-
   _isDebug(this) && console.group('⬆ findFirstChildParentFromPage');
   _isDebug(this) && console.log({element, topLimit, root});
 
@@ -230,6 +288,8 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
       // ⚗️ skip non-flow parents while moving upward
       parent = this._DOM.getParentNode(parent);
     }
+
+    // * Stop at root boundary: do not climb to or above root.
     if (!parent || parent === root) {
       break;
     }
@@ -246,7 +306,7 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
 
     const isFirstChild = firstChild === current;
     if (!isFirstChild) {
-      // First interrupt with end of nesting, with result passed to return.
+      // * First interrupt with end of nesting, with result passed to return.
       _isDebug(this) && console.log('parent is NOT the First Child', { parent });
       break;
     }
@@ -261,7 +321,7 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
     const parentTop = this.getTop(flowParent, root);
 
     if (parentIsPageStart || parentTop < topLimit) {
-      // Interrupt with limit reached, with resetting the result, using interruptedByPageStart.
+      // * Interrupt with limit reached, with resetting the result, using interruptedByPageStart.
       _isDebug(this) && console.warn('🫥 findFirstChildParentFromPage // interruptedByPageStart');
       interruptedByPageStart = true;
       break;
@@ -277,8 +337,6 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
 }
 
 /**
-* Finds the previous no-hanging sibling within vertical limits.
-*
 * @relation(PAGINATION-8, scope=function)
 *
 * INTENTION: Locate a safe leftward element for layout anchoring.
@@ -290,18 +348,26 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
 * EXPECTED_RESULTS: DOM element, or null if not found, or undefined if interrupted.
 */
 /**
+ * Finds the previous sibling in flow marked as `no-hanging`, constrained by a vertical limit.
+ * Resolves wrappers to flow elements while scanning left.
+ *
+ * Returns:
+ * - {Element}   → found a **new** leftward candidate.
+ * - {null}      → none found on this level; traversal ended normally.
+ * - {undefined} → interrupted by page start element or crossing the top limit;
+ *                 semantic improvement should stop for this direction.
+ *
+ * *      If we reached PageStart while moving UP the tree -
+ * *      we don't need intermediate results,
+ * *      (we'll want to ignore the rule for semantic break improvement).
+ *
  * @this {Node}
+ * @param {Element} element - Current element to scan from.
+ * @param {number} topLimit - Y threshold; anything above (smaller than) this is out of bounds.
+ * @param {Element} root - Pagination root; used for coordinate calculations.
+ * @returns {Element|null|undefined}
  */
 export function findPreviousNonHangingsFromPage(element, topLimit, root) {
-  // Returns:
-  // ** Nothing found, loop terminated normally  |  null
-  // ** Found matching parent                    |  DOM element
-  // ** Interrupted by isPageStartElement()      |  undefined
-  //
-  // If we reached PageStart while moving LEFT the tree -
-  // we don't need intermediate results,
-  // (we'll want to ignore the rule for semantic break improvement).
-
   _isDebug(this) && console.group('⬅ findPreviousNonHangingsFromPage');
 
   let suitableSibling = null;
@@ -344,7 +410,7 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
     }
 
     // * isNoHanging(prev) && !isPageStartElement(prev)
-    // I'm looking at the previous element:
+    // * I'm looking at the previous element:
     suitableSibling = flowPrev;
     current = flowPrev;
   }
@@ -358,8 +424,6 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
 // * These functions assist higher-level page break algorithms by walking the DOM tree.
 
 /**
- * Ascends the DOM to find the nearest parent where the element is the first child.
- *
  * @relation(PAGINATION-3, scope=function)
  *
  * INTENTION: Identify the outermost block where the current element is the leading child,
@@ -373,7 +437,12 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
  *                   otherwise returns null.
  */
 /**
+ * Ascends the DOM to find the nearest parent where the element is the first child.
+ *
  * @this {Node}
+ * @param {Element} element - Start element.
+ * @param {Element} rootElement - Root boundary for traversal.
+ * @returns {Element|null} - Highest such parent, or null if none.
  */
 export function findFirstChildParent(element, rootElement) {
   let parent = this._DOM.getParentNode(element);
@@ -410,7 +479,6 @@ export function findFirstChildParent(element, rootElement) {
 }
 
 /**
-* Ascends the DOM to find the nearest parent where the element is the last child.
 *
 * @relation(PAGINATION-5, scope=function)
 *
@@ -425,7 +493,12 @@ export function findFirstChildParent(element, rootElement) {
 *                   otherwise returns null.
 */
 /**
+ * Ascends the DOM to find the nearest parent where the element is the last child.
+ *
  * @this {Node}
+ * @param {Element} element - Start element.
+ * @param {Element} rootElement - Root boundary for traversal.
+ * @returns {Element|null} - Highest such parent, or null if none.
  */
 export function findLastChildParent(element, rootElement) {
   let parent = this._DOM.getParentNode(element);
@@ -464,9 +537,16 @@ export function findLastChildParent(element, rootElement) {
 // findSuitableNonHangingPageStart: Added January 1, 25,
 // Commit: 407bd8166a9b9265b21ea3bfbdb80d0cb15e173f [407bd81]
 // "Node: add findSuitableNoHangingPageStart function to determine the best element for page breaks"
-// TODO: And it's not being used.
+// FIXME: And it's not being used.
 /**
+ * Find a suitable page-start candidate that avoids leaving an isNoHanging element last on a page.
+ * Descend to the deepest relevant child, then ascend through first-child parents,
+ * and finally validate against a vertical floater threshold.
+ *
  * @this {Node}
+ * @param {Element} element - Initial element to evaluate.
+ * @param {number} topFloater - Y threshold below which a candidate is considered valid.
+ * @returns {Element|null} - Candidate if it satisfies the position constraint; otherwise null.
  */
 export function findSuitableNonHangingPageStart(element, topFloater) {
   // * This function finds the best element to start a new page when certain elements
