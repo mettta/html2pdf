@@ -55,7 +55,7 @@ export default class Grid {
     const nodeTop = this._node.getTop(node, root);
     const nodeHeight = this._DOM.getElementOffsetHeight(node);
     const nodeLineHeight = this._node.getLineHeight(node);
-    const preWrapperHeight = this._node.getEmptyNodeHeight(node, false);
+    const preWrapperHeight = this._node.getEmptyNodeHeight(node, '', false);
 
     // * Let's check the probable number of rows in the simplest case,
     // * as if the element had the style.whiteSpace=='pre'
