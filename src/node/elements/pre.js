@@ -129,9 +129,21 @@ export default class Grid {
 
       // * calculate parts
 
+      // TODO: make helper
+      const toNum = v => (isNaN(parseFloat(v)) ? 0 : parseFloat(v));
+
+      // todo: #CutLineAmend
+      // There is extra space at the cut lines for a border.
+      // Make a decorative border and cut off the original one.
+      const borderTopWidth = toNum(_nodeComputedStyle.borderTopWidth);
+      const borderBottomWidth = toNum(_nodeComputedStyle.borderBottomWidth);
+      const serviceCutLineBorder = 0;
+      const topCutLineAmend = 0; // - borderTopWidth + serviceCutLineBorder;
+      const bottomCutLineAmend = 0; // - borderBottomWidth + serviceCutLineBorder;
+
       // ** Prepare parameters for splitters calculation
-      let firstPartSpace = pageBottom - nodeTop - preWrapperHeight;
-      const fullPageSpace = fullPageHeight - preWrapperHeight;
+      let firstPartSpace = pageBottom - nodeTop - preWrapperHeight + topCutLineAmend;
+      const fullPageSpace = fullPageHeight - preWrapperHeight + bottomCutLineAmend;
 
       // * find starts of parts splitters
 
