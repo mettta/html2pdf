@@ -333,26 +333,24 @@ export default class Pages {
     // *** for the last child:
     parentBottom,
   }) {
-    const consoleMark = ['%c_parseNode\n', 'color:white',]
+    const consoleMark = ['%c[_parseNode]\n', 'color:white;',]
 
     this._debug._parseNode && console.group(
       `%c_parseNode`, CONSOLE_CSS_PRIMARY_PAGES,
-      `${parentBottom ? '★last★' : 'regular'}`,
+      `${isCurrentFirst ? '★ [[[first ★' : parentBottom ? '★ last]]] ★' : '<- regular ->'}`,
       '📄', this.pages.length,
+        { currentElement },
       );
 
     this._debug._parseNode && console.log(
-      ...consoleMark,
-      '3 nodes: ',
       {
         previousElement,
         currentElement,
         nextElement,
-      },
-      '\n',
-      '\ncurrent: ', currentElement,
-      '\nparent: ', parent,
-      '\nisCurrentFirst: ', isCurrentFirst,
+        isCurrentFirst,
+        parent,
+        parentBottom,
+      }
       );
 
     // TODO #tracedParent
@@ -360,18 +358,6 @@ export default class Pages {
     // * which is the first child (i == 0),
     // * we want to register its parent as the start of the page.
     //// const currentOrParentElement = (isCurrentFirst && parent) ? parent : currentElement;
-
-    this._debug._parseNode && console.log(
-      ...consoleMark,
-      'parent:', parent,
-      '\n',
-      'parentBottom:', parentBottom,
-      '\n',
-      'isCurrentFirst:', isCurrentFirst,
-      '\n',
-      'parent:', parent,
-      '\n'
-    );
 
     // THE END of content flow:
     // if there is no next element, then we are in a case
@@ -555,10 +541,16 @@ export default class Pages {
         // Block wrappers, on the other hand, still need the tail loop.
         // To differentiate, look at the computed display; inline/contents are treated
         // as thin wrappers, block-level displays continue with the original flow.
+        this._debug._parseNode && console.log(
+          '🪁 beginning Tail',
+          {parentTop, currentParentBottom, currentElementTop, newPageBottom,},
+          {currentElement, parent},
+        );
         const currentDisplay = this._DOM.getComputedStyle(currentElement)?.display || '';
         const isInlineWrapper = currentDisplay.includes('inline');
         const isContentsWrapper = currentDisplay === 'contents';
         if (isInlineWrapper || isContentsWrapper) {
+          this._debug._parseNode && console.log('🪁 current in thin wrapper');
           this._registerPageStart(currentElement, true);
           this._debug._parseNode && console.log('%c END _parseNode (registered new page start)', CONSOLE_CSS_END_LABEL);
           this._debug._parseNode && console.groupEnd();
@@ -616,6 +608,11 @@ export default class Pages {
       // Нужно проверять currentElement
 
       // * ... then continue.
+
+      this._debug._parseNode && console.log('%c END _parseNode (node pass)', CONSOLE_CSS_END_LABEL);
+      this._debug._parseNode && console.groupEnd();
+      return
+
     } else {
       this._debug._parseNode && console.log(
         'nextElementTop > newPageBottom', nextElementTop, '>', newPageBottom
@@ -893,10 +890,6 @@ export default class Pages {
       // * Depending on the number of children:
 
       const childrenNumber = children.length;
-      this._debug._parseNode && console.log(...consoleMark,
-        'childrenNumber ', childrenNumber);
-      this._debug._parseNode && console.log(...consoleMark,
-        'currentElement ', currentElement);
 
       // TODO #tracedParent
       // ?? If it is an only child (it means that the parent node is not split),
@@ -941,7 +934,7 @@ export default class Pages {
       }
     }
 
-    this._debug._parseNode && console.log('%c END _parseNode', CONSOLE_CSS_END_LABEL);
+    this._debug._parseNode && console.log(`%c END _parseNode [•••]`, CONSOLE_CSS_END_LABEL, { currentElement });
     this._debug._parseNode && console.groupEnd();
   }
 
