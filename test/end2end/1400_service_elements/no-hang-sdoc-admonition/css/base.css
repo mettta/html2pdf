@@ -1,4 +1,4 @@
-/* @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@400;500;600;700&family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@400;500;600;700&family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
 
 /* .test-content {} */
 
@@ -14,8 +14,9 @@
   --color-bg-accent: rgb(242 100 42 / 10%);
 
   --color-accent: #274466;
-  --color-highlight: rgb(255, 255, 200);
-  --color-highlight-secondary: rgb(230, 236, 242);
+  --color-highlight: rgb(255, 255, 155);
+
+  /* --color-bg-secondary: rgb(0 0 0 / 1%); */
 
   --color-fg-secondary: rgba(0, 0, 0, .5);
   --color-bg-secondary: rgba(0, 0, 0, .025);
@@ -25,23 +26,12 @@
 
   --color-bg-ui: #282c42;
 
-  --color-red: rgb(200, 0, 0);
-  --color-blue: rgb(50, 100, 200);
-  --color-green: rgb(0, 100, 100);
-
-  --color-danger: var(--color-red);
-  --color-cancel: var(--color-fg-secondary);
-  --color-submit: var(--color-action);
-
   --color-link: var(--color-fg-secondary);
   --color-action: var(--color-fg-accent);
   --color-hover: var(--color-fg-contrast);
 
   --color-border: rgba(0,0,0,.1);
   --color-placeholder: rgba(0,0,0,.25);
-
-  --base-border: 1px solid var(--color-border);
-  --code-border-color: var(--color-border);
 
   --scrollbarBG: transparent;
   --thumbBG: rgba(0,0,0,.05);
@@ -51,22 +41,11 @@
   --base-font-size: calc(var(--base-rhythm)*2);
   --base-line-height: 1.6;
 
-  --font-size: var(--base-font-size);
-
+  --font-size: 16px;
   --font-size-l: 1.25rem;
   --font-size-sm: 0.8125rem;
   --font-size-xsm: 0.75rem;
   --font-size-xxsm: 11px;
-  --code-font-size: .85em;
-
-  --base-font-family: 'Noto Sans', sans-serif;
-  --code-font-family: 'Noto Sans Mono', consolas, monaco, monospace;
-  /*
-    DEV NOTE: To use system fonts,
-    uncomment the following two variables, replacing the previous two:
-  */
-  /* --base-font-family: ui-sans-serif, system-ui, -apple-system, "system-ui", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif; */
-  /* --code-font-family: monospace; */
 
   --base-gap: calc(var(--base-rhythm)*6);
   --tree-gap: calc(var(--base-rhythm)*4);
@@ -81,7 +60,23 @@
 
   --traceability-arrow: 1.25rem;
 
+  --code-border-color: var(--color-border);
+  --base-font-family: 'Noto Sans', sans-serif;
+  --code-font-family: 'Noto Sans Mono', consolas, monaco, monospace;
+  --code-font-size: .85em;
+
   --card-width: 300px;
+
+  --base-border: 1px solid var(--color-border);
+
+  --color-red: rgb(200, 0, 0);
+  --color-blue: rgb(50, 100, 200);
+  --color-green: rgb(0, 100, 100);
+
+  --color-danger: var(--color-red);
+  --color-cancel: var(--color-fg-secondary);
+  --color-submit: var(--color-action);
+
 }
 
 body {
@@ -95,38 +90,7 @@ body {
   background-color: var(--color-bg-main);
 }
 
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: normal;
-  font-weight: 100 900;
-  /* font-stretch: 100%; */
-  font-display: swap;
-  src: url('./fonts/NotoSans-VariableFont_wdth,wght.ttf') format('truetype-variations');
-}
-
-@font-face {
-  font-family: 'Noto Sans';
-  font-style: italic;
-  font-weight: 100 900;
-  /* font-stretch: 100%; */
-  font-display: swap;
-  src: url('./fonts/NotoSans-Italic-VariableFont_wdth,wght.ttf') format('truetype-variations');
-}
-
-@font-face {
-  font-family: 'Noto Sans Mono';
-  font-style: normal;
-  font-weight: 100 900;
-  /* font-stretch: 100%; */
-  font-display: swap;
-  src: url('./fonts/NotoSansMono-VariableFont_wdth,wght.ttf') format('truetype-variations');
-}
-
 * { box-sizing: border-box; }
-
-sdoc-scope {
-  display: contents;
-}
 
 /* scrollbar */
 
