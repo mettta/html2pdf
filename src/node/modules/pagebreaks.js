@@ -30,11 +30,7 @@ export function findBetterForcedPageStarter(element, root) {
       continue;
     }
 
-    let left = this._DOM.getLeftNeighbor(current);
-    while (left && this.shouldSkipFlowElement(left, { context: 'findBetterForcedPageStarter:left' })) {
-      // ⚗️ filter out hidden wrappers on the left side
-      left = this._DOM.getLeftNeighbor(left);
-    }
+    const left = getFlowLeftNeighbor.call(this, current, 'findBetterForcedPageStarter:left');
 
     if (left && this.isNoHanging(left)) {
       current = left;
@@ -73,7 +69,8 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
   let interruptedWithUndefined = false;
   // ** undefined from helpers => we touched a hard limit (page start / top limit)
   let interruptedWithLimit = false;
-  // ** secondary guard: we crossed or touched boundaries during local checks below
+  // ** secondary guard: reached left neighbor limit (last page start)
+  let reachedLeftLimit = false;
 
   // * Y-threshold: nothing above (smaller than) this coordinate can be returned;
   // * limited to the element from which the last registered page starts:
@@ -156,13 +153,9 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
   }
 
   // TODO: needs more tests
-  let prev = this._DOM.getLeftNeighbor(currentCandidate);
-  while (prev && this.shouldSkipFlowElement(prev, { context: 'findBetterPageStart:leftCheck' })) {
-    // ⚗️ filter out hidden wrappers near the current candidate
-    prev = this._DOM.getLeftNeighbor(prev);
-  }
+  const prev = getFlowLeftNeighbor.call(this, currentCandidate, 'findBetterPageStart:leftCheck');
   if (prev == lastPageStart) {
-    interruptedWithLimit = true;
+    reachedLeftLimit = true;
     _isDebug(this) && console.log('👈 Left limit has been reached (left neighbor is the last page start)', prev, betterCandidate);
   }
 
@@ -170,7 +163,15 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
   // * If `undefined` is returned, it means that we have reached the limit
   // * in one of the directions (past page start). Therefore we cancel attempts
   // * to improve the page break semantically and leave only geometric improvement.
-  let result = (interruptedWithUndefined || interruptedWithLimit) ? betterCandidate : currentCandidate;
+  let result = currentCandidate;
+
+  if (interruptedWithUndefined || interruptedWithLimit) {
+    result = betterCandidate;
+  } else if (reachedLeftLimit && (currentCandidate === betterCandidate || currentCandidate === lastPageStart)) {
+    // * Left limit tells us there is no neighbor to move to, but it should not discard
+    // * a better candidate unless we effectively stayed at the baseline.
+    result = betterCandidate;
+  }
 
   // ** Normalize 1/3: never return a node physically above the limit
   if (this.getTop(result, root) < topLimit) {
@@ -207,12 +208,21 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
     result = fallback;
   }
 
+  if (!this._DOM.getElementOffsetParent(result)) {
+    // Final guard: if the anchor still has no box, descend to a flow-visible child
+    const flowResult = this.resolveFlowElement(result, { prefer: 'first' });
+    if (flowResult) {
+      result = flowResult;
+    }
+  }
+
   _isDebug(this) && console.log({
     interruptedWithUndefined,
     interruptedWithLimit,
     pageStart,
     betterCandidate,
     currentCandidate,
+    reachedLeftLimit,
     result,
   });
 
@@ -220,28 +230,6 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
   _isDebug(this) && console.groupEnd();
 
   return result
-}
-
-// GET SERVICE ELEMENTS
-
-/**
- * @relation(PAGINATION-6, scope=function)
- *
- * INTENTION: Locate explicit user-defined page break markers inside a container element.
- *
- * INPUT: A DOM element to search inside. Uses a predefined selector to find break markers.
- *
- * EXPECTED_RESULTS: Array of matching elements (or empty).
- */
-/**
- * Returns all forced page-break markers inside the given element.
- *
- * @this {Node}
- * @param {Element} element - Container to search within.
- * @returns {Element[]} - Array of matched elements (may be empty).
- */
-export function findAllForcedPageBreakInside(element) {
-  return this._DOM.getAll(this._selector.printForcedPageBreak, element);
 }
 
 /**
@@ -283,41 +271,33 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
   let interruptedByPageStart = false;
 
   while (true) {
-    let parent = this._DOM.getParentNode(current);
-    while (parent && this.shouldSkipFlowElement(parent, { context: 'findFirstChildParentFromPage:parent' })) {
-      // ⚗️ skip non-flow parents while moving upward
-      parent = this._DOM.getParentNode(parent);
-    }
+    const wrapperParent = getFlowParent.call(this, current, 'findFirstChildParentFromPage:parent');
 
     // * Stop at root boundary: do not climb to or above root.
-    if (!parent || parent === root) {
+    if (!wrapperParent || wrapperParent === root) {
       break;
     }
 
-    let firstChild = this._DOM.getFirstElementChild(parent);
-    while (firstChild && this.shouldSkipFlowElement(firstChild, { context: 'findFirstChildParentFromPage:firstChild' })) {
-      // ⚗️ advance to the first child that participates in the flow
-      firstChild = this._DOM.getRightNeighbor(firstChild);
-    }
+    const firstChild = getFlowFirstChild.call(this, wrapperParent, 'findFirstChildParentFromPage:firstChild');
     if (!firstChild) {
-      current = parent;
+      current = wrapperParent;
       continue;
     }
 
-    const isFirstChild = firstChild === current;
-    if (!isFirstChild) {
+    if (firstChild !== current) {
       // * First interrupt with end of nesting, with result passed to return.
-      _isDebug(this) && console.log('parent is NOT the First Child', { parent });
+      _isDebug(this) && console.log('parent is NOT the First Child', { parent: wrapperParent });
       break;
     }
 
-    const flowParent = this.resolveFlowElement(parent, { prefer: 'first' });
+    const flowParent = this.resolveFlowElement(wrapperParent, { prefer: 'first' });
+    // wrapperParent is the structural shell we climb through; flowParent owns the layout box we may return.
     if (!flowParent) {
-      current = parent;
+      current = wrapperParent;
       continue;
     }
 
-    const parentIsPageStart = this.isPageStartElement(parent) || this.isPageStartElement(flowParent);
+    const parentIsPageStart = this.isPageStartElement(wrapperParent) || this.isPageStartElement(flowParent);
     const parentTop = this.getTop(flowParent, root);
 
     if (parentIsPageStart || parentTop < topLimit) {
@@ -327,9 +307,9 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
       break;
     }
 
-    _isDebug(this) && console.log({ parent });
-    firstSuitableParent = flowParent;
-    current = parent;
+    _isDebug(this) && console.log({ parent: wrapperParent });
+    firstSuitableParent = flowParent; // *** return the geometric anchor
+    current = wrapperParent;          // *** but move further up the tree through the wrapper
   }
 
   _isDebug(this) && console.groupEnd('⬆ findFirstChildParentFromPage');
@@ -375,11 +355,7 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
   let interruptedByPageStart = false;
 
   while (true) {
-    let prev = this._DOM.getLeftNeighbor(current);
-    while (prev && this.shouldSkipFlowElement(prev, { context: 'findPreviousNonHangingsFromPage:left' })) {
-      // ⚗️ skip hidden siblings while scanning backwards
-      prev = this._DOM.getLeftNeighbor(prev);
-    }
+    const prev = getFlowLeftNeighbor.call(this, current, 'findPreviousNonHangingsFromPage:left');
 
     _isDebug(this) && console.log({ interruptedByPageStart, topLimit, prev, current });
 
@@ -387,9 +363,10 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
 
     if (!this.isNoHanging(prev)) break;
 
+    const semanticPrev = prev;
     let flowPrev = this.resolveFlowElement(prev, { prefer: 'last' });
     if (!flowPrev) {
-      current = prev;
+      current = semanticPrev;
       continue;
     }
     while (flowPrev && this.shouldSkipFlowElement(flowPrev, { context: 'findPreviousNonHangingsFromPage:flow' })) {
@@ -397,11 +374,11 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
       flowPrev = this.resolveFlowElement(this._DOM.getLeftNeighbor(flowPrev), { prefer: 'last' });
     }
     if (!flowPrev) {
-      current = prev;
+      current = semanticPrev;
       continue;
     }
 
-    const prevIsPageStart = this.isPageStartElement(prev) || this.isPageStartElement(flowPrev);
+    const prevIsPageStart = this.isPageStartElement(semanticPrev) || this.isPageStartElement(flowPrev);
     const prevTop = this.getTop(flowPrev, root);
 
     if (prevIsPageStart || prevTop < topLimit) {
@@ -411,12 +388,15 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
 
     // * isNoHanging(prev) && !isPageStartElement(prev)
     // * I'm looking at the previous element:
-    suitableSibling = flowPrev;
-    current = flowPrev;
+    suitableSibling = semanticPrev;
+    current = semanticPrev;
   }
 
+  const res = interruptedByPageStart ? undefined : suitableSibling;
+  _isDebug(this) && console.log('%cres', 'color:orange;background:cyan;font-weight:bold', res)
+
   _isDebug(this) && console.groupEnd('⬅ findPreviousNonHangingsFromPage');
-  return interruptedByPageStart ? undefined : suitableSibling;
+  return res;
 }
 
 // ***
@@ -445,31 +425,20 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
  * @returns {Element|null} - Highest such parent, or null if none.
  */
 export function findFirstChildParent(element, rootElement) {
-  let parent = this._DOM.getParentNode(element);
+  let parent = getFlowParent.call(this, element, 'findFirstChildParent:parent');
   let firstSuitableParent = null;
 
   while (parent && parent !== rootElement) {
-    if (parent === rootElement) break;
-    while (parent && this.shouldSkipFlowElement(parent, { context: 'findFirstChildParent:parent' })) {
-      // ⚗️ skip non-flow parents while climbing the tree
-      parent = this._DOM.getParentNode(parent);
-    }
-    if (!parent || parent === rootElement) break;
-
-    let firstChild = this._DOM.getFirstElementChild(parent);
-    while (firstChild && this.shouldSkipFlowElement(firstChild, { context: 'findFirstChildParent:firstChild' })) {
-      // ⚗️ move to next sibling to find flow-participating first child
-      firstChild = this._DOM.getRightNeighbor(firstChild);
-    }
+    const firstChild = getFlowFirstChild.call(this, parent, 'findFirstChildParent:firstChild');
     if (!firstChild) {
-      parent = this._DOM.getParentNode(parent);
+      parent = getFlowParent.call(this, parent, 'findFirstChildParent:parent');
       continue;
     }
 
     if (element === firstChild) {
       firstSuitableParent = parent;
       element = parent;
-      parent = this._DOM.getParentNode(element);
+      parent = getFlowParent.call(this, element, 'findFirstChildParent:parent');
     } else {
       return firstSuitableParent;
     }
@@ -501,31 +470,20 @@ export function findFirstChildParent(element, rootElement) {
  * @returns {Element|null} - Highest such parent, or null if none.
  */
 export function findLastChildParent(element, rootElement) {
-  let parent = this._DOM.getParentNode(element);
+  let parent = getFlowParent.call(this, element, 'findLastChildParent:parent');
   let lastSuitableParent = null;
 
   while (parent && parent !== rootElement) {
-    if (parent === rootElement) break;
-    while (parent && this.shouldSkipFlowElement(parent, { context: 'findLastChildParent:parent' })) {
-      // ⚗️ skip hidden parents while climbing upwards
-      parent = this._DOM.getParentNode(parent);
-    }
-    if (!parent || parent === rootElement) break;
-
-    let lastChild = this._DOM.getLastElementChild(parent);
-    while (lastChild && this.shouldSkipFlowElement(lastChild, { context: 'findLastChildParent:lastChild' })) {
-      // ⚗️ shift left until the last child contributes to layout
-      lastChild = this._DOM.getLeftNeighbor(lastChild);
-    }
+    const lastChild = getFlowLastChild.call(this, parent, 'findLastChildParent:lastChild');
     if (!lastChild) {
-      parent = this._DOM.getParentNode(parent);
+      parent = getFlowParent.call(this, parent, 'findLastChildParent:parent');
       continue;
     }
 
     if (element === lastChild) {
       lastSuitableParent = parent;
       element = parent;
-      parent = this._DOM.getParentNode(element);
+      parent = getFlowParent.call(this, element, 'findLastChildParent:parent');
     } else {
       return lastSuitableParent;
     }
@@ -640,4 +598,62 @@ export function findSuitableNonHangingPageStart(element, topFloater) {
   // _isDebug(this) && console.log('💠 Candidate does not satisfy position check, returning null');
   return null;
 
+}
+
+// GET SERVICE ELEMENTS
+
+/**
+ * @relation(PAGINATION-6, scope=function)
+ *
+ * INTENTION: Locate explicit user-defined page break markers inside a container element.
+ *
+ * INPUT: A DOM element to search inside. Uses a predefined selector to find break markers.
+ *
+ * EXPECTED_RESULTS: Array of matching elements (or empty).
+ */
+/**
+ * Returns all forced page-break markers inside the given element.
+ *
+ * @this {Node}
+ * @param {Element} element - Container to search within.
+ * @returns {Element[]} - Array of matched elements (may be empty).
+ */
+export function findAllForcedPageBreakInside(element) {
+  return this._DOM.getAll(this._selector.printForcedPageBreak, element);
+}
+
+function getFlowParent(element, context) {
+  let parent = this._DOM.getParentNode(element);
+  while (parent && this.shouldSkipFlowElement(parent, { context })) {
+    // ⚗️ skip non-flow parents while moving upward
+    parent = this._DOM.getParentNode(parent);
+  }
+  return parent;
+}
+
+function getFlowFirstChild(parent, context) {
+  let child = this._DOM.getFirstElementChild(parent);
+  while (child && this.shouldSkipFlowElement(child, { context })) {
+    // ⚗️ advance to the first child that participates in the flow
+    child = this._DOM.getRightNeighbor(child);
+  }
+  return child;
+}
+
+function getFlowLastChild(parent, context) {
+  let child = this._DOM.getLastElementChild(parent);
+  while (child && this.shouldSkipFlowElement(child, { context })) {
+    // ⚗️ shift left until the last child contributes to layout
+    child = this._DOM.getLeftNeighbor(child);
+  }
+  return child;
+}
+
+function getFlowLeftNeighbor(element, context) {
+  let sibling = this._DOM.getLeftNeighbor(element);
+  while (sibling && this.shouldSkipFlowElement(sibling, { context })) {
+    // ⚗️ filter out hidden wrappers on the left side
+    sibling = this._DOM.getLeftNeighbor(sibling);
+  }
+  return sibling;
 }
