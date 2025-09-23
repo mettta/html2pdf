@@ -374,6 +374,9 @@ export default class Pages {
       // * registerPageStart may refine the anchor and append a new page while we
       // * remain inside this _parseNode call. Refresh the cached bottom so later
       // * checks use the coordinates of the newly started page.
+      if (newPageBottom !== this.pages.at(-1).pageBottom) {
+        this._debug._parseNode && console.log(`🔄 refreshPageBottom to ${this.pages.at(-1).pageBottom}`);
+      }
       newPageBottom = this.pages.at(-1).pageBottom;
     };
     const registerPageStart = (element, improveResult = false) => {
