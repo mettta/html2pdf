@@ -300,36 +300,49 @@ export default class Pages {
     this._debug._parseNodes && console.log(
       '🔵 _parseNodes',
       '\narray:', [...array],
-      '\ntracedParent:', parent
+      '\nparent:', parent
     );
 
     for (let i = 0; i < array.length; i++) {
-      const isCurrentFirst = (i == 0 && !array[i - 1]);
-      const isCurrentLast = (i === array.length - 1);
+      const currentElement = array[i];
+      const isFirstChild = i === 0;
+      const isLastChild = i === array.length - 1;
+      const lastChildParentBottom = isLastChild ? parentBottom : undefined;
+      const usesParentContext = Boolean(parent) && (isFirstChild || Boolean(lastChildParentBottom));
+      // * First and last children inherit the parent as the page anchor when possible
+      const tracedParent = usesParentContext ? parent : currentElement;
+      const parentForNode = usesParentContext ? parent : undefined;
+      // * tracedParent is what the next recursion level will treat as its parent.
       this._parseNode({
         previousElement: array[i - 1] || previous,
-        currentElement: array[i],
+        currentElement,
         nextElement: array[i + 1] || next,
-        isCurrentFirst: isCurrentFirst,
-        parent,
+        isFirstChild,
+        isLastChild,
+        parent: parentForNode, // provided only for boundary children where the wrapper matters
+        tracedParent,
         // *** If the parent item has a bottom margin, we must consider it
         // *** when deciding on the last child.
         // *** Otherwise, this margin may be lost
         // *** and not counted in the calculation of the next page height,
         // *** causing blank unaccounted pages.
         // *** So, for the last child:
-        parentBottom: isCurrentLast ? parentBottom : undefined,
+        parentBottom: lastChildParentBottom,
       });
     }
   }
 
   // 📍
   _parseNode({
-    isCurrentFirst,
+    isFirstChild,
+    isLastChild,
     previousElement,
     currentElement,
     nextElement,
     parent,
+    // parent is provided only for first/last children so boundary logic can inspect the wrapper
+    // tracedParent may override it when propagating the context to descendants
+    tracedParent,
     // *** for the last child:
     parentBottom,
   }) {
@@ -337,7 +350,7 @@ export default class Pages {
 
     this._debug._parseNode && console.group(
       `%c_parseNode`, CONSOLE_CSS_PRIMARY_PAGES,
-      `${isCurrentFirst ? '★ [[[first ★' : parentBottom ? '★ last]]] ★' : '<- regular ->'}`,
+      `${isFirstChild ? '★ [[[first ★' : isLastChild ? '★ last]]] ★' : '<- regular ->'}`,
       '📄', this.pages.length,
         { currentElement },
       );
@@ -347,17 +360,13 @@ export default class Pages {
         previousElement,
         currentElement,
         nextElement,
-        isCurrentFirst,
+        isFirstChild,
+        isLastChild,
         parent,
+        tracedParent,
         parentBottom,
       }
       );
-
-    // TODO #tracedParent
-    // * If we want to start a new page from the current node,
-    // * which is the first child (i == 0),
-    // * we want to register its parent as the start of the page.
-    //// const currentOrParentElement = (isCurrentFirst && parent) ? parent : currentElement;
 
     // THE END of content flow:
     // if there is no next element, then we are in a case
@@ -545,8 +554,9 @@ export default class Pages {
     // ** So let's add a height condition: (currentElementBottom - currentElementTop)
 
     if ((currentElementTop >= newPageBottom) && (currentElementBottom - currentElementTop)) {
-      const parentTop = parent ? this._node.getTopWithMargin(parent, this._root) : undefined;
-      const beginningTail = parent && parentTop && (currentElementTop - parentTop >= this._referenceHeight);
+      const canUseParentTop = isFirstChild && Boolean(parent);
+      const parentTop = canUseParentTop ? this._node.getTopWithMargin(parent, this._root) : undefined;
+      const beginningTail = Boolean(parentTop) && (currentElementTop - parentTop >= this._referenceHeight);
 
       if (beginningTail) {
         // The parent wrapper already spans more than a page above the current element.
@@ -709,12 +719,14 @@ export default class Pages {
           ? this._node.createSignpost(mediaElement)
           : mediaElement;
 
-        // if parent: the node is first,
-        // include the parent's top margins by measuring from the parent's top;
-        // otherwise measure from the current image top.
-        let availableImageNodeSpace = parent
-        ? (newPageBottom - this._node.getTop(parent, this._root))
-        : (newPageBottom - this._node.getTop(currentImage, this._root));
+        const currentImageTop = this._node.getTop(currentImage, this._root);
+        const parentTopForImage = (isFirstChild && parent)
+          ? this._node.getTop(parent, this._root)
+          : undefined;
+
+        // include the wrapper's top margin only for the first child; otherwise
+        // measure from the current image top.
+        let availableImageNodeSpace = newPageBottom - (parentTopForImage ?? currentImageTop);
         // if parentBottom: the node is last,
         // so let's subtract the probable margins at the bottom of the node,
         // which take away the available space for image-node placement:
@@ -726,8 +738,8 @@ export default class Pages {
         // if parent: the node is first,
         // so let's include the parent's top margins:
         let fullPageImageNodeSpace = this._referenceHeight - (
-           parent
-            ? (this._node.getTop(currentImage, this._root) - this._node.getTop(parent, this._root))
+           parentTopForImage !== undefined
+            ? (currentImageTop - parentTopForImage)
             : 0
         );
         // TODO: replace this._referenceWidth  with an padding/margin-dependent value
@@ -916,17 +928,6 @@ export default class Pages {
 
       const childrenNumber = children.length;
 
-      // TODO #tracedParent
-      // ?? If it is an only child (it means that the parent node is not split),
-      // ** as well as if the first child is being registered,
-      // ** -- we want to use the past parent (=wrapper of the current node)
-      // ** as the start of the page.
-
-      // condition "childrenNumber <= 1" || // !!! - P PRE и тп с 1 ребенком вносят ошибки
-      // * if the first child - keep the previous parent,
-      // * if not the first - change to the current element:
-      const tracedParent = (isCurrentFirst || parentBottom) ? (parent || currentElement) : currentElement;
-
       // * Parse children:
       if (childrenNumber) {
         // * In a fully split node, or in a node that has received the 'slough' attribute,
@@ -940,7 +941,13 @@ export default class Pages {
           array: children,
           previous: previousElement,
           next: nextElement,
+          // * Pass tracedParent downstream so children inherit the updated anchor
+          // * unless the current node became fully split (then the context resets).
           parent: isFullySPlittedParent ? undefined : tracedParent,
+          // * baseBlockBottom keeps the bottom boundary we must preserve when descending into children:
+          // * last-child nodes reuse their parent’s bottom margin, otherwise we fall back
+          // * to the element’s own bottom. If the parent gets fully split, the boundary resets
+          // * so the children recompute theirs.
           parentBottom: isFullySPlittedParent ? undefined : baseBlockBottom,
         });
         this._node.markProcessed(currentElement, `getSplitChildren and _parseNodes`);
