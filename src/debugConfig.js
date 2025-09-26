@@ -3,14 +3,14 @@ const debugConfig = {
     _: false,
   },
   layout: {
-    _: true,
+    _: false,
   },
   pages: {
-    _: true,
+    _: false,
     // * `Pages` methods
-    _parseNode: true,
-    _parseNodes: true,
-    _registerPageStart: true,
+    _parseNode: false,
+    _parseNodes: false,
+    _registerPageStart: false,
   },
   paper: {
     _: false,
@@ -23,35 +23,35 @@ const debugConfig = {
   },
   // * `Node` group
   node: {
-    _: true,
+    _: false,
     // * `Node` modules
-    children: true,
-    creators: true,
-    fitters: true,
-    getters: true,
-    markers: true,
-    pageBreaks: true,
-    positioning: true,
-    selectors: true,
-    slicers: true,
-    splitters: true,
-    flowFilters: true,
-    wrappers: true,
+    children: false,
+    creators: false,
+    fitters: false,
+    getters: false,
+    markers: false,
+    pageBreaks: false,
+    positioning: false,
+    selectors: false,
+    slicers: false,
+    splitters: false,
+    flowFilters: false,
+    wrappers: false,
   },
   paragraph: {
-    _: true,
+    _: false,
   },
   grid: {
-    _: true,
+    _: false,
   },
   pre: {
-    _: true,
+    _: false,
   },
   table: {
-    _: true,
+    _: false,
   },
   tableLike: {
-    _: true,
+    _: false,
   },
 };
 
