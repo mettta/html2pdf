@@ -59,7 +59,7 @@ export default class Pages {
     // # can be a single row with long content
     this._minLeftRows = 1; // ! min 1!
     this._minDanglingRows = 1;  // ! min 1!
-    this._minBreakableRows = this._minLeftRows + this._minDanglingRows;
+    this._minBreakableRows = 1; // this._minLeftRows + this._minDanglingRows;
     // Code:
     this._minPreFirstBlockLines = 3;
     this._minPreLastBlockLines = 3;
@@ -69,6 +69,7 @@ export default class Pages {
 
     this._imageReductionRatio = 0.8;
 
+    // TODO make function
     // * From config:
     // - if null is set - the element is not created in createSignpost().
     this._signpostHeight = parseFloat(config.splitLabelHeight) || 0;
@@ -76,14 +77,6 @@ export default class Pages {
     // TODO: # _minimumBreakableHeight
     this._commonLineHeight = this._node.getLineHeight(this._root);
     this._minimumBreakableHeight = this._commonLineHeight * this._minBreakableLines;
-
-    // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browsers
-    // Firefox 1.0+
-    // https://bugzilla.mozilla.org/show_bug.cgi?id=820891
-    // * Reason: caption is considered as an external element
-    // * and is not taken into account in calculation
-    // * of offset parameters of table rows.
-    this._isFirefox = typeof InstallTrigger !== 'undefined';
 
     // * Public
 
@@ -194,8 +187,7 @@ export default class Pages {
       }
       // If there are AFTER and BEFORE breaks - insert only one.
       if (!this._node.isForcedPageBreak(element.nextElementSibling)) {
-      this._DOM.insertAfter(element, this._node.createForcedPageBreak())
-
+        this._DOM.insertAfter(element, this._node.createForcedPageBreak())
       } // else pass
     });
 
@@ -216,8 +208,6 @@ export default class Pages {
       'this._forcedPageBreakSelectors', this._forcedPageBreakSelectors,
       '\n',
       'this._noBreakSelectors', this._noBreakSelectors,
-      '\n',
-      'isFirefox', this._isFirefox,
     );
     this._debug._ && console.groupEnd('•• init data ••');
 
@@ -273,9 +263,15 @@ export default class Pages {
       pageStart = this._node.findBetterPageStart(
         pageStart,
         this.pages.at(-1)?.pageStart,
-        // this._contentFlow, // delete after rebase
         this._root
       )
+    }
+
+    if (!this._DOM.getElementOffsetParent(pageStart)) {
+      this._debug._registerPageStart && console.warn(
+        '🚨 pageStart has no offsetParent. Check the caller.',
+        pageStart,
+      );
     }
 
     const pageTop = this._node.getTopWithMargin(pageStart, this._root);
@@ -304,78 +300,73 @@ export default class Pages {
     this._debug._parseNodes && console.log(
       '🔵 _parseNodes',
       '\narray:', [...array],
-      '\ntracedParent:', parent
+      '\nparent:', parent
     );
 
     for (let i = 0; i < array.length; i++) {
-      const isCurrentFirst = (i == 0 && !array[i - 1]);
-      const isCurrentLast = (i === array.length - 1);
+      const currentElement = array[i];
+      const isFirstChild = i === 0;
+      const isLastChild = i === array.length - 1;
+      const lastChildParentBottom = isLastChild ? parentBottom : undefined;
+      const usesParentContext = Boolean(parent) && (isFirstChild || Boolean(lastChildParentBottom));
+      // * First and last children inherit the parent as the page anchor when possible
+      const tracedParent = usesParentContext ? parent : currentElement;
+      const parentForNode = usesParentContext ? parent : undefined;
+      // * tracedParent is what the next recursion level will treat as its parent.
       this._parseNode({
         previousElement: array[i - 1] || previous,
-        currentElement: array[i],
+        currentElement,
         nextElement: array[i + 1] || next,
-        isCurrentFirst: isCurrentFirst,
-        parent,
+        isFirstChild,
+        isLastChild,
+        parent: parentForNode, // provided only for boundary children where the wrapper matters
+        tracedParent,
         // *** If the parent item has a bottom margin, we must consider it
         // *** when deciding on the last child.
         // *** Otherwise, this margin may be lost
         // *** and not counted in the calculation of the next page height,
         // *** causing blank unaccounted pages.
         // *** So, for the last child:
-        parentBottom: isCurrentLast ? parentBottom : undefined,
+        parentBottom: lastChildParentBottom,
       });
     }
   }
 
   // 📍
   _parseNode({
-    isCurrentFirst,
+    isFirstChild,
+    isLastChild,
     previousElement,
     currentElement,
     nextElement,
     parent,
+    // parent is provided only for first/last children so boundary logic can inspect the wrapper
+    // tracedParent may override it when propagating the context to descendants
+    tracedParent,
     // *** for the last child:
     parentBottom,
   }) {
-    const consoleMark = ['%c_parseNode\n', 'color:white',]
+    const consoleMark = ['%c[_parseNode]\n', 'color:white;',]
 
     this._debug._parseNode && console.group(
       `%c_parseNode`, CONSOLE_CSS_PRIMARY_PAGES,
-      `${parentBottom ? '★last★' : 'regular'}`,
+      `${isFirstChild ? '★ [[[first ★' : isLastChild ? '★ last]]] ★' : '<- regular ->'}`,
       '📄', this.pages.length,
+        { currentElement },
       );
 
     this._debug._parseNode && console.log(
-      ...consoleMark,
-      '3 nodes: ',
       {
         previousElement,
         currentElement,
         nextElement,
-      },
-      '\n',
-      '\ncurrent: ', currentElement,
-      '\nparent: ', parent,
-      '\nisCurrentFirst: ', isCurrentFirst,
+        isFirstChild,
+        isLastChild,
+        parent,
+        tracedParent,
+        parentBottom,
+      }
       );
-
-    // TODO #tracedParent
-    // * If we want to start a new page from the current node,
-    // * which is the first child (i == 0),
-    // * we want to register its parent as the start of the page.
-    //// const currentOrParentElement = (isCurrentFirst && parent) ? parent : currentElement;
-
-    this._debug._parseNode && console.log(
-      ...consoleMark,
-      'parent:', parent,
-      '\n',
-      'parentBottom:', parentBottom,
-      '\n',
-      'isCurrentFirst:', isCurrentFirst,
-      '\n',
-      'parent:', parent,
-      '\n'
-    );
 
     // THE END of content flow:
     // if there is no next element, then we are in a case
@@ -387,7 +378,20 @@ export default class Pages {
       return
     }
 
-    const newPageBottom = this.pages.at(-1).pageBottom;
+    let newPageBottom = this.pages.at(-1).pageBottom;
+    const refreshPageBottom = () => {
+      // * registerPageStart may refine the anchor and append a new page while we
+      // * remain inside this _parseNode call. Refresh the cached bottom so later
+      // * checks use the coordinates of the newly started page.
+      if (newPageBottom !== this.pages.at(-1).pageBottom) {
+        this._debug._parseNode && console.log(`🔄 refreshPageBottom to ${this.pages.at(-1).pageBottom}`);
+      }
+      newPageBottom = this.pages.at(-1).pageBottom;
+    };
+    const registerPageStart = (element, improveResult = false) => {
+      this._registerPageStart(element, improveResult);
+      refreshPageBottom();
+    };
     const currentElementBottom = this._node.getBottomWithMargin(currentElement, this._root);
 
     // * We want to keep the passed 'parentBottom' value so that we can pass it
@@ -414,9 +418,11 @@ export default class Pages {
 
     const currentElementTop = this._node.getTop(currentElement, this._root);
 
-    // TODO: We have to rely on the top or bottom here? currentElementBottom vs currentElementTop
-    const _isTileLongerThanPage = parentBottom > (currentElementTop + this._referenceHeight);
-    if (parentBottom && _isTileLongerThanPage) {
+    // Tail exists only if the space between the current element’s bottom and its parent’s bottom
+    // exceeds a full page (i.e., the tail of wrappers below the current element is longer than a page).
+    // Using `top` here misclassifies long elements as a tail; rely on `currentElementBottom` instead.
+    const _isTailLongerThanPage = parentBottom && ((parentBottom - currentElementBottom) >= this._referenceHeight);
+    if (parentBottom && _isTailLongerThanPage) {
       // ** if parentBottom ---> current is LAST
       // ** if parentBottom > (currentElementTop + this._referenceHeight) ---> we have a “tail” of the lower bounds of the parent tags,
       // * and there are obviously set margins or paddings that take up space.
@@ -428,13 +434,13 @@ export default class Pages {
       currentParentBottom = undefined;
 
       this._debug._parseNode && console.log(
-        '🪁 Tile: We got a tail from the lower shells of the last child. Giving up our “last child” rule here and will try to insert a page break at the end of some parent. ',
+        '🪁 Tail: We got a tail from the lower shells of the last child. Giving up our “last child” rule here and will try to insert a page break at the end of some parent. ',
         {parentBottom, currentParentBottom,  currentElementBottom, newPageBottom,},
         {currentElement, parent},
       );
 
       if (currentElementBottom <= newPageBottom) {
-        this._debug._parseNode && console.log('🪁 Tile: currentElementBottom <= newPageBottom', );
+        this._debug._parseNode && console.log('🪁 Tail: currentElementBottom <= newPageBottom', );
 
 
 
@@ -443,7 +449,7 @@ export default class Pages {
         const _parents = [];
         let _el = currentElement;
 
-        this._debug._parseNode && console.log('🪁 Tile: currentElement', currentElement);
+        this._debug._parseNode && console.log('🪁 Tail: currentElement', currentElement);
 
         while (_el && _el !== parent) {
           _parents.push({
@@ -462,28 +468,28 @@ export default class Pages {
           throw new Error("parent not found in the ancestor chain");
         }
 
-        this._debug._parseNode && console.log('🪁 Tile: _parents', _parents);
+        this._debug._parseNode && console.log('🪁 Tail: _parents', _parents);
 
         // We start checking the current page. But if this “tail” is longer than the page,
         // we may need to break it more than once.
         // In that case, we will increase this parameter within the parent loop:
         let _currentPageBottom = newPageBottom;
 
-        this._debug._parseNode && console.log('🪁 Tile: _currentPageBottom = newPageBottom', _currentPageBottom);
+        this._debug._parseNode && console.log('🪁 Tail: _currentPageBottom = newPageBottom', _currentPageBottom);
 
         for (let i = 0; i < _parents.length; i++) {
-            this._debug._parseNode && console.log('🪁 Tile: _parents[i].bottom', _parents[i].bottom, _parents[i].element);
+            this._debug._parseNode && console.log('🪁 Tail: _parents[i].bottom', _parents[i].bottom, _parents[i].element);
 
           // We go down, that is, we assume that the previous element has been validated and fits in the page.
           // The very first one is the current one, and it fits.
           // If the i-th parent doesn't fit - we insert a page break after its last child (as its last child).
           if (_parents[i].bottom > _currentPageBottom) {
-            this._debug._parseNode && console.log('🪁 Tile: _parents[i].bottom > _currentPageBottom', _parents[i].bottom, '>', _currentPageBottom, _parents[i].element);
+            this._debug._parseNode && console.log('🪁 Tail: _parents[i].bottom > _currentPageBottom', _parents[i].bottom, '>', _currentPageBottom, _parents[i].element);
 
             const _newPageStarter = this._node.createNeutral();
             _newPageStarter.classList.add('service');
             this._DOM.insertAtEnd(_parents[i].element, _newPageStarter);
-            this._registerPageStart(_newPageStarter); // do not do PageStart improvement
+            registerPageStart(_newPageStarter); // do not do PageStart improvement
             this._debug._parseNode && console.log('_registerPageStart', _newPageStarter);
             this._node.markProcessed(_newPageStarter, 'node is ForcedPageBreak');
 
@@ -501,7 +507,7 @@ export default class Pages {
               // and go to next index
             } else {
               // stop iterating
-              this._debug._parseNode && console.log('%c END _parseNode (bottom tile of parents)', CONSOLE_CSS_END_LABEL);
+              this._debug._parseNode && console.log('%c END _parseNode (bottom Tail of parents)', CONSOLE_CSS_END_LABEL);
               this._debug._parseNode && console.groupEnd();
               return
             }
@@ -509,12 +515,15 @@ export default class Pages {
           }
         }
 
-        this._debug._parseNode && console.log('%c END _parseNode (bottom tile of parents)', CONSOLE_CSS_END_LABEL);
+        this._debug._parseNode && console.log('%c END _parseNode (bottom Tail of parents)', CONSOLE_CSS_END_LABEL);
         this._debug._parseNode && console.groupEnd();
         return
 
       } else {
-        this._debug._parseNode && console.log('🪁 Tile: currentElementBottom > newPageBottom', 'DOING NOTHING' );
+        // At this point the parent chain forms a tail, but the current element itself still
+        // stretches below the page cut. We cannot resolve the tail until the element fits, so
+        // control falls through to the generic overflow logic below.
+        this._debug._parseNode && console.log('🪁 Tail: currentElementBottom > newPageBottom', 'DOING NOTHING' );
       }
     }
 
@@ -545,21 +554,52 @@ export default class Pages {
     // ** So let's add a height condition: (currentElementBottom - currentElementTop)
 
     if ((currentElementTop >= newPageBottom) && (currentElementBottom - currentElementTop)) {
-      const parentTop = parent ? this._node.getTopWithMargin(parent, this._root) : undefined;
-      const beginningTail = parent && parentTop && (currentElementTop - parentTop >= this._referenceHeight);
-      this._debug._parseNode && console.warn(
-        '🪀 currentElementTop >= newPageBottom',
-        currentElementTop, '>=', newPageBottom,
-        '\n beginningTail:', beginningTail,
-        currentElementTop - parentTop, '>=', this._referenceHeight
-      );
-      this._registerPageStart(currentElement, !beginningTail);
+      const canUseParentTop = isFirstChild && Boolean(parent);
+      const parentTop = canUseParentTop ? this._node.getTopWithMargin(parent, this._root) : undefined;
+      const beginningTail = Boolean(parentTop) && (currentElementTop - parentTop >= this._referenceHeight);
+
+      if (beginningTail) {
+        // The parent wrapper already spans more than a page above the current element.
+        // Keep the element as the page-start anchor without climbing to the parent: the
+        // tail will be handled by downstream logic once the element fits on the new page.
+        this._debug._parseNode && console.log(
+          '🪁 beginning Tail',
+          {parentTop, currentParentBottom, currentElementTop, newPageBottom,},
+          {currentElement, parent},
+        );
+      } else {
+        // * No beginningTail:
+        // most often the element is simply overflowed or wrapped in a thin
+        // inline/contents container. Try to register the element (with semantic improvement)
+        // so that findBetterPageStart can climb to a stable wrapper if needed.
+
+        // * Thin wrappers (e.g. inline or contents containers)
+        // contribute almost no intrinsic height: their children carry the layout box.
+        // Once such a wrapper crosses the page boundary, repeating the tail logic on it
+        // only triggers the “improve page start” flow again and produces duplicate breaks
+        // (StrictDoc "Image in autogen >.document@ case).
+        // Block wrappers, on the other hand, still need the tail loop.
+        // To differentiate, look at the computed display; inline/contents are treated
+        // as thin wrappers, block-level displays continue with the original flow.
+        const currentDisplay = this._DOM.getComputedStyle(currentElement)?.display || '';
+        const isInlineWrapper = currentDisplay.includes('inline');
+        const isContentsWrapper = currentDisplay === 'contents';
+        if (isInlineWrapper || isContentsWrapper) {
+          this._debug._parseNode && console.log('🧅 current in thin wrapper');
+          registerPageStart(currentElement, true);
+          this._debug._parseNode && console.log('%c END _parseNode (registered new page start)', CONSOLE_CSS_END_LABEL);
+          this._debug._parseNode && console.groupEnd();
+          return
+        }
+      }
+
+      registerPageStart(currentElement, !beginningTail);
     }
 
     // FORCED BREAK
     if (this._node.isForcedPageBreak(currentElement)) {
       // TODO I've replaced the 'next' with the 'current' - need to test it out
-      this._registerPageStart(currentElement);
+      registerPageStart(currentElement);
       this._node.markProcessed(currentElement, 'node is ForcedPageBreak');
       this._debug._parseNode && console.log('%c END _parseNode (isForcedPageBreak)', CONSOLE_CSS_END_LABEL);
       this._debug._parseNode && console.groupEnd();
@@ -595,7 +635,7 @@ export default class Pages {
       this._node.findAllForcedPageBreakInside(currentElement).forEach(
         element => {
           this._node.markProcessed(element, 'node is ForcedPageBreak (inside a node that fits)');
-          this._registerPageStart(element);
+          registerPageStart(element);
         }
       );
       // TODO: это может быть внутри таблицы или другого элемента,
@@ -603,6 +643,11 @@ export default class Pages {
       // Нужно проверять currentElement
 
       // * ... then continue.
+
+      this._debug._parseNode && console.log('%c END _parseNode (node pass)', CONSOLE_CSS_END_LABEL);
+      this._debug._parseNode && console.groupEnd();
+      return
+
     } else {
       this._debug._parseNode && console.log(
         'nextElementTop > newPageBottom', nextElementTop, '>', newPageBottom
@@ -631,7 +676,7 @@ export default class Pages {
           // ** if currentElement can't be the last element on the page,
           // ** immediately move it to the next page:
           this._node.markProcessed(currentElement, 'it fits & last & _isNoHanging => move it to the next page');
-          this._registerPageStart(currentElement, true);
+          registerPageStart(currentElement, true);
 
           this._debug._parseNode && console.log('%c END _parseNode (isNoHanging)', CONSOLE_CSS_END_LABEL);
           this._debug._parseNode && console.groupEnd();
@@ -643,7 +688,7 @@ export default class Pages {
         // * so this element cannot be the first child,
         // * because the previous element surely ends before this one begins,
         // * and so is its previous neighbor, not its parent.
-        this._registerPageStart(nextElement);
+        registerPageStart(nextElement);
         this._node.markProcessed(currentElement, `fits, its bottom falls exactly on the cut`);
         this._node.markProcessed(nextElement, `starts new page, its top is exactly on the cut`);
         this._debug._parseNode && console.log('%c END _parseNode (currentElement fits, register the next element)', CONSOLE_CSS_END_LABEL);
@@ -660,25 +705,28 @@ export default class Pages {
       // IMAGE with optional resizing
       // TODO float images
 
-      if (this._node.isSVG(currentElement)
-       || this._node.isIMG(currentElement)
-       || this._node.isOBJECT(currentElement)
-      ) {
+      const mediaElement = this._node.resolveReplacedElement(currentElement, { prefer: 'first' });
+
+      if (mediaElement) {
 
         // TODO needs testing
 
         // svg has not offset props
-        const currentImage = this._node.isSVG(currentElement)
+        const isSvgMedia = this._node.isSVG(mediaElement);
+        const currentImage = isSvgMedia
         // TODO replace with setFlag... and remove wrapper function
         // TODO process at the beginning, find all SVG and set Flag
-          ? this._node.createSignpost(currentElement)
-          : currentElement;
+          ? this._node.createSignpost(mediaElement)
+          : mediaElement;
 
-        // if parent: the node is first,
-        // so let's include the parent's top margins:
-        let availableImageNodeSpace = parent
-        ? (newPageBottom - this._node.getTop(currentImage, this._root))
-        : (newPageBottom - this._node.getTop(parent, this._root));
+        const currentImageTop = this._node.getTop(currentImage, this._root);
+        const parentTopForImage = (isFirstChild && parent)
+          ? this._node.getTop(parent, this._root)
+          : undefined;
+
+        // include the wrapper's top margin only for the first child; otherwise
+        // measure from the current image top.
+        let availableImageNodeSpace = newPageBottom - (parentTopForImage ?? currentImageTop);
         // if parentBottom: the node is last,
         // so let's subtract the probable margins at the bottom of the node,
         // which take away the available space for image-node placement:
@@ -690,8 +738,8 @@ export default class Pages {
         // if parent: the node is first,
         // so let's include the parent's top margins:
         let fullPageImageNodeSpace = this._referenceHeight - (
-           parent
-            ? (this._node.getTop(currentImage, this._root) - this._node.getTop(parent, this._root))
+           parentTopForImage !== undefined
+            ? (currentImageTop - parentTopForImage)
             : 0
         );
         // TODO: replace this._referenceWidth  with an padding/margin-dependent value
@@ -709,17 +757,16 @@ export default class Pages {
         );
 
         // TODO !!! page width overflow for SVG
-        if (currentImageHeight < this._referenceWidth) {
+        if (currentImageWidth > this._referenceWidth) {
           // just leave it on the current page
-          this._debug._parseNode
-          && console.warn('%c IMAGE is too wide', 'color: red');
+          this._debug._parseNode && console.warn('%c IMAGE is too wide', 'color: red');
         }
 
         // if it fits
         if (currentImageHeight < availableImageNodeSpace) {
           // just leave it on the current page
           this._node.markProcessed(currentElement, 'IMG that fits, and next starts on next');
-          this._registerPageStart(nextElement);
+          registerPageStart(nextElement);
           this._debug._parseNode && console.log('Register next elements; 🖼️🖼️🖼️ IMG fits:', currentElement);
           this._debug._parseNode && console.log('%c END _parseNode 🖼️ IMG fits', CONSOLE_CSS_END_LABEL);
           this._debug._parseNode && console.groupEnd();
@@ -734,14 +781,14 @@ export default class Pages {
           this._node.markProcessed(currentElement, `IMG with ratio ${ratio}, and next starts on next`);
           // reduce it a bit
           this._node.fitElementWithinBoundaries({
-            element: currentElement,
+            element: mediaElement,
             height: currentImageHeight,
             width: currentImageWidth,
             vspace: availableImageNodeSpace,
             hspace: this._referenceWidth
           });
           // and leave it on the current page
-          this._registerPageStart(nextElement);
+          registerPageStart(nextElement);
           this._debug._parseNode && console.log('%c END _parseNode 🖼️ IMG scaled', CONSOLE_CSS_END_LABEL);
           this._debug._parseNode && console.groupEnd();
           return
@@ -752,12 +799,13 @@ export default class Pages {
         // *** add the possibility of moving it with the wrap tag
         // *** if it's the first child
         this._node.markProcessed(currentElement, `IMG starts on next`);
-        this._registerPageStart(currentImage, true);
+        const pageStartElement = isSvgMedia ? currentImage : mediaElement;
+        registerPageStart(pageStartElement, true);
         this._debug._parseNode && console.log('🖼️ register Page Start', currentElement);
         // and avoid page overflow if the picture is too big to fit on the page as a whole
         if (currentImageHeight > fullPageImageNodeSpace) {
           this._node.fitElementWithinBoundaries({
-            element: currentElement,
+            element: mediaElement,
             height: currentImageHeight,
             width: currentImageWidth,
             vspace: fullPageImageNodeSpace,
@@ -780,7 +828,6 @@ export default class Pages {
         // * If a node has its height set with styles, we handle it as a non-breaking object,
         // * and can just scale it if it doesn't fit on the page.
 
-        // got to top, delete after rebase: const currentElementTop = this._node.getTop(currentElement, this._root);
         const availableSpace = newPageBottom - currentElementTop;
         const currentElementContextualHeight = nextElementTop - currentElementTop;
 
@@ -811,7 +858,7 @@ export default class Pages {
             'transform-origin': `top center`,
           });
           // and start a new page with the next element:
-          this._registerPageStart(nextElement);
+          registerPageStart(nextElement);
           this._node.markProcessed(currentElement, `processed as a image, has been scaled down within 20%, the next one starts a new page`);
           this._node.markProcessed(nextElement, `the previous one was scaled down within 20%, and this one starts a new page.`);
           this._debug._parseNode && console.log('%c END _parseNode (has height & scale)', CONSOLE_CSS_END_LABEL);
@@ -836,7 +883,7 @@ export default class Pages {
         this._debug._parseNode && console.log(
           '🥁 _registerPageStart', currentElement
         );
-        this._registerPageStart(currentElement, true);
+        registerPageStart(currentElement, true);
         this._node.markProcessed(currentElement, `processed as a image, starts new page`);
         this._debug._parseNode && console.log('%c END _parseNode (has height & put on next page)', CONSOLE_CSS_END_LABEL);
         this._debug._parseNode && console.groupEnd();
@@ -860,34 +907,17 @@ export default class Pages {
         'currentBlockBottom > newPageBottom', currentBlockBottom, '>', newPageBottom
       );
 
-      // TODO #fewLines
-      // // see if this node is worth paying attention to, based on its height
-      // // TODO: need to rearrange the order of the condition checks
-      // if (this._DOM.getElementOffsetHeight(currentElement) + 2 < this._minimumBreakableHeight) {
-      //   this._debug._parseNode && console.log(
-      //     'this._DOM.getElementOffsetHeight(currentElement) + 2 < this._minimumBreakableHeight',
-      //     this._DOM.getElementOffsetHeight(currentElement),
-      //   );
-
-      //   // todo #fewLines
-      //   // ! add 2 compensation pixels, because when converting millimeters to pixels,
-      //   // ! there's a rounding off, and with a rough calculation (like now)
-      //   // ! and the rounding of 1 line will be rougher than 4 -->
-      //   // ! we will get a smaller number than the actual 4 lines, at least by a 2 pixel.
-      //   // todo #mm-px convert mm to px before all calculations and rendering
-      //   // console.log('??????????????????????????? \n getElementHeight(currentElement) <= this._minimumBreakableHeight',
-      //   // this._DOM.getElementOffsetHeight(currentElement),
-      //   //  '<',
-      //   //  this._minimumBreakableHeight,
-      //   //   currentElement)
-      //   this._registerPageStart(currentElement, true);
-      //   this._debug._parseNode && console.log('%c END _parseNode #fewLines', CONSOLE_CSS_END_LABEL);
-      //   this._debug._parseNode && console.groupEnd();
-      //   return
-      // }
+      // TODO TEST ME: #fewLines
+      if (this._DOM.getElementOffsetHeight(currentElement) < this._minimumBreakableHeight) {
+        registerPageStart(currentElement, true);
+        this._node.markProcessed(currentElement, `starts new page, #fewLines`);
+        this._debug._parseNode && console.log('%c END _parseNode #fewLines', CONSOLE_CSS_END_LABEL);
+        this._debug._parseNode && console.groupEnd();
+        return
+      }
 
       // otherwise try to break it and loop the children:
-      const children = this._node.getProcessedChildren(currentElement, newPageBottom, this._referenceHeight);
+      const children = this._node.getSplitChildren(currentElement, newPageBottom, this._referenceHeight, this._root);
       this._debug._parseNode && console.log(
         'try to break it and loop the children:', children
       );
@@ -897,21 +927,6 @@ export default class Pages {
       // * Depending on the number of children:
 
       const childrenNumber = children.length;
-      this._debug._parseNode && console.log(...consoleMark,
-        'childrenNumber ', childrenNumber);
-      this._debug._parseNode && console.log(...consoleMark,
-        'currentElement ', currentElement);
-
-      // TODO #tracedParent
-      // ?? If it is an only child (it means that the parent node is not split),
-      // ** as well as if the first child is being registered,
-      // ** -- we want to use the past parent (=wrapper of the current node)
-      // ** as the start of the page.
-
-      // condition "childrenNumber <= 1" || // !!! - P PRE и тп с 1 ребенком вносят ошибки
-      // * if the first child - keep the previous parent,
-      // * if not the first - change to the current element:
-      const tracedParent = (isCurrentFirst || parentBottom) ? (parent || currentElement) : currentElement;
 
       // * Parse children:
       if (childrenNumber) {
@@ -926,10 +941,16 @@ export default class Pages {
           array: children,
           previous: previousElement,
           next: nextElement,
+          // * Pass tracedParent downstream so children inherit the updated anchor
+          // * unless the current node became fully split (then the context resets).
           parent: isFullySPlittedParent ? undefined : tracedParent,
+          // * baseBlockBottom keeps the bottom boundary we must preserve when descending into children:
+          // * last-child nodes reuse their parent’s bottom margin, otherwise we fall back
+          // * to the element’s own bottom. If the parent gets fully split, the boundary resets
+          // * so the children recompute theirs.
           parentBottom: isFullySPlittedParent ? undefined : baseBlockBottom,
         });
-        this._node.markProcessed(currentElement, `getProcessedChildren and _parseNodes`);
+        this._node.markProcessed(currentElement, `getSplitChildren and _parseNodes`);
       } else {
         // * If no children,
         // * move element to the next page.
@@ -940,12 +961,12 @@ export default class Pages {
           '_registerPageStart (from _parseNode): \n',
           currentElement
         );
-        this._registerPageStart(currentElement, true);
+        registerPageStart(currentElement, true);
         this._node.markProcessed(currentElement, `doesn't fit, has no children, register it or parents`);
       }
     }
 
-    this._debug._parseNode && console.log('%c END _parseNode', CONSOLE_CSS_END_LABEL);
+    this._debug._parseNode && console.log(`%c END _parseNode [•••]`, CONSOLE_CSS_END_LABEL, { currentElement });
     this._debug._parseNode && console.groupEnd();
   }
 

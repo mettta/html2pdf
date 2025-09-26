@@ -1,29 +1,7 @@
-// TEXT SPLITTING METHODS
+// 🪓 splitters
 
-/**
- * @this {Node}
- */
-// TODO make Obj with offsetTop and use it later
-export function prepareSplittedNode(node) {
-  const splittedNode = node;
-  const nodeWords = this.splitTextByWordsGreedy(node);
-
-  const nodeWordItems = nodeWords.map((item) => {
-    const span = this._DOM.createElement('span');
-    this._DOM.setInnerHTML(span, item + ' ');
-    return span;
-  })
-
-  const testNode = this.createTestNodeFrom(node);
-  this._DOM.insertAtEnd(testNode, ...nodeWordItems);
-  this._DOM.insertAtEnd(node, testNode);
-
-  return {
-    splittedNode,
-    nodeWords,
-    nodeWordItems,
-  }
-}
+import { debugFor } from '../utils/debugFor.js';
+const _isDebug = debugFor('splitters');
 
 /**
  * @this {Node}
@@ -60,4 +38,31 @@ export function splitByWordsGreedyWithSpacesFilter(node) {
   const filteredArr = arr.filter(item => item != ' ');
   // console.log('🔴 filtered word Arr', filteredArr)
   return filteredArr
+}
+
+// *** BACKUP ***
+// FIXME: unused?
+/**
+ * @this {Node}
+ */
+// TODO make Obj with offsetTop and use it later
+export function prepareSplittedNode(node) {
+  const splittedNode = node;
+  const nodeWords = this.splitTextByWordsGreedy(node);
+
+  const nodeWordItems = nodeWords.map((item) => {
+    const span = this._DOM.createElement('span');
+    this._DOM.setInnerHTML(span, item + ' ');
+    return span;
+  })
+
+  const testNode = this.createTestNodeFrom(node);
+  this._DOM.insertAtEnd(testNode, ...nodeWordItems);
+  this._DOM.insertAtEnd(node, testNode);
+
+  return {
+    splittedNode,
+    nodeWords,
+    nodeWordItems,
+  }
 }

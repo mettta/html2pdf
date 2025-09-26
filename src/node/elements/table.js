@@ -1,3 +1,12 @@
+import * as Logging from '../../utils/logging.js';
+import * as Paginator from './table.paginator.js';
+import * as TableAdapter from './table.adapter.js';
+
+// TODO(table): Unsupported features planned later
+// - colSpan/rowSpan splitting across pages (complex layout heuristics)
+// - Inner scroll containers unwrapping; currently printed as-is
+// - Externalize signpost texts/height to config (align with document headers/footers)
+
 export default class Table {
   constructor({
     config,
@@ -7,989 +16,863 @@ export default class Table {
   }) {
     // * From config:
     this._debug = config.debugMode ? { ...config.debugConfig.table } : {};
+    this._assert = config.consoleAssert ? true : false;
 
     // * Private
     this._DOM = DOM;
     this._selector = selector;
     this._node = node;
 
-    // todo
-    // 1) move to config
-    // Table:
-    // # can be a single row with long content
-    this._minLeftRows = 1; // ! min 1!
-    this._minDanglingRows = 1;  // ! min 1!
-    this._minBreakableRows = 1; // this._minLeftRows + this._minDanglingRows;
-    // TODO move to paragraph
-    this._minBreakableLines = 4;
+    this._splitLabelHeightFromConfig = config.splitLabelHeight;
 
-    // TODO move to config
-    this._signpostHeight = 24;
+    // Table splitting constraints and constants
+    this._initConstants();
 
-    // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browsers
-    // Firefox 1.0+
-    // https://bugzilla.mozilla.org/show_bug.cgi?id=820891
-    // * Reason: caption is considered as an external element
-    // * and is not taken into account in calculation
-    // * of offset parameters of table rows.
-    this._isFirefox = typeof InstallTrigger !== 'undefined';
+    Object.assign(this, Logging);
+
+    // ** sets current parameters to undefined
+    this._resetCurrent();
+  }
+
+  split(_table, _pageBottom, _fullPageHeight, _root) {
+    // * Paginate a <table> into print-sized parts.
+    // * - Clones caption/thead/colgroup into each non-final part; keeps tfoot only in the final part.
+    // * - Adds continuation signposts above/below parts per configuration.
+    // * - Returns an array of part wrappers with the original table as the last entry;
+    // *   returns [] when the table fits without splitting.
+    this._setCurrent(_table, _pageBottom, _fullPageHeight, _root);
+    const splits = this._splitCurrentTable();
+    this._resetCurrent();
+    return splits;
+  }
+
+  // ===== Init / Reset / Constants =====
+
+  _initConstants() {
+    // Table splitting constraints
+
+    // TODO(config): move signpost text/height to external config
+    // * From config:
+    // - if null is set - the element is not created in createSignpost().
+    this._signpostHeight = parseFloat(this._splitLabelHeightFromConfig) || 0;
+
+    // TODO(table): consider moving `_minPartLines` to paragraph/general splitting policy
+    this._minPartLines = 2; // Minimum lines required for a row part
 
   }
 
-  split(table, pageBottom, fullPageHeight) {
-    return this._splitTableNode(table, pageBottom, fullPageHeight)
+  _resetCurrent() {
+    // ** current Table parameters passed from outside
+    this._currentTable = undefined;
+    this._currentFirstPageBottom = undefined;
+    this._currentFullPageHeight = undefined;
+    this._currentRoot = undefined;
+    // ** current Table parameters calculated during preparation
+    this._currentTableEntries = undefined;
+    this._currentTableDistributedRows = undefined;
+    this._currentTableFirstPartContentBottom = undefined;
+    this._currentTableFullPartContentHeight = undefined;
+    this._currentTableTfootHeight = undefined;
+    // ** current Table parameters updated dynamically during splitting
+    this._currentTableSplitBottom = undefined;
+    this._logSplitBottom_ = [];
+    // ** current per-run caches
+    this._currentRowShellCache = undefined;
+
+    // ** analysis flags (guards) — set by _analyzeCurrentTableStructure()
+    // Whether any row contains ROWSPAN>1; triggers conservative fallback (no slicing for that row)
+    this._currentTableHasRowspan = undefined;
+    // Whether any row contains COLSPAN>1; handled within-row slicing but warn to monitor results
+    this._currentTableHasColspan = undefined;
+    // Whether the number of TD/TH per row varies; indicates non-uniform row structure
+    this._currentTableInconsistentCells = undefined;
+    // Whether getTableEntries() detected unexpected children in <table>
+    this._currentTableHasUnexpectedChildren = undefined;
   }
 
+  _setCurrent(_table, _pageBottom, _fullPageHeight, _root) {
+    this._currentTable = _table;
+    this._currentFirstPageBottom = _pageBottom;
+    this._currentFullPageHeight = _fullPageHeight;
+    this._currentRoot = _root;
+    this._currentRowShellCache = new WeakMap();
+  }
 
-  // TODO test more complex tables
-  _splitTableNode(table, pageBottom, fullPageHeight) {
-    // * Split simple tables, without regard to col-span and the like.
-    this._debug._ && console.group('%c_splitTableNode', 'background:cyan', [table]);
+  // ===== Preparation =====
 
-    this._lockWidths(table);
+  _prepareCurrentTableForSplitting() {
+    this._lockCurrentTableWidths();
+    this._collectCurrentTableEntries();
+    this._updateCurrentTableDistributedRows();
+    // Run structural guards (non-fatal): detect spans/inconsistencies and log.
+    // TODO(table): consider early fallback (no split + scaling) on irregular tables.
+    this._analyzeCurrentTableStructure();
+    this._collectCurrentTableMetrics();
+  }
 
-    // * Calculate table wrapper (empty table element) height
-    // * to calculate the available space for table content
-    const tableWrapperHeight = this._node.getEmptyNodeHeight(table, '<tr><td></td></tr>');
-    // * Get table entries
-    const tableEntries = this._getEntries(table);
+  _lockCurrentTableWidths() {
+    // * Keep table widths stable before measuring/splitting
+    this._node.lockTableWidths(this._currentTable);
+  }
 
-    this._debug._ && console.log('tableEntries', tableEntries);
+  // ===== Split Flow =====
 
-    // TODO # can be a single row with long content ?
-    // ! this._minBreakableRows === 0
-    // if (tableEntries.rows.length < this._minBreakableRows) {
-    //   this._end(NOT _splitTableNode (tableEntries.rows.length < this._minBreakableRows));
-    //   return []
-    // }
+  _splitCurrentTable() {
+    // TODO test more complex tables
 
-    // Prepare node parameters
-    // * getTopWithMargin vs getTop
-    // * The margin must be taken into account,
-    // * because it is included in the calculation of the tableWrapperHeight
-    // * and will be subtracted when calculating the first internal part of the table.
-    const tableTopWithTopMargin = this._node.getTopWithMargin(table, this._root);
 
-    // const tableHeight = this._DOM.getElementOffsetHeight(table);
-    const tableCaptionHeight = this._DOM.getElementOffsetHeight(tableEntries.caption) || 0;
-    const tableTheadHeight = this._DOM.getElementOffsetHeight(tableEntries.thead) || 0;
-    const tableTfootHeight = this._DOM.getElementOffsetHeight(tableEntries.tfoot) || 0;
+    //  * Core pagination loop for the current table instance.
+    //  * Prepares metrics, walks distributed rows to register page starts, builds parts.
 
-    // *** Convert NULL/Undefined to 0.
-    // *** Nullish coalescing assignment (??=), Nullish coalescing operator (??)
-    const captionFirefoxAmendment = (tableCaptionHeight ?? 0) * (this._isFirefox ?? 0);
+    // High-level flow:
+    // 1) Prepare table state and metrics
+    // 2) Walk rows to register page starts
+    // 3) Build parts by split indexes and append the original as the last part
 
-    const tableFirstPartBottom = pageBottom
-      - tableTopWithTopMargin
-      - tableWrapperHeight
-      - this._signpostHeight;
+    // * Prepare table.
+    this._prepareCurrentTableForSplitting();
+    // * Start with a short first part or immediately from the full height of the page.
+    this._setCurrentTableFirstSplitBottom();
 
-    const tableFullPartContentHeight = fullPageHeight
-      - tableCaptionHeight // * copied into each part
-      - tableTheadHeight // * copied into each part
-      - tableTfootHeight // * remains in the last part (in the table)
-      - tableWrapperHeight
-      - 2 * this._signpostHeight;
+    // TODO(table): colSpan/rowSpan are not supported yet; guard later in split path
 
-    this._debug._ && console.log(
-      '\n • tableFirstPartBottom', tableFirstPartBottom,
-      '\n',
-      '\n   pageBottom', pageBottom,
-      '\n - tableTop(WithTopMargin)', tableTopWithTopMargin,
-      '\n - tableCaptionHeight', tableCaptionHeight,
-      '\n - tableTheadHeight', tableTheadHeight,
-      '\n - tableWrapperHeight', tableWrapperHeight,
-      '\n - this._signpostHeight', this._signpostHeight,
-      '\n',
-      '\n   fullPageHeight', fullPageHeight,
-      '\n - tableCaptionHeight', tableCaptionHeight,
-      '\n - tableTheadHeight', tableTheadHeight,
-      '\n - tableTfootHeight', tableTfootHeight,
-      '\n - 2 * this._signpostHeight', (2 * this._signpostHeight),
-      '\n - tableWrapperHeight', tableWrapperHeight,
-      '\n = tableFullPartContentHeight', tableFullPartContentHeight,
+    this._debug._ && console.group('%c📊 _splitCurrentTable()', 'color:green; background:#eee; padding:3px',
+      '\n•', this._currentTableFirstPartContentBottom, '(1st bottom)',
+      '\n•', this._currentTableFullPartContentHeight, '(full part height)',
+      {
+        table: this._currentTable,
+        rows: this._currentTableDistributedRows,
+        entries: this._currentTableEntries,
+        root: this._currentRoot,
+      },
     );
 
-    // * Rows that we distribute across the partitioned table
-    const getDistributedRows = (tableEntries) => [
-      ...tableEntries.rows,
-      ...(tableEntries.tfoot ? [tableEntries.tfoot] : [])
-    ];
+    // * Collect row indexes where new table parts should start after splitting.
+    let splitStartRowIndexes = [];
 
-    let distributedRows = getDistributedRows(tableEntries);
-    this._debug._ && console.log('distributedRows', distributedRows);
-
-    // * Calculate Table Splits Ids
-
-    let splitsIds = [];
-    let currentPageBottom = tableFirstPartBottom;
+    // * Walk through table rows to find where to split.
+    for (let index = 0; index < this._currentTableDistributedRows.length; index++) {
+      // * _evaluateRowForSplitting() may roll back index to re-check newly inserted rows after splitting.
+      index = this._evaluateRowForSplitting(index, splitStartRowIndexes);
+    };
 
     this._debug._ && console.log(
-      this._node.getTop(distributedRows[1], table) - this._node.getBottom(distributedRows[0], table),
-      '(row[1].top - row[0].bottom)',
-    )
-
-    if (this._node.getTop(distributedRows[0], table) > currentPageBottom) {
-      // * If the beginning of the first line is immediately on the second page
-      // * then even the header doesn't fit.
-      // * Go immediately to the second page.
-      currentPageBottom = tableFullPartContentHeight;
-      this._debug._ && console.log(`The Row 0 goes to the 2nd page`);
-    }
-
-    for (let index = 0; index < distributedRows.length; index++) {
-      this._debug._ && console.log(
-        `%c 🟪 Check the Row # ${index}`, 'color:blueviolet',
-        [ distributedRows[index] ],
-        // [...distributedRows]
-      );
-
-      const currentRow = distributedRows[index];
-      const currRowBottom = this._node.getBottom(currentRow, table) + captionFirefoxAmendment;
-      const currRowTop = this._node.getTop(currentRow, table) + captionFirefoxAmendment;
-      const nextRow = distributedRows[index + 1];
-      const nextRowBottomOrTableBottom = nextRow
-        ? this._node.getTop(nextRow, table) + captionFirefoxAmendment
-        : currRowBottom; // for the last row
-
-      if (nextRowBottomOrTableBottom > currentPageBottom) {
-        // * If the end of the row is on the second page
-        // * TRY TO SPLIT CURRENT ROW
-
-        const splittingRowIndex = index;
-        const splittingRow = currentRow;
-        const splittingRowHeight = this._DOM.getElementOffsetHeight(splittingRow);
-        const splittingMinRowHeight = this._node.getTableRowHeight(splittingRow, this._minBreakableLines); // ? paragraph inside
-        const splittingEmptyRowHeight = this._node.getTableRowHeight(splittingRow);
-        const splittingRowTop = currRowTop;
-
-        const isNoBreak = this._node.isNoBreak(splittingRow);
-        const makesSenseToSplitTheRow = (splittingRowHeight >= splittingMinRowHeight) && (!isNoBreak);
-
-        this._debug._ && console.log(
-          `%c • Row # ${index}: try to split`, 'color:blueviolet', splittingRow,
-        );
-
-
-        if (makesSenseToSplitTheRow) {
-          // * Let's split table row [index]
-
-          this._debug._ && console.groupCollapsed(
-            `Split The ROW.${splittingRowIndex}`
-          );
-
-          const rowFirstPartHeight = currentPageBottom - splittingRowTop - splittingEmptyRowHeight;
-          const rowFullPageHeight = tableFullPartContentHeight - splittingEmptyRowHeight;
-
-          const splittingRowTDs = this._DOM.getChildren(splittingRow);
-
-          let theRowContentSlicesByTD;
-
-          theRowContentSlicesByTD = [...splittingRowTDs].map((td, ind) => {
-            const tdChildren = this._node.getPreparedChildren(td);
-            this._debug._ && console.groupCollapsed(`Split TD.${ind} in ROW.${splittingRowIndex}`);
-            const tdInternalSplitters = this._getInternalBlockSplitters({
-              rootNode: td,
-              children: tdChildren,
-              pageBottom: pageBottom,
-              firstPartHeight: rowFirstPartHeight,
-              fullPageHeight: rowFullPageHeight,
-            });
-            this._debug._ && console.groupEnd(`Split TD.${ind} in ROW.${splittingRowIndex}`);
-            return tdInternalSplitters
-          });
-
-          this._debug._ && console.log(
-            '🟣 \ntheRowContentSlicesByTD',
-            theRowContentSlicesByTD
-          );
-
-          const shouldFirstPartBeSkipped = theRowContentSlicesByTD.some(obj => {
-            this._debug._ && console.log(
-              '🟣',
-              '\nobj.result.length',
-              obj.result.length,
-              '\nobj.result[0]',
-              obj.result[0]
-            );
-            return (obj.result.length && obj.result[0] === null)
-          });
-
-          this._debug._ && console.log(
-            '🟣',
-            '\nshouldFirstPartBeSkipped',
-            shouldFirstPartBeSkipped
-          );
-
-          if(shouldFirstPartBeSkipped) {
-            theRowContentSlicesByTD = [...splittingRowTDs].map(td => {
-              const tdChildren = this._node.getPreparedChildren(td);
-              const tdInternalSplitters = this._getInternalBlockSplitters({
-                rootNode: td,
-                children: tdChildren,
-                pageBottom: pageBottom,
-                firstPartHeight: rowFullPageHeight,
-                fullPageHeight: rowFullPageHeight,
-              });
-              return tdInternalSplitters
-            });
-          }
-
-          this._debug._ && console.log(
-            '🟣',
-            '\n theRowContentSlicesByTD',
-            theRowContentSlicesByTD
-          );
-
-          const ifThereIsSplit = theRowContentSlicesByTD.some(obj => {
-            return obj.result.length
-          });
-          this._debug._ && console.log('🟣 ifThereIsSplit', ifThereIsSplit);
-
-          // !
-          if (ifThereIsSplit) {
-
-            const theTdContentElements = theRowContentSlicesByTD.map(el => {
-              if(el.result.length) {
-                return this._createSlicesBySplitFlag(el.trail)
-              } else {
-                // * el.result === 0
-                // один раз полностью копируем весь контент из столбца
-                const sliceWrapper = this._node.createWithFlagNoBreak();
-                sliceWrapper.classList.add("🟣");
-                this._DOM.setStyles(sliceWrapper, { display: 'contents' });
-
-                const contentElements = el.trail.map(item => item.element);
-                this._DOM.insertAtEnd(sliceWrapper, ...contentElements);
-
-                return [sliceWrapper]
-              }
-            });
-
-            this._debug._ && console.log('🟣 theTdContentElements', theTdContentElements);
-
-            const theNewTrCount = Math.max(...theTdContentElements.map(arr => arr.length));
-            this._debug._ && console.log('🟣 theNewTrCount', theNewTrCount);
-
-            const theNewRows = [];
-            for (let i = 0; i < theNewTrCount; i++) {
-              const rowWrapper = this._DOM.cloneNodeWrapper(splittingRow);
-              this._node.setFlagNoBreak(rowWrapper);
-              this._DOM.setAttribute(rowWrapper, `.splitted_row_${splittingRowIndex}_part_${i}`);
-
-              [...splittingRowTDs].forEach(
-                (td, tdID) => {
-                  const tdWrapper = this._DOM.cloneNodeWrapper(td);
-                  const content = theTdContentElements[tdID][i];
-                  content && this._DOM.insertAtEnd(tdWrapper, theTdContentElements[tdID][i]);
-                  this._DOM.insertAtEnd(rowWrapper, tdWrapper);
-                }
-              );
-
-              theNewRows.push(rowWrapper);
-            }
-
-            this._debug._ && console.log('🟣', '\n theNewRows', theNewRows);
-
-            // добавляем строки в массив и в таблицу
-
-            this._DOM.setAttribute(splittingRow, '.🚫_must_be_removed'); // for test, must be removed
-            this._debug._ && console.log('🟣 splittingRow', splittingRow);
-            this._DOM.insertInsteadOf(splittingRow, ...theNewRows)
-
-            // меняем исходный массив строк таблицы!
-            tableEntries.rows.splice(splittingRowIndex, 1, ...theNewRows);
-            // и обновляем рабочий массив включающий футер
-            distributedRows = getDistributedRows(tableEntries);
-
-            // To check all the split pieces anew:
-            index = index - 1;
-
-          } //? END OF ifThereIsSplit
-
-          this._end(`Split The ROW.${splittingRowIndex} (...if makesSenseToSplitTheRow)`);
-        } //? END OF 'if makesSenseToSplitTheRow'
-        else {
-
-          // !!!!!!!!!!!!!!
-          if (isNoBreak) {
-            this._debug._ && isNoBreak && console.log(
-              `%c • Row # ${index}: noBreak`, 'color:red', splittingRow,
-            );
-          } else {
-            this._debug._ && console.log(
-              `%c • Row # ${index}: small`, 'color:blueviolet', splittingRow,
-            );
-          }
-
-          // TODO проверять это ТОЛЬКО если мы не можем разбить
-          if (index >= this._minLeftRows) {
-            // * avoid < minLeftRows rows on first page
-            // *** If a table row starts in the next part,
-            // *** register the previous one as the beginning of the next part.
-            // *** In the other case, we do not register a page break,
-            // *** and the first small piece will be skipped.
-            splitsIds.push(index);
-            this._debug._ && console.log(
-              `%c • Row # ${index}: REGISTER as start, index >= ${this._minLeftRows} (_minLeftRows) `, 'color:blueviolet',
-              splittingRow
-            );
-          }
-
-          currentPageBottom =
-          this._node.getTop(
-            distributedRows[index], table
-          ) + captionFirefoxAmendment
-          + tableFullPartContentHeight;
-        }
-
-
-         //? END OF trying to split long TR
-
-
-        // check if next fits
-
-      } else {
-        // currRowTop <= currentPageBottom
-        // pass
-        this._debug._ && console.log(
-          `%c • Row # ${index}: PASS ...`, 'color:blueviolet',
-        );
-      }
-    }; //? END OF for: distributedRows
-
-    this._debug._ && console.log(
-      '\n splitsIds', splitsIds,
-      '\n distributedRows', [...distributedRows]
+      '\n splitStartRowIndexes', splitStartRowIndexes,
+      '\n Distributed Rows', [...this._currentTableDistributedRows]
     );
 
-    if (!splitsIds.length) {
-      this._end(`_splitTableNode !splitsIds.length`);
+    this._assert && console.assert(
+      // 🚨 No 0 indexes. First split cannot start from 0.
+      splitStartRowIndexes.every(i => Number.isInteger(i) && i > 0 && i <= this._currentTableDistributedRows.length),
+      'splitStartRowIndexes contains invalid indexes'
+    );
+    this._assert && console.assert(
+      // 🚨 Strictly increasing, no duplicates.
+      splitStartRowIndexes.every((val, i, arr) => i === 0 || val > arr[i - 1]),
+      'splitStartRowIndexes must be strictly ascending and without duplicates'
+    );
+    this._assert && console.assert(
+      // 🚨 Last split must not consume 100% of the table, original must keep rows.
+      splitStartRowIndexes.at(-1) !== this._currentTableDistributedRows.length,
+      'Last split index should not equal rows.length, or the original table will be empty.'
+    );
+
+    if (!splitStartRowIndexes.length) {
+      this.logGroupEnd(`_splitCurrentTable !splitStartRowIndexes.length`);
       return []
     }
 
-    // * avoid < minDanglingRows rows on last page
-    // ! distributedRows модифицировано
+    // ! this._currentTableDistributedRows модифицировано
 
-    // TODO
-    // * decide if the selected table will look good or if there will be very short parts:
-    // const maxSplittingId = (distributedRows.length - 1) - this._minDanglingRows;
-    // if (splitsIds[splitsIds.length - 1] > maxSplittingId) {
-    //   splitsIds[splitsIds.length - 1] = maxSplittingId;
-    // }
+    // * Iterate over splitStartRowIndexes.
+    // * For each split point: create a new <table> element with its own structure.
+    // * Repeated structural elements (colgroup, caption, thead) are cloned.
+    // * tbody is newly built from rows between startId and endId (excluding endId).
+    // * The original table will contain rows from the last split point to the end,
+    // * and will be inserted separately below.
+    const splits = splitStartRowIndexes.map((endId, index, array) => {
 
-    const splits = splitsIds.map((value, index, array) => this._insertTableSplit({
-      startId: array[index - 1] || 0,
-      endId: value,
-      table,
-      tableEntries,
-    }))
+      // * For the first table part, start from 0 (the first row of the table).
+      // * For all subsequent parts, start from the previous split index.
+      const startId = index > 0 ? array[index - 1] : 0;
 
-    this._debug._ && console.log(
-      'splits', splits
-    );
+      // * Create and insert a new table part that will contain rows from startId up to endId (excluding endId).
+      const tableSliceWrapper = this._createAndInsertTableSlice({
+        startId: startId,
+        endId: endId,
+        table: this._currentTable,
+        tableEntries: this._currentTableEntries,
+      });
 
-    // create LAST PART
-    const lastPart = this._node.createWithFlagNoBreak();
-    table.before(lastPart);
-    this._DOM.insertAtEnd(
-      lastPart,
-      this._node.createSignpost('(table continued)', this._signpostHeight),
-      table
-    );
+      // * Return new table part to register in splits array.
+      return tableSliceWrapper;
+    });
 
-    this._end(`_splitTableNode`);
+    // * Use the rest of the original table to create the last slice.
+
+    // * Insert the original table as the last part.
+    // * It contains all rows from the last split point to the end.
+    const lastPart = this._createAndInsertTableFinalSlice({ table: this._currentTable });
+
+    this._debug._ && console.log('splits', splits);
+    this._debug._ && console.log('lastPart', lastPart)
+
+    this.logGroupEnd(`_splitCurrentTable`);
 
     return [...splits, lastPart]
   }
 
-  // 👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪
-  _createSlicesBySplitFlag(inputArray) {
-    // {
-    //   id,
-    //   element,
-    //   children: [],
-    //   split: true | false,
-    // }
+  _evaluateRowForSplitting(rowIndex, splitStartRowIndexes) {
+    // Input: rowIndex; mutates splitStartRowIndexes
+    // May split/replace TRs and advance splitBottom;
+    // returns possibly decremented index (re-check under new window).
+    // Honors final-part reclaimed height.
 
-    this._debug._ && console.group(`_createSlicesBySplitFlag`);
+    // * Keep the original parameters for logging.
+    const origRowIndex = rowIndex;
+    const origRowCount = this._currentTableDistributedRows.length;
+    this._debug._ && console.group(`🔲 %c Check the Row # ${origRowIndex} (from ${origRowCount})`, '',);
 
-    const sliceWrapper = this._node.createWithFlagNoBreak();
-    this._DOM.setStyles(sliceWrapper, { display: 'contents' });
-    sliceWrapper.classList.add("🧰");
+    // * Start with the row.
+    const currentRow = this._currentTableDistributedRows[rowIndex];
 
-    // *** иниццируем для первого элемента оболочку sliceWrapper
-    const slices = [sliceWrapper];
-    let wrappers = [sliceWrapper]; // Реальные элементы, нужно клонировать массив для нового
-    let currentTargetInSlice = sliceWrapper;
-
-    const createWrapperFromArray = (array) => {
-      if (array.length === 0) {
-        return null;
+    this._debug._ && console.info(
+      {
+        row: currentRow,
+        rows: [...this._currentTableDistributedRows]
       }
-
-      const wrapper = array[0];
-      let currentWrapper = wrapper;
-
-      for (let i = 1; i < array.length; i++) {
-        const child = array[i];
-        this._DOM.insertAtEnd(currentWrapper, child);
-        currentWrapper = child;
-      }
-
-      this._debug._ && console.log(' createWrapperFromArray:', wrapper);
-      return wrapper;
-    }
-
-    const processChildren = (children, parent = null) => {
-      this._debug._ && console.group('processChildren');
-      this._debug._ && console.log('*start* children', children)
-
-      for (let i = 0; i < children.length; i++) {
-        processObj(children[i]);
-      }
-
-      this._debug._ && console.log('- wrappers BEFORE pop:', [...wrappers]);
-      const a = wrappers.pop();
-      this._debug._ && console.log('- wrappers.pop()', a);
-      this._debug._ && console.log('- parent', parent);
-      this._debug._ && console.log('- wrappers AFTER pop:', [...wrappers]);
-
-      currentTargetInSlice = wrappers.at(-1);
-      // TODO сделать функцию
-      this._debug._ && console.log('🎯🎯 currentTargetInSlice', currentTargetInSlice)
-      this._debug._ && console.log('🎯 wrappers.at(-1)', wrappers.at(-1))
-      this._debug._ && console.log('*END* children', children)
-
-      this._end(`processChildren`);
-    }
-
-    const processObj = (obj) => {
-
-      const hasChildren = obj.children?.length > 0;
-      const hasSplitFlag = obj.split;
-      const currentElement = obj.element;
-      const id = obj.id;
-
-      this._debug._ && console.group(`processObj # ${id}`); // Collapsed
-      this._debug._ && console.log('currentElement', currentElement);
-      currentElement && this._DOM.removeNode(currentElement);
-
-      if(hasSplitFlag) {
-        this._debug._ && console.log('••• hasSplitFlag');
-        // start new object
-        // const currentWrapper = slices.at(-1);
-        // const nextWrapper = this._DOM.cloneNode(currentWrapper);
-        wrappers = wrappers.map(wrapper => {
-          const clone = this._DOM.cloneNodeWrapper(wrapper); // ???? может делать клоны не тут а при создании?
-          clone.classList.add("🚩");
-          return clone
-        });
-        this._debug._ && console.log('• hasSplitFlag: NEW wrappers.map:', [...wrappers]);
-        const nextWrapper = createWrapperFromArray(wrappers);
-
-        slices.push(nextWrapper);
-        this._debug._ && console.log('• hasSplitFlag: slices.push(nextWrapper):', [...slices]);
-        // find container in new object
-
-        currentTargetInSlice = wrappers.at(-1);
-        this._debug._ && console.log('• hasSplitFlag: currentTargetInSlice:', currentTargetInSlice);
-      }
-
-      // TODO проверить, когда есть оба флага
-
-      if(hasChildren) {
-        this._debug._ && console.log('••• hasChildren');
-        // make new wrapper
-        const cloneCurrentElementWrapper = this._DOM.cloneNodeWrapper(currentElement);
-
-        // add cloneCurrentElementWrapper to wrappers
-        wrappers.push(cloneCurrentElementWrapper); // ???????????
-
-        this._debug._ && console.log('• hasChildren: wrappers.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...wrappers]);
-        // add cloneCurrentElementWrapper to slice
-        this._debug._ && console.log('• hasChildren: currentTargetInSlice (check):', currentTargetInSlice);
-
-        if(currentTargetInSlice) {
-          this._debug._ && console.log('• hasChildren: currentTargetInSlice', 'TRUE, add to existing', cloneCurrentElementWrapper);
-          // add to existing as a child
-          this._DOM.insertAtEnd(currentTargetInSlice, cloneCurrentElementWrapper);
-        } else {
-          this._debug._ && console.log('• hasChildren: currentTargetInSlice', 'FALSE, init the first', cloneCurrentElementWrapper);
-          // init the first
-          cloneCurrentElementWrapper.classList.add('🏁first');
-
-          this._DOM.setStyles(cloneCurrentElementWrapper, { background: 'yellow' });
-          slices.push(cloneCurrentElementWrapper);
-          this._debug._ && console.log('• hasChildren: slices.push(cloneCurrentElementWrapper)', cloneCurrentElementWrapper, [...slices]);
-        }
-        // update wrapper bookmark
-        currentTargetInSlice = wrappers.at(-1) // = cloneCurrentElementWrapper
-        this._debug._ && console.log('• hasChildren:  currentTargetInSlice (=):', currentTargetInSlice);
-
-
-        processChildren(obj.children, currentElement);
-
-      } else { // !!! внесли под ELSE
-
-        // insert current Element
-        currentTargetInSlice = wrappers.at(-1);
-        this._debug._ && console.log('insert currentElement', currentElement, 'to target', currentTargetInSlice);
-        this._DOM.insertAtEnd(currentTargetInSlice, currentElement);
-      }
-
-      this._end(`processObj # ${id}`);
-    }
-
-    this._debug._ && console.log('#######  currentTargetInSlice (=):', currentTargetInSlice);
-
-    processChildren(inputArray);
-
-    this._debug._ && console.log('slices:', slices)
-    this._debug._ && slices.forEach(slice => console.log('slice:', slice))
-
-    this._end(`_createSlicesBySplitFlag`);
-    return slices
-  }
-
-  _getInternalBlockSplitters({
-    rootNode,
-    rootComputedStyle,
-    children,
-    pageBottom,
-    firstPartHeight,
-    fullPageHeight,
-    result = [],
-    trail = [],
-    indexTracker = [],
-    stack = [],
-  }) {
-
-    // * Need to make the getTop work with root = rootNode.
-    // * A positioned ancestor is either:
-    // * - an element with a non-static position, or
-    // * - td, th, table in case the element itself is static positioned.
-    // * So we need to set non-static position for rootNode
-    // * for the calculation runtime.
-    // * Because anything in the content could be with a non-static position,
-    // * and then TD without positioning wouldn't work for it as a offset parent.
-    const _rootComputedStyle = rootComputedStyle
-    ? rootComputedStyle
-    : this._DOM.getComputedStyle(rootNode);
-    const initPosition = _rootComputedStyle.position;
-    if (initPosition != 'relative') {
-      this._DOM.setStyles(rootNode, { position: 'relative' });
-    }
-
-    this._debug._ && console.group('💟 _getInternalBlockSplitters'); // Collapsed
-
-    const findFirstNullIDInContinuousChain = (array) => {
-      let item = null;
-      let index;
-      for (let i = array.length - 1; i >= 0; i--) {
-        if (array[i].id === 0) {
-          item = array[i];
-          index = i;
-        } else {
-          return {item, index}
-        }
-      }
-      return {item, index}
-    }
-
-    const updateIndexTracker = i => {
-      if(i >= 0) {
-        indexTracker.push(i);
-      } else {
-        indexTracker.pop()
-      }
-    }
-
-    const registerResult = (element, id) => {
-      this._debug._ && console.assert((id >= 0), `registerResult: ID mast be provided`, element);
-
-      let theElementObject = trail[id]; // * contender without special cases
-      let theElementIndexInStack; // ***
-
-      this._debug._ && console.groupCollapsed('💜💜💜 registerResult(element, id)');
-
-      this._debug._ && console.log(
-          '\n element', element,
-          '\n id', id,
-          '\n theElementObject (trail[id])', theElementObject,
-          '\n theElementIndexInStack', theElementIndexInStack,
-      );
-
-      if (id == 0) {
-        // если первый ребенок,
-        // ищем самую внешнюю оболочку, которая тоже первый ребенок первого ребенка...
-
-        const topParentElementFromStack = findFirstNullIDInContinuousChain(stack);
-
-        this._debug._ && console.log(
-            '💜💜 id == 0',
-            '\n💜 [...stack]', [...stack],
-            '\n💜 topParentElementFromStack', topParentElementFromStack,
-          );
-
-        if(topParentElementFromStack.item) {
-          theElementObject = topParentElementFromStack.item;
-          theElementIndexInStack = topParentElementFromStack.index;
-        }
-
-      }
-
-      this._debug._ && console.log('💜',
-        '\n theElementObject', theElementObject,
-        '\n theElementIndexInStack', theElementIndexInStack,
-        '\n [...indexTracker]', [...indexTracker],
-      );
-
-      if(theElementIndexInStack === 0) {
-        // * If this is the first wrapper registered for the first slice, we do not register the result,
-        // * since it will be the beginning of the first slice.
-        // * Otherwise we will generate an empty table row.
-        // * Because the first row of the table starts filling automatically,
-        // * and the first flag 'split' means the beginning of the SECOND slice.
-
-        result.push(null); // * it is used to calculate the height of a piece
-
-        this._debug._ && console.log(
-            'result.push(null)',
-            '\n\n💜💜💜',
-          );
-      } else {
-        result.push(theElementObject.element); // * it is used to calculate the height of a piece
-        theElementObject && (theElementObject.split = true);
-
-        this._debug._ && console.log(
-            '\n theElementObject', theElementObject,
-            '\n theElementObject.element', theElementObject.element,
-            '\n result.push(theElementObject.element)',
-            '\n\n💜💜💜 ',
-          );
-      }
-
-      this._end(`_getInternalBlockSplitters registerResult`);
-    }
-
-    this._debug._ && console.log(
-        '💟 result 💟', result,
-        '\n\n',
-        `\n rootNode:`, rootNode,
-        `\n children:`, children,
-        `\n pageBottom:`, pageBottom,
-        `\n firstPartHeight:`, firstPartHeight,
-        `\n fullPageHeight:`, fullPageHeight,
-        `\n\n\n`,
-        '💟 stack', [...stack],
-      );
-
-    for (let i = 0; i < children.length; i++) {
-
-      const previousElement = children[i - 1];
-      const currentElement = children[i];
-      const nextElement = children[i + 1];
-      const nextElementTop = nextElement ? this._node.getTop(nextElement, rootNode): undefined;
-
-      // nextElement && console.log(
-      //   'ddddd',
-      //   this._node.getTop(nextElement, rootNode),
-      //   nextElement,
-      //   rootNode
-      // )
-
-      const newObject = {
-        id: i,
-        element: children[i],
-      }
-
-      const newObjectFromNext = {
-        id: i + 1,
-        element: children[i + 1], // * depend on nextElement
-      }
-
-      // * Проверяем, не добавлен ли этот элемент,
-      // * это возможно через registerResult(nextElement, i + 1).
-      const lastTrailElementID = trail.length ? trail.at(-1).id : undefined;
-      (i !== lastTrailElementID) && trail.push(newObject);
-
-      const floater = (result.length === 0) // * empty array => process first slice
-      ? firstPartHeight
-      : (
-          (result.at(-1) === null) // * case with empty first slice
-          ? fullPageHeight
-          : fullPageHeight + this._node.getTop(result.at(-1), rootNode)
-        );
-
-      if (this._node.isForcedPageBreak(currentElement)) {
-        //register
-
-        // TODO #ForcedPageBreak
-        this._debug._ && console.warn(
-            currentElement, '💟 is isForcedPageBreak'
-          );
-      }
-
-      // TODO:
-      // nextElementTop?
-      // nextElement?
-
-      if (nextElementTop <= floater) {
-        // -- current fits
-
-        // this._debug._ && console.log('💟💟 nextElementTop <= floater // current fits');
-
-        if (this._node.isNoHanging(currentElement)) {
-          // -- current fits but it can't be the last
-
-          this._debug._ && console.log('💟💟 currentElement _isNoHanging');
-
-          registerResult(currentElement, i);
-        }
-        // go to next index
-      } else { // nextElementTop > floater
-              // currentElement ?
-
-        this._debug._ && console.log('💟💟', currentElement, `nextElementTop > floater \n ${nextElementTop} > ${floater} `,);
-
-        if (this._node.isSVG(currentElement) || this._node.isIMG(currentElement)) {
-          // TODO needs testing
-          this._debug._ && console.log('%cIMAGE 💟💟', 'color:red;text-weight:bold')
-        }
-
-        const currentElementBottom = this._node.getBottomWithMargin(currentElement, rootNode);
-
-        this._debug._ && console.log(
-          '💟💟 current ???',
-          '\n currentElement', currentElement,
-          '\n currentElementBottom', currentElementBottom,
-          '\n floater', floater
-        );
-
-        // IF currentElement does fit
-        // in the remaining space on the page,
-        if (currentElementBottom <= floater) {
-
-          this._debug._ && console.log('💟💟💟 currentElementBottom <= floater');
-
-          // ** add nextElement check (undefined as end)
-          if(nextElement) {
-            this._debug._ && console.log('💟💟💟💟 register nextElement');
-            trail.push(newObjectFromNext);
-            registerResult(nextElement, i + 1);
-          } // else - this is the end of element list
-
-        } else {
-          // currentElementBottom > floater
-          // try to split
-          this._debug._ && console.log(
-            '💟💟💟 currentElementBottom > floater,\ntry to split',
-            currentElement
-          );
-
-          const currentElementChildren = this._node.processedBlockChildren(currentElement, pageBottom, fullPageHeight);
-
-          // * Parse children:
-          if (currentElementChildren.length) {
-
-            // *** add wrapper ID
-            updateIndexTracker(i);
-
-            stack.push(newObject);
-
-            // * Process children if exist:
-            this._getInternalBlockSplitters({
-              rootNode,
-              rootComputedStyle: _rootComputedStyle,
-              children: currentElementChildren,
-              pageBottom,
-              firstPartHeight,
-              fullPageHeight,
-              result,
-              trail: trail[i].children = [],
-              indexTracker,
-              stack,
-            });
-
-            stack.pop();
-
-            this._debug._ && console.log('🟪 back from _getInternalBlockSplitters;\n trail[i]', trail[i]);
-            // *** END of 'has children'
-
-          } else {
-            // * If no children,
-            // * move element to the next page.
-            // ** But,
-            if (previousElement && this._node.isNoHanging(previousElement)) {
-              // ** if previousElement can't be the last element on the page,
-              // ** move it to the next page.
-              // TODO #_canNotBeLast
-              // а если там подряд несколько заголовков, и перед previousElement есть еще заголовки, которые мы не проверяли еслтенствнно, и они будут висеть
-              // this._registerPageStart(previousElement)
-              console.warn('tst improveResult', previousElement)
-              // if (improveResult) {
-              let result = previousElement;
-              const firstChildParent = this._node.findFirstChildParent(result, this._contentFlow);
-              result = firstChildParent || result;
-
-              const previousCandidate = this._node.findPreviousNoHangingsFromPage(result, this.pages.at(-2)?.pageBottom, this._root)
-              result = previousCandidate || result;
-
-
-              this._debug._ && console.log('previousElement _isNoHanging')
-              registerResult(result, i - 1);
-            } else {
-              // TODO #tracedParent
-              this._debug._ && console.log(currentElement, 'currentElement has no children')
-              registerResult(currentElement, i);
-            }
-          } // *** END of 'no children'
-        } // *** END of 'currentElementBottom > floater'
-
-      }
-    }
-
-    // *** remove last wrapper ID after children processing is complete
-    updateIndexTracker();
-
-    // *** need to revert back to the original positioning of the rootNode:
-    this._DOM.setStyles(rootNode, { position: initPosition });
-
-    this._end(`_getInternalBlockSplitters`);
-
-    return {result, trail}
-  }
-
-  // getTableEntries(
-  _getEntries(node) {
-
-    const nodeEntries = [...node.children].reduce((acc, curr) => {
-
-      const tag = curr.tagName;
-
-      if (tag === 'TBODY') {
-        return {
-          ...acc,
-          rows: [
-            ...acc.rows,
-            ...curr.children,
-          ]
-        }
-      }
-
-      if (tag === 'CAPTION') {
-        this._node.setFlagNoBreak(curr);
-        return {
-          ...acc,
-          caption: curr
-        }
-      }
-
-      if (tag === 'COLGROUP') {
-        this._node.setFlagNoBreak(curr);
-        return {
-          ...acc,
-          colgroup: curr
-        }
-      }
-
-      if (tag === 'THEAD') {
-        this._node.setFlagNoBreak(curr);
-        return {
-          ...acc,
-          thead: curr
-        }
-      }
-
-      if (tag === 'TFOOT') {
-        this._node.setFlagNoBreak(curr);
-        return {
-          ...acc,
-          tfoot: curr
-        }
-      }
-
-      if (tag === 'TR') {
-        return {
-          ...acc,
-          rows: [
-            ...acc.rows,
-            ...curr,
-          ]
-        }
-      }
-
-      return {
-        ...acc,
-        unexpected: [
-          ...acc.unexpected,
-          // BUG: •Uncaught TypeError: t is not iterable at bundle.js:1:19184
-          // curr,
-          ...curr,
-        ]
-      }
-    }, {
-      caption: null,
-      thead: null,
-      tfoot: null,
-      rows: [],
-      unexpected: [],
-    });
-
-    if (nodeEntries.unexpected.length > 0) {
-      this._debug._ && console.warn(`something unexpected is found in the table ${node}`);
-    }
-
-    return nodeEntries
-  }
-
-  _insertTableSplit({ startId, endId, table, tableEntries }) {
-
-    // this._debug._ && console.log(`=> _insertTableSplit(${startId}, ${endId})`);
-
-    const tableWrapper = this._DOM.cloneNodeWrapper(table);
-
-    const partEntries = tableEntries.rows.slice(startId, endId);
-
-    const part = this._node.createWithFlagNoBreak();
-    table.before(part);
-
-    if (startId) {
-      // if is not first part
-      this._DOM.insertAtEnd(part, this._node.createSignpost('(table continued)', this._signpostHeight));
-    }
-
-    this._DOM.insertAtEnd(
-      part,
-      this._node.createTable({
-        wrapper: tableWrapper,
-        colgroup: this._DOM.cloneNode(tableEntries.colgroup),
-        caption: this._DOM.cloneNode(tableEntries.caption),
-        thead: this._DOM.cloneNode(tableEntries.thead),
-        // tfoot,
-        tbody: partEntries,
-      }),
-      this._node.createSignpost('(table continues on the next page)', this._signpostHeight)
     );
 
-    return part
-  };
+    const currentRowFitDelta = this._getRowFitDelta(rowIndex); // nextRowTopOrTableBottom - this._currentTableSplitBottom;
+    const _isCurrentRowFits = currentRowFitDelta <= 0;
 
-  // ***
+    if (_isCurrentRowFits) {
+      // * evaluate next Row Top OR Table Bottom (for the last row).
+      // * This is why the end of the table (the last piece) is not registered
+      // * in splitStartRowIndexes — we simply skip it here.
+      this._debug._ && console.log(`%c ✓ Row # ${rowIndex}: PASS`, 'color:green'); // background:#CCFF00
 
-  _lockWidths(table) {
-    this._node.copyNodeWidth(table, table);
-    this._DOM.getAll('td', table).forEach(
-      td => this._node.copyNodeWidth(td, td)
-    )
+    } else {
+      // 🫟 Special case: last row can fit if we remove the bottom signpost (final chunk has no footer label).
+      const isLastRow = !this._currentTableDistributedRows[rowIndex + 1];
+      const extraCapacity = this._getFinalPartReclaimedHeight(); // what we regain in the final part
+
+      // TODO: make a function #last_tail
+      // 🫟 Early tail drop for a row with one split:
+      // If this is the last data row and the last slice height is small enough
+      // to fit into the extra capacity of the final chunk (no bottom signpost + TFOOT),
+      // skip creating the last slice row entirely.
+      if (isLastRow) {
+        // FIXME: currRowBottom is calculated in this._getRowFitDelta, reuse it!
+        const currRowBottom = this._node.getBottom(currentRow, this._currentTable);
+        const overflow = currRowBottom - this._currentTableSplitBottom;
+        this._debug._ && console.log('🫟 last-row-extra-check', { overflow, extraCapacity, currRowBottom, splitBottom: this._currentTableSplitBottom });
+        if (overflow <= extraCapacity) {
+          // Treat as fitting the final window: do not split and do not register a new chunk.
+          this._debug._ && console.log('🫟 last-row-fits-without-bottom-signpost: skip split');
+          this.logGroupEnd(`Row # ${origRowIndex} (from ${origRowCount}) is checked`);
+          return rowIndex;
+        }
+      }
+      // * currentRowFitDelta > 0
+      // * If the end of the current row is on the second page -
+      // * 🏴 TRY TO SPLIT CURRENT ROW
+
+      const isRowSliced = this._node.isSlice(currentRow);
+      const hasSpanInRow = this._rowHasSpan(currentRow);
+
+      // Conservative fallback for rows with ROWSPAN: don't slice TDs
+      // - If doesn't fit tail → move to next page
+      // - If doesn't fit full-page → scale problematic TDs to full-page height
+      if (hasSpanInRow) {
+        this._debug._ && console.log('%c ⚠️ Row has ROWSPAN; use conservative fallback (no slicing)', 'color:DarkOrange; font-weight:bold');
+        const currRowTop = this._node.getTop(currentRow, this._currentTable);
+        const availableRowHeight = this._currentTableSplitBottom - currRowTop;
+        rowIndex = this._handleRowOverflow(
+          rowIndex,
+          currentRow,
+          availableRowHeight,
+          this._currentTableFullPartContentHeight,
+          splitStartRowIndexes,
+          'Row with ROWSPAN — move to next page',
+          'Row with ROWSPAN — scaled TDs to full page'
+        );
+        if (this._debug._ && availableRowHeight >= this._currentTableFullPartContentHeight) {
+          console.warn('[table.fallback] ROWSPAN row required full-page scaling to fit.');
+        }
+        this.logGroupEnd(`Row # ${origRowIndex} (from ${origRowCount}) is checked`);
+        return rowIndex;
+      }
+
+      if (!isRowSliced) {
+        // * Let's split table row [rowIndex]
+        this._debug._ && console.group( // Collapsed
+          `%c 🔳 Try to split the ROW ${rowIndex} %c (from ${this._currentTableDistributedRows.length})`, 'color:magenta;', ''
+        );
+
+        const _minMeaningfulRowSpace = this._node.getTableRowHeight(currentRow, this._minPartLines); // ? paragraph inside
+        const currRowTop = this._node.getTop(currentRow, this._currentTable);
+
+        this._assert && console.assert(
+          this._currentTableSplitBottom >= currRowTop,
+          `It seems that the previous row will not fit into the page (it crosses the slice line): split bottom (${this._currentTableSplitBottom}) < currRowTop ${currRowTop}`
+        );
+
+        // * We check whether there is enough space left on the current page
+        // * to accommodate a reasonable portion of the broken line,
+        // * or whether it is worth considering a full-size page.
+        const remainingPageSpace = this._currentTableSplitBottom - currRowTop;
+        // * Budget for the first part:
+        let rowFirstPartHeight = remainingPageSpace;
+        let insufficientRemainingPageSpace = false;
+
+        if (remainingPageSpace < _minMeaningfulRowSpace) {
+          this._debug._ && console.log(
+            `%c ${remainingPageSpace} < ${_minMeaningfulRowSpace} %c (remainingPageSpace < _minMeaningfulRowSpace) → use full-page budget for the first part`,
+            'color:red; font-weight:bold; background:#F1E9D2', '',
+          );
+          // * Insufficient remaining page space:
+          // * Remaining space cannot host a meaningful fragment of the row on the current page,
+          // * so we escalated to full-page height for the first part.
+          rowFirstPartHeight = this._currentTableFullPartContentHeight;
+          insufficientRemainingPageSpace = true;
+        }
+
+        this._debug._ && console.info(
+          {
+            currRowTop,
+            '• splitBottom': this._currentTableSplitBottom,
+            '• is row sliced?': !isRowSliced,
+            'remaining page space': remainingPageSpace,
+            'first part height': rowFirstPartHeight,
+            'full part height': this._currentTableFullPartContentHeight,
+          },
+        );
+
+        // * We split the row and obtain an array of new rows that should replace the old one.
+        const { newRows, isFirstPartEmptyInAnyTD, needsScalingInFullPage } = this._splitTableRow(
+          rowIndex,
+          currentRow,
+          rowFirstPartHeight,
+          this._currentTableFullPartContentHeight,
+        );
+        this._debug._ && console.log('%c newRows \n', 'color:magenta; font-weight:bold', newRows);
+
+        if (newRows.length) {
+          // * If the split was successful and the array of new rows is not empty,
+          // * we insert the new rows instead of the old ones.
+
+          // * Update the DOM and state with the new table rows.
+          this._replaceRowInDOM(currentRow, newRows);
+
+          // TODO: make a function #last_tail
+          // 🔂 evaluate the last new row of newRows for old LastRow
+          // 🫟 Tail drop for a row with multiple splits:
+          // If this is the last data row and the last slice height is small enough
+          // to fit into the extra capacity of the final chunk (no bottom signpost + TFOOT),
+          // skip creating the last slice row entirely.
+          if (isLastRow) {
+            this._debug._ && console.log('🫟 Tail drop');
+            const heightOfLastNewRow = this._DOM.getElementOffsetHeight(newRows.at(-1));
+            if (heightOfLastNewRow <= extraCapacity) {
+              this._DOM.moveRowContent(newRows.at(-1), newRows.at(-2));
+              this._DOM.removeNode(newRows.at(-1));
+              newRows.pop();
+            }
+          }
+
+          this._updateCurrentTableEntriesAfterSplit(rowIndex, newRows);
+          this._updateCurrentTableDistributedRows();
+
+          // * Decide if we must start the row on the next page.
+          // * 1) Content-level: isFirstPartEmptyInAnyTD — splitPoints reported an empty first fragment in some TD.
+          // * 2) Geometry-level: insufficientRemainingPageSpace — the little page space left forced escalation to full-page height.
+          // * If either is true, place first slice in a full‑page window on the next page.
+          const mustStartOnNextPage = isFirstPartEmptyInAnyTD || insufficientRemainingPageSpace;
+
+          if (!mustStartOnNextPage) {
+            // * A) Tail case: keep the first slice on the current page.
+            // * Scale only the first slice to fit the remaining page space.
+            // * Ensure the first slice fits the current page window (before registration).
+            const firstSlice = newRows[0];
+            const firstSliceTop = this._node.getTop(firstSlice, this._currentTable);
+            const availableTailHeight = this._currentTableSplitBottom - firstSliceTop;
+            if (availableTailHeight > 0) {
+              this._scaleProblematicTDs(firstSlice, availableTailHeight, this._getRowShellHeights(firstSlice));
+            }
+            // * Register the next slice (part 2 of this row) as a new page start.
+            this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Row split — next slice starts new page');
+          } else {
+            // * B) Full‑page case: move the whole row to the next page.
+            // * If second pass of getSplitPoints() still reported unsplittable content,
+            // * scale (reduce) the first slice to full‑page height.
+            if (needsScalingInFullPage && newRows[0]) {
+              this._debug._ && console.log('⚖️ _scaleProblematicTDs');
+              this._scaleProblematicTDs(newRows[0], this._currentTableFullPartContentHeight, this._getRowShellHeights(newRows[0]));
+            }
+            // * No feasible short first fragment → move the whole row to the next page.
+            this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Empty first part — move row to next page');
+          }
+
+          // * Roll back index to re-check from the newly updated splitBottom context.
+          rowIndex -= 1;
+
+        } else { // (!newRows.length)
+
+          // * If the split failed and the array of new rows is empty,
+          // * we need to take action, because the row did not fit.
+          this._debug._ && console.log(
+            `%c The row is not split. (ROW.${rowIndex})`, 'color:orange', this._currentTableDistributedRows[rowIndex],);
+
+          // * If only short tail space is available, move the row to next page (no scaling on tail).
+          // * If we are already in full-page context, scale ONLY problematic TD content to fit full-page height.
+
+          const currRowTop = this._node.getTop(currentRow, this._currentTable);
+          const availableRowHeight = this._currentTableSplitBottom - currRowTop;
+          rowIndex = this._handleRowOverflow(
+            rowIndex,
+            currentRow,
+            availableRowHeight,
+            this._currentTableFullPartContentHeight,
+            splitStartRowIndexes,
+            'Split failed — move row to next page',
+            'Split failed — scaled TDs for full-page'
+          );
+        }
+
+        this.logGroupEnd(`🔳 Try to split the ROW ${rowIndex} (from ${this._currentTableDistributedRows.length}) (...if canSplitRow)`);
+      } else { // isRowSliced + DON'T FIT (currentRowFitDelta > 0)
+
+        this._debug._ && isRowSliced && console.log(
+          `%c Row # ${rowIndex} is slice! but don't fit`, 'color:DarkOrange; font-weight:bold', currentRow,
+        );
+
+        // * If splitting is not possible because the row has the isRowSliced flag:
+        // * try to fit large row by transforming the content.
+        // * We check the actual resulting height of new lines here,
+        // * after they have been inserted into the DOM, and they have been rechecked for fit.
+
+        // * And we need to know exactly how much the new line exceeds the limit.
+
+
+        // *** currentRowFitDelta = nextRowTopOrTableBottom - this._currentTableSplitBottom;
+        // * need to reduce row BIG content on currentRowFitDelta
+
+        // TODO: transform content
+        this._debug._ && console.warn('%c SUPER BIG', 'background:red;color:white', currentRowFitDelta,
+          {
+            // rowH: currRowHeight,
+            part: this._currentTableFullPartContentHeight
+          }
+        );
+
+        // * Transform TD content.
+        // * - If we are at the tail of a page (short first part), do NOT scale — move row to next page.
+        // * - If at a full-page context and TD still can’t fit, scale ONLY problematic TD contents to fit full-page height.
+        // * Note: fine-grained scaling may have already been applied in slicers.js (getSplitPoints).
+        // * This is a row-level fallback to guarantee geometry and prevent overflow.
+
+        const currRowTopForSlice = this._node.getTop(currentRow, this._currentTable);
+        const availableRowHeight = this._currentTableSplitBottom - currRowTopForSlice;
+        rowIndex = this._handleRowOverflow(rowIndex, currentRow, availableRowHeight, this._currentTableFullPartContentHeight, splitStartRowIndexes,
+          `Slice doesn't fit tail — move to next page`,
+          'Scaled TD content to fit full page');
+
+      }
+    }
+
+    this.logGroupEnd(`Row # ${origRowIndex} (from ${origRowCount}) is checked`);
+    return rowIndex;
   }
 
-  _end(string) {
-    const CONSOLE_CSS_END_LABEL = `background:#eee;color:#888;padding: 0 1px 0 0;`; //  font-size:smaller
+  // ===== Row Split Internals =====
 
-    this._debug._ && console.log(`%c ▲ ${string} `, CONSOLE_CSS_END_LABEL);
-    this._debug._ && console.groupEnd();
+  _splitTableRow(
+    splittingRowIndex,
+    splittingRow,
+    rowFirstPartHeight,
+    rowFullPageHeight,
+  ) {
+    // * Split row into TR clones by TD split points
+    // * - compute per‑TD split points
+    // * - slice TD content and assemble TR parts
+    // * Returns: { newRows, isFirstPartEmptyInAnyTD, needsScalingInFullPage }
+
+    this._debug._ && console.group( // Collapsed
+      `%c ➗ Split the ROW ${splittingRowIndex}`, 'color:magenta;', ''
+    );
+
+    const splittingRowTdShellHeights = this._node.getTableRowShellHeightByTD(splittingRow);
+    this._debug._ && console.log(`🧿 currentRowTdHeights`, splittingRowTdShellHeights);
+
+    //* The splitting row and each clone gets the flag:
+    this._node.setFlagSlice(splittingRow);
+
+    const originalTDs = [...this._DOM.getChildren(splittingRow)];
+
+    // *️⃣ Compute per‑TD split points (with second pass + sanitization) via slicers module.
+    const computed = this._node.getSplitPointsPerCells(
+      originalTDs,
+      splittingRowTdShellHeights,
+      rowFirstPartHeight,
+      rowFullPageHeight,
+      splittingRow
+    );
+    this._debug._ && console.log('[✖️] getSplitPointsPerCells result:', computed);
+    let splitPointsPerTD = computed.splitPointsPerCell;
+    const isFirstPartEmptyInAnyTD = computed.isFirstPartEmptyInAnyCell;
+    let needsScalingInFullPage = computed.needsScalingInFullPage;
+
+    // добавить в tdContentSplitPoints нулевой элемент
+    // но также считать "первый пустой кусок"
+
+    const newRows = [];
+    const ifThereIsSplit = splitPointsPerTD.some(obj => obj.length);
+    if (ifThereIsSplit) {
+
+      const slicedTDsPerOrigTD = this._sliceCellsBySplitPoints(originalTDs, splitPointsPerTD);
+
+      this._debug._ && console.log('🟣 slicedTDsPerOrigTD', slicedTDsPerOrigTD);
+
+      const maxSlicesPerTD = Math.max(...slicedTDsPerOrigTD.map(arr => arr.length));
+
+      for (let i = 0; i < maxSlicesPerTD; i++) {
+        const rowWrapper = this._DOM.cloneNodeWrapper(splittingRow);
+        this._DOM.setAttribute(rowWrapper, `.splitted_row_${splittingRowIndex}_part_${i}`);
+
+        [...originalTDs].forEach(
+          (origTd, origTdIdx) => {
+            const newTDwithContent = slicedTDsPerOrigTD[origTdIdx][i];
+            const newTDtoInsert = newTDwithContent || this._DOM.cloneNodeWrapper(origTd);
+            this._DOM.insertAtEnd(rowWrapper, newTDtoInsert);
+          }
+        );
+
+        newRows.push(rowWrapper);
+      }
+
+    } else {
+
+      // rowFullPageHeight
+      this._debug._ && console.log('🔴 There is no Split');
+    }
+
+    this.logGroupEnd(`%c ➗ Split the ROW ${splittingRowIndex}`);
+
+    // * Return both the new rows and a flag indicating if the first part is empty
+    return { newRows, isFirstPartEmptyInAnyTD, needsScalingInFullPage };
+
+  }
+
+  _sliceCellsBySplitPoints(cells, splitPointsPerCell) {
+    // * Slice each TD by split points and return slices per TD
+    return splitPointsPerCell.map((splitPoints, index) => {
+      const cell = cells[index];
+      return this._node.sliceNodeBySplitPoints({ index, rootNode: cell, splitPoints });
+    });
+  }
+
+  // ===== 📐 Metrics =====
+
+  _collectCurrentTableEntries() {
+    this._currentTableEntries = this._node.getTableEntries(this._currentTable);
+  }
+
+  _rowHasSpan(tr) {
+    // Returns true if any TD/TH in this row has ROWSPAN > 1
+    // Note: we intentionally ignore COLSPAN here — it's within a single row
+    // and can be handled by the regular slicing logic.
+    const cells = [...this._DOM.getChildren(tr)];
+    for (const td of cells) {
+      const tag = this._DOM.getElementTagName(td);
+      if (tag !== 'TD' && tag !== 'TH') continue;
+      const rs = parseInt(td.getAttribute('rowspan'));
+      if (Number.isFinite(rs) && rs > 1) return true;
+    }
+    return false;
+  }
+
+  _collectCurrentTableMetrics() {
+    // * Calculate table wrapper (empty table element) height
+    // * to estimate the available space for table content.
+    const tableWrapperHeight = this._node.getEmptyNodeHeight(
+      this._currentTable,
+      // * We need content for the outer table tag to be rendered, but we reset
+      // * the TD/TR styles because they are later considered individually for each cell.
+      '<tr style="padding:0;border:0;"><td style="padding:0;border:0;"></td></tr>'
+    );
+
+    // * getTopWithMargin vs getTop
+    // * The margin must be taken into account,
+    // * because it is included in the calculation of the tableWrapperHeight
+    // * and will be subtracted when calculating the first internal part of the table.
+    const tableTopWithTopMargin = this._node.getTopWithMargin(this._currentTable, this._currentRoot);
+
+    // const tableHeight = this._DOM.getElementOffsetHeight(this._currentTable);
+    const tableCaptionHeight = this._DOM.getElementOffsetHeight(this._currentTableEntries.caption) || 0;
+    // const tableTheadHeight = this._DOM.getElementOffsetHeight(this._currentTableEntries.thead) || 0;
+    const tableTheadHeight = this._DOM.getElementOffsetTop(this._currentTableDistributedRows[0], this._currentTable) - tableCaptionHeight || 0;
+    this._currentTableTfootHeight = this._DOM.getElementOffsetHeight(this._currentTableEntries.tfoot) || 0;
+
+    this._currentTableFirstPartContentBottom = this._currentFirstPageBottom
+      - tableTopWithTopMargin
+      - tableWrapperHeight
+      - this._signpostHeight;
+
+    this._currentTableFullPartContentHeight = this._currentFullPageHeight
+      - tableCaptionHeight // * copied into each part
+      - tableTheadHeight // * copied into each part
+      - this._currentTableTfootHeight // * remains in the last part (in the table)
+      - tableWrapperHeight
+      - 2 * this._signpostHeight;
+  }
+
+  _getDistributedRows(entries) {
+    return [
+      ...entries.rows,
+      ...(entries.tfoot ? [entries.tfoot] : [])
+    ]
+  }
+
+  _updateCurrentTableDistributedRows() {
+    // * Rows that we distribute across the partitioned table
+    this._currentTableDistributedRows = this._getDistributedRows(this._currentTableEntries);
+  }
+
+  // ===== Guards / Analysis =====
+
+  _analyzeCurrentTableStructure() {
+    // Analyze rows/columns for unsupported features and irregularities.
+    // Sets non-fatal flags; current behavior is unchanged.
+
+    const entries = this._currentTableEntries;
+    const rows = (this._currentTableDistributedRows || []);
+
+    let hasRowspan = false;
+    let hasColspan = false;
+    let inconsistentCells = false;
+    let hasUnexpected = false;
+    let baselineCount = null;
+
+    // Detect unexpected children collected by getTableEntries
+    try {
+      if (Array.isArray(entries.unexpected) && entries.unexpected.length > 0) {
+        hasUnexpected = true;
+      }
+    } catch (_) { /* safe */ }
+
+    // Walk rows and inspect cells
+    for (const tr of rows) {
+      // Skip TFOOT in consistency check (it may have different internal structure)
+      const containerTag = this._DOM.getElementTagName(tr);
+      if (containerTag === 'TFOOT') {
+        continue;
+      }
+      const cells = [...this._DOM.getChildren(tr)].filter(el => {
+        const tag = this._DOM.getElementTagName(el);
+        return tag === 'TD' || tag === 'TH';
+      });
+
+      // Baseline column count
+      if (baselineCount == null) baselineCount = cells.length;
+      if (cells.length !== baselineCount) inconsistentCells = true;
+
+      for (const td of cells) {
+        const cs = parseInt(td.getAttribute('colspan'));
+        const rs = parseInt(td.getAttribute('rowspan'));
+        if (Number.isFinite(cs) && cs > 1) hasColspan = true;
+        if (Number.isFinite(rs) && rs > 1) { hasRowspan = true; break; }
+      }
+      if (hasRowspan) break;
+    }
+
+    // Flags are consumed by split flow for logging/fallback decisions
+    this._currentTableHasRowspan = hasRowspan;            // rows with ROWSPAN>1 — slicing not implemented (fallback applies)
+    this._currentTableHasColspan = hasColspan;            // rows with COLSPAN>1 — handled within-row slicing (warn only)
+    this._currentTableInconsistentCells = inconsistentCells; // unequal TD/TH counts across rows — non-uniform structure
+    this._currentTableHasUnexpectedChildren = hasUnexpected; // non-TABLE structural children present
+
+    if (this._debug._) {
+      if (hasRowspan) {
+        console.warn('[table.guard] ROWSPAN detected — slicing not implemented; applying conservative fallback.', { table: this._currentTable });
+      }
+      if (hasColspan) {
+        console.warn('[table.guard] COLSPAN present — handled within-row slicing; monitor results.', { table: this._currentTable });
+      }
+      if (inconsistentCells) {
+        console.warn('[table.guard] Inconsistent cell counts across rows — results may vary.', { table: this._currentTable });
+      }
+      if (hasUnexpected) {
+        console.warn('[table.guard] Unexpected children found in table; verify structure.', { table: this._currentTable });
+      }
+    }
+
+    // TODO(table): if irregular, prefer fallback strategy:
+    // - avoid physical split; scale problematic rows to full-page window;
+    // - or early return [] to keep the original table intact.
+  }
+
+  _updateCurrentTableEntriesAfterSplit(index, newRows) {
+    this._currentTableEntries.rows.splice(index, 1, ...newRows);
+  }
+
+  _getFinalPartReclaimedHeight() {
+    return (this._signpostHeight || 0) + (this._currentTableTfootHeight || 0);
+  }
+
+  // ===== Split Geometry =====
+
+  _setCurrentTableFirstSplitBottom() {
+    if (this._node.getTop(this._currentTableDistributedRows[0], this._currentTable) > this._currentTableSplitBottom) {
+      // * SPECIAL CASE: SHORT FIRST PART:
+      // * If the beginning of the first line is immediately on the second page
+      // * then even the header doesn't fit.
+      // * Go immediately to the second page, update the split bottom.
+      this._updateCurrentTableSplitBottom(
+        this._currentTableFullPartContentHeight,
+        "SPECIAL CASE: start immediately from the full height of the page"
+      );
+      this._debug._ && console.log(`The Row 0 goes to the 2nd page`);
+    } else {
+      this._updateCurrentTableSplitBottom(
+        this._currentTableFirstPartContentBottom,
+        'start with a short first part'
+      );
+    }
+  }
+
+  _getPaginatorAdapter() {
+    return {
+      label: 'table',
+      getSplitBottom: () => this._currentTableSplitBottom,
+      setSplitBottom: (value) => { this._currentTableSplitBottom = value; },
+      computeSplitBottomForElement: (element) => (
+        this._node.getTop(element, this._currentTable) + this._currentTableFullPartContentHeight
+      ),
+      getRows: () => this._currentTableDistributedRows,
+      shouldAssert: () => this._assert,
+      getDebug: () => this._debug,
+      getSplitBottomLog: () => this._logSplitBottom_,
+    };
+  }
+
+  _updateCurrentTableSplitBottom(elementOrValue, message = 'unknown case') {
+    // Delegate to element-level paginator helper (no behavior change)
+    Paginator.updateSplitBottom(this._getPaginatorAdapter(), elementOrValue, message);
+  }
+
+  _registerPageStartAt(index, splitStartRowIndexes, reason = 'register page start') {
+    // Delegate to element-level paginator helper (no behavior change)
+    Paginator.registerPageStartAt(this._getPaginatorAdapter(), index, splitStartRowIndexes, reason);
+  }
+
+  // ===== Overflow / Scaling =====
+
+  _scaleProblematicTDs(row, totalRowHeight, shellsOpt) {
+    // Two-tier safety note:
+    // - Fine-grained scaling may already occur inside slicers.js (getSplitPoints),
+    //   targeting specific inner elements that cannot be split.
+    // - This helper is a coarser, row/TD-level fallback used by table.js to ensure
+    //   geometry in full-page context. Tail cases are moved to the next page without scaling.
+    //
+    // Delegation:
+    // - Uses generic fitters.scaleCellsToHeight via this._node to scale only
+    //   overflowing TD contents within a row.
+    // - Per‑TD budget: target = max(0, totalRowHeight - TD shell height).
+    // - Returns true if any TD was scaled.
+
+    const tds = [...this._DOM.getChildren(row)];
+    // Use cached shells if possible: compute-once per TR per split run.
+    const shells = Array.isArray(shellsOpt) ? shellsOpt : this._getRowShellHeights(row);
+    // Delegate to generic scaler available on Node (fitters.scaleCellsToHeight)
+    return this._node.scaleCellsToHeight(tds, totalRowHeight, shells);
+  }
+
+  _handleRowOverflow(rowIndex, row, availableRowHeight, fullPageHeight, splitStartRowIndexes, reasonTail, reasonFull) {
+    // * Decide how to resolve overflow for the current row against the current window.
+    // * Tail → move row to next page; Full-page → scale TDs, then move row.
+    // * Returns rowIndex - 1 to trigger re-check under the new window.
+    if (availableRowHeight < fullPageHeight) {
+      this._registerPageStartAt(rowIndex, splitStartRowIndexes, reasonTail);
+      return rowIndex - 1;
+    }
+    this._scaleProblematicTDs(row, fullPageHeight, this._getRowShellHeights(row));
+    this._registerPageStartAt(rowIndex, splitStartRowIndexes, reasonFull);
+    return rowIndex - 1;
+  }
+
+  _getRowShellHeights(row) {
+    // * Get per-TD shell heights for a TR with caching.
+    // * Uses a WeakMap per split run to avoid recomputation and to ensure automatic cleanup
+    // * after TR nodes are replaced by splitting.
+    if (!this._currentRowShellCache) {
+      // Fallback: if cache is not initialized for some reason, compute directly.
+      return this._node.getTableRowShellHeightByTD(row);
+    }
+    if (this._currentRowShellCache.has(row)) {
+      return this._currentRowShellCache.get(row);
+    }
+    const shells = this._node.getTableRowShellHeightByTD(row);
+    this._currentRowShellCache.set(row, shells);
+    return shells;
+  }
+
+  _getRowFitDelta(rowIndex) {
+    const currentRow = this._currentTableDistributedRows[rowIndex];
+    const currRowBottom = this._node.getBottom(currentRow, this._currentTable);
+    const nextRow = this._currentTableDistributedRows[rowIndex + 1];
+    const nextRowTopOrTableBottom = nextRow
+      ? this._node.getTop(nextRow, this._currentTable)
+      : currRowBottom; // for the last row
+
+    const delta = nextRowTopOrTableBottom - this._currentTableSplitBottom;
+    const isCurrentRowFits = delta <= 0;
+
+    if (isCurrentRowFits) {
+      this._debug._ && console.log(
+        `%c📐 isCurrentRowFits? %c ${isCurrentRowFits} %c ( ${nextRowTopOrTableBottom} <= ${this._currentTableSplitBottom} ) delta=${delta}`,
+        '', 'font-weight:bold;color:green;', '', //background:#CCFF00
+      );
+    } else {
+      this._debug._ && console.log(
+        `%c📐 isCurrentRowFits? %c ${isCurrentRowFits} %c ( ${nextRowTopOrTableBottom} > ${this._currentTableSplitBottom} ) delta=${delta}`,
+        '', 'font-weight:bold;color:red;', '', //background:#FFDDDD
+      );
+    }
+
+    return delta;
+  }
+
+  _lockCurrentTableWidths() {
+    this._node.lockTableWidths(this._currentTable);
+  }
+
+  // ===== Builders =====
+  // 👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪
+
+  _createTopSignpost() {
+    // TODO(config): move signpost text/height to external config
+    return this._node.createSignpost('(table continued)', this._signpostHeight)
+  }
+
+  _createBottomSignpost() {
+    // TODO(config): move signpost text/height to external config
+    return this._node.createSignpost('(table continues on the next page)', this._signpostHeight)
+  }
+
+  _replaceRowInDOM(row, newRows) {
+    this._debug._ && this._DOM.setAttribute(row, '.🚫_must_be_removed');
+    this._DOM.insertInsteadOf(row, ...newRows);
+  }
+
+  _createAndInsertTableSlice({ startId, endId, table, tableEntries }) {
+    // Delegate to adapter. No behavior change.
+    return TableAdapter.createAndInsertTableSlice(this, { startId, endId, table, tableEntries });
+  }
+
+  _createAndInsertTableFinalSlice({ table }) {
+    // Delegate to adapter. No behavior change.
+    return TableAdapter.createAndInsertTableFinalSlice(this, { table });
   }
 
 }

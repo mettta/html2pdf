@@ -1,3 +1,4 @@
+import * as Logging from '../utils/logging.js';
 import * as Selectors from './modules/selectors.js';
 import * as Positioning from './modules/positioning.js';
 import * as Getters from './modules/getters.js';
@@ -6,8 +7,11 @@ import * as Splitters from './modules/splitters.js';
 import * as Markers from './modules/markers.js';
 import * as Wrappers from './modules/wrappers.js';
 import * as Fitters from './modules/fitters.js';
-import * as Pagebreaks from './modules/pagebreaks.js';
+import * as PageBreaks from './modules/pagebreaks.js';
 import * as Children from './modules/children.js';
+import * as Media from './modules/media.js';
+import * as Slicers from './modules/slicers.js';
+import * as FlowFilters from './modules/flowfilters.js';
 import Paragraph from './elements/paragraph.js';
 import Table from './elements/table.js';
 import TableLike from './elements/tableLike.js';
@@ -29,6 +33,8 @@ export default class Node {
     this._assert = config.consoleAssert ? true : false;
     this._markupDebugMode = this._config.markupDebugMode;
 
+    Object.assign(this, Logging);
+
     Object.assign(this, Selectors);
     Object.assign(this, Positioning);
     Object.assign(this, Getters);
@@ -37,8 +43,11 @@ export default class Node {
     Object.assign(this, Markers);
     Object.assign(this, Wrappers);
     Object.assign(this, Fitters);
-    Object.assign(this, Pagebreaks);
+    Object.assign(this, PageBreaks);
     Object.assign(this, Children);
+    Object.assign(this, Media);
+    Object.assign(this, Slicers);
+    Object.assign(this, FlowFilters);
 
     this._paragraph = new Paragraph({
       config: this._config,

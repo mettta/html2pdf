@@ -1,4 +1,7 @@
-// SET FLAG
+// 🚩 markers
+
+import { debugFor } from '../utils/debugFor.js';
+const _isDebug = debugFor('markers');
 
 /**
  * @this {Node}
@@ -19,6 +22,13 @@ export function setFlagNoBreak(element) {
  */
 export function setFlagNoHanging(element, value) {
   this._DOM.setAttribute(element, this._selector.flagNoHanging, value)
+}
+
+/**
+ * @this {Node}
+ */
+export function setFlagSlice(element) {
+  this._DOM.setAttribute(element, this._selector.flagSlice)
 }
 
 /**

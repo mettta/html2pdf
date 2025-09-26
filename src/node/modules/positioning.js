@@ -1,3 +1,7 @@
+// 🧭 positioning
+
+import { debugFor } from '../utils/debugFor.js';
+const _isDebug = debugFor('positioning');
 
 /**
  * @this {Node}
@@ -87,21 +91,150 @@ export function isLineChanged(current, next) {
 /**
  * @this {Node}
  */
-export function isLineKept(current, next, debug) {
+export function isLineKept(current, next) {
   // * (-1): Browser rounding fix (when converting mm to pixels).
   const currentBottom = this._DOM.getElementOffsetBottom(current);
   const nextTop = this._DOM.getElementOffsetTop(next);
   const delta = currentBottom - nextTop;
   const vert = delta >= 2;
-  debug && console.group('isLineKept?')
-  debug && console.log(
+  _isDebug(this) && console.group('isLineKept?')
+  _isDebug(this) && console.log(
     '\n',
     vert,
     '\n',
     '\n currentBottom', currentBottom, [current],
     '\n nextTop', nextTop, [next],
-'\n delta', delta,
-    );
-    debug && console.groupEnd('isLineKept?')
+    '\n delta', delta,
+  );
+  _isDebug(this) && console.groupEnd('isLineKept?')
   return vert;
+}
+
+/**
+ * @this {Node}
+ */
+export  function setInitStyle(on, rootNode, rootComputedStyle) {
+  const INIT_POS_SELECTOR = '[init-position]';
+  const INIT_ALI_SELECTOR = '[init-vertical-align]';
+  const UTILITY_POS = 'relative';
+  const UTILITY_ALI = 'top';
+
+  const _rootComputedStyle = rootComputedStyle
+    ? rootComputedStyle
+    : this._DOM.getComputedStyle(rootNode);
+
+  const initPositionValue = _rootComputedStyle.position;
+  const initVerticalAlignValue = _rootComputedStyle.verticalAlign;
+
+  if (on) {
+    // set
+    if (initPositionValue != UTILITY_POS) {
+      this._DOM.setStyles(rootNode, { 'position': UTILITY_POS });
+      this._DOM.setAttribute(rootNode, INIT_POS_SELECTOR, initPositionValue);
+    }
+    if (initVerticalAlignValue != UTILITY_ALI) {
+      this._DOM.setStyles(rootNode, { 'vertical-align': UTILITY_ALI });
+      this._DOM.setAttribute(rootNode, INIT_ALI_SELECTOR, initVerticalAlignValue);
+    }
+  } else {
+    // back
+    // * We need to return exactly the value (backPosition & backVerticalAlign),
+    // * not just delete the utility value (like { position: '' }),
+    // * because we don't store the data, where exactly the init value was taken from,
+    // * and maybe it's not in CSS and it's not inherited -
+    // * and it's overwritten in the tag attributes.
+    const backPosition = this._DOM.getAttribute(rootNode, INIT_POS_SELECTOR);
+    const backVerticalAlign = this._DOM.getAttribute(rootNode, INIT_ALI_SELECTOR);
+    if (backPosition) {
+      this._DOM.setStyles(rootNode, { position: backPosition });
+      this._DOM.removeAttribute(rootNode, INIT_POS_SELECTOR);
+    }
+    if (backVerticalAlign) {
+      this._DOM.setStyles(rootNode, { 'vertical-align': backVerticalAlign });
+      this._DOM.removeAttribute(rootNode, INIT_ALI_SELECTOR);
+    }
+  }
+}
+
+/**
+ * Resolves the given element to a descendant that actually participates in the
+ * normal document flow (has an offset parent). Hidden wrappers (display:none,
+ * visibility:collapse, position:fixed) are treated as non-flow and return null.
+ * Flow-only wrappers (display:contents) are traversed according to the preferred
+ * direction.
+ *
+ *
+ * It is the helper that walks down through “transparent” wrappers (e.g. display:contents)
+ * until it finds a node that actually has layout geometry (offsetParent).
+ *
+ * The prefer option controls where to descend when the current node has multiple children:
+ * * prefer: 'self' (default) –
+ *   only unwrap if the current element is a thin wrapper;
+ *   once we reach a child that owns a box, we stop.
+ * * prefer: 'first' –
+ *   follow the first element child in each wrapper layer.
+ *   Useful when we’re looking for the leading edge of a chain
+ *   (e.g., climbing up through first-child wrappers).
+ * * prefer: 'last' –
+ *   follow the last element child instead, so we land on whatever contributes
+ *   the trailing edge (used when inspecting previous siblings in tail logic).
+ *
+ * @param {Element} element - Starting element.
+ * @param {Object} [options]
+ * @param {('self'|'first'|'last')} [options.prefer='self'] - When traversal is
+ *        needed (e.g. display:contents), chooses which child should be inspected.
+ * @returns {Element|null} element that owns a layout box, or null if no such box exists.
+ */
+export function resolveFlowElement(element, { prefer = 'self' } = {}) {
+  if (!element) return null;
+
+  const pickChild = (node) => {
+    if (prefer === 'last') {
+      return this._DOM.getLastElementChild(node);
+    }
+    if (prefer === 'first' || prefer === 'self') {
+      return this._DOM.getFirstElementChild(node);
+    }
+    return null;
+  };
+
+  const visited = new Set();
+  let current = element;
+
+  while (current && !visited.has(current)) {
+    visited.add(current);
+
+    const offsetParent = this._DOM.getElementOffsetParent(current);
+    if (offsetParent) {
+      return current;
+    }
+
+    const style = this._DOM.getComputedStyle(current);
+    if (!style) {
+      return null;
+    }
+
+    const display = style.display;
+    const visibility = style.visibility;
+    const position = style.position;
+
+    if (display === 'none' || visibility === 'collapse' || position === 'fixed') {
+      return null;
+    }
+
+    if (display === 'contents') {
+      const next = pickChild.call(this, current);
+      if (!next) {
+        return null;
+      }
+      current = next;
+      continue;
+    }
+
+    // The element has no offset parent and is not a flow wrapper.
+    // Treat it as non-flow to avoid incorrect measurements.
+    return null;
+  }
+
+  return null;
 }

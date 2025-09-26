@@ -20,6 +20,12 @@ export default function createConfig(params) {
     // * By default is disabled.
     consoleAssert: false,
 
+    // * Visual flags on processed DOM elements (affects performance)
+    // * are enabled in user settings using the parameter
+    // * data-markup-debug-mode=“true”.
+    // * Disabled by default.
+    markupDebugMode: false,
+
     // Register option to print for informational purposes:
     preloader: false,
     preloaderTarget: '',

@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌐</text></svg>">
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <link rel="stylesheet" href="css/main.css">
+
+  <script
+    defer
+    data-debug-mode="true"
+    data-markup-debug-mode="true"
+    data-print-height='600px'
+    data-print-width='600px'
+    data-print-left-margin= '50px'
+    data-print-right-margin= '50px'
+    data-print-top-margin= '50px'
+    data-print-bottom-margin= '50px'
+    data-print-font-size='16px'
+    data-console-assert="true"
+
+    data-forced-page-break-selectors=''
+    data-page-break-after-selectors=''
+    data-page-break-before-selectors=''
+
+    data-no-break-selectors='.html2pdf4doc-no-break'
+    data-no-hanging-selectors='.html2pdf4doc-no-hanging'
+    src="bundle.js"></script>
+</head>
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(100px, min-content) minmax(0, 1fr);
+    place-items: stretch stretch;
+    place-content: stretch stretch;
+    gap: 4px;
+    /* position: relative; */
+  }
+
+  .grid > *,
+  .grid-cell {
+    border: 1px solid #006;
+    box-sizing: border-box;
+    background: #fff;
+  }
+
+  .col1 {
+    /* grid-column: 1 / 2; */
+  }
+
+  .col2 {
+    /* grid-column: 2 / 3; */
+  }
+
+  .grid-caption {
+    grid-column: 1 / 3;
+    font-weight: bold;
+  }
+
+  .content {
+    box-sizing: border-box;
+    background-color: rgba(0, 250, 250, 0.2);
+    padding: 4px;
+    min-height: 24px;
+    font-size: 14px;
+    line-height: 16px;
+  }
+
+    /* content line height + gap = 30px */
+    /* grid-cell = 24px + 1px*2 border */
+    /* content line height = line-height 16px + 4*2 padding = 24px */
+</style>
+
+<body>
+  <!-- height:200px –> margin-bottom: 4px === gap: 4px; -->
+  <!-- height:201px –> margin-bottom: 33px = 30px + (4-1) -->
+  <div filler="red" style="height:200px"></div>
+
+  <div class="grid">
+    <div class="grid-cell grid-caption" data-testid="L0">
+      <div class="content">grid caption</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L1-1">
+      <div class="content key">key 1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L1-2">
+      <div class="content value">value 1</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L2-1">
+      <div class="content key">key 2</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L2-2">
+      <div class="content value">value 2</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L3-1">
+      <div class="content key">key 3</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L3-2">
+      <div class="content value">value 3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L4-1">
+      <div class="content key">key 4</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L4-2">
+      <div class="content value">value 4</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L5-1">
+      <div class="content key">key 5</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L5-2">
+      <div class="content value">value 5</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L6-1">
+      <div class="content key">key 6</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L6-2">
+      <div class="content value">value 6</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L7-1">
+      <div class="content key">key 7</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L7-2">
+      <div class="content value">value 7.
+        Cillum adipisicing consectetur officia anim quis velit sit ullamco eiusmod officia.
+        Laboris voluptate magna dolore commodo est officia.
+        Ut reprehenderit velit eu est qui mollit consectetur commodo magna.
+        Non magna aliqua mollit nisi proident aliqua deserunt magna consectetur sit enim ut.
+        Esse est ipsum incididunt quis aliqua sint tempor.
+        Excepteur anim veniam minim id exercitation in laborum anim aliqua nulla.
+      </div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L8-1">
+      <div class="content key">key 8</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L8-2">
+      <div class="content value">value 8.
+        Laboris ullamco id eu amet magna nostrud aliquip. Consectetur sunt nisi culpa commodo reprehenderit duis. Sunt minim sit adipisicing sit exercitation magna occaecat mollit ut quis voluptate. Veniam nisi irure eiusmod aliquip culpa excepteur ad. Do amet duis laborum ipsum irure incididunt.
+      </div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L9-1">
+      <div class="content key">key 9</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L9-2">
+      <div class="content value">value 9.
+        Velit velit incididunt veniam qui exercitation ea sint excepteur esse consectetur incididunt amet magna. Ad quis irure aute occaecat do sunt ipsum laboris deserunt. Reprehenderit nostrud mollit deserunt ex ullamco ad magna aute irure sint reprehenderit ipsum occaecat ut. Excepteur incididunt do occaecat est id Lorem sit.
+      </div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L10-1">
+      <div class="content key">key 10</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L10-2">
+      <div class="content value">value 10.
+                Excepteur deserunt officia officia enim deserunt et pariatur adipisicing sint consequat ex ex laboris.
+        Elit commodo veniam esse in ea ea ad elit ullamco Lorem.
+        Officia adipisicing deserunt deserunt amet.
+        Esse eu Lorem qui id aute cillum.
+        Non magna aliqua mollit nisi proident aliqua deserunt magna consectetur sit enim ut.
+        Esse est ipsum incididunt quis aliqua sint tempor.
+        Excepteur anim veniam minim id exercitation in laborum anim aliqua nulla.
+      </div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L11-1">
+      <div class="content key">key 11</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L11-2">
+      <div class="content value">value 11</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L12-1">
+      <div class="content key">key 12</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L12-2">
+      <div class="content value">value 12</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L13-1">
+      <div class="content key">key 13</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L13-2">
+      <div class="content value">value 13</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L14-1">
+      <div class="content key">key 14</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L14-2">
+      <div class="content value">value 14</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L15-1">
+      <div class="content key">key 15</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L15-2">
+      <div class="content value">value 15</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L16-1">
+      <div class="content key">key 16</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L16-2">
+      <div class="content value">value 16</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L17-1">
+      <div class="content key">key 17</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L17-2">
+      <div class="content value">value 17</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L18-1">
+      <div class="content key">key 18</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L18-2">
+      <div class="content value">value 18</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col1" data-testid="L19-1">
+      <div class="content key">key 19</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L19-2">
+      <div class="content value">value 19</div>
+    </div>
+    <!-- - -->
+  </div>
+
+  <div data-testid="closer" filler="red" style="height:1px"></div>
+</body>
+
+</html>

@@ -1,6 +1,6 @@
 const CONSOLE_CSS_END_LABEL = `background:#999;color:#FFF;padding: 0 4px;`;
 
-export default class Grid {
+export default class Pre {
   constructor({
     config,
     DOM,
@@ -16,32 +16,28 @@ export default class Grid {
 
     // todo
     // 1) move to config
-    // Paragraph:
-    this._minLeftLines = 2;
-    this._minDanglingLines = 2;
-    this._minBreakableLines = this._minLeftLines + this._minDanglingLines;
-    // Table:
-    // # can be a single row with long content
-    this._minLeftRows = 1; // ! min 1!
-    this._minDanglingRows = 1;  // ! min 1!
-    this._minBreakableRows = 1; // this._minLeftRows + this._minDanglingRows;
     // Code:
     this._minPreFirstBlockLines = 3;
     this._minPreLastBlockLines = 3;
     this._minPreBreakableLines = this._minPreFirstBlockLines + this._minPreLastBlockLines;
-    // Grid:
-    this._minBreakableGridRows = 4;
 
     this._imageReductionRatio = 0.8;
 
-    // TODO move to config
-    this._signpostHeight = 24;
-
+    // TODO make function
+    // * From config:
+    // - if null is set - the element is not created in createSignpost().
+    this._signpostHeight = parseFloat(config.splitLabelHeight) || 0;
 
   }
 
 
-  split(node, pageBottom, fullPageHeight, nodeComputedStyle, root) {
+  split(
+    node,
+    pageBottom,
+    fullPageHeight,
+    root,
+    nodeComputedStyle,
+  ) {
     // ['pre', 'pre-wrap', 'pre-line', 'break-spaces']
 
     // * If we call the function in a context where
@@ -53,13 +49,18 @@ export default class Grid {
 
     const consoleMark = ['%c_splitPreNode\n', 'color:white',]
     this._debug._ && console.group('%c_splitPreNode', 'background:cyan');
-    this._debug._ && console.log(...consoleMark, 'node', node);
+    this._debug._ && console.log(...consoleMark, 'node', node, {pageBottom,fullPageHeight});
 
     // Prepare node parameters
     const nodeTop = this._node.getTop(node, root);
     const nodeHeight = this._DOM.getElementOffsetHeight(node);
     const nodeLineHeight = this._node.getLineHeight(node);
-    const preWrapperHeight = this._node.getEmptyNodeHeight(node, false);
+    // * preWrapper:
+    // * Margins are not considered here, since
+    // * the upper margin is considered for the first part,
+    // * both margins are zeroed for the middle parts,
+    // * and the lower margin will be considered in further calculations.
+    const preWrapperHeight = this._node.getEmptyNodeHeight(node, '', false);
 
     // * Let's check the probable number of rows in the simplest case,
     // * as if the element had the style.whiteSpace=='pre'
@@ -71,7 +72,7 @@ export default class Grid {
     }
 
     const _children = this._DOM.getChildNodes(node);
-    this._debug._ && console.log('_children:', _children.length);
+    this._debug._ && console.log('_children:', _children.length, _children);
     if (_children.length == 0) {
       // ??? empty tag => not breakable
       this._debug._ && console.log('%c END _splitPreNode (not breakable)', CONSOLE_CSS_END_LABEL);
@@ -133,9 +134,92 @@ export default class Grid {
 
       // * calculate parts
 
-      // ** Prepare parameters for splitters calculation
-      let firstPartSpace = pageBottom - nodeTop - preWrapperHeight;
-      const fullPageSpace = fullPageHeight - preWrapperHeight;
+      // TODO: make helper
+      const toNum = v => (isNaN(parseFloat(v)) ? 0 : parseFloat(v));
+
+      // todo: #CutLineAmend
+      // There is extra space at the cut lines for a border.
+      // Make a decorative border and cut off the original one.
+      const borderTopWidth = toNum(_nodeComputedStyle.borderTopWidth);
+      const borderBottomWidth = toNum(_nodeComputedStyle.borderBottomWidth);
+      const marginTop = toNum(_nodeComputedStyle.marginTop);
+      const marginBottom = toNum(_nodeComputedStyle.marginBottom);
+      const paddingTop = toNum(_nodeComputedStyle.paddingTop);
+      const paddingBottom = toNum(_nodeComputedStyle.paddingBottom);
+      const serviceCutLineBorder = 0;
+      const topCutLineAmend = - borderTopWidth - marginTop + serviceCutLineBorder;
+      const bottomCutLineAmend = - borderBottomWidth - marginBottom + serviceCutLineBorder;
+
+      // ** Prepare parameters for splitters calculation.
+
+      // * preWrapper consists of padding and a border.
+      // * They are reset to serviceCutLineBorder (== 0 foe now) for the cut line.
+
+      // * For firstPartSpace
+      // * - the top margin is automatically taken into account
+      // *   in the layout (outside the offset top of children),
+      // * - and the bottom margin is considered in bottomCutLineAmend;
+      // * - the top padding is considered ONCE for firstPartSpace for children offset;
+      // * - the top border is considered ONCE for firstPartSpace;
+      // * - the bottom border is considered in bottomCutLineAmend.
+      // * That is why we ignore preWrapperHeight here.
+      let firstPartSpace = pageBottom - nodeTop - preWrapperHeight + bottomCutLineAmend; // - preWrapperHeight
+      // TODO: firstPartSpace and firstPartSpaceForSPlitting should be different.
+      //! For firstPartSpace we need all margins & preWrapperHeight.
+      //! For firstPartSpaceForSPlitting we only need selected amendments.
+
+
+      // * For fullPageSpace,
+      // * subtracting preWrapperHeight will leave space for content lines.
+      // * However, we reset the cut lines (margins and borders).
+      const fullPageSpace = fullPageHeight - preWrapperHeight + topCutLineAmend;
+
+      // TODO: more accurate calculations for spaces are needed
+      // --node---
+      // * topMargin
+      // * topBorder
+      // * topPadding
+      // * C-O-N-T-E-N-T
+      // * bottomPadding
+      // * bottomBorder
+      // * bottomMargin
+      // === parts: ===
+      // --FIRST---
+      // * topMargin
+      // * topBorder
+      // * topPadding
+      // * C-O-N-T-E-N-T (1)
+      // * bottomPadding
+      //// bottomBorder
+      //// bottomMargin
+      // --MIDDLE--
+      //// topMargin
+      //// topBorder
+      // * topPadding
+      // * C-O-N-T-E-N-T (2)
+      // * bottomPadding
+      //// bottomBorder
+      //// bottomMargin
+      // --LAST--
+      //// topMargin
+      //// topBorder
+      // * topPadding
+      // * C-O-N-T-E-N-T (3)
+      // * bottomPadding
+      // * bottomBorder
+      // * bottomMargin
+
+      this._debug._ && console.log({
+        pageBottom,
+        nodeTop,
+        preWrapperHeight,
+        topCutLineAmend,
+        bottomCutLineAmend,
+        fullPageHeight,
+      }, {
+        firstPartSpace,
+        fullPageSpace,
+      })
 
       // * find starts of parts splitters
 
@@ -152,9 +236,11 @@ export default class Grid {
       for (let index = 0; index < linesFromNode.length; index++) {
         const current = linesFromNode[index];
         const currentBottom = this._node.getBottom(current, node);
+        this._debug._ && console.log(index, currentBottom);
 
         // TODO move to DOM
         if (currentBottom > floater) {
+          this._debug._ && console.log(`start a new page: ${currentBottom} > ${floater}`, current)
           // * start a new part at [index]
           index && splitters.push(index);
           // ? start a new page

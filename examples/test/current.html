@@ -3,146 +3,200 @@
 
 <head>
   <meta charset="utf-8" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥁</text></svg>">
   <meta name="keywords" content="HTML2PDF, end2end" />
   <meta name="description" content="HTML2PDF end2end test" />
   <title>Test page</title>
-  <link rel="stylesheet" href="css/main.css">
-      <!-- data-console-assert="true" -->
+  <link rel="stylesheet" href="../css/main.css">
   <script
     defer
     data-debug-mode="true"
-    data-console-assert="true"
-    data-print-height='100mm'
-    data-print-font-size='12pt'
-    data-page-break-after-selectors='.after'
-    data-page-break-before-selectors='.before'
-    data-forced-page-break-selectors='.forced'
-    data-no-break-selectors=''
-    data-no-hanging-selectors='.no-hang'
+    data-markup-debug-mode="true"
+    data-print-height='300px'
+    data-print-width='600px'
+    data-print-left-margin= '50px'
+    data-print-right-margin= '50px'
+    data-print-top-margin= '50px'
+    data-print-bottom-margin= '50px'
+    data-print-font-size='16px'
     src="bundle.js"></script>
 
-  <style>
-    .wrapper { border:1px solid green; }
-    .wrapper .wrapper { border:1px solid orange; margin: 50px 4px; }
-    .wrapper .wrapper .wrapper { border: 1px solid red; }
-    .after { border-bottom-width:4px; border-style: dashed; }
-    .before { border: 1px solid red; border-top-width:4px; border-style: dashed; }
-    .forced { border: 1px solid red; border-top-width:4px; }
-    .no-hang { background-color: cyan ;}
-    .service { margin: 0; padding: 0; width: 100%; outline: 1px solid magenta;}
-  </style>
+    <!-- styles for test element -->
+    <style>
+      .line-red {
+        height: 10px
+      }
+
+      .line-green {
+        height: 10px
+      }
+
+      .line-blue {
+        height: 10px
+      }
+
+      .table-testing {
+        font-family: Arial, Helvetica, sans-serif;
+        width: 100%;
+        margin: 0;
+
+        font-size: 9px;
+        line-height: 10px;
+
+        border-collapse: collapse;
+        /*
+        border-bottom:8px solid;
+        */
+      }
+
+      .problematic_td {
+        padding-top: 0;
+      }
+    </style>
+    <!-- line-height = 1 (10) -->
+    <!-- 1 step to shift by 1 line is 20 pixels -->
 </head>
 
-<!-- <div filler style="height:111px"></div> -->
-
 <body>
+  <!-- <div data-testid="pusher" filler style="height:50px"></div> -->
+  <table class="table-testing" border="1">
+    <caption>Table: caption</caption>
+    <colgroup>
+      <col width="20%">
+      <col width="80%">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>TH1</th>
+        <th>TH2</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td></td>
+        <td>
+          <div data-testid="box" filler="yellow" style="height: 200px;"></div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div data-testid="R_0" filler="red" class="line-red">R_0</div>
+          <div floater></div>
+          <div data-testid="R_1" filler="red" class="line-red">R_1</div>
+          <div floater></div>
+          <div data-testid="R_2" filler="red" class="line-red">R_2</div>
+          <div floater></div>
+          <div data-testid="R_3" filler="red" class="line-red">R_3</div>
+          <div floater></div>
+          <div data-testid="R_4" filler="red" class="line-red">R_4</div>
+          <div floater></div>
+          <div data-testid="R_5" filler="red" class="line-red">R_5</div>
+          <div floater></div>
+          <div data-testid="R_6" filler="red" class="line-red">R_6</div>
+          <div floater></div>
+        </td>
+        <td>
+          <div data-testid="R0" filler="red" class="line-red">R0</div>
+          <div floater></div>
+          <div data-testid="R1" filler="red" class="line-red">R1</div>
+          <div floater></div>
+          <div data-testid="R2" filler="red" class="line-red">R2</div>
+          <div floater></div>
+          <div data-testid="R3" filler="red" class="line-red">R3</div>
+          <div floater></div>
+          <div data-testid="R4" filler="red" class="line-red">R4</div>
+          <div floater></div>
+          <div data-testid="R5" filler="red" class="line-red">R5</div>
+          <div floater></div>
+          <div data-testid="R6" filler="red" class="line-red">R6</div>
+          <div floater></div>
+          <div data-testid="R7" filler="red" class="line-red">R7</div>
+          <div floater></div>
+          <div data-testid="R8" filler="red" class="line-red">R8</div>
+          <div floater></div>
+          <div data-testid="R9" filler="red" class="line-red">R9</div>
+          <div floater></div>
+          <div data-testid="R10" filler="red" class="line-red">R10</div>
+          <div floater></div>
+          <div data-testid="R11" filler="red" class="line-red">R11</div>
+          <div floater></div>
 
-  <!-- <div filler style="height:265px"></div> -->
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div data-testid="G_0" filler="green" class="line-green">G_0</div>
+          <div floater></div>
+          <div data-testid="G_1" filler="green" class="line-green">G_1</div>
+          <div floater></div>
+          <div data-testid="G_2" filler="green" class="line-green">G_2</div>
+          <div floater></div>
+          <div data-testid="G_3" filler="green" class="line-green">G_3</div>
+          <div floater></div>
+          <div data-testid="G_4" filler="green" class="line-green">G_4</div>
+          <div floater></div>
+          <div data-testid="G_5" filler="green" class="line-green">G_5</div>
+          <div floater></div>
+          <div data-testid="G_6" filler="green" class="line-green">G_6</div>
+          <div floater></div>
+          <div data-testid="G_7" filler="green" class="line-green">G_7</div>
+          <div floater></div>
+        </td>
+        <td>
+          <div data-testid="G0" filler="green" class="line-green">G0</div>
+          <div floater></div>
+          <div data-testid="G1" filler="green" class="line-green">G1</div>
+          <div floater></div>
+          <div data-testid="G2" filler="green" class="line-green">G2</div>
+          <div floater></div>
+          <div data-testid="G3" filler="green" class="line-green">G3</div>
+          <div floater></div>
+          <div data-testid="G4" filler="green" class="line-green">G4</div>
+          <div floater></div>
+          <div data-testid="G5" filler="green" class="line-green">G5</div>
+          <div floater></div>
+          <div data-testid="G6" filler="green" class="line-green">G6</div>
+          <div floater></div>
+          <div data-testid="G7" filler="green" class="line-green">G7</div>
+          <div floater></div>
+          <div data-testid="G8" filler="green" class="line-green">G8</div>
+          <div floater></div>
+          <div data-testid="G9" filler="green" class="line-green">G9</div>
+          <div floater></div>
+          <div data-testid="G10" filler="green" class="line-green">G10</div>
+          <div floater></div>
+          <div data-testid="G11" filler="green" class="line-green">G11</div>
+          <div floater></div>
 
-  <div>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-  </div>
-  <div>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    dmkdfkmbdflk<br>
-    <!-- uncomment the next line to see 🪁 tail-case: -->
-    <!-- dmkdfkmbdflk<br> -->
-  </div>
-
-  <div data-testid="testPointParent1">
-    <div class="wrapper" data-testid="parent-2">
-      <div class="wrapper">
-        <div class="wrapper">
-          <div class="wrapper">
-            <div class="wrapper">
-              <div class="wrapper">
-                <div class="wrapper" data-testid="parent-3">
-                  <div class="wrapper">
-
-                    <div data-testid="admonition">
-                      <H3 class="no-hang" data-testid="admonitionTitle">
-                        NO HANGING
-                      </H3>
-                      <p data-testid="p1">
-                        <b class="no-hang" data-testid="b1">NO HANGING (only-child)</b> and add some test text. And add some test text. And add some test text.
-                        And add some test text.
-                      </p>
-                      <p data-testid="p2">
-                        And add some test text. And add some test text. And add some test text. And add some test text. And add
-                        some test text.
-                        And add some test text. And add some test text. And add some test text. And add some test text. And add
-                        some test text.
-                        And add some test text. And add some test text. And add some test text. And add some test text. And add
-                        some test text.<span data-testid="p2edgeCase"></span>
-
-                        And add some test text. And add some test text. And add some test text. And add some test text. And add some test text. And add
-                        some test text.
-                        And add some test text. And add some test text. And add some test text. And add some test text. And add
-                        some test text.
-                      </p>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <p data-testid="p9_last"> And add some test text. And add some test text. And add some test text. And add some test text. And add
-    some test text.<span data-testid="p9end"></p>
-  <p data-testid="p10">
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    And add some test text. And add some test text. And add some test text. And add some test text. And add some test text.
-    <span data-testid="p10end"></p>
-
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div data-testid="B_0" filler="blue" class="line-blue">B_0</div>
+          <div floater></div>
+          <div data-testid="B_1" filler="blue" class="line-blue">B_1</div>
+          <div floater></div>
+          <div data-testid="B_2" filler="blue" class="line-blue">B_2</div>
+          <div floater></div>
+          <div data-testid="B_3" filler="blue" class="line-blue">B_3</div>
+          <div floater></div>
+        </td>
+        <td>
+          <div data-testid="B0" filler="blue" class="line-blue">B0</div>
+          <div floater></div>
+          <div data-testid="B1" filler="blue" class="line-blue">B1</div>
+          <div floater></div>
+          <div data-testid="B2" filler="blue" class="line-blue">B2</div>
+          <div floater></div>
+          <div data-testid="B3" filler="blue" class="line-blue">B3</div>
+          <div floater></div>
+          <div data-testid="B4" filler="blue" class="line-blue">B4</div>
+          <div floater></div>
+          <div data-testid="B5" filler="blue" class="line-blue">B5</div>
+          <div floater></div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </body>
-
 
 </html>

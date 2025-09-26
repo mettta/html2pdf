@@ -69,6 +69,35 @@ export default class DocumentObjectModel {
     this._assert && console.assert(this.getInnerHTML(source) === "");
   }
 
+  // Move content from one table row (TR) to another TR, TD-to-TD.
+  // Assumes equal number of cells, but safely handles mismatches.
+  moveRowContent(sourceTR, targetTR) {
+    if (!sourceTR || !targetTR) {
+      this._debug._ && console.warn('moveRowContent(): sourceTR or targetTR is missing');
+      return;
+    }
+
+    // Validate tag names where possible
+    const srcTag = this.getElementTagName(sourceTR);
+    const tgtTag = this.getElementTagName(targetTR);
+    this._assert && console.assert(srcTag === 'TR', `moveRowContent(): source is not TR, got ${srcTag}`);
+    this._assert && console.assert(tgtTag === 'TR', `moveRowContent(): target is not TR, got ${tgtTag}`);
+
+    const srcCells = [...this.getChildren(sourceTR)];
+    const tgtCells = [...this.getChildren(targetTR)];
+
+    if (srcCells.length !== tgtCells.length) {
+      this._debug._ && console.warn(
+        `moveRowContent(): cells count mismatch: ${srcCells.length} (source) vs ${tgtCells.length} (target)`
+      );
+    }
+
+    const n = Math.min(srcCells.length, tgtCells.length);
+    for (let i = 0; i < n; i++) {
+      this.moveContent(srcCells[i], tgtCells[i]);
+    }
+  }
+
   replaceNodeContentsWith(element, ...payload) {
     this.setInnerHTML(element, '');
     this.insertAtEnd(element, ...payload)
@@ -282,6 +311,8 @@ export default class DocumentObjectModel {
       element.removeAttribute(attr);
       return
     } else { // a-zA-Z
+      // FIXME: invalid attribute variable. `attr` is undefined here and will throw.
+      // Leave as-is for now; proper fix is to remove this branch or pass a real attribute name.
       element.removeAttribute(attr);
     }
   }

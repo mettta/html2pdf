@@ -3,10 +3,11 @@ const debugConfig = {
     _: false,
   },
   layout: {
-    _: true,
+    _: false,
   },
   pages: {
-    _: true,
+    _: false,
+    // * `Pages` methods
     _parseNode: false,
     _parseNodes: false,
     _registerPageStart: false,
@@ -20,9 +21,22 @@ const debugConfig = {
   toc: {
     _: false,
   },
-  // * node
+  // * `Node` group
   node: {
     _: false,
+    // * `Node` modules
+    children: false,
+    creators: false,
+    fitters: false,
+    getters: false,
+    markers: false,
+    pageBreaks: false,
+    positioning: false,
+    selectors: false,
+    slicers: false,
+    splitters: false,
+    flowFilters: false,
+    wrappers: false,
   },
   paragraph: {
     _: false,

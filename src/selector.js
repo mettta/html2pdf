@@ -69,6 +69,7 @@ const SELECTOR = {
   // * FLAGS (have no styles):
   flagNoBreak: '[html2pdf-flag-no-break]',
   flagNoHanging: '[html2pdf-flag-no-hanging]',
+  flagSlice: '[html2pdf-flag-slice]',
 
   // *** SPECIAL
   topCutPart: '.html2pdf-top-cut',
