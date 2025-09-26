@@ -23,9 +23,11 @@
 
 ## Work Log
 - 2025-09-18: Prioritize regression tests for strictdoc grids, then extract reusable pagination steps incrementally (state prep, metrics, builders) with functional parity at each step.
+- 2025-09-19: Added runtime layout scan helpers and integrated slicer-based row splitting for monotonic grids (fallback to logging when scaling is required).
 
 ## Test Backlog
 - Simple two-column grid without explicit `grid-column` assignments should split correctly.
 - Grid container with default `position: static` must be handled without requiring inline overrides.
 
 See `docs/GRID_SPLIT_EDGE_CASES.md` for the full catalogue of grid-specific edge cases, detection hints, and current strategies.
+- Horizontal grid spans (`grid-column: span N`) appear to be tolerable for simple splitting; verify with dedicated tests before enabling slicing in that scenario.
