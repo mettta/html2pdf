@@ -6,11 +6,11 @@ const debugConfig = {
     _: false,
   },
   pages: {
-    _: false,
+    _: true,
     // * `Pages` methods
-    _parseNode: false,
-    _parseNodes: false,
-    _registerPageStart: false,
+    _parseNode: true,
+    _parseNodes: true,
+    _registerPageStart: true,
   },
   paper: {
     _: false,
@@ -23,26 +23,26 @@ const debugConfig = {
   },
   // * `Node` group
   node: {
-    _: false,
+    _: true,
     // * `Node` modules
-    children: false,
-    creators: false,
-    fitters: false,
-    getters: false,
-    markers: false,
-    pageBreaks: false,
-    positioning: false,
-    selectors: false,
-    slicers: false,
-    splitters: false,
-    flowFilters: false,
-    wrappers: false,
+    children: true,
+    creators: true,
+    flowFilters: true,
+    fitters: true,
+    getters: true,
+    markers: true,
+    pageBreaks: true,
+    positioning: true,
+    selectors: true,
+    slicers: true,
+    splitters: true,
+    wrappers: true,
   },
   paragraph: {
-    _: false,
+    _: true,
   },
   grid: {
-    _: false,
+    _: true,
   },
   pre: {
     _: false,
