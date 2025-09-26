@@ -11,6 +11,9 @@ case01_html_file_url = (
 case1_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "case1.html")
 )
+case7_html_file_url = (
+    "file:///" + os.path.join(path_to_this_test_file_folder, "case7.html")
+)
 
 
 class Test(BaseCase):
@@ -60,3 +63,14 @@ class Test(BaseCase):
         self.helper.assert_element_on_the_page('//*[@data-testid="L10-2"]', 2)
         self.helper.assert_element_on_the_page('//*[@data-testid="L10-2"]', 2)
         self.helper.assert_element_on_the_page('//*[@data-testid="closer"]', 2)
+
+
+    def test_2(self):
+        # * Single grid row with long content is sliced via slicers.
+        # * Expect at least two parts across pages with content preserved.
+        self.helper.do_open(case7_html_file_url)
+        self.helper.assert_document_has_pages(2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="chunk-1"]', 1)
+        self.helper.assert_element_on_the_page('//*[@data-testid="chunk-4"]', 1)
+        self.helper.assert_element_on_the_page('//*[@data-testid="chunk-5"]', 2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="chunk-8"]', 2)
