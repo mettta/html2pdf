@@ -297,6 +297,15 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
       continue;
     }
 
+    if (flowParent === current) {
+      // Transparent wrappers (e.g. display:contents) collapse to the same node
+      // we are already inspecting. Skip them so the caller always gets a truly
+      // new parent candidate instead of looping on the current element, even
+      // when several such wrappers are stacked in a row.
+      current = wrapperParent;
+      continue;
+    }
+
     const parentIsPageStart = this.isPageStartElement(wrapperParent) || this.isPageStartElement(flowParent);
     const parentTop = this.getTop(flowParent, root);
 
