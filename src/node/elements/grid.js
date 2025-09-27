@@ -32,9 +32,9 @@ export default class Grid {
 
   }
 
-  split(node, pageBottom, fullPageHeight, root) {
+  split(gridNode, pageBottom, fullPageHeight, root, computedStyle) {
     // Flow outline (parity with simple tables):
-    // 1. Collect children and partition them into visual rows.
+    // 1. Collect child grid cells and partition them into visual rows.
     // 2. Measure available space: short first window vs full-page window.
     // 3. Walk rows, registering split indexes when the next row would overflow.
     //    • If the first row itself does not fit → move whole row to next page (🚧 refine logic).
@@ -47,120 +47,96 @@ export default class Grid {
     // - fallback for non-breakable items (IMG/SVG) via scaling similar to Table.
     // - guard/skip complex layouts (non-monotonic placement, spans) with explicit logs.
 
-    this._debug._ && console.group('%c_splitGridNode', 'background:#00FFFF');
+    this._debug._ && console.group('%c_splitGridNode', 'background:#00FFFF', gridNode);
 
-    const children = this._node.getPreparedChildren(node);
+    const gridCells = this._node.getPreparedChildren(gridNode);
 
-    const nodeComputedStyle = this._DOM.getComputedStyle(node);
-    const initialInlinePosition = node.style.position;
-    const needsTempPosition = nodeComputedStyle.position === 'static';
-    const restorePosition = () => {
-      if (!needsTempPosition) return;
-      if (initialInlinePosition) {
-        this._DOM.setStyles(node, { position: initialInlinePosition });
-      } else {
-        node.style.removeProperty('position');
-      }
-    };
+    const nodeComputedStyle = computedStyle ? computedStyle : this._DOM.getComputedStyle(gridNode);
+    // * Use this._node.setInitStyle:
+    // * In some layouts grid stays `position: static`; force a relative context so
+    // * offset-based getters work (otherwise offsets are taken from body and rows
+    // * start looking like a single chunk).
 
-    if (!children.length) {
-      restorePosition();
+    if (!gridCells.length) {
+      this._node.setInitStyle (false, gridNode, nodeComputedStyle);
       this._debug._ && console.groupEnd();
       return [];
     }
 
-    if (needsTempPosition) {
-      // In some layouts grid stays `position: static`; force a relative context so
-      // offset-based getters work (otherwise offsets are taken from body and rows
-      // start looking like a single chunk).
-      this._DOM.setStyles(node, { position: 'relative' });
-    }
+    this._node.setInitStyle (true, gridNode, nodeComputedStyle);
 
-    const layoutScan = this._scanGridLayout(node, nodeComputedStyle);
+    const layoutScan = this._scanGridLayout(gridNode, nodeComputedStyle);
     if (!layoutScan.safe) {
       this._debug._ && console.warn('[grid.split] skip:', layoutScan.reason);
-      restorePosition();
+      this._node.setInitStyle (false, gridNode, nodeComputedStyle);
       this._debug._ && console.groupEnd();
       return [];
     }
 
     const ROW_TOP_STEP = 0.5; // tolerate sub-pixel jitter when detecting row breaks
     const rowGroups = [];
-    const rowTops = [];
     let hasRowSpan = false;
     let hasColumnSpan = false;
     const rowIndexSet = new Set();
+    let previousRowTop = null;
 
-    children.forEach((child) => {
-      const top = this._node.getTop(child, node);
-      const lastTop = rowTops.length ? rowTops[rowTops.length - 1] : null;
-      if (!rowGroups.length || Math.abs(top - lastTop) > ROW_TOP_STEP) {
-        rowGroups.push([child]);
-        rowTops.push(top);
+    gridCells.forEach((gridCell) => {
+      // ***** Rely on vertical position only:
+      // ***** we support linear, monotonic grids for now.
+      const top = this._node.getTop(gridCell, gridNode);
+
+      // * first element of a new line
+      if (
+        !rowGroups.length || previousRowTop == null       // * 1st row
+        || Math.abs(top - previousRowTop) > ROW_TOP_STEP  // * new row
+      ) {
+        rowGroups.push([gridCell]); // * add cell #0 to new row group
+        previousRowTop = top;       // * note down the top of new row
         return;
       }
-      // Rely on vertical position only: we support linear, monotonic grids for now.
-      rowGroups[rowGroups.length - 1].push(child);
 
-      const childStyle = this._DOM.getComputedStyle(child);
-      const rowEnd = childStyle.gridRowEnd || '';
-      const colEnd = childStyle.gridColumnEnd || '';
+      // * ordinary element of the current row
+      rowGroups[rowGroups.length - 1].push(gridCell);
+
+      // ** Detect spans and collect row-start indices.
+      // ** If row-starts jump beyond known row groups (implicit tracks/gaps),
+      // ** or any cell spans rows/columns, skip splitting this grid.
+      const cellStyle = this._DOM.getComputedStyle(gridCell);
+      const rowEnd = cellStyle.gridRowEnd || '';
+      const colEnd = cellStyle.gridColumnEnd || '';
       hasRowSpan = hasRowSpan || rowEnd.includes('span');
       hasColumnSpan = hasColumnSpan || colEnd.includes('span');
 
-      const rowStart = parseInt(childStyle.gridRowStart, 10);
+      const rowStart = parseInt(cellStyle.gridRowStart, 10);
       Number.isFinite(rowStart) && rowIndexSet.add(rowStart);
+      // todo: span w/o 'span' keyword
+      // todo: gridRowEnd/gridColumnEnd as Num/-1
+      // todo: gridRowStart asNaN (named lines)
+      // todo: improve "implicit row gaps"?
+      // - misses within a set of starts:
+      // - for example, if rowIndexSet contains {1,3,5}, and 2 and 4 are missing?
     });
 
-    const gridNodeRows = rowGroups.length;
-    const gridNodeHeight = this._DOM.getElementOffsetHeight(node);
-
-    const hasImplicitRowGaps = rowIndexSet.size > 0 && Math.max(...rowIndexSet) > gridNodeRows;
+    const hasImplicitRowGaps = rowIndexSet.size > 0 && Math.max(...rowIndexSet) > rowGroups.length;
     if (hasImplicitRowGaps) {
       this._debug._ && console.warn('[grid.split] skip: implicit row gaps detected');
-      restorePosition();
+      this._node.setInitStyle (false, gridNode, nodeComputedStyle);
       this._debug._ && console.groupEnd();
       return [];
     }
 
     if (hasRowSpan || hasColumnSpan) {
       this._debug._ && console.warn('[grid.split] skip: span detected (row or column)');
-      restorePosition();
+      this._node.setInitStyle (false, gridNode, nodeComputedStyle);
       this._debug._ && console.groupEnd();
       return [];
     }
 
-    // ** If there are enough rows for the split to be readable,
-    // ** and the node is not too big (because of the content),
-    // ** then we will split it.
-    // TODO: make the same condition for all like-table:
-    if (gridNodeRows < this._minBreakableGridRows && gridNodeHeight < fullPageHeight) {
-      // ** Otherwise, we don't split it.
-      this._debug._ && console.log(`%c END DONT _splitGridNode`, CONSOLE_CSS_END_LABEL);
-      restorePosition();
-      this._debug._ && console.groupEnd();
-      return []
-    }
+    this._debug._ && console.log('[grid.split] rowGroups:', rowGroups)
 
-    // ** We want to know the top point of each row
-    // ** to calculate the parts to split.
-    // ** After sorting, we can use [0] as the smallest element for this purpose.
-    // [ [top, top, top], [top, top, top], [top, top, top] ] =>
-    // [ [min-top, top, max-top], [min-top, top, max-top], [min-top, top, max-top] ] =>
-    // [min-top, min-top, min-top]
-    const gridPseudoRowsTopPoints = [...rowTops, gridNodeHeight];
-
-
-    this._debug._ && console.log(
-      'gridPseudoRowsTopPoints', gridPseudoRowsTopPoints
-    );
-
-    // ** Calculate the possible parts.
-    // TODO: same as the table
-
-    // ** Prepare node parameters
-    const nodeTop = this._node.getTop(node, root);
-    const nodeWrapperHeight = this._node.getEmptyNodeHeight(node);
+    // ** Prepare gridNode parameters for splitting
+    const nodeTop = this._node.getTop(gridNode, root);
+    const nodeWrapperHeight = this._node.getEmptyNodeHeight(gridNode);
     const firstPartHeight = pageBottom
       - nodeTop
       // - this._signpostHeight
@@ -169,42 +145,101 @@ export default class Grid {
       // - 2 * this._signpostHeight
       - nodeWrapperHeight;
 
-    this._debug._ && console.log(
-      '\n • firstPartHeight', firstPartHeight,
-      '\n • fullPagePartHeight', fullPagePartHeight
-    );
+    this._debug._ && console.log({firstPartHeight, fullPagePartHeight});
 
-    // TODO 1267 -  как в таблице
+    // ** If there are enough rows for the split to be readable,
+    // ** and the gridNode is not too big (because of the content),
+    // ** then we will split it.
+    if (
+      rowGroups.length < this._minBreakableGridRows
+      && this._DOM.getElementOffsetHeight(gridNode) < fullPageHeight
+    ) {
+      this._debug._ && console.log(`%c END [grid.split]: DON'T SPLIT, it isn't breakable and fits in the page`, CONSOLE_CSS_END_LABEL);
+      this._node.setInitStyle(false, gridNode, nodeComputedStyle);
+      this._debug._ && console.groupEnd();
+      return []
+    }
 
-    // * Calculate grid Splits Ids
+    // === Pagination across rows ===
+    const splitsIds = [];
+    const ensureSplitId = (candidate) => {
+      const isOutOfRange = (candidate <= 0 || candidate >= rowGroups.length);
+      const alreadyRegistered = (splitsIds.at(-1) === candidate);
+      this.strictAssert(!isOutOfRange, `[split grid] split IT is out of range`);
+      this.strictAssert(!alreadyRegistered, `[split grid] split IT is already registered`);
+      if (isOutOfRange || alreadyRegistered) return;
 
-    const topsArr = gridPseudoRowsTopPoints;
+      splitsIds.push(candidate);
+    };
 
-    let splitsIds = [];
     let currentPageBottom = firstPartHeight;
+    let rowIndex = 0;
+    const EPS = 0.5;
 
-    for (let index = 0; index < topsArr.length; index++) {
+    while (rowIndex < rowGroups.length) {
+      const row = rowGroups[rowIndex];
+      const rowTop = this._getRowTop(row, gridNode);
+      const rowBottom = this._getRowBottom(row, gridNode);
 
-      if (topsArr[index] > currentPageBottom) {
+      if (rowBottom <= currentPageBottom + EPS) {
+        rowIndex += 1;
+        continue;
+      }
 
-        // CASE: row `index` would overflow the current window.
-        // TODO split long row: when a single row is taller than the window, slice content.
+      const remainingSpace = currentPageBottom - rowTop;
+      let splitResult = null;
+      let usedTailWindow = false;
 
-        if (index > 0) {
-          // Normal case: keep at least one row per slice, register previous row as split.
-          splitsIds.push(index - 1);
-        } else {
-          // First row does not fit tail window.
-          // For now we move it to the next page by stepping currentPageBottom forward.
-          this._debug._ && console.warn('[grid.split] row0 overflow tail window → use full-page window');
+      if (remainingSpace > EPS) {
+        splitResult = this._splitGridRow({
+          rowIndex,
+          row,
+          gridNode: gridNode,
+          firstPartHeight: remainingSpace,
+          fullPagePartHeight,
+        });
+        usedTailWindow = true;
+      }
+
+      if (!splitResult || !splitResult.newRows.length) {
+        splitResult = this._splitGridRow({
+          rowIndex,
+          row,
+          gridNode: gridNode,
+          firstPartHeight: fullPagePartHeight,
+          fullPagePartHeight,
+        });
+        usedTailWindow = false;
+      }
+
+      if (splitResult && splitResult.newRows.length) {
+        rowGroups.splice(rowIndex, 1, ...splitResult.newRows);
+
+        const firstSliceTop = this._getRowTop(rowGroups[rowIndex], gridNode);
+        const firstSliceBottom = this._getRowBottom(rowGroups[rowIndex], gridNode);
+
+        if (usedTailWindow && !splitResult.isFirstPartEmptyInAnyCell && firstSliceBottom <= currentPageBottom + EPS) {
+          continue;
         }
 
-        currentPageBottom = topsArr[Math.max(index - 1, 0)] + fullPagePartHeight;
+        ensureSplitId(rowIndex);
+        currentPageBottom = firstSliceTop + fullPagePartHeight;
+        continue;
 
-        // 🚧 Future: if still overflowing after escalation, fall back to scaling.
-
+        // todo 🚧 Future: if still overflowing after escalation, fall back to scaling.
       }
-    };
+
+      if (rowIndex > 0) {
+        ensureSplitId(rowIndex);
+        currentPageBottom = rowTop + fullPagePartHeight;
+        continue;
+      }
+
+      this._debug._ && console.warn('[grid.split] first row cannot be split to fit page', { row });
+      this._node.setInitStyle (false, gridNode, nodeComputedStyle);
+      this._debug._ && console.groupEnd();
+      return [];
+    }
 
     this._debug._ && console.log('splitsIds', splitsIds);
 
@@ -230,10 +265,10 @@ export default class Grid {
       // ! Do not wrap nodes so as not to break styles.
       // TODO - Check for other uses of createWithFlagNoBreak to see if the wrapper can be avoided.
 
-      const part = this._DOM.cloneNodeWrapper(node);
-      this._node.copyNodeWidth(part, node);
+      const part = this._DOM.cloneNodeWrapper(gridNode);
+      this._node.copyNodeWidth(part, gridNode);
       this._node.setFlagNoBreak(part);
-      node.before(part);
+      gridNode.before(part);
 
       if (startId) {
         // if is not first part
@@ -241,7 +276,7 @@ export default class Grid {
 
         // TODO: insertions between parts will not disturb the original layout & CSS.
         // Therefore, it is possible to insert an element after and before the parts
-        // and specify that the node is being broken.
+        // and specify that the gridNode is being broken.
       }
 
       // в таблице другое
@@ -267,7 +302,7 @@ export default class Grid {
       ...splitsIds
         .map((value, index, array) => insertGridSplit(array[index - 1] || 0, value))
         .filter(Boolean),
-      node
+      gridNode
     ];
 
     this._debug._ && console.log(
@@ -277,24 +312,117 @@ export default class Grid {
     // create LAST PART
     // TODO ??? is that really needed?
     // const lastPart = this._node.createWithFlagNoBreak();
-    // node.before(lastPart);
+    // gridNode.before(lastPart);
     // this._DOM.insertAtEnd(
     //   lastPart,
     //   // this._node.createSignpost('(table continued)', this._signpostHeight),
-    //   node
+    //   gridNode
     // );
 
     // parts handling
     splits.forEach((part, index) => this._DOM.setAttribute(part, '[part]', `${index}`));
     // LAST PART handling
-    this._node.setFlagNoBreak(node);
+    this._node.setFlagNoBreak(gridNode);
 
-    restorePosition();
+    this._node.setInitStyle (false, gridNode, nodeComputedStyle);
 
-    this._debug._ && console.log(`%c END _splitGridNode`, CONSOLE_CSS_END_LABEL);
+    this._debug._ && console.log(`%c END [grid.split]`, CONSOLE_CSS_END_LABEL);
     this._debug._ && console.groupEnd()
 
     return splits
+  }
+
+  _splitGridRow({ rowIndex, row, gridNode, firstPartHeight, fullPagePartHeight }) {
+    if (!Array.isArray(row) || !row.length) {
+      return { newRows: [], isFirstPartEmptyInAnyCell: false, needsScalingInFullPage: false };
+    }
+
+    const shells = row.map(() => 0);
+    const computed = this._node.getSplitPointsPerCells(
+      row,
+      shells,
+      firstPartHeight,
+      fullPagePartHeight,
+      gridNode
+    );
+
+    const splitPointsPerCell = computed.splitPointsPerCell;
+    const hasSplits = splitPointsPerCell.some(list => list.length);
+
+    if (!hasSplits) {
+      return {
+        newRows: [],
+        isFirstPartEmptyInAnyCell: computed.isFirstPartEmptyInAnyCell,
+        needsScalingInFullPage: computed.needsScalingInFullPage,
+      };
+    }
+
+    const slicedPerCell = row.map((cell, index) => {
+      this._node.setFlagSlice(cell);
+      return this._node.sliceNodeBySplitPoints({ index, rootNode: cell, splitPoints: splitPointsPerCell[index] });
+    });
+
+    const maxSlices = Math.max(...slicedPerCell.map(arr => arr.length));
+    const anchor = row[0];
+    const newRows = [];
+
+    for (let sliceIndex = 0; sliceIndex < maxSlices; sliceIndex++) {
+      const fragment = this._DOM.createDocumentFragment();
+      const sliceCells = [];
+
+      row.forEach((originalCell, cellIdx) => {
+        const candidates = slicedPerCell[cellIdx];
+        const nextCell = candidates[sliceIndex] ? candidates[sliceIndex] : this._DOM.cloneNodeWrapper(originalCell);
+        this._node.setFlagSlice(nextCell);
+        fragment.append(nextCell);
+        sliceCells.push(nextCell);
+      });
+
+      this._DOM.insertBefore(anchor, fragment);
+      newRows.push(sliceCells);
+    }
+
+    row.forEach(cell => this._DOM.removeNode(cell));
+
+    return {
+      newRows,
+      isFirstPartEmptyInAnyCell: computed.isFirstPartEmptyInAnyCell,
+      needsScalingInFullPage: computed.needsScalingInFullPage,
+    };
+  }
+
+  _getRowTop(row, gridNode) {
+    if (Array.isArray(row)) {
+      let minTop = Infinity;
+      row.forEach(cell => {
+        const candidate = this._node.getTop(cell, gridNode);
+        if (Number.isFinite(candidate)) {
+          minTop = Math.min(minTop, candidate);
+        }
+      });
+      return minTop === Infinity ? 0 : minTop;
+    }
+    if (row) {
+      return this._node.getTop(row, gridNode) || 0;
+    }
+    return 0;
+  }
+
+  _getRowBottom(row, gridNode) {
+    if (Array.isArray(row)) {
+      let maxBottom = -Infinity;
+      row.forEach(cell => {
+        const candidate = this._node.getBottom(cell, gridNode);
+        if (Number.isFinite(candidate)) {
+          maxBottom = Math.max(maxBottom, candidate);
+        }
+      });
+      return maxBottom === -Infinity ? 0 : maxBottom;
+    }
+    if (row) {
+      return this._node.getBottom(row, gridNode) || 0;
+    }
+    return 0;
   }
 
   _scanGridLayout(_node, nodeComputedStyle) {
