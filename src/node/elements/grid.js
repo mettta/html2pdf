@@ -156,13 +156,13 @@ export default class Grid {
     //? #grid_refactor
     //  captures the active grid node, row groups, and full-page metrics
     //  in instance fields, letting the adapter feed consistent data
-    //  into the shared paginator log
-    //  and share rowGroups through a single entries container
+    //  into the shared paginator log, share rowGroups through a single entries container,
+    //  and collect the parts we build for downstream analysis/debugging.
     this._currentGridNode = gridNode;
     this._currentGridRowGroups = rowGroups;
     this._currentGridFullPartHeight = fullPagePartHeight;
     this._currentGridSplitLog = [];
-    this._currentGridEntries = { rowGroups };
+    this._currentGridEntries = { rowGroups, parts: [] };
 
     // ** If there are enough rows for the split to be readable,
     // ** and the gridNode is not too big (because of the content),
@@ -259,6 +259,7 @@ export default class Grid {
     this._debug._ && console.log('splitStartRowIndexes', splitStartRowIndexes);
 
     const entries = this._currentGridEntries;
+    const finalStartId = splitStartRowIndexes.length ? splitStartRowIndexes.at(-1) : 0;
     const splits = [
       ...splitStartRowIndexes
         .map((value, index, array) => this._buildGridSplit({
@@ -268,7 +269,7 @@ export default class Grid {
           entries,
         }))
         .filter(Boolean),
-      this._createAndInsertGridFinalSlice({ node: gridNode, entries }),
+      this._createAndInsertGridFinalSlice({ node: gridNode, entries, startId: finalStartId }),
     ];
 
     this._debug._ && console.log(
@@ -374,15 +375,30 @@ export default class Grid {
       const rowsPreview = rowGroups.slice(startId, endId);
       console.log(`=> [grid.split] _buildGridSplit: slice rows [${startId}, ${endId})`, rowsPreview);
     }
-    return this._createAndInsertGridSlice({ startId, endId, node, entries });
+    const part = this._createAndInsertGridSlice({ startId, endId, node, entries });
+    this._recordGridPart(part, { startId, endId, type: 'slice' });
+    return part;
   }
 
   _createAndInsertGridSlice({ startId, endId, node, entries }) {
     return GridAdapter.createAndInsertGridSlice(this, { startId, endId, node, entries });
   }
 
-  _createAndInsertGridFinalSlice({ node, entries }) {
-    return GridAdapter.createAndInsertGridFinalSlice(this, { node, entries });
+  _createAndInsertGridFinalSlice({ node, entries, startId }) {
+    const part = GridAdapter.createAndInsertGridFinalSlice(this, { node, entries });
+    this._recordGridPart(part, { startId, endId: null, type: 'final' });
+    return part;
+  }
+
+  _recordGridPart(part, meta = {}) {
+    if (!part) return;
+    const entries = this._currentGridEntries;
+    if (!entries) return;
+    if (!Array.isArray(entries.parts)) {
+      entries.parts = [];
+    }
+    const record = { part, ...meta };
+    entries.parts.push(record);
   }
 
   _splitGridRow({ rowIndex, row, gridNode, firstPartHeight, fullPagePartHeight }) {
