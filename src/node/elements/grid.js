@@ -1,9 +1,6 @@
 import * as Logging from '../../utils/logging.js';
 import * as Paginator from './table.paginator.js';
-
-//? #grid_refactor
-//  now imports the shared paginator helpers and reinitialises
-//  grid pagination state each time split() runs so we start from a clean slate
+import * as GridAdapter from './grid.adapter.js';
 
 const CONSOLE_CSS_END_LABEL = `background:#999;color:#FFF;padding: 0 4px;`;
 
@@ -259,66 +256,16 @@ export default class Grid {
 
     this._debug._ && console.log('splitStartRowIndexes', splitStartRowIndexes);
 
-    const insertGridSplit = (startId, endId) => {
-      // * The function is called later.
-      // TODO Put it in a separate method: THIS AND TABLE
-
-      if (startId === endId) {
-        // ⚠️ unexpected empty slice, do not build chunk
-        this._debug._ && console.warn('[grid.split] skip empty slice request', startId, endId);
-        return null;
-      }
-
-      this._debug._ && console.log(`=> insertGridSplit(${startId}, ${endId})`);
-
-      // const partEntries = nodeEntries.rows.slice(startId, endId);
-      const partEntries = rowGroups
-        .slice(startId, endId)
-        .flat();
-      this._debug._ && console.log(`partEntries`, partEntries);
-
-      // const part = this._node.createWithFlagNoBreak();
-      // ! Do not wrap nodes so as not to break styles.
-      // TODO - Check for other uses of createWithFlagNoBreak to see if the wrapper can be avoided.
-
-      const part = this._DOM.cloneNodeWrapper(gridNode);
-      this._node.copyNodeWidth(part, gridNode);
-      this._node.setFlagNoBreak(part);
-      gridNode.before(part);
-
-      if (startId) {
-        // if is not first part
-        // this._DOM.insertAtEnd(part, this._node.createSignpost('(table continued)', this._signpostHeight));
-
-        // TODO: insertions between parts will not disturb the original layout & CSS.
-        // Therefore, it is possible to insert an element after and before the parts
-        // and specify that the gridNode is being broken.
-      }
-
-      // в таблице другое
-      // this._DOM.insertAtEnd(
-      //   part,
-      //   this._node.createTable({
-      //     wrapper: nodeWrapper,
-      //     caption: this._DOM.cloneNode(nodeEntries.caption),
-      //     thead: this._DOM.cloneNode(nodeEntries.thead),
-      //     // tfoot,
-      //     tbody: partEntries,
-      //   }),
-      //   this._node.createSignpost('(table continues on the next page)', this._signpostHeight)
-      // );
-      // this._DOM.insertAtEnd(part, nodeWrapper);
-      this._DOM.insertAtEnd(part, ...partEntries);
-
-      return part
-    };
-
-
     const splits = [
       ...splitStartRowIndexes
-        .map((value, index, array) => insertGridSplit(array[index - 1] || 0, value))
+        .map((value, index, array) => this._createAndInsertGridSlice({
+          startId: array[index - 1] || 0,
+          endId: value,
+          node: gridNode,
+          rowGroups,
+        }))
         .filter(Boolean),
-      gridNode
+      this._createAndInsertGridFinalSlice({ node: gridNode }),
     ];
 
     this._debug._ && console.log(
@@ -337,8 +284,6 @@ export default class Grid {
 
     // parts handling
     splits.forEach((part, index) => this._DOM.setAttribute(part, '[part]', `${index}`));
-    // LAST PART handling
-    this._node.setFlagNoBreak(gridNode);
 
     this._node.setInitStyle (false, gridNode, nodeComputedStyle);
 
@@ -352,8 +297,10 @@ export default class Grid {
   //? #grid_refactor
   //  adds _resetCurrent, _getPaginatorAdapter,
   //  and thin wrappers around the shared paginator functions
-  //  (_updateCurrentGridSplitBottom, _registerPageStartAt),
-  //  exposing row markers via real cells or measured tops when cells are missing.
+  //  (_updateCurrentGridSplitBottom, _registerPageStartAt)
+  //  plus adapter hooks (_createAndInsertGridSlice, _createAndInsertGridFinalSlice)
+  //  so grid reuses shared builders while exposing row markers via real cells
+  //  or measured tops when cells are missing.
 
   _resetCurrent() {
     this._currentGridNode = undefined;
@@ -409,6 +356,14 @@ export default class Grid {
 
   _registerPageStartAt(index, splitStartRowIndexes, reason = 'register page start') {
     Paginator.registerPageStartAt(this._getPaginatorAdapter(), index, splitStartRowIndexes, reason);
+  }
+
+  _createAndInsertGridSlice({ startId, endId, node, rowGroups }) {
+    return GridAdapter.createAndInsertGridSlice(this, { startId, endId, node, childrenGroups: rowGroups });
+  }
+
+  _createAndInsertGridFinalSlice({ node }) {
+    return GridAdapter.createAndInsertGridFinalSlice(this, { node });
   }
 
   _splitGridRow({ rowIndex, row, gridNode, firstPartHeight, fullPagePartHeight }) {
