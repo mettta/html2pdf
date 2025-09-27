@@ -1,6 +1,7 @@
 import * as Logging from '../../utils/logging.js';
 import * as Paginator from './table.paginator.js';
 import * as GridAdapter from './grid.adapter.js';
+import * as PartsRecorder from '../modules/parts.recorder.js';
 
 const CONSOLE_CSS_END_LABEL = `background:#999;color:#FFF;padding: 0 4px;`;
 
@@ -162,7 +163,7 @@ export default class Grid {
     this._currentGridRowGroups = rowGroups;
     this._currentGridFullPartHeight = fullPagePartHeight;
     this._currentGridSplitLog = [];
-    this._currentGridEntries = { rowGroups, parts: [] };
+    this._currentGridEntries = PartsRecorder.createEntries({ owner: gridNode, rowGroups });
 
     // ** If there are enough rows for the split to be readable,
     // ** and the gridNode is not too big (because of the content),
@@ -260,6 +261,7 @@ export default class Grid {
 
     const entries = this._currentGridEntries;
     const finalStartId = splitStartRowIndexes.length ? splitStartRowIndexes.at(-1) : 0;
+    // For telemetry: finalStartId mirrors table slices even though final build does not need it
     const splits = [
       ...splitStartRowIndexes
         .map((value, index, array) => this._buildGridSplit({
@@ -402,17 +404,26 @@ export default class Grid {
   }
 
   _recordGridPart(part, meta = {}) {
-    if (!part) return;
     const entries = this._currentGridEntries;
-    if (!entries) return;
-    if (!Array.isArray(entries.parts)) {
-      entries.parts = [];
+    if (!entries || !part) {
+      return null;
     }
-    const record = {
+    const {
+      startId = null,
+      endId = null,
+      type = 'unknown',
+      rows = [],
+      meta: extraMeta,
+    } = meta || {};
+    return PartsRecorder.recordPart({
+      entries,
       part,
-      ...meta,
-    };
-    entries.parts.push(record);
+      startIndex: startId,
+      endIndex: endId,
+      type,
+      rows,
+      meta: extraMeta,
+    });
   }
 
   _splitGridRow({ rowIndex, row, gridNode, firstPartHeight, fullPagePartHeight }) {

@@ -866,6 +866,7 @@ export default class Table {
   }
 
   _createAndInsertTableSlice({ startId, endId, table, tableEntries }) {
+    // TODO(table): record parts metadata via parts.recorder (parity with grid).
     // Delegate to adapter. No behavior change.
     return TableAdapter.createAndInsertTableSlice(this, { startId, endId, table, tableEntries });
   }
