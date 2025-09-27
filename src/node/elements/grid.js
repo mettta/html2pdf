@@ -1,4 +1,9 @@
 import * as Logging from '../../utils/logging.js';
+import * as Paginator from './table.paginator.js';
+
+//? #grid_refactor
+//  now imports the shared paginator helpers and reinitialises
+//  grid pagination state each time split() runs so we start from a clean slate
 
 const CONSOLE_CSS_END_LABEL = `background:#999;color:#FFF;padding: 0 4px;`;
 
@@ -20,6 +25,8 @@ export default class Grid {
 
     Object.assign(this, Logging);
 
+    this._resetCurrent();
+
     // todo
     // 1) move to config
     // Grid:
@@ -33,6 +40,8 @@ export default class Grid {
   }
 
   split(gridNode, pageBottom, fullPageHeight, root, computedStyle) {
+    this._resetCurrent();
+
     // Flow outline (parity with simple tables):
     // 1. Collect child grid cells and partition them into visual rows.
     // 2. Measure available space: short first window vs full-page window.
@@ -147,6 +156,15 @@ export default class Grid {
 
     this._debug._ && console.log({firstPartHeight, fullPagePartHeight});
 
+    //? #grid_refactor
+    //  captures the active grid node, row groups, and full-page metrics
+    //  in instance fields, letting the adapter feed consistent data
+    //  into the shared paginator log.
+    this._currentGridNode = gridNode;
+    this._currentGridRowGroups = rowGroups;
+    this._currentGridFullPartHeight = fullPagePartHeight;
+    this._currentGridSplitLog = [];
+
     // ** If there are enough rows for the split to be readable,
     // ** and the gridNode is not too big (because of the content),
     // ** then we will split it.
@@ -156,37 +174,36 @@ export default class Grid {
     ) {
       this._debug._ && console.log(`%c END [grid.split]: DON'T SPLIT, it isn't breakable and fits in the page`, CONSOLE_CSS_END_LABEL);
       this._node.setInitStyle(false, gridNode, nodeComputedStyle);
+      this._resetCurrent();
       this._debug._ && console.groupEnd();
       return []
     }
 
     // === Pagination across rows ===
-    const splitsIds = [];
-    const ensureSplitId = (candidate) => {
-      const isOutOfRange = (candidate <= 0 || candidate >= rowGroups.length);
-      const alreadyRegistered = (splitsIds.at(-1) === candidate);
-      this.strictAssert(!isOutOfRange, `[split grid] split IT is out of range`);
-      this.strictAssert(!alreadyRegistered, `[split grid] split IT is already registered`);
-      if (isOutOfRange || alreadyRegistered) return;
+    //? #grid_refactor
+    //  replaces bespoke split-bottom math with updateSplitBottom/registerPageStartAt,
+    //  so page windows and split indexes are maintained by the same helpers Table uses.
 
-      splitsIds.push(candidate);
-    };
-
-    let currentPageBottom = firstPartHeight;
+    const splitStartRowIndexes = [];
     let rowIndex = 0;
     const EPS = 0.5;
+
+    this._updateCurrentGridSplitBottom(firstPartHeight, 'start with initial window');
 
     while (rowIndex < rowGroups.length) {
       const row = rowGroups[rowIndex];
       const rowTop = this._getRowTop(row, gridNode);
       const rowBottom = this._getRowBottom(row, gridNode);
+      const pageBottom = (typeof this._currentGridSplitBottom === 'number')
+        ? this._currentGridSplitBottom
+        : firstPartHeight;
 
-      if (rowBottom <= currentPageBottom + EPS) {
+      if (rowBottom <= pageBottom + EPS) {
         rowIndex += 1;
         continue;
       }
 
-      const remainingSpace = currentPageBottom - rowTop;
+      const remainingSpace = pageBottom - rowTop;
       let splitResult = null;
       let usedTailWindow = false;
 
@@ -218,30 +235,29 @@ export default class Grid {
         const firstSliceTop = this._getRowTop(rowGroups[rowIndex], gridNode);
         const firstSliceBottom = this._getRowBottom(rowGroups[rowIndex], gridNode);
 
-        if (usedTailWindow && !splitResult.isFirstPartEmptyInAnyCell && firstSliceBottom <= currentPageBottom + EPS) {
+        if (usedTailWindow && !splitResult.isFirstPartEmptyInAnyCell && firstSliceBottom <= pageBottom + EPS) {
           continue;
         }
 
-        ensureSplitId(rowIndex);
-        currentPageBottom = firstSliceTop + fullPagePartHeight;
+        this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Grid row slice — next part starts page');
         continue;
 
         // todo 🚧 Future: if still overflowing after escalation, fall back to scaling.
       }
 
       if (rowIndex > 0) {
-        ensureSplitId(rowIndex);
-        currentPageBottom = rowTop + fullPagePartHeight;
+        this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Grid row overflow — move row to next page');
         continue;
       }
 
       this._debug._ && console.warn('[grid.split] first row cannot be split to fit page', { row });
       this._node.setInitStyle (false, gridNode, nodeComputedStyle);
+      this._resetCurrent();
       this._debug._ && console.groupEnd();
       return [];
     }
 
-    this._debug._ && console.log('splitsIds', splitsIds);
+    this._debug._ && console.log('splitStartRowIndexes', splitStartRowIndexes);
 
     const insertGridSplit = (startId, endId) => {
       // * The function is called later.
@@ -299,7 +315,7 @@ export default class Grid {
 
 
     const splits = [
-      ...splitsIds
+      ...splitStartRowIndexes
         .map((value, index, array) => insertGridSplit(array[index - 1] || 0, value))
         .filter(Boolean),
       gridNode
@@ -327,9 +343,72 @@ export default class Grid {
     this._node.setInitStyle (false, gridNode, nodeComputedStyle);
 
     this._debug._ && console.log(`%c END [grid.split]`, CONSOLE_CSS_END_LABEL);
-    this._debug._ && console.groupEnd()
+    this._debug._ && console.groupEnd();
+    this._resetCurrent();
 
     return splits
+  }
+
+  //? #grid_refactor
+  //  adds _resetCurrent, _getPaginatorAdapter,
+  //  and thin wrappers around the shared paginator functions
+  //  (_updateCurrentGridSplitBottom, _registerPageStartAt),
+  //  exposing row markers via real cells or measured tops when cells are missing.
+
+  _resetCurrent() {
+    this._currentGridNode = undefined;
+    this._currentGridRowGroups = undefined;
+    this._currentGridSplitBottom = undefined;
+    this._currentGridFullPartHeight = undefined;
+    this._currentGridSplitLog = undefined;
+  }
+
+  _getPaginatorAdapter() {
+    return {
+      label: 'grid',
+      getSplitBottom: () => this._currentGridSplitBottom,
+      setSplitBottom: (value) => { this._currentGridSplitBottom = value; },
+      computeSplitBottomForElement: (element) => {
+        if (!element || !this._currentGridNode) {
+          return this._currentGridSplitBottom || 0;
+        }
+        return this._node.getTop(element, this._currentGridNode) + (this._currentGridFullPartHeight || 0);
+      },
+      getRows: () => {
+        if (!Array.isArray(this._currentGridRowGroups)) {
+          return [];
+        }
+        return this._currentGridRowGroups.map((group) => {
+          if (!group) {
+            return null;
+          }
+          if (group instanceof HTMLElement) {
+            return group;
+          }
+          if (Array.isArray(group)) {
+            const cell = group.find((candidate) => candidate instanceof HTMLElement);
+            if (cell) {
+              return cell;
+            }
+            const top = this._getRowTop(group, this._currentGridNode);
+            return Number.isFinite(top) ? top : null;
+          }
+          const top = this._getRowTop(group, this._currentGridNode);
+          return Number.isFinite(top) ? top : null;
+        });
+      },
+      shouldAssert: () => this._assert,
+      getDebug: () => this._debug,
+      getSplitBottomLog: () => this._currentGridSplitLog,
+    };
+  }
+
+  _updateCurrentGridSplitBottom(elementOrValue, message = 'unknown case') {
+    Paginator.updateSplitBottom(this._getPaginatorAdapter(), elementOrValue, message);
+  }
+
+  _registerPageStartAt(index, splitStartRowIndexes, reason = 'register page start') {
+    Paginator.registerPageStartAt(this._getPaginatorAdapter(), index, splitStartRowIndexes, reason);
   }
 
   _splitGridRow({ rowIndex, row, gridNode, firstPartHeight, fullPagePartHeight }) {
