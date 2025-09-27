@@ -376,7 +376,12 @@ export default class Grid {
       console.log(`=> [grid.split] _buildGridSplit: slice rows [${startId}, ${endId})`, rowsPreview);
     }
     const part = this._createAndInsertGridSlice({ startId, endId, node, entries });
-    this._recordGridPart(part, { startId, endId, type: 'slice' });
+    this._recordGridPart(part, {
+      startId,
+      endId,
+      type: 'slice',
+      rows: rowGroups.slice(startId, endId),
+    });
     return part;
   }
 
@@ -386,7 +391,13 @@ export default class Grid {
 
   _createAndInsertGridFinalSlice({ node, entries, startId }) {
     const part = GridAdapter.createAndInsertGridFinalSlice(this, { node, entries });
-    this._recordGridPart(part, { startId, endId: null, type: 'final' });
+    const rowGroups = entries?.rowGroups || this._currentGridRowGroups || [];
+    this._recordGridPart(part, {
+      startId,
+      endId: rowGroups.length,
+      type: 'final',
+      rows: rowGroups.slice(startId),
+    });
     return part;
   }
 
@@ -397,7 +408,10 @@ export default class Grid {
     if (!Array.isArray(entries.parts)) {
       entries.parts = [];
     }
-    const record = { part, ...meta };
+    const record = {
+      part,
+      ...meta,
+    };
     entries.parts.push(record);
   }
 
