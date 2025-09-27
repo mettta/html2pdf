@@ -258,7 +258,7 @@ export default class Grid {
 
     const splits = [
       ...splitStartRowIndexes
-        .map((value, index, array) => this._createAndInsertGridSlice({
+        .map((value, index, array) => this._buildGridSplit({
           startId: array[index - 1] || 0,
           endId: value,
           node: gridNode,
@@ -356,6 +356,20 @@ export default class Grid {
 
   _registerPageStartAt(index, splitStartRowIndexes, reason = 'register page start') {
     Paginator.registerPageStartAt(this._getPaginatorAdapter(), index, splitStartRowIndexes, reason);
+  }
+
+  _buildGridSplit({ startId, endId, node, rowGroups }) {
+    if (startId === endId) {
+      // Empty slice means pagination markers collided; log and assert in dev.
+      this._debug._ && console.warn('[grid.split] _buildGridSplit: skip empty slice request', startId, endId);
+      this._assert && console.assert(false, '[grid.split] _buildGridSplit: empty slice encountered');
+      return null;
+    }
+    if (this._debug._) {
+      const rowsPreview = rowGroups.slice(startId, endId);
+      console.log(`=> [grid.split] _buildGridSplit: slice rows [${startId}, ${endId})`, rowsPreview);
+    }
+    return this._createAndInsertGridSlice({ startId, endId, node, rowGroups });
   }
 
   _createAndInsertGridSlice({ startId, endId, node, rowGroups }) {
