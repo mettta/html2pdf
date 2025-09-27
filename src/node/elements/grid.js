@@ -1,3 +1,5 @@
+import * as Logging from '../../utils/logging.js';
+
 const CONSOLE_CSS_END_LABEL = `background:#999;color:#FFF;padding: 0 4px;`;
 
 export default class Grid {
@@ -9,11 +11,14 @@ export default class Grid {
   }) {
     // * From config:
     this._debug = config.debugMode ? { ...config.debugConfig.grid } : {};
+    this._assert = config.consoleAssert ? true : false;
 
     // * Private
     this._DOM = DOM;
     this._selector = selector;
     this._node = node;
+
+    Object.assign(this, Logging);
 
     // todo
     // 1) move to config
