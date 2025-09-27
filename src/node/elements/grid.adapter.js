@@ -1,20 +1,23 @@
 // Grid-specific slice builders. No signposts, no tfoot/thead.
 
-export function createAndInsertGridSlice(ctx, { startId, endId, node, childrenGroups }) {
+export function createAndInsertGridSlice(context, { startId, endId, node, entries, fallbackRowGroups }) {
   // We do not wrap with createWithFlagNoBreak to avoid CSS breakage; clone wrapper instead.
-  const part = ctx._DOM.cloneNodeWrapper(node);
-  ctx._node.copyNodeWidth(part, node);
-  ctx._node.setFlagNoBreak(part);
+  const part = context._DOM.cloneNodeWrapper(node);
+  context._node.copyNodeWidth(part, node);
+  context._node.setFlagNoBreak(part);
   node.before(part);
+
+  const rowGroups = entries?.rowGroups || fallbackRowGroups || [];
+  // rowGroups arrive via the shared entries container; fallback keeps older callers working.
 
   // Allow the DOM module to tell us what counts as an element.
   // Grid adapters sit between plain HTMLElements and wrappers returned by getPreparedChildren,
   // and test/SSR environments may not expose global HTMLElement reliably.
-  const isElementNodeFn = (ctx && ctx._DOM && typeof ctx._DOM.isElementNode === 'function')
-    ? ctx._DOM.isElementNode.bind(ctx._DOM)
+  const isElementNodeFn = (context && context._DOM && typeof context._DOM.isElementNode === 'function')
+    ? context._DOM.isElementNode.bind(context._DOM)
     : null;
 
-  const partEntries = childrenGroups
+  const partEntries = rowGroups
     .slice(startId, endId)
     .flat()
     .map(candidate => {
@@ -40,13 +43,13 @@ export function createAndInsertGridSlice(ctx, { startId, endId, node, childrenGr
     })
     .filter(Boolean);
 
-  ctx._DOM.insertAtEnd(part, ...partEntries);
+  context._DOM.insertAtEnd(part, ...partEntries);
   return part;
 }
 
-export function createAndInsertGridFinalSlice(ctx, { node }) {
+export function createAndInsertGridFinalSlice(context, { node, entries }) {
   // Final slice is the original node (flagged no-break) left in place.
-  ctx._node.setFlagNoBreak(node);
+  context._node.setFlagNoBreak(node);
   return node;
 }
 

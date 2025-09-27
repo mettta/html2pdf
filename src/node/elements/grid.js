@@ -156,11 +156,13 @@ export default class Grid {
     //? #grid_refactor
     //  captures the active grid node, row groups, and full-page metrics
     //  in instance fields, letting the adapter feed consistent data
-    //  into the shared paginator log.
+    //  into the shared paginator log
+    //  and share rowGroups through a single entries container
     this._currentGridNode = gridNode;
     this._currentGridRowGroups = rowGroups;
     this._currentGridFullPartHeight = fullPagePartHeight;
     this._currentGridSplitLog = [];
+    this._currentGridEntries = { rowGroups };
 
     // ** If there are enough rows for the split to be readable,
     // ** and the gridNode is not too big (because of the content),
@@ -256,16 +258,17 @@ export default class Grid {
 
     this._debug._ && console.log('splitStartRowIndexes', splitStartRowIndexes);
 
+    const entries = this._currentGridEntries;
     const splits = [
       ...splitStartRowIndexes
         .map((value, index, array) => this._buildGridSplit({
           startId: array[index - 1] || 0,
           endId: value,
           node: gridNode,
-          rowGroups,
+          entries,
         }))
         .filter(Boolean),
-      this._createAndInsertGridFinalSlice({ node: gridNode }),
+      this._createAndInsertGridFinalSlice({ node: gridNode, entries }),
     ];
 
     this._debug._ && console.log(
@@ -299,12 +302,13 @@ export default class Grid {
   //  and thin wrappers around the shared paginator functions
   //  (_updateCurrentGridSplitBottom, _registerPageStartAt)
   //  plus adapter hooks (_createAndInsertGridSlice, _createAndInsertGridFinalSlice)
-  //  so grid reuses shared builders while exposing row markers via real cells
-  //  or measured tops when cells are missing.
+  //  and a shared entries container so the adapter sees the same rowGroups reference
+  //  the paginator mutates, whether cells stay as elements or become wrappers.
 
   _resetCurrent() {
     this._currentGridNode = undefined;
     this._currentGridRowGroups = undefined;
+    this._currentGridEntries = undefined;
     this._currentGridSplitBottom = undefined;
     this._currentGridFullPartHeight = undefined;
     this._currentGridSplitLog = undefined;
@@ -358,7 +362,8 @@ export default class Grid {
     Paginator.registerPageStartAt(this._getPaginatorAdapter(), index, splitStartRowIndexes, reason);
   }
 
-  _buildGridSplit({ startId, endId, node, rowGroups }) {
+  _buildGridSplit({ startId, endId, node, entries }) {
+    const rowGroups = entries?.rowGroups || this._currentGridRowGroups || [];
     if (startId === endId) {
       // Empty slice means pagination markers collided; log and assert in dev.
       this._debug._ && console.warn('[grid.split] _buildGridSplit: skip empty slice request', startId, endId);
@@ -369,15 +374,15 @@ export default class Grid {
       const rowsPreview = rowGroups.slice(startId, endId);
       console.log(`=> [grid.split] _buildGridSplit: slice rows [${startId}, ${endId})`, rowsPreview);
     }
-    return this._createAndInsertGridSlice({ startId, endId, node, rowGroups });
+    return this._createAndInsertGridSlice({ startId, endId, node, entries });
   }
 
-  _createAndInsertGridSlice({ startId, endId, node, rowGroups }) {
-    return GridAdapter.createAndInsertGridSlice(this, { startId, endId, node, childrenGroups: rowGroups });
+  _createAndInsertGridSlice({ startId, endId, node, entries }) {
+    return GridAdapter.createAndInsertGridSlice(this, { startId, endId, node, entries });
   }
 
-  _createAndInsertGridFinalSlice({ node }) {
-    return GridAdapter.createAndInsertGridFinalSlice(this, { node });
+  _createAndInsertGridFinalSlice({ node, entries }) {
+    return GridAdapter.createAndInsertGridFinalSlice(this, { node, entries });
   }
 
   _splitGridRow({ rowIndex, row, gridNode, firstPartHeight, fullPagePartHeight }) {
