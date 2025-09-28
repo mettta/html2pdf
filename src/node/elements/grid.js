@@ -189,6 +189,7 @@ export default class Grid {
     const splitStartRowIndexes = [];
     let rowIndex = 0;
     const EPS = 0.5;
+    const entries = this._currentGridEntries;
 
     this._updateCurrentGridSplitBottom(firstPartHeight, 'start with initial window');
 
@@ -233,18 +234,29 @@ export default class Grid {
 
       if (splitResult && splitResult.newRows.length) {
         rowGroups.splice(rowIndex, 1, ...splitResult.newRows);
-
-        const firstSliceTop = this._getRowTop(rowGroups[rowIndex], gridNode);
-        const firstSliceBottom = this._getRowBottom(rowGroups[rowIndex], gridNode);
-
-        if (usedTailWindow && !splitResult.isFirstPartEmptyInAnyCell && firstSliceBottom <= pageBottom + EPS) {
-          continue;
+        if (entries) {
+          entries.rowGroups = this._currentGridRowGroups;
         }
 
-        this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Grid row slice — next part starts page');
-        continue;
+        const firstSliceCells = rowGroups[rowIndex];
+        const firstSliceTop = this._getRowTop(firstSliceCells, gridNode);
+        const firstSliceBottom = this._getRowBottom(firstSliceCells, gridNode);
+        const mustStartOnNextPage = !usedTailWindow || splitResult.isFirstPartEmptyInAnyCell;
 
-        // todo 🚧 Future: if still overflowing after escalation, fall back to scaling.
+        if (!mustStartOnNextPage) {
+          const availableTailHeight = pageBottom - firstSliceTop;
+          if (availableTailHeight > EPS) {
+            this._scaleGridCells(firstSliceCells, availableTailHeight);
+          }
+          this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Grid row slice — next part starts page');
+        } else {
+          if (splitResult.needsScalingInFullPage && firstSliceCells.length) {
+            this._scaleGridCells(firstSliceCells, fullPagePartHeight);
+          }
+          this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Grid row overflow — move row to next page');
+        }
+
+        continue;
       }
 
       if (rowIndex > 0) {
@@ -261,18 +273,19 @@ export default class Grid {
 
     this._debug._ && console.log('splitStartRowIndexes', splitStartRowIndexes);
 
-    const entries = this._currentGridEntries;
     const finalStartId = splitStartRowIndexes.length ? splitStartRowIndexes.at(-1) : 0;
     // For telemetry: finalStartId mirrors table slices even though final build does not need it
+    const sliceResults = splitStartRowIndexes
+      .map((value, index, array) => this._buildGridSplit({
+        startId: array[index - 1] || 0,
+        endId: value,
+        node: gridNode,
+        entries,
+      }))
+      .filter(Boolean);
+
     const splits = [
-      ...splitStartRowIndexes
-        .map((value, index, array) => this._buildGridSplit({
-          startId: array[index - 1] || 0,
-          endId: value,
-          node: gridNode,
-          entries,
-        }))
-        .filter(Boolean),
+      ...sliceResults.map(result => result.part),
       this._createAndInsertGridFinalSlice({ node: gridNode, entries, startId: finalStartId }),
     ];
 
@@ -389,7 +402,7 @@ export default class Grid {
       type: 'slice',
       rows: telemetryRows,
     });
-    return part;
+    return { part, telemetryRows };
   }
 
   _createAndInsertGridSlice({ startId, endId, node, entries }) {
@@ -423,6 +436,13 @@ export default class Grid {
         cells,
       };
     });
+  }
+
+  _scaleGridCells(cells, totalRowHeight) {
+    if (!Array.isArray(cells) || !cells.length) {
+      return false;
+    }
+    return this._node.scaleCellsToHeight(cells, totalRowHeight);
   }
 
   _recordGridPart(part, meta = {}) {

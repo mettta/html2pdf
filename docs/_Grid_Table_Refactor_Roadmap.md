@@ -20,6 +20,8 @@
     - Post-split guards (`rowSpan`, dense flow) never re-evaluated; rely on initial scan only.
     - No rebuild of telemetry data after slicing; recorder sees old structures.
 - [ ] **Extract shared slicers**: lift reusable helpers from table (row slicing, cell slicing, scaling) into modules.
+  - [x] Adopt shared row slicing (sliceCellsBySplitPoints/buildRowSlices) via node modules.
+  - [ ] Share cell scaling/fallback helpers (needsScalingInFullPage, scaleCellsToHeight wrappers).
 - [ ] **Integrate in grid**: replace bespoke grid logic with shared helpers, keeping grid-specific guards.
 - [ ] **Guard unsupported layouts**: ensure spans/dense flow bail early with recorder/log entries.
 
