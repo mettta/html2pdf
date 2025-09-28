@@ -393,8 +393,11 @@ export default class Table {
             }
           }
 
-          this._node.applyRowSlicesToEntriesAfterRowSplit(this._currentTableEntries, rowIndex, newRows);
-          this._updateCurrentTableDistributedRows();
+          // * Keep currentRows/entries/guards in sync with freshly generated slices via shared kernel helper.
+          this._node.paginationRefreshRowsAfterSplit(this._getSplitterAdapter(), {
+            rowIndex,
+            rowSlices: newRows,
+          });
 
           // * Decide if we must start the row on the next page.
           // * 1) Content-level: isFirstPartEmptyInAnyTD — splitPoints reported an empty first fragment in some TD.
@@ -729,6 +732,49 @@ export default class Table {
       shouldAssert: () => this._assert,
       getDebug: () => this._debug,
       getSplitBottomLog: () => this._logSplitBottom_,
+    };
+  }
+
+  _getSplitterAdapter() {
+    const guardConfigFactory = () => ({
+      rows: this._currentTableDistributedRows || [],
+      DOM: this._DOM,
+      cellTagFilter: (tag, cell) => {
+        const parent = cell?.parentNode;
+        const containerTag = parent ? this._DOM.getElementTagName(parent) : undefined;
+        return containerTag !== 'TFOOT' && (tag === 'TD' || tag === 'TH');
+      },
+    });
+
+    return {
+      label: 'table',
+      rows: {
+        getCurrentRows: () => this._currentTableDistributedRows || [],
+        replaceRow: ({ rowIndex, rowSlices }) => {
+          this._node.applyRowSlicesToEntriesAfterRowSplit(this._currentTableEntries, rowIndex, rowSlices);
+        },
+        syncEntries: () => {
+          this._updateCurrentTableDistributedRows();
+          if (this._currentTableRecordedParts) {
+            this._currentTableRecordedParts.currentRows = this._currentTableDistributedRows;
+          }
+        },
+        getGuardConfig: guardConfigFactory,
+        onRowsChanged: () => {
+          if (this._currentTableRecordedParts) {
+            this._currentTableRecordedParts.currentRows = this._currentTableDistributedRows;
+          }
+        },
+      },
+      guards: {
+        getConfig: guardConfigFactory,
+        onFlags: ({ flags }) => {
+          if (!flags) return;
+          this._currentTableHasRowspan = Boolean(flags.hasRowspan);
+          this._currentTableHasColspan = Boolean(flags.hasColspan);
+          this._currentTableInconsistentCells = Boolean(flags.inconsistentCells);
+        },
+      },
     };
   }
 

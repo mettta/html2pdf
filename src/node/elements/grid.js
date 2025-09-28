@@ -234,13 +234,12 @@ export default class Grid {
       }
 
       if (splitResult && splitResult.newRows.length) {
-        // Keep currentRows/entries in sync with freshly generated slices.
-        this._node.replaceCurrentRowsAfterRowSplit({ currentRows, index: rowIndex, rowSlices: splitResult.newRows });
-        if (entries) {
-          entries.currentRows = this._currentGridRows;
-        }
-        // Refresh guard-related flags after currentRows mutate.
-        this._node.computeRowFlags({ rows: currentRows, DOM: this._DOM });
+
+        // * Keep currentRows/entries/guards in sync with freshly generated slices via shared kernel helper.
+        this._node.paginationRefreshRowsAfterSplit(this._getSplitterAdapter(), {
+          rowIndex,
+          rowSlices: splitResult.newRows,
+        });
 
         const firstSliceCells = currentRows[rowIndex];
         const firstSliceTop = this._getRowTop(firstSliceCells, gridNode);
@@ -342,6 +341,7 @@ export default class Grid {
     this._currentGridSplitBottom = undefined;
     this._currentGridFullPartHeight = undefined;
     this._currentGridSplitLog = undefined;
+    this._currentGridRowFlags = undefined;
   }
 
   _getPaginatorAdapter() {
@@ -381,6 +381,40 @@ export default class Grid {
       shouldAssert: () => this._assert,
       getDebug: () => this._debug,
       getSplitBottomLog: () => this._currentGridSplitLog,
+    };
+  }
+
+  _getSplitterAdapter() {
+    return {
+      label: 'grid',
+      rows: {
+        getCurrentRows: () => this._currentGridRows || [],
+        replaceRow: ({ rowIndex, rowSlices }) => {
+          if (!Array.isArray(this._currentGridRows)) return;
+          this._node.replaceCurrentRowsAfterRowSplit({
+            currentRows: this._currentGridRows,
+            index: rowIndex,
+            rowSlices,
+          });
+        },
+        syncEntries: () => {
+          if (this._currentGridEntries) {
+            this._currentGridEntries.currentRows = this._currentGridRows;
+          }
+          if (this._currentGridRecordedParts) {
+            this._currentGridRecordedParts.currentRows = this._currentGridRows;
+          }
+        },
+        getGuardConfig: () => ({
+          rows: this._currentGridRows || [],
+          DOM: this._DOM,
+        }),
+      },
+      guards: {
+        onFlags: ({ flags }) => {
+          this._currentGridRowFlags = flags;
+        },
+      },
     };
   }
 

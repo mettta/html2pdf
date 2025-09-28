@@ -40,10 +40,10 @@
 - [ ] Confirm runtime paths never depend on `recordedParts` presence; log only when debug enabled.
 
 ### 4. Shared Splitter Kernel
-- [ ] Define adapter contract used by grid/table (rows provider, part builder, cell balancer).
+- [x] Define adapter contract used by grid/table (rows provider, part builder, cell balancer).
 - [ ] Promote `needsScalingInFullPage` and related fallbacks into shared module.
 - [ ] Move row/cell balancing helpers (insert empty cells, rebuild row groups) into shared layer.
-- [ ] Ensure guards (rowSpan/dense flow/etc.) integrate with kernel without duplicating code.
+- [x] Ensure guards (rowSpan/dense flow/etc.) integrate with kernel without duplicating code.
 
 ### 5. Cross-Cutting TODOs
 - [ ] Optimise width locking (batch read/write, cache computed sizes instead of per-call DOM queries).
