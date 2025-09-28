@@ -54,3 +54,25 @@ export function buildRowSlices({
 
   return rows;
 }
+
+/**
+ * Evaluate whether the first slice can stay on the current page window.
+ * Returns placement decision and available tail height.
+ */
+export function evaluateRowSplitPlacement({
+  usedTailWindow,
+  isFirstPartEmpty,
+  firstSliceTop,
+  firstSliceBottom,
+  pageBottom,
+  epsilon = 0.5,
+}) {
+  const availableTailHeight = pageBottom - firstSliceTop;
+  const fitsTailWindow = usedTailWindow
+    && !isFirstPartEmpty
+    && firstSliceBottom <= pageBottom + epsilon;
+  return {
+    placeOnCurrentPage: fitsTailWindow,
+    availableTailHeight,
+  };
+}

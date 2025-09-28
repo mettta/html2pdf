@@ -23,6 +23,7 @@
 - [ ] **Extract shared slicers**: lift reusable helpers from table (row slicing, cell slicing, scaling) into modules.
   - [x] Adopt shared row slicing (sliceCellsBySplitPoints/buildRowSlices) via node modules.
   - [ ] Share cell scaling/fallback helpers (needsScalingInFullPage, scaleCellsToHeight wrappers).
+  - [x] Use shared evaluateRowSplitPlacement for tail vs full-page decisions.
 - [ ] **Integrate in grid**: replace bespoke grid logic with shared helpers, keeping grid-specific guards.
 - [ ] **Guard unsupported layouts**: ensure spans/dense flow bail early with recorder/log entries.
 

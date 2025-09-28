@@ -400,29 +400,29 @@ export default class Table {
           // * 1) Content-level: isFirstPartEmptyInAnyTD — splitPoints reported an empty first fragment in some TD.
           // * 2) Geometry-level: insufficientRemainingPageSpace — the little page space left forced escalation to full-page height.
           // * If either is true, place first slice in a full‑page window on the next page.
-          const mustStartOnNextPage = isFirstPartEmptyInAnyTD || insufficientRemainingPageSpace;
+          const firstSlice = newRows[0];
+          const firstSliceTop = this._node.getTop(firstSlice, this._currentTable);
+          const firstSliceBottom = this._node.getBottom(firstSlice, this._currentTable);
+          const placement = this._node.evaluateRowSplitPlacement({
+            usedTailWindow: !insufficientRemainingPageSpace,
+            isFirstPartEmpty: isFirstPartEmptyInAnyTD,
+            firstSliceTop,
+            firstSliceBottom,
+            pageBottom: this._currentTableSplitBottom,
+            epsilon: 0,
+          });
 
-          if (!mustStartOnNextPage) {
-            // * A) Tail case: keep the first slice on the current page.
+          if (placement.placeOnCurrentPage) {
             // * Scale only the first slice to fit the remaining page space.
-            // * Ensure the first slice fits the current page window (before registration).
-            const firstSlice = newRows[0];
-            const firstSliceTop = this._node.getTop(firstSlice, this._currentTable);
-            const availableTailHeight = this._currentTableSplitBottom - firstSliceTop;
-            if (availableTailHeight > 0) {
-              this._scaleProblematicTDs(firstSlice, availableTailHeight, this._getRowShellHeights(firstSlice));
+            if (placement.availableTailHeight > 0) {
+              this._scaleProblematicTDs(firstSlice, placement.availableTailHeight, this._getRowShellHeights(firstSlice));
             }
-            // * Register the next slice (part 2 of this row) as a new page start.
             this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Row split — next slice starts new page');
           } else {
-            // * B) Full‑page case: move the whole row to the next page.
-            // * If second pass of getSplitPoints() still reported unsplittable content,
-            // * scale (reduce) the first slice to full‑page height.
-            if (needsScalingInFullPage && newRows[0]) {
+            if (needsScalingInFullPage && firstSlice) {
               this._debug._ && console.log('⚖️ _scaleProblematicTDs');
-              this._scaleProblematicTDs(newRows[0], this._currentTableFullPartContentHeight, this._getRowShellHeights(newRows[0]));
+              this._scaleProblematicTDs(firstSlice, this._currentTableFullPartContentHeight, this._getRowShellHeights(firstSlice));
             }
-            // * No feasible short first fragment → move the whole row to the next page.
             this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Empty first part — move row to next page');
           }
 

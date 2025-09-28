@@ -242,12 +242,18 @@ export default class Grid {
         const firstSliceCells = rowGroups[rowIndex];
         const firstSliceTop = this._getRowTop(firstSliceCells, gridNode);
         const firstSliceBottom = this._getRowBottom(firstSliceCells, gridNode);
-        const mustStartOnNextPage = !usedTailWindow || splitResult.isFirstPartEmptyInAnyCell;
+        const placement = this._node.evaluateRowSplitPlacement({
+          usedTailWindow,
+          isFirstPartEmpty: splitResult.isFirstPartEmptyInAnyCell,
+          firstSliceTop,
+          firstSliceBottom,
+          pageBottom,
+          epsilon: EPS,
+        });
 
-        if (!mustStartOnNextPage) {
-          const availableTailHeight = pageBottom - firstSliceTop;
-          if (availableTailHeight > EPS) {
-            this._scaleGridCells(firstSliceCells, availableTailHeight);
+        if (placement.placeOnCurrentPage) {
+          if (placement.availableTailHeight > EPS) {
+            this._scaleGridCells(firstSliceCells, placement.availableTailHeight);
           }
           this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Grid row slice — next part starts page');
         } else {
