@@ -25,6 +25,7 @@
   - [ ] Share cell scaling/fallback helpers (needsScalingInFullPage, scaleCellsToHeight wrappers).
   - [x] Use shared evaluateRowSplitPlacement for tail vs full-page decisions.
   - [x] Expose shared scaling helper (wrap scaleCellsToHeight / needsScalingInFullPage).
+  - [ ] Port `_scaleProblematicTDs` logic to grid once shell heights are available; add dedicated tests for scaling behaviour.
 - [ ] **Integrate in grid**: replace bespoke grid logic with shared helpers, keeping grid-specific guards.
 - [ ] **Guard unsupported layouts**: ensure spans/dense flow bail early with recorder/log entries.
 

@@ -72,17 +72,17 @@ export function evaluateRowSplitPlacement({
 }) {
   // usedRemainingWindow — remaining window was attempted (portion of current page before escalating).
   // isFirstPartEmpty — slicer reported an empty first fragment.
-  // availableTailHeight — remaining vertical space in the current window
+  // remainingWindowSpace — remaining vertical space in the current window ("remaining window")
   // (from the top of the first slice to pageBottom). Used to decide tail scaling.
-  const availableTailHeight = Math.max(0, pageBottom - firstSliceTop);
-  // hasRemainingWindow — true when we are operating in a tail window and the first slice is not empty;
+  const remainingWindowSpace = Math.max(0, pageBottom - firstSliceTop);
+  // hasRemainingWindowSpace — true when we are operating in a tail window and the first slice is not empty;
   // only then the fragment may stay on the current page.
-  const hasRemainingWindow = usedRemainingWindow && !isFirstPartEmpty;
+  const hasRemainingWindowSpace = usedRemainingWindow && !isFirstPartEmpty;
   // exceedsWindow — diagnostic flag: first slice bottom exceeds pageBottom + epsilon.
   const exceedsWindow = firstSliceBottom > pageBottom + epsilon;
   return {
-    placeOnCurrentPage: hasRemainingWindow,
-    availableTailHeight,
+    placeOnCurrentPage: hasRemainingWindowSpace,
+    remainingWindowSpace,
     exceedsWindow,
   };
 }

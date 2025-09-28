@@ -252,8 +252,8 @@ export default class Grid {
         });
 
         if (placement.placeOnCurrentPage) {
-          if (placement.availableTailHeight > EPS) {
-            this._node.paginationScaleCellsToHeight({ cells: firstSliceCells, targetHeight: placement.availableTailHeight });
+          if (placement.remainingWindowSpace > EPS) {
+            this._node.paginationScaleCellsToHeight({ cells: firstSliceCells, targetHeight: placement.remainingWindowSpace });
           }
           this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Grid row slice — next part starts page');
         } else {

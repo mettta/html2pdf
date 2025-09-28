@@ -404,7 +404,7 @@ export default class Table {
           const firstSliceTop = this._node.getTop(firstSlice, this._currentTable);
           const firstSliceBottom = this._node.getBottom(firstSlice, this._currentTable);
           const placement = this._node.evaluateRowSplitPlacement({
-            usedTailWindow: !insufficientRemainingWindow,
+            usedRemainingWindow: !insufficientRemainingWindow,
             isFirstPartEmpty: isFirstPartEmptyInAnyTD,
             firstSliceTop,
             firstSliceBottom,
@@ -414,17 +414,15 @@ export default class Table {
 
           if (placement.placeOnCurrentPage) {
             // * Scale only the first slice to fit the remaining page space.
-            if (placement.availableTailHeight > 0) {
-              this._scaleProblematicTDs(firstSlice, placement.availableTailHeight, this._getRowShellHeights(firstSlice));
+            if (placement.remainingWindowSpace > 0) {
+              this._scaleProblematicTDs(firstSlice, placement.remainingWindowSpace, this._getRowShellHeights(firstSlice));
             }
             this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Row split — next slice starts new page');
           } else {
-            if (this._node.paginationShouldScaleFullPage({ needsScalingInFullPage, cells: [firstSlice] })) {
-              this._node.paginationScaleCellsToHeight({
-                cells: [...this._DOM.getChildren(firstSlice)],
-                targetHeight: this._currentTableFullPartContentHeight,
-                shells: this._getRowShellHeights(firstSlice),
-              });
+            // * Escalate to full-page window and scale the first slice if slicer requested it.
+            if (needsScalingInFullPage && firstSlice) {
+              this._debug._ && console.log('⚖️ _scaleProblematicTDs');
+              this._scaleProblematicTDs(firstSlice, this._currentTableFullPartContentHeight, this._getRowShellHeights(firstSlice));
             }
             this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Empty first part — move row to next page');
           }
