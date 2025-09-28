@@ -409,6 +409,7 @@ export default class Grid {
     return part;
   }
 
+  // TODO(grid/table): evaluate moving telemetry collection into a shared helper (see docs/_Grid_Table_Refactor_Roadmap.md).
   _collectGridTelemetryRows(rowGroups, startId, endId) {
     if (!Array.isArray(rowGroups)) {
       return [];
