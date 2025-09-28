@@ -16,37 +16,40 @@ export function sliceCellsBySplitPoints({ cells, splitPointsPerCell, sliceCell }
 }
 
 /**
- * Build new row wrappers from sliced cells and ensure structural parity with original row.
+ * Build balanced row slices using adapter callbacks.
+ *
  * @param {Object} params
- * @param {HTMLElement} params.originalRow
- * @param {HTMLElement[]} params.originalCells
- * @param {HTMLElement[][]} params.slicedCellsPerOriginal
- * @param {Function} params.createRowClone - ({ originalRow, sliceIndex }) => HTMLElement
- * @param {Function} params.cloneCellFallback - (cell) => HTMLElement
- * @param {Function} params.insertCell - ({ rowClone, cellClone }) => void
- * @returns {HTMLElement[]}
+ * @param {any} params.originalRow
+ * @param {any[]} params.originalCells
+ * @param {Array<any[]>} params.slicedCellsPerOriginal
+ * @param {Function} params.beginRow - ({ originalRow, sliceIndex }) => any
+ * @param {Function} params.cloneCellFallback - (cell) => any
+ * @param {Function} params.handleCell - ({ context, cellClone, originalCell, cellIndex }) => void
+ * @param {Function} params.finalizeRow - ({ context }) => any
+ * @returns {any[]}
  */
 export function buildRowSlices({
   originalRow,
   originalCells,
   slicedCellsPerOriginal,
-  createRowClone,
+  beginRow,
   cloneCellFallback,
-  insertCell,
+  handleCell,
+  finalizeRow,
 }) {
   const maxSlices = Math.max(...slicedCellsPerOriginal.map(arr => arr.length));
   const rows = [];
 
   for (let sliceIndex = 0; sliceIndex < maxSlices; sliceIndex++) {
-    const rowClone = createRowClone({ originalRow, sliceIndex });
+    const context = beginRow({ originalRow, sliceIndex });
 
     originalCells.forEach((origCell, cellIdx) => {
       const slicedCandidates = slicedCellsPerOriginal[cellIdx];
       const cellClone = slicedCandidates[sliceIndex] || cloneCellFallback(origCell);
-      insertCell({ rowClone, cellClone });
+      handleCell({ context, cellClone, originalCell: origCell, cellIndex: cellIdx });
     });
 
-    rows.push(rowClone);
+    rows.push(finalizeRow({ context }));
   }
 
   return rows;

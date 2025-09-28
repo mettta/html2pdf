@@ -473,35 +473,36 @@ export default class Grid {
       };
     }
 
-    const slicedPerCell = row.map((cell, index) => {
-      this._node.setFlagSlice(cell);
-      return this._node.sliceNodeBySplitPoints({ index, rootNode: cell, splitPoints: splitPointsPerCell[index] });
+    row.forEach(cell => this._node.setFlagSlice(cell));
+
+    const slicedPerCell = this._node.sliceCellsBySplitPoints({
+      cells: row,
+      splitPointsPerCell,
+      sliceCell: ({ cell, index, splitPoints }) => this._node.sliceNodeBySplitPoints({ index, rootNode: cell, splitPoints }),
     });
 
-    const maxSlices = Math.max(...slicedPerCell.map(arr => arr.length));
     const anchor = row[0];
-    const newRows = [];
-
-    for (let sliceIndex = 0; sliceIndex < maxSlices; sliceIndex++) {
-      const fragment = this._DOM.createDocumentFragment();
-      const sliceCells = [];
-
-      row.forEach((originalCell, cellIdx) => {
-        const candidates = slicedPerCell[cellIdx];
-        const nextCell = candidates[sliceIndex] ? candidates[sliceIndex] : this._DOM.cloneNodeWrapper(originalCell);
-        this._node.setFlagSlice(nextCell);
-        fragment.append(nextCell);
-        sliceCells.push(nextCell);
-      });
-
-      this._DOM.insertBefore(anchor, fragment);
-      newRows.push(sliceCells);
-    }
+    const generatedRows = this._node.buildRowSlices({
+      originalRow: row,
+      originalCells: row,
+      slicedCellsPerOriginal: slicedPerCell,
+      beginRow: () => ({ fragment: this._DOM.createDocumentFragment(), cells: [] }),
+      cloneCellFallback: (originalCell) => this._DOM.cloneNodeWrapper(originalCell),
+      handleCell: ({ context, cellClone }) => {
+        this._node.setFlagSlice(cellClone);
+        context.fragment.append(cellClone);
+        context.cells.push(cellClone);
+      },
+      finalizeRow: ({ context }) => {
+        this._DOM.insertBefore(anchor, context.fragment);
+        return context.cells;
+      },
+    });
 
     row.forEach(cell => this._DOM.removeNode(cell));
 
     return {
-      newRows,
+      newRows: generatedRows,
       isFirstPartEmptyInAnyCell: computed.isFirstPartEmptyInAnyCell,
       needsScalingInFullPage: computed.needsScalingInFullPage,
     };

@@ -554,15 +554,16 @@ export default class Table {
         originalRow: splittingRow,
         originalCells: originalTDs,
         slicedCellsPerOriginal: slicedTDsPerOrigTD,
-        createRowClone: ({ originalRow, sliceIndex }) => {
+        beginRow: ({ originalRow, sliceIndex }) => {
           const rowWrapper = this._DOM.cloneNodeWrapper(originalRow);
           this._DOM.setAttribute(rowWrapper, `.splitted_row_${splittingRowIndex}_part_${sliceIndex}`);
-          return rowWrapper;
+          return { rowWrapper };
         },
         cloneCellFallback: (origTd) => this._DOM.cloneNodeWrapper(origTd),
-        insertCell: ({ rowClone, cellClone }) => {
-          this._DOM.insertAtEnd(rowClone, cellClone);
+        handleCell: ({ context, cellClone }) => {
+          this._DOM.insertAtEnd(context.rowWrapper, cellClone);
         },
+        finalizeRow: ({ context }) => context.rowWrapper,
       });
 
       newRows.push(...generatedRows);
