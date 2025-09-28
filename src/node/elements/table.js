@@ -542,26 +542,30 @@ export default class Table {
     const ifThereIsSplit = splitPointsPerTD.some(obj => obj.length);
     if (ifThereIsSplit) {
 
-      const slicedTDsPerOrigTD = this._sliceCellsBySplitPoints(originalTDs, splitPointsPerTD);
+      const slicedTDsPerOrigTD = this._node.sliceCellsBySplitPoints({
+        cells: originalTDs,
+        splitPointsPerCell: splitPointsPerTD,
+        sliceCell: ({ cell, index, splitPoints }) => this._node.sliceNodeBySplitPoints({ index, rootNode: cell, splitPoints }),
+      });
 
       this._debug._ && console.log('🟣 slicedTDsPerOrigTD', slicedTDsPerOrigTD);
 
-      const maxSlicesPerTD = Math.max(...slicedTDsPerOrigTD.map(arr => arr.length));
+      const generatedRows = this._node.buildRowSlices({
+        originalRow: splittingRow,
+        originalCells: originalTDs,
+        slicedCellsPerOriginal: slicedTDsPerOrigTD,
+        createRowClone: ({ originalRow, sliceIndex }) => {
+          const rowWrapper = this._DOM.cloneNodeWrapper(originalRow);
+          this._DOM.setAttribute(rowWrapper, `.splitted_row_${splittingRowIndex}_part_${sliceIndex}`);
+          return rowWrapper;
+        },
+        cloneCellFallback: (origTd) => this._DOM.cloneNodeWrapper(origTd),
+        insertCell: ({ rowClone, cellClone }) => {
+          this._DOM.insertAtEnd(rowClone, cellClone);
+        },
+      });
 
-      for (let i = 0; i < maxSlicesPerTD; i++) {
-        const rowWrapper = this._DOM.cloneNodeWrapper(splittingRow);
-        this._DOM.setAttribute(rowWrapper, `.splitted_row_${splittingRowIndex}_part_${i}`);
-
-        [...originalTDs].forEach(
-          (origTd, origTdIdx) => {
-            const newTDwithContent = slicedTDsPerOrigTD[origTdIdx][i];
-            const newTDtoInsert = newTDwithContent || this._DOM.cloneNodeWrapper(origTd);
-            this._DOM.insertAtEnd(rowWrapper, newTDtoInsert);
-          }
-        );
-
-        newRows.push(rowWrapper);
-      }
+      newRows.push(...generatedRows);
 
     } else {
 
@@ -574,14 +578,6 @@ export default class Table {
     // * Return both the new rows and a flag indicating if the first part is empty
     return { newRows, isFirstPartEmptyInAnyTD, needsScalingInFullPage };
 
-  }
-
-  _sliceCellsBySplitPoints(cells, splitPointsPerCell) {
-    // * Slice each TD by split points and return slices per TD
-    return splitPointsPerCell.map((splitPoints, index) => {
-      const cell = cells[index];
-      return this._node.sliceNodeBySplitPoints({ index, rootNode: cell, splitPoints });
-    });
   }
 
   // ===== 📐 Metrics =====
