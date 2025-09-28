@@ -44,5 +44,9 @@ export function paginationApplyFullPageScaling({ needsScalingInFullPage, scaleCa
   if (typeof scaleCallback !== 'function') {
     return false;
   }
-  return Boolean(scaleCallback(payload || {}));
+  const result = scaleCallback(payload || {});
+  if (!result && this && this._debug && this._debug._) {
+    console.warn('[pagination.scaling] requested full-page scaling but callback reported no change', payload);
+  }
+  return Boolean(result);
 }

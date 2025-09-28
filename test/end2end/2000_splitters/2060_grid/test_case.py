@@ -14,6 +14,12 @@ case1_html_file_url = (
 case7_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "case7.html")
 )
+case8_html_file_url = (
+    "file:///" + os.path.join(path_to_this_test_file_folder, "case8.html")
+)
+case9_html_file_url = (
+    "file:///" + os.path.join(path_to_this_test_file_folder, "case9.html")
+)
 
 
 class Test(BaseCase):
@@ -64,8 +70,7 @@ class Test(BaseCase):
         self.helper.assert_element_on_the_page('//*[@data-testid="L10-2"]', 2)
         self.helper.assert_element_on_the_page('//*[@data-testid="closer"]', 2)
 
-
-    def test_2(self):
+    def test_7(self):
         # * Single grid row with long content is sliced via slicers.
         # * Expect at least two parts across pages with content preserved.
         self.helper.do_open(case7_html_file_url)
@@ -74,3 +79,23 @@ class Test(BaseCase):
         self.helper.assert_element_on_the_page('//*[@data-testid="chunk-4"]', 1)
         self.helper.assert_element_on_the_page('//*[@data-testid="chunk-5"]', 2)
         self.helper.assert_element_on_the_page('//*[@data-testid="chunk-8"]', 2)
+
+    def test_8(self):
+        # * last chunk has problematic height (inf. loop)
+        self.helper.do_open(case8_html_file_url)
+        self.helper.assert_document_has_pages(3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="chunk-1"]', 1)
+        self.helper.assert_element_on_the_page('//*[@data-testid="chunk-4"]', 1)
+        self.helper.assert_element_on_the_page('//*[@data-testid="like_image"]', 2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="chunk-5"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="chunk-8"]', 3)
+
+    def test_9(self):
+        # * @data-testid="like_image" was scaled
+        self.helper.do_open(case8_html_file_url)
+        self.helper.assert_document_has_pages(3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="chunk-1"]', 1)
+        self.helper.assert_element_on_the_page('//*[@data-testid="chunk-4"]', 1)
+        self.helper.assert_element_on_the_page('//*[@data-testid="like_image"]', 2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="chunk-5"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="chunk-8"]', 3)

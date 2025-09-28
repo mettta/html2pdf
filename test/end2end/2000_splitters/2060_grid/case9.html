@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Grid row slicing</title>
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+
+  <script
+    defer
+    data-debug-mode="true"
+    data-markup-debug-mode="true"
+    data-print-height='600px'
+    data-print-width='600px'
+    data-print-left-margin= '50px'
+    data-print-right-margin= '50px'
+    data-print-top-margin= '50px'
+    data-print-bottom-margin= '50px'
+    data-print-font-size='16px'
+    data-console-assert="true"
+
+    data-forced-page-break-selectors=''
+    data-page-break-after-selectors=''
+    data-page-break-before-selectors=''
+
+    data-no-break-selectors='.html2pdf4doc-no-break'
+    data-no-hanging-selectors='.html2pdf4doc-no-hanging'
+    src="../../../../dist/bundle.js"></script>
+</head>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  .intro-filler {
+    height: 150px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 6px;
+    background: rgba(200, 255, 255, 0.25);
+    padding: 6px;
+  }
+
+  .grid > * {
+    border: 1px solid #006;
+    padding: 6px;
+    box-sizing: border-box;
+    background: #fff;
+  }
+
+  .chunk {
+    margin: 0 0 12px 0;
+    padding: 10px;
+    line-height: 20px;
+    background: rgba(0, 128, 255, 0.08);
+  }
+</style>
+
+<body>
+  <div class="intro-filler"></div>
+
+  <div class="grid" data-testid="grid-under-test">
+    <div data-testid="label-col">Observation1</div>
+    <div data-testid="value-col">
+      <p class="chunk" data-testid="chunk-1">Chunk 1. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</p>
+      <p class="chunk" data-testid="chunk-2">Chunk 2. Aliquam tincidunt mauris eu risus. Vestibulum auctor dapibus neque.</p>
+      <p class="chunk" data-testid="chunk-3">Chunk 3. Mauris turpis nunc, blandit et, volutpat molestie, porta ut, ligula.</p>
+      <p class="chunk" data-testid="chunk-4">Chunk 4. Fusce suscipit libero eget elit. Sed elit dui, pellentesque a, faucibus vel, interdum nec, diam.</p>
+    </div>
+
+    <div data-testid="label-col">SCALE</div>
+    <div data-testid="value-col">
+      <div class="content value">
+        <div data-testid="like_image" filler="red" style="width: 700px; height: 700px"></div>
+      </div>
+    </div>
+
+    <div data-testid="label-col">Observation2</div>
+    <div data-testid="value-col">
+      <p class="chunk" data-testid="chunk-5">Chunk 5. Sed convallis magna eu sem. In sem justo, commodo ut, suscipit at, pharetra vitae, orci.</p>
+      <p class="chunk" data-testid="chunk-6">Chunk 6. Pellentesque arcu. Etiam posuere lacus quis dolor.</p>
+      <p class="chunk" data-testid="chunk-7">Chunk 7. Vestibulum fermentum tortor id mi. Pellentesque habitant morbi tristique senectus et netus.</p>
+      <p class="chunk" data-testid="chunk-8">Chunk 8.
+        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+      </p>
+    </div>
+  </div>
+
+</body>
+
+</html>

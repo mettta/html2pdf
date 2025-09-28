@@ -255,18 +255,34 @@ export default class Grid {
 
         if (placement.placeOnCurrentPage) {
           if (placement.remainingWindowSpace > EPS) {
-            this._node.paginationScaleCellsToHeight({ cells: firstSliceCells, targetHeight: placement.remainingWindowSpace });
+            this._scaleGridCellsToHeight(firstSliceCells, placement.remainingWindowSpace);
           }
           this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Grid row slice — next part starts page');
         } else {
           this._node.paginationApplyFullPageScaling({
             needsScalingInFullPage: splitResult.needsScalingInFullPage,
             payload: { cells: firstSliceCells, targetHeight: fullPagePartHeight },
-            scaleCallback: ({ cells, targetHeight }) => this._node.paginationScaleCellsToHeight({ cells, targetHeight }),
+            scaleCallback: ({ cells, targetHeight }) => this._scaleGridCellsToHeight(cells, targetHeight),
           });
           this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Grid row overflow — move row to next page');
         }
 
+        continue;
+      }
+
+      if (splitResult && splitResult.needsScalingInFullPage) {
+        // No slices generated but slicers signalled that full-page scaling is required.
+        // Apply the shared fallback immediately so the row fits before we move on.
+        const rowCellsForScaling = currentRows[rowIndex];
+        const cells = Array.isArray(rowCellsForScaling) ? rowCellsForScaling : [rowCellsForScaling].filter(Boolean);
+        if (cells.length) {
+          this._node.paginationApplyFullPageScaling({
+            needsScalingInFullPage: true,
+            payload: { cells, targetHeight: fullPagePartHeight },
+            scaleCallback: ({ cells: scalingCells, targetHeight }) => this._scaleGridCellsToHeight(scalingCells, targetHeight),
+          });
+        }
+        this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Grid oversized row scaled for full page');
         continue;
       }
 
@@ -428,6 +444,22 @@ export default class Grid {
     Paginator.registerPageStartAt(this._getPaginatorAdapter(), index, splitStartRowIndexes, reason);
   }
 
+  _scaleGridCellsToHeight(cells, targetHeight) {
+    if (!Array.isArray(cells) || !cells.length || !(targetHeight > 0)) {
+      return false;
+    }
+    const shells = this._node.paginationComputeCellShellHeights({ cells });
+    // In debug builds log the cell heights before/after scaling so we can confirm
+    // geometry changed; otherwise silent overflow is hard to diagnose.
+    const beforeHeights = this._debug._ ? cells.map(cell => this._DOM.getElementOffsetHeight(cell)) : null;
+    const scaled = this._node.paginationScaleCellsToHeight({ cells, targetHeight, shells });
+    if (this._debug._) {
+      const afterHeights = cells.map(cell => this._DOM.getElementOffsetHeight(cell));
+      console.log('[grid.scaleCells] target:', targetHeight, 'shells:', shells, 'before:', beforeHeights, 'after:', afterHeights, 'scaled:', scaled);
+    }
+    return scaled;
+  }
+
   _buildGridSplit({ startId, endId, node, entries }) {
     const currentRows = entries?.currentRows || this._currentGridRows || [];
     if (startId === endId) {
@@ -521,14 +553,29 @@ export default class Grid {
       gridNode
     );
 
-    const splitPointsPerCell = computed.splitPointsPerCell;
+    let { needsScalingInFullPage } = computed;
+    const splitPointsPerCell = (computed.splitPointsPerCell || []).map((points) => {
+      if (!Array.isArray(points) || !points.length) {
+        return [];
+      }
+      if (points.length === 1 && points[0] === null) {
+        // Slicers emit [null] when a cell cannot be split – table path interprets
+        // this as “scale the whole row on the next page”. Mirror that here so grid
+        // escalates to full-page fallback instead of attempting to build slices
+        // with phantom entries.
+        needsScalingInFullPage = true;
+        return [];
+      }
+      return points.filter(point => point != null);
+    });
+
     const hasSplits = splitPointsPerCell.some(list => list.length);
 
     if (!hasSplits) {
       return {
         newRows: [],
         isFirstPartEmptyInAnyCell: computed.isFirstPartEmptyInAnyCell,
-        needsScalingInFullPage: computed.needsScalingInFullPage,
+        needsScalingInFullPage,
       };
     }
 
@@ -558,7 +605,7 @@ export default class Grid {
     return {
       newRows: generatedRows,
       isFirstPartEmptyInAnyCell: computed.isFirstPartEmptyInAnyCell,
-      needsScalingInFullPage: computed.needsScalingInFullPage,
+      needsScalingInFullPage,
     };
   }
 

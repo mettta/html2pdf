@@ -111,14 +111,23 @@ export function scaleCellsToHeight(cells, totalRowHeight, shellsOpt) {
 
     if (onlyOneElementChild && firstChildEl && this.isNeutral(firstChildEl)) {
       contentWrapper = firstChildEl;
-      contentH = this._DOM.getElementOffsetHeight(contentWrapper);
+      contentH = this._DOM.getElementOffsetHeight(contentWrapper) || 0;
+    } else if (shellsOpt) {
+      // When caller provides shell heights (grid path), infer content height from
+      // the current box instead of probing cloned nodes: offsetHeight already
+      // includes padding/borders and stays valid during pagination clones.
+      const cellOuterHeight = this._DOM.getElementOffsetHeight(cell) || 0;
+      contentH = Math.max(0, cellOuterHeight - shellH);
     } else {
       contentH = this.getContentHeightByProbe(cell);
     }
 
     if (contentH > target) {
       if (!contentWrapper) {
+        // Wrap dynamic content once and remeasure via offsetHeight so repeated
+        // scaling avoids offsetParent churn.
         contentWrapper = this.wrapNodeChildrenWithNeutralBlock(cell);
+        contentH = this._DOM.getElementOffsetHeight(contentWrapper) || contentH;
       }
       this.fitElementWithinHeight(contentWrapper, target);
       scaled = true;
