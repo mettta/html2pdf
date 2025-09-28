@@ -26,3 +26,23 @@ export function paginationScaleCellsToHeight({ cells, targetHeight, shells }) {
 export function paginationShouldScaleFullPage({ needsScalingInFullPage, cells }) {
   return Boolean(needsScalingInFullPage && Array.isArray(cells) && cells.length);
 }
+
+/**
+ * Run full-page scaling fallback requested by slicers.
+ * Accepts a custom scale callback so table/grid can reuse shared decision logic.
+ *
+ * @param {Object} params
+ * @param {boolean} params.needsScalingInFullPage
+ * @param {Function} params.scaleCallback - invoked with provided payload when scaling is required.
+ * @param {Object} [params.payload]
+ * @returns {boolean}
+ */
+export function paginationApplyFullPageScaling({ needsScalingInFullPage, scaleCallback, payload }) {
+  if (!needsScalingInFullPage) {
+    return false;
+  }
+  if (typeof scaleCallback !== 'function') {
+    return false;
+  }
+  return Boolean(scaleCallback(payload || {}));
+}

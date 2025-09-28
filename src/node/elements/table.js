@@ -423,10 +423,18 @@ export default class Table {
             this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Row split — next slice starts new page');
           } else {
             // * Escalate to full-page window and scale the first slice if slicer requested it.
-            if (needsScalingInFullPage && firstSlice) {
-              this._debug._ && console.log('⚖️ _scaleProblematicTDs');
-              this._scaleProblematicTDs(firstSlice, this._currentTableFullPartContentHeight, this._getRowShellHeights(firstSlice));
-            }
+            this._node.paginationApplyFullPageScaling({
+              needsScalingInFullPage: needsScalingInFullPage && Boolean(firstSlice),
+              payload: {
+                row: firstSlice,
+                targetHeight: this._currentTableFullPartContentHeight,
+              },
+              scaleCallback: ({ row, targetHeight }) => {
+                if (!row) return false;
+                this._debug._ && console.log('⚖️ _scaleProblematicTDs');
+                return this._scaleProblematicTDs(row, targetHeight, this._getRowShellHeights(row));
+              },
+            });
             this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Empty first part — move row to next page');
           }
 
@@ -546,18 +554,11 @@ export default class Table {
     const ifThereIsSplit = splitPointsPerTD.some(obj => obj.length);
     if (ifThereIsSplit) {
 
-      const slicedTDsPerOrigTD = this._node.sliceCellsBySplitPoints({
-        cells: originalTDs,
-        splitPointsPerCell: splitPointsPerTD,
-        sliceCell: ({ cell, index, splitPoints }) => this._node.sliceNodeBySplitPoints({ index, rootNode: cell, splitPoints }),
-      });
-
-      this._debug._ && console.log('🟣 slicedTDsPerOrigTD', slicedTDsPerOrigTD);
-
-      const generatedRows = this._node.buildRowSlices({
+      const generatedRows = this._node.paginationBuildBalancedRowSlices({
         originalRow: splittingRow,
         originalCells: originalTDs,
-        slicedCellsPerOriginal: slicedTDsPerOrigTD,
+        splitPointsPerCell: splitPointsPerTD,
+        sliceCell: ({ cell, index, splitPoints }) => this._node.sliceNodeBySplitPoints({ index, rootNode: cell, splitPoints }),
         beginRow: ({ originalRow, sliceIndex }) => {
           const rowWrapper = this._DOM.cloneNodeWrapper(originalRow);
           this._DOM.setAttribute(rowWrapper, `.splitted_row_${splittingRowIndex}_part_${sliceIndex}`);

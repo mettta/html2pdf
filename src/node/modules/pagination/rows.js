@@ -58,6 +58,41 @@ export function buildRowSlices({
 }
 
 /**
+ * Convenience wrapper to slice cells and build balanced row fragments in one go.
+ * @this {Node}
+ */
+export function paginationBuildBalancedRowSlices({
+  originalRow,
+  originalCells,
+  splitPointsPerCell,
+  sliceCell,
+  beginRow,
+  cloneCellFallback,
+  handleCell,
+  finalizeRow,
+}) {
+  if (!Array.isArray(splitPointsPerCell) || !splitPointsPerCell.length) {
+    return [];
+  }
+
+  const slicedCellsPerOriginal = this.sliceCellsBySplitPoints({
+    cells: originalCells,
+    splitPointsPerCell,
+    sliceCell,
+  });
+
+  return this.buildRowSlices({
+    originalRow,
+    originalCells,
+    slicedCellsPerOriginal,
+    beginRow,
+    cloneCellFallback,
+    handleCell,
+    finalizeRow,
+  });
+}
+
+/**
  * Evaluate whether the first slice can stay on the current page window.
  * Returns placement decision and available tail height.
  * @this {Node}

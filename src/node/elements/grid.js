@@ -259,9 +259,11 @@ export default class Grid {
           }
           this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Grid row slice — next part starts page');
         } else {
-          if (this._node.paginationShouldScaleFullPage({ needsScalingInFullPage: splitResult.needsScalingInFullPage, cells: firstSliceCells })) {
-            this._node.paginationScaleCellsToHeight({ cells: firstSliceCells, targetHeight: fullPagePartHeight });
-          }
+          this._node.paginationApplyFullPageScaling({
+            needsScalingInFullPage: splitResult.needsScalingInFullPage,
+            payload: { cells: firstSliceCells, targetHeight: fullPagePartHeight },
+            scaleCallback: ({ cells, targetHeight }) => this._node.paginationScaleCellsToHeight({ cells, targetHeight }),
+          });
           this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Grid row overflow — move row to next page');
         }
 
@@ -532,17 +534,12 @@ export default class Grid {
 
     row.forEach(cell => this._node.setFlagSlice(cell));
 
-    const slicedPerCell = this._node.sliceCellsBySplitPoints({
-      cells: row,
-      splitPointsPerCell,
-      sliceCell: ({ cell, index, splitPoints }) => this._node.sliceNodeBySplitPoints({ index, rootNode: cell, splitPoints }),
-    });
-
     const anchor = row[0];
-    const generatedRows = this._node.buildRowSlices({
+    const generatedRows = this._node.paginationBuildBalancedRowSlices({
       originalRow: row,
       originalCells: row,
-      slicedCellsPerOriginal: slicedPerCell,
+      splitPointsPerCell,
+      sliceCell: ({ cell, index, splitPoints }) => this._node.sliceNodeBySplitPoints({ index, rootNode: cell, splitPoints }),
       beginRow: () => ({ fragment: this._DOM.createDocumentFragment(), cells: [] }),
       cloneCellFallback: (originalCell) => this._DOM.cloneNodeWrapper(originalCell),
       handleCell: ({ context, cellClone }) => {

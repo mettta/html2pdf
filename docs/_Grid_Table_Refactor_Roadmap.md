@@ -22,7 +22,7 @@
     - No rebuild of telemetry data after slicing; recorder sees old structures.
 - [ ] **Extract shared slicers**: lift reusable helpers from table (row slicing, cell slicing, scaling) into modules.
   - [x] Adopt shared row slicing (sliceCellsBySplitPoints/buildRowSlices) via node modules.
-  - [ ] Share cell scaling/fallback helpers (needsScalingInFullPage, scaleCellsToHeight wrappers).
+  - [x] Share cell scaling/fallback helpers (needsScalingInFullPage, scaleCellsToHeight wrappers).
   - [x] Use shared evaluateRowSplitPlacement for tail vs full-page decisions.
   - [x] Expose shared scaling helper (wrap scaleCellsToHeight / needsScalingInFullPage).
   - [ ] Port `_scaleProblematicTDs` logic to grid once shell heights are available; add dedicated tests for scaling behaviour.
@@ -41,8 +41,8 @@
 
 ### 4. Shared Splitter Kernel
 - [x] Define adapter contract used by grid/table (rows provider, part builder, cell balancer).
-- [ ] Promote `needsScalingInFullPage` and related fallbacks into shared module.
-- [ ] Move row/cell balancing helpers (insert empty cells, rebuild row groups) into shared layer.
+- [x] Promote `needsScalingInFullPage` and related fallbacks into shared module.
+- [x] Move row/cell balancing helpers (insert empty cells, rebuild row groups) into shared layer.
 - [x] Ensure guards (rowSpan/dense flow/etc.) integrate with kernel without duplicating code.
 
 ### 5. Cross-Cutting TODOs
