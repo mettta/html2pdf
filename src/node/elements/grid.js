@@ -234,7 +234,8 @@ export default class Grid {
       }
 
       if (splitResult && splitResult.newRows.length) {
-        rowGroups.splice(rowIndex, 1, ...splitResult.newRows);
+        // Keep rowGroups/entries in sync with freshly generated slices.
+        this._node.replaceRowGroups({ rowGroups, index: rowIndex, newGroups: splitResult.newRows });
         if (entries) {
           entries.rowGroups = this._currentGridRowGroups;
         }

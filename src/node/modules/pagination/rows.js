@@ -86,3 +86,14 @@ export function evaluateRowSplitPlacement({
     exceedsWindow,
   };
 }
+
+/**
+ * Replace a row group within the mutable rowGroups array.
+ * Keep array-based caches in sync after slicing.
+ * @this {Node}
+ */
+export function replaceRowGroups({ rowGroups, index, newGroups }) {
+  if (!Array.isArray(rowGroups)) return [];
+  rowGroups.splice(index, 1, ...newGroups);
+  return rowGroups;
+}
