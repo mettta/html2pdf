@@ -57,6 +57,7 @@ export default class Grid {
     this._debug._ && console.group('%c_splitGridNode', 'background:#00FFFF', gridNode);
 
     const gridCells = this._node.getPreparedChildren(gridNode);
+    this._node.lockNodesWidths(gridCells);
 
     const nodeComputedStyle = computedStyle ? computedStyle : this._DOM.getComputedStyle(gridNode);
     // * Use this._node.setInitStyle:

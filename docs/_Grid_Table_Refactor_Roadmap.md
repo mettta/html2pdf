@@ -9,6 +9,7 @@
 
 ### 1. Grid Feature Parity
 #### Additional Grid Handling Ideas
+- [x] Freeze grid cell widths before slicing to prevent layout drift.
 - Detect per-row alignment overrides (e.g. `align-items: end`) and treat such rows as unsplittable; if they overflow full-page budget, scale their cell content instead of breaking structure.
 - Reuse table technique for freezing cell widths before cloning grid parts to prevent layout drift.
 - Investigate temporarily normalising row alignment during row-group discovery (force consistent `align-content`), measure rows, then restore original styles.

@@ -154,3 +154,15 @@ export function lockTableWidths(table) {
     td => this.copyNodeWidth(td, td)
   )
 }
+
+/**
+ * @this {Node}
+ */
+export function lockNodesWidths(nodes) {
+  if (!Array.isArray(nodes)) return;
+  nodes.forEach(node => {
+    if (node) {
+      this.copyNodeWidth(node, node);
+    }
+  });
+}
