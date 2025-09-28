@@ -2,6 +2,7 @@ import * as Logging from '../../utils/logging.js';
 import * as Paginator from './table.paginator.js';
 import * as GridAdapter from './grid.adapter.js';
 import * as PartsRecorder from '../modules/parts.recorder.js';
+import { createLoopGuard } from '../../utils/loopGuard.js';
 
 const CONSOLE_CSS_END_LABEL = `background:#999;color:#FFF;padding: 0 4px;`;
 
@@ -191,10 +192,25 @@ export default class Grid {
     let rowIndex = 0;
     const EPS = 0.5;
     const entries = this._currentGridEntries;
+    //  *** #tempLoopGuard
+    //  loopGuardLimit is just a safety cap: the while-loop should process each grid row
+    //  a handful of times (tail window, full-page attempt, scaling).
+    //  Even in the worst case we don’t expect to revisit any row more than a few passes,
+    //  so we multiply the row count by 6 to give enough slack.
+    //  If the loop ever exceeds that budget, something is wrong and the guard
+    //  fires an assertion instead of spinning forever.
+    const loopGuardLimit = Math.max(1, (currentRows.length || 1) * 6);
+    const tickLoopGuard = createLoopGuard({
+      label: 'grid.split',
+      limit: loopGuardLimit,
+      assert: this._assert,
+    });
 
     this._updateCurrentGridSplitBottom(firstPartHeight, 'start with initial window');
 
     while (rowIndex < currentRows.length) {
+      tickLoopGuard();
+
       const row = currentRows[rowIndex];
       const rowTop = this._getRowTop(row, gridNode);
       const rowBottom = this._getRowBottom(row, gridNode);
@@ -630,7 +646,10 @@ export default class Grid {
     if (Array.isArray(row)) {
       let maxBottom = -Infinity;
       row.forEach(cell => {
-        const candidate = this._node.getBottom(cell, gridNode);
+        // Include margins because grid rows often rely on bottom margin and gap
+        // spacing; offsetHeight alone would miss that extra geometry and lead to
+        // false "fits exactly" decisions.
+        const candidate = this._node.getBottomWithMargin(cell, gridNode);
         if (Number.isFinite(candidate)) {
           maxBottom = Math.max(maxBottom, candidate);
         }
@@ -638,7 +657,7 @@ export default class Grid {
       return maxBottom === -Infinity ? 0 : maxBottom;
     }
     if (row) {
-      return this._node.getBottom(row, gridNode) || 0;
+      return this._node.getBottomWithMargin(row, gridNode) || 0;
     }
     return 0;
   }
