@@ -43,6 +43,8 @@
 - [ ] Ensure guards (rowSpan/dense flow/etc.) integrate with kernel without duplicating code.
 
 ### 5. Cross-Cutting TODOs
+- [ ] Optimise width locking (batch read/write, cache computed sizes instead of per-call DOM queries).
+- [ ] Investigate caching expensive computedStyle/lookups (shared Set/Map) so repeated splits reuse measurements.
 - [ ] Evaluate moving `_collectGridTelemetryRows` into a shared telemetry helper.
 - [ ] Track future visualisation ideas in separate doc (optional, keep backlog tidy).
 - [ ] Decide on strategy for exposing dev-only markers vs production (attributes vs properties).
