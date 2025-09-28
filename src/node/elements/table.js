@@ -1,6 +1,7 @@
 import * as Logging from '../../utils/logging.js';
 import * as Paginator from './table.paginator.js';
 import * as TableAdapter from './table.adapter.js';
+import * as PartsRecorder from '../modules/parts.recorder.js';
 
 // TODO(table): Unsupported features planned later
 // - colSpan/rowSpan splitting across pages (complex layout heuristics)
@@ -69,6 +70,7 @@ export default class Table {
     this._currentRoot = undefined;
     // ** current Table parameters calculated during preparation
     this._currentTableEntries = undefined;
+    this._currentTableRecordedParts = undefined;
     this._currentTableDistributedRows = undefined;
     this._currentTableFirstPartContentBottom = undefined;
     this._currentTableFullPartContentHeight = undefined;
@@ -104,6 +106,10 @@ export default class Table {
     this._lockCurrentTableWidths();
     this._collectCurrentTableEntries();
     this._updateCurrentTableDistributedRows();
+    this._currentTableRecordedParts = PartsRecorder.createEntries({ owner: this._currentTable, rowGroups: this._currentTableDistributedRows });
+    if (this._currentTableEntries) {
+      this._currentTableEntries.recordedParts = this._currentTableRecordedParts;
+    }
     // Run structural guards (non-fatal): detect spans/inconsistencies and log.
     // TODO(table): consider early fallback (no split + scaling) on irregular tables.
     this._analyzeCurrentTableStructure();
@@ -209,10 +215,14 @@ export default class Table {
     });
 
     // * Use the rest of the original table to create the last slice.
+    const finalStartRowIndex = splitStartRowIndexes.length
+      ? splitStartRowIndexes[splitStartRowIndexes.length - 1]
+      : 0;
+    // For telemetry: final part start mirrors slice boundaries even if the builder does not need it
 
     // * Insert the original table as the last part.
     // * It contains all rows from the last split point to the end.
-    const lastPart = this._createAndInsertTableFinalSlice({ table: this._currentTable });
+    const lastPart = this._createAndInsertTableFinalSlice({ table: this._currentTable, startId: finalStartRowIndex });
 
     this._debug._ && console.log('splits', splits);
     this._debug._ && console.log('lastPart', lastPart)
@@ -866,14 +876,47 @@ export default class Table {
   }
 
   _createAndInsertTableSlice({ startId, endId, table, tableEntries }) {
-    // TODO(table): record parts metadata via parts.recorder (parity with grid).
-    // Delegate to adapter. No behavior change.
-    return TableAdapter.createAndInsertTableSlice(this, { startId, endId, table, tableEntries });
+    const part = TableAdapter.createAndInsertTableSlice(this, { startId, endId, table, tableEntries });
+    const rows = Array.isArray(this._currentTableDistributedRows)
+      ? this._currentTableDistributedRows.slice(startId, endId)
+      : [];
+    this._recordTablePart(part, { startId, endId, type: 'slice', rows });
+    return part;
   }
 
-  _createAndInsertTableFinalSlice({ table }) {
-    // Delegate to adapter. No behavior change.
-    return TableAdapter.createAndInsertTableFinalSlice(this, { table });
+  _createAndInsertTableFinalSlice({ table, startId = 0 }) {
+    const part = TableAdapter.createAndInsertTableFinalSlice(this, { table });
+    const totalRows = Array.isArray(this._currentTableDistributedRows)
+      ? this._currentTableDistributedRows.length
+      : 0;
+    const rows = Array.isArray(this._currentTableDistributedRows)
+      ? this._currentTableDistributedRows.slice(startId)
+      : [];
+    this._recordTablePart(part, { startId, endId: totalRows, type: 'final', rows });
+    return part;
+  }
+
+  _recordTablePart(part, meta = {}) {
+    const entries = this._currentTableRecordedParts;
+    if (!entries || !part) {
+      return null;
+    }
+    const {
+      startId = null,
+      endId = null,
+      type = 'unknown',
+      rows = [],
+      meta: extraMeta,
+    } = meta || {};
+    return PartsRecorder.recordPart({
+      entries,
+      part,
+      startIndex: startId,
+      endIndex: endId,
+      type,
+      rows,
+      meta: extraMeta,
+    });
   }
 
 }
