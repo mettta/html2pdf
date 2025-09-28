@@ -336,7 +336,7 @@ export default class Table {
         const remainingPageSpace = this._currentTableSplitBottom - currRowTop;
         // * Budget for the first part:
         let rowFirstPartHeight = remainingPageSpace;
-        let insufficientRemainingPageSpace = false;
+        let insufficientRemainingWindow = false;
 
         if (remainingPageSpace < _minMeaningfulRowSpace) {
           this._debug._ && console.log(
@@ -347,7 +347,7 @@ export default class Table {
           // * Remaining space cannot host a meaningful fragment of the row on the current page,
           // * so we escalated to full-page height for the first part.
           rowFirstPartHeight = this._currentTableFullPartContentHeight;
-          insufficientRemainingPageSpace = true;
+          insufficientRemainingWindow = true;
         }
 
         this._debug._ && console.info(
@@ -398,13 +398,13 @@ export default class Table {
 
           // * Decide if we must start the row on the next page.
           // * 1) Content-level: isFirstPartEmptyInAnyTD — splitPoints reported an empty first fragment in some TD.
-          // * 2) Geometry-level: insufficientRemainingPageSpace — the little page space left forced escalation to full-page height.
+          // * 2) Geometry-level: insufficientRemainingWindow — the little page space left forced escalation to full-page height.
           // * If either is true, place first slice in a full‑page window on the next page.
           const firstSlice = newRows[0];
           const firstSliceTop = this._node.getTop(firstSlice, this._currentTable);
           const firstSliceBottom = this._node.getBottom(firstSlice, this._currentTable);
           const placement = this._node.evaluateRowSplitPlacement({
-            usedTailWindow: !insufficientRemainingPageSpace,
+            usedTailWindow: !insufficientRemainingWindow,
             isFirstPartEmpty: isFirstPartEmptyInAnyTD,
             firstSliceTop,
             firstSliceBottom,

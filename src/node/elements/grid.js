@@ -209,7 +209,7 @@ export default class Grid {
 
       const remainingSpace = pageBottom - rowTop;
       let splitResult = null;
-      let usedTailWindow = false;
+      let usedRemainingWindow = false;
 
       if (remainingSpace > EPS) {
         splitResult = this._splitGridRow({
@@ -219,7 +219,7 @@ export default class Grid {
           firstPartHeight: remainingSpace,
           fullPagePartHeight,
         });
-        usedTailWindow = true;
+        usedRemainingWindow = true;
       }
 
       if (!splitResult || !splitResult.newRows.length) {
@@ -230,7 +230,7 @@ export default class Grid {
           firstPartHeight: fullPagePartHeight,
           fullPagePartHeight,
         });
-        usedTailWindow = false;
+        usedRemainingWindow = false;
       }
 
       if (splitResult && splitResult.newRows.length) {
@@ -243,7 +243,7 @@ export default class Grid {
         const firstSliceTop = this._getRowTop(firstSliceCells, gridNode);
         const firstSliceBottom = this._getRowBottom(firstSliceCells, gridNode);
         const placement = this._node.evaluateRowSplitPlacement({
-          usedTailWindow,
+          usedRemainingWindow,
           isFirstPartEmpty: splitResult.isFirstPartEmptyInAnyCell,
           firstSliceTop,
           firstSliceBottom,
