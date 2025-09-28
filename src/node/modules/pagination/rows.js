@@ -70,12 +70,12 @@ export function evaluateRowSplitPlacement({
   pageBottom,
   epsilon = 0.5,
 }) {
-  const availableTailHeight = pageBottom - firstSliceTop;
-  const fitsTailWindow = usedTailWindow
-    && !isFirstPartEmpty
-    && firstSliceBottom <= pageBottom + epsilon;
+  const availableTailHeight = Math.max(0, pageBottom - firstSliceTop);
+  const hasTailWindow = usedTailWindow && !isFirstPartEmpty;
+  const exceedsWindow = firstSliceBottom > pageBottom + epsilon;
   return {
-    placeOnCurrentPage: fitsTailWindow,
+    placeOnCurrentPage: hasTailWindow,
     availableTailHeight,
+    exceedsWindow,
   };
 }
