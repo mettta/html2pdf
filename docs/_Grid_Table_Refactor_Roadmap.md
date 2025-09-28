@@ -8,7 +8,17 @@
 ## Immediate Objectives
 
 ### 1. Grid Feature Parity
-- [ ] **Audit gaps**: document cases where grid fails vs table (deep cell split, scaling, spans, dense flow).
+#### Additional Grid Handling Ideas
+- Detect per-row alignment overrides (e.g. `align-items: end`) and treat such rows as unsplittable; if they overflow full-page budget, scale their cell content instead of breaking structure.
+- Reuse table technique for freezing cell widths before cloning grid parts to prevent layout drift.
+- Investigate temporarily normalising row alignment during row-group discovery (force consistent `align-content`), measure rows, then restore original styles.
+
+- [x] **Audit gaps**: document cases where grid fails vs table (deep cell split, scaling, spans, dense flow).
+  - Current gaps (2024-09-28):
+    - No reuse of table slicer kernel; `_splitGridRow` narrows cells but upstream logic keeps stale `rowGroups`.
+    - `needsScalingInFullPage` result ignored; no scaling/per-row fallback when slices still overflow.
+    - Post-split guards (`rowSpan`, dense flow) never re-evaluated; rely on initial scan only.
+    - No rebuild of telemetry data after slicing; recorder sees old structures.
 - [ ] **Extract shared slicers**: lift reusable helpers from table (row slicing, cell slicing, scaling) into modules.
 - [ ] **Integrate in grid**: replace bespoke grid logic with shared helpers, keeping grid-specific guards.
 - [ ] **Guard unsupported layouts**: ensure spans/dense flow bail early with recorder/log entries.
@@ -20,6 +30,19 @@
 
 ### 3. Recorded Parts Consumers
 - [ ] Document `recordedParts` schema (Markdown snippet + in-code comment).
+- [ ] Add TODO hooks/tests referencing the shared format (even if disabled).
+- [ ] Confirm runtime paths never depend on `recordedParts` presence; log only when debug enabled.
+
+### 4. Shared Splitter Kernel
+- [ ] Define adapter contract used by grid/table (rows provider, part builder, cell balancer).
+- [ ] Promote `needsScalingInFullPage` and related fallbacks into shared module.
+- [ ] Move row/cell balancing helpers (insert empty cells, rebuild row groups) into shared layer.
+- [ ] Ensure guards (rowSpan/dense flow/etc.) integrate with kernel without duplicating code.
+
+### 5. Cross-Cutting TODOs
+- [ ] Evaluate moving `_collectGridTelemetryRows` into a shared telemetry helper.
+- [ ] Track future visualisation ideas in separate doc (optional, keep backlog tidy).
+- [ ] Decide on strategy for exposing dev-only markers vs production (attributes vs properties).
 - [ ] Add TODO hooks/tests referencing the shared format (even if disabled).
 - [ ] Confirm runtime paths never depend on `recordedParts` presence; log only when debug enabled.
 
