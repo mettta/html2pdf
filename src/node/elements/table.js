@@ -110,6 +110,7 @@ export default class Table {
     if (this._currentTableEntries) {
       this._currentTableEntries.recordedParts = this._currentTableRecordedParts;
     }
+    this._currentTable.__html2pdfRecordedParts = this._currentTableRecordedParts; // Expose for DevTools and external diagnostics
     // Run structural guards (non-fatal): detect spans/inconsistencies and log.
     // TODO(table): consider early fallback (no split + scaling) on irregular tables.
     this._analyzeCurrentTableStructure();
@@ -226,6 +227,7 @@ export default class Table {
 
     this._debug._ && console.log('splits', splits);
     this._debug._ && console.log('lastPart', lastPart)
+    this._debug._ && console.log('[table.split] recordedParts', this._currentTableRecordedParts?.parts); // also exposed via table.__html2pdfRecordedParts
 
     this.logGroupEnd(`_splitCurrentTable`);
 
@@ -878,7 +880,11 @@ export default class Table {
   _createAndInsertTableSlice({ startId, endId, table, tableEntries }) {
     const part = TableAdapter.createAndInsertTableSlice(this, { startId, endId, table, tableEntries });
     const rows = Array.isArray(this._currentTableDistributedRows)
-      ? this._currentTableDistributedRows.slice(startId, endId)
+      ? this._currentTableDistributedRows.slice(startId, endId).map((row, offset) => ({
+        rowIndex: startId + offset,
+        row,
+        cells: Array.from(this._DOM.getChildren(row) || []),
+      }))
       : [];
     this._recordTablePart(part, { startId, endId, type: 'slice', rows });
     return part;
@@ -890,7 +896,11 @@ export default class Table {
       ? this._currentTableDistributedRows.length
       : 0;
     const rows = Array.isArray(this._currentTableDistributedRows)
-      ? this._currentTableDistributedRows.slice(startId)
+      ? this._currentTableDistributedRows.slice(startId).map((row, offset) => ({
+        rowIndex: startId + offset,
+        row,
+        cells: Array.from(this._DOM.getChildren(row) || []),
+      }))
       : [];
     this._recordTablePart(part, { startId, endId: totalRows, type: 'final', rows });
     return part;

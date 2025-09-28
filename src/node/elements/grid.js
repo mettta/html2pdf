@@ -164,6 +164,8 @@ export default class Grid {
     this._currentGridFullPartHeight = fullPagePartHeight;
     this._currentGridSplitLog = [];
     this._currentGridEntries = PartsRecorder.createEntries({ owner: gridNode, rowGroups });
+    this._currentGridRecordedParts = this._currentGridEntries;
+    this._currentGridNode.__html2pdfRecordedParts = this._currentGridRecordedParts; // Expose for DevTools and external diagnostics
 
     // ** If there are enough rows for the split to be readable,
     // ** and the gridNode is not too big (because of the content),
@@ -277,6 +279,7 @@ export default class Grid {
     this._debug._ && console.log(
       'splits', splits
     );
+    this._debug._ && console.log('[grid.split] recordedParts', this._currentGridRecordedParts?.parts); // available via gridNode.__html2pdfRecordedParts
 
     // create LAST PART
     // TODO ??? is that really needed?
@@ -312,6 +315,7 @@ export default class Grid {
     this._currentGridNode = undefined;
     this._currentGridRowGroups = undefined;
     this._currentGridEntries = undefined;
+    this._currentGridRecordedParts = undefined;
     this._currentGridSplitBottom = undefined;
     this._currentGridFullPartHeight = undefined;
     this._currentGridSplitLog = undefined;
@@ -378,11 +382,12 @@ export default class Grid {
       console.log(`=> [grid.split] _buildGridSplit: slice rows [${startId}, ${endId})`, rowsPreview);
     }
     const part = this._createAndInsertGridSlice({ startId, endId, node, entries });
+    const telemetryRows = this._collectGridTelemetryRows(rowGroups, startId, endId);
     this._recordGridPart(part, {
       startId,
       endId,
       type: 'slice',
-      rows: rowGroups.slice(startId, endId),
+      rows: telemetryRows,
     });
     return part;
   }
@@ -394,17 +399,33 @@ export default class Grid {
   _createAndInsertGridFinalSlice({ node, entries, startId }) {
     const part = GridAdapter.createAndInsertGridFinalSlice(this, { node, entries });
     const rowGroups = entries?.rowGroups || this._currentGridRowGroups || [];
+    const telemetryRows = this._collectGridTelemetryRows(rowGroups, startId);
     this._recordGridPart(part, {
       startId,
       endId: rowGroups.length,
       type: 'final',
-      rows: rowGroups.slice(startId),
+      rows: telemetryRows,
     });
     return part;
   }
 
+  _collectGridTelemetryRows(rowGroups, startId, endId) {
+    if (!Array.isArray(rowGroups)) {
+      return [];
+    }
+    const slice = rowGroups.slice(startId, typeof endId === 'number' ? endId : undefined);
+    return slice.map((row, offset) => {
+      const cells = Array.isArray(row) ? [...row] : [row];
+      return {
+        rowIndex: startId + offset,
+        row,
+        cells,
+      };
+    });
+  }
+
   _recordGridPart(part, meta = {}) {
-    const entries = this._currentGridEntries;
+    const entries = this._currentGridRecordedParts;
     if (!entries || !part) {
       return null;
     }
