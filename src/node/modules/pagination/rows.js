@@ -3,6 +3,7 @@
 
 /**
  * Slice each cell by its split points using provided adapter.
+ * @this {Node}
  * @param {Object} params
  * @param {HTMLElement[]} params.cells
  * @param {Array<Array<number>>} params.splitPointsPerCell
@@ -18,10 +19,11 @@ export function sliceCellsBySplitPoints({ cells, splitPointsPerCell, sliceCell }
 /**
  * Build balanced row slices using adapter callbacks.
  *
+ * @this {Node}
  * @param {Object} params
- * @param {any} params.originalRow
- * @param {any[]} params.originalCells
- * @param {Array<any[]>} params.slicedCellsPerOriginal
+ * @param {(HTMLElement|Array<HTMLElement>)} params.originalRow
+ * @param {(HTMLElement|Array<HTMLElement>)[]} params.originalCells
+ * @param {Array<Array<HTMLElement>>} params.slicedCellsPerOriginal
  * @param {Function} params.beginRow - ({ originalRow, sliceIndex }) => any
  * @param {Function} params.cloneCellFallback - (cell) => any
  * @param {Function} params.handleCell - ({ context, cellClone, originalCell, cellIndex }) => void
@@ -58,6 +60,7 @@ export function buildRowSlices({
 /**
  * Evaluate whether the first slice can stay on the current page window.
  * Returns placement decision and available tail height.
+ * @this {Node}
  */
 export function evaluateRowSplitPlacement({
   usedTailWindow,
