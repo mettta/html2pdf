@@ -253,12 +253,12 @@ export default class Grid {
 
         if (placement.placeOnCurrentPage) {
           if (placement.availableTailHeight > EPS) {
-            this._scaleGridCells(firstSliceCells, placement.availableTailHeight);
+            this._node.paginationScaleCellsToHeight({ cells: firstSliceCells, targetHeight: placement.availableTailHeight });
           }
           this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Grid row slice — next part starts page');
         } else {
-          if (splitResult.needsScalingInFullPage && firstSliceCells.length) {
-            this._scaleGridCells(firstSliceCells, fullPagePartHeight);
+          if (this._node.paginationShouldScaleFullPage({ needsScalingInFullPage: splitResult.needsScalingInFullPage, cells: firstSliceCells })) {
+            this._node.paginationScaleCellsToHeight({ cells: firstSliceCells, targetHeight: fullPagePartHeight });
           }
           this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Grid row overflow — move row to next page');
         }
@@ -443,13 +443,6 @@ export default class Grid {
         cells,
       };
     });
-  }
-
-  _scaleGridCells(cells, totalRowHeight) {
-    if (!Array.isArray(cells) || !cells.length) {
-      return false;
-    }
-    return this._node.scaleCellsToHeight(cells, totalRowHeight);
   }
 
   _recordGridPart(part, meta = {}) {

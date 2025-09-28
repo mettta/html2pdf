@@ -419,9 +419,12 @@ export default class Table {
             }
             this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Row split — next slice starts new page');
           } else {
-            if (needsScalingInFullPage && firstSlice) {
-              this._debug._ && console.log('⚖️ _scaleProblematicTDs');
-              this._scaleProblematicTDs(firstSlice, this._currentTableFullPartContentHeight, this._getRowShellHeights(firstSlice));
+            if (this._node.paginationShouldScaleFullPage({ needsScalingInFullPage, cells: [firstSlice] })) {
+              this._node.paginationScaleCellsToHeight({
+                cells: [...this._DOM.getChildren(firstSlice)],
+                targetHeight: this._currentTableFullPartContentHeight,
+                shells: this._getRowShellHeights(firstSlice),
+              });
             }
             this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Empty first part — move row to next page');
           }
