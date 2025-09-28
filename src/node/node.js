@@ -14,6 +14,7 @@ import * as Slicers from './modules/slicers.js';
 import * as FlowFilters from './modules/flowfilters.js';
 import * as PaginationRows from './modules/pagination/rows.js';
 import * as PaginationFitters from './modules/pagination/fitters.js';
+import * as PaginationState from './modules/pagination/state.js';
 import Paragraph from './elements/paragraph.js';
 import Table from './elements/table.js';
 import TableLike from './elements/tableLike.js';
@@ -52,6 +53,7 @@ export default class Node {
     Object.assign(this, FlowFilters);
     Object.assign(this, PaginationRows);
     Object.assign(this, PaginationFitters);
+    Object.assign(this, PaginationState);
 
     this._paragraph = new Paragraph({
       config: this._config,

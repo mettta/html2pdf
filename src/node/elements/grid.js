@@ -239,6 +239,8 @@ export default class Grid {
         if (entries) {
           entries.rowGroups = this._currentGridRowGroups;
         }
+        // Refresh guard-related flags after rowGroups mutate.
+        this._node.computeRowFlags({ rows: rowGroups, DOM: this._DOM });
 
         const firstSliceCells = rowGroups[rowIndex];
         const firstSliceTop = this._getRowTop(firstSliceCells, gridNode);

@@ -393,7 +393,7 @@ export default class Table {
             }
           }
 
-          this._updateCurrentTableEntriesAfterSplit(rowIndex, newRows);
+          this._node.updateRowGroups(this._currentTableEntries, rowIndex, newRows);
           this._updateCurrentTableDistributedRows();
 
           // * Decide if we must start the row on the next page.
@@ -658,62 +658,28 @@ export default class Table {
     const entries = this._currentTableEntries;
     const rows = (this._currentTableDistributedRows || []);
 
-    let hasRowspan = false;
-    let hasColspan = false;
-    let inconsistentCells = false;
-    let hasUnexpected = false;
-    let baselineCount = null;
+    const flags = this._node.computeRowFlags({
+      rows,
+      DOM: this._DOM,
+      cellTagFilter: (tag, cell) => {
+        const containerTag = this._DOM.getElementTagName(cell.parentNode);
+        return containerTag !== 'TFOOT' && (tag === 'TD' || tag === 'TH');
+      },
+    });
 
-    // Detect unexpected children collected by getTableEntries
-    try {
-      if (Array.isArray(entries.unexpected) && entries.unexpected.length > 0) {
-        hasUnexpected = true;
-      }
-    } catch (_) { /* safe */ }
-
-    // Walk rows and inspect cells
-    for (const tr of rows) {
-      // Skip TFOOT in consistency check (it may have different internal structure)
-      const containerTag = this._DOM.getElementTagName(tr);
-      if (containerTag === 'TFOOT') {
-        continue;
-      }
-      const cells = [...this._DOM.getChildren(tr)].filter(el => {
-        const tag = this._DOM.getElementTagName(el);
-        return tag === 'TD' || tag === 'TH';
-      });
-
-      // Baseline column count
-      if (baselineCount == null) baselineCount = cells.length;
-      if (cells.length !== baselineCount) inconsistentCells = true;
-
-      for (const td of cells) {
-        const cs = parseInt(td.getAttribute('colspan'));
-        const rs = parseInt(td.getAttribute('rowspan'));
-        if (Number.isFinite(cs) && cs > 1) hasColspan = true;
-        if (Number.isFinite(rs) && rs > 1) { hasRowspan = true; break; }
-      }
-      if (hasRowspan) break;
-    }
-
-    // Flags are consumed by split flow for logging/fallback decisions
-    this._currentTableHasRowspan = hasRowspan;            // rows with ROWSPAN>1 — slicing not implemented (fallback applies)
-    this._currentTableHasColspan = hasColspan;            // rows with COLSPAN>1 — handled within-row slicing (warn only)
-    this._currentTableInconsistentCells = inconsistentCells; // unequal TD/TH counts across rows — non-uniform structure
-    this._currentTableHasUnexpectedChildren = hasUnexpected; // non-TABLE structural children present
+    this._currentTableHasRowspan = flags.hasRowspan;
+    this._currentTableHasColspan = flags.hasColspan;
+    this._currentTableInconsistentCells = flags.inconsistentCells;
 
     if (this._debug._) {
-      if (hasRowspan) {
+      if (flags.hasRowspan) {
         console.warn('[table.guard] ROWSPAN detected — slicing not implemented; applying conservative fallback.', { table: this._currentTable });
       }
-      if (hasColspan) {
+      if (flags.hasColspan) {
         console.warn('[table.guard] COLSPAN present — handled within-row slicing; monitor results.', { table: this._currentTable });
       }
-      if (inconsistentCells) {
+      if (flags.inconsistentCells) {
         console.warn('[table.guard] Inconsistent cell counts across rows — results may vary.', { table: this._currentTable });
-      }
-      if (hasUnexpected) {
-        console.warn('[table.guard] Unexpected children found in table; verify structure.', { table: this._currentTable });
       }
     }
 
