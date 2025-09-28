@@ -106,7 +106,7 @@ export default class Table {
     this._lockCurrentTableWidths();
     this._collectCurrentTableEntries();
     this._updateCurrentTableDistributedRows();
-    this._currentTableRecordedParts = PartsRecorder.createEntries({ owner: this._currentTable, rowGroups: this._currentTableDistributedRows });
+    this._currentTableRecordedParts = PartsRecorder.createEntries({ owner: this._currentTable, currentRows: this._currentTableDistributedRows });
     if (this._currentTableEntries) {
       this._currentTableEntries.recordedParts = this._currentTableRecordedParts;
     }
@@ -393,7 +393,7 @@ export default class Table {
             }
           }
 
-          this._node.updateRowGroups(this._currentTableEntries, rowIndex, newRows);
+          this._node.applyRowSlicesToEntriesAfterRowSplit(this._currentTableEntries, rowIndex, newRows);
           this._updateCurrentTableDistributedRows();
 
           // * Decide if we must start the row on the next page.

@@ -1,8 +1,12 @@
 // Shared pagination state helpers for table/grid.
 
-export function updateRowGroups(entries, index, newGroups) {
+/**
+ * Replace a single entry in entries.rows with the generated row slices after splitting.
+ * Keeps downstream pagination passes aligned with the updated structure.
+ */
+export function applyRowSlicesToEntriesAfterRowSplit(entries, index, rowSlices) {
   if (!entries || !Array.isArray(entries.rows)) return;
-  entries.rows.splice(index, 1, ...newGroups);
+  entries.rows.splice(index, 1, ...rowSlices);
 }
 
 export function computeRowFlags({ rows, DOM, cellTagFilter, guardCallback }) {

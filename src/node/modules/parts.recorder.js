@@ -1,9 +1,9 @@
 // Shared helpers for recording pagination parts across elements.
 
-export function createEntries({ owner = null, rowGroups = [] } = {}) {
+export function createEntries({ owner = null, currentRows = [] } = {}) {
   return {
     owner,
-    rowGroups: Array.isArray(rowGroups) ? rowGroups : [],
+    currentRows: Array.isArray(currentRows) ? currentRows : [],
     parts: [],
   };
 }

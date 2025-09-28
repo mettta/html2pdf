@@ -88,12 +88,12 @@ export function evaluateRowSplitPlacement({
 }
 
 /**
- * Replace a row group within the mutable rowGroups array.
- * Keep array-based caches in sync after slicing.
+ * Replace an entry inside currentRows with the generated row slices after split.
+ * Keeps shared row caches aligned for subsequent pagination steps.
  * @this {Node}
  */
-export function replaceRowGroups({ rowGroups, index, newGroups }) {
-  if (!Array.isArray(rowGroups)) return [];
-  rowGroups.splice(index, 1, ...newGroups);
-  return rowGroups;
+export function replaceCurrentRowsAfterRowSplit({ currentRows, index, rowSlices }) {
+  if (!Array.isArray(currentRows)) return [];
+  currentRows.splice(index, 1, ...rowSlices);
+  return currentRows;
 }

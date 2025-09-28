@@ -16,7 +16,7 @@
 
 - [x] **Audit gaps**: document cases where grid fails vs table (deep cell split, scaling, spans, dense flow).
   - Current gaps (2024-09-28):
-    - No reuse of table slicer kernel; `_splitGridRow` narrows cells but upstream logic keeps stale `rowGroups`.
+    - No reuse of table slicer kernel; `_splitGridRow` narrows cells but upstream logic keeps stale `currentRows`.
     - `needsScalingInFullPage` result ignored; no scaling/per-row fallback when slices still overflow.
     - Post-split guards (`rowSpan`, dense flow) never re-evaluated; rely on initial scan only.
     - No rebuild of telemetry data after slicing; recorder sees old structures.

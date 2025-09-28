@@ -1,14 +1,14 @@
 // Grid-specific slice builders. No signposts, no tfoot/thead.
 
-export function createAndInsertGridSlice(context, { startId, endId, node, entries, fallbackRowGroups }) {
+export function createAndInsertGridSlice(context, { startId, endId, node, entries, fallbackCurrentRows }) {
   // We do not wrap with createWithFlagNoBreak to avoid CSS breakage; clone wrapper instead.
   const part = context._DOM.cloneNodeWrapper(node);
   context._node.copyNodeWidth(part, node);
   context._node.setFlagNoBreak(part);
   node.before(part);
 
-  const rowGroups = entries?.rowGroups || fallbackRowGroups || [];
-  // rowGroups arrive via the shared entries container; fallback keeps older callers working.
+  const currentRows = entries?.currentRows || fallbackCurrentRows || [];
+  // currentRows arrive via the shared entries container; fallback keeps older callers working.
 
   // Allow the DOM module to tell us what counts as an element.
   // Grid adapters sit between plain HTMLElements and wrappers returned by getPreparedChildren,
@@ -17,7 +17,7 @@ export function createAndInsertGridSlice(context, { startId, endId, node, entrie
     ? context._DOM.isElementNode.bind(context._DOM)
     : null;
 
-  const partEntries = rowGroups
+  const partEntries = currentRows
     .slice(startId, endId)
     .flat()
     .map(candidate => {

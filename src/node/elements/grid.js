@@ -46,7 +46,7 @@ export default class Grid {
     // 3. Walk rows, registering split indexes when the next row would overflow.
     //    • If the first row itself does not fit → move whole row to next page (🚧 refine logic).
     //    • If rows can be sliced into parts → reuse slicers (🚧 not implemented yet).
-    // 4. Build parts by cloning wrappers and moving row groups.
+    // 4. Build parts by cloning wrappers and moving current rows.
     // 5. Leave original grid as the final slice; no signposts / reclaimed height for now.
     //
     // Long-term grid targets:
@@ -82,7 +82,7 @@ export default class Grid {
     }
 
     const ROW_TOP_STEP = 0.5; // tolerate sub-pixel jitter when detecting row breaks
-    const rowGroups = [];
+    const currentRows = [];
     let hasRowSpan = false;
     let hasColumnSpan = false;
     const rowIndexSet = new Set();
@@ -95,19 +95,19 @@ export default class Grid {
 
       // * first element of a new line
       if (
-        !rowGroups.length || previousRowTop == null       // * 1st row
+        !currentRows.length || previousRowTop == null       // * 1st row
         || Math.abs(top - previousRowTop) > ROW_TOP_STEP  // * new row
       ) {
-        rowGroups.push([gridCell]); // * add cell #0 to new row group
+        currentRows.push([gridCell]); // * add cell #0 to new row group
         previousRowTop = top;       // * note down the top of new row
         return;
       }
 
       // * ordinary element of the current row
-      rowGroups[rowGroups.length - 1].push(gridCell);
+      currentRows[currentRows.length - 1].push(gridCell);
 
       // ** Detect spans and collect row-start indices.
-      // ** If row-starts jump beyond known row groups (implicit tracks/gaps),
+      // ** If row-starts jump beyond known current rows (implicit tracks/gaps),
       // ** or any cell spans rows/columns, skip splitting this grid.
       const cellStyle = this._DOM.getComputedStyle(gridCell);
       const rowEnd = cellStyle.gridRowEnd || '';
@@ -125,7 +125,7 @@ export default class Grid {
       // - for example, if rowIndexSet contains {1,3,5}, and 2 and 4 are missing?
     });
 
-    const hasImplicitRowGaps = rowIndexSet.size > 0 && Math.max(...rowIndexSet) > rowGroups.length;
+    const hasImplicitRowGaps = rowIndexSet.size > 0 && Math.max(...rowIndexSet) > currentRows.length;
     if (hasImplicitRowGaps) {
       this._debug._ && console.warn('[grid.split] skip: implicit row gaps detected');
       this._node.setInitStyle (false, gridNode, nodeComputedStyle);
@@ -140,7 +140,7 @@ export default class Grid {
       return [];
     }
 
-    this._debug._ && console.log('[grid.split] rowGroups:', rowGroups)
+    this._debug._ && console.log('[grid.split] currentRows:', currentRows)
 
     // ** Prepare gridNode parameters for splitting
     const nodeTop = this._node.getTop(gridNode, root);
@@ -156,15 +156,15 @@ export default class Grid {
     this._debug._ && console.log({firstPartHeight, fullPagePartHeight});
 
     //? #grid_refactor
-    //  captures the active grid node, row groups, and full-page metrics
+    //  captures the active grid node, current rows, and full-page metrics
     //  in instance fields, letting the adapter feed consistent data
-    //  into the shared paginator log, share rowGroups through a single entries container,
+    //  into the shared paginator log, share currentRows through a single entries container,
     //  and collect the parts we build for downstream analysis/debugging.
     this._currentGridNode = gridNode;
-    this._currentGridRowGroups = rowGroups;
+    this._currentGridRows = currentRows;
     this._currentGridFullPartHeight = fullPagePartHeight;
     this._currentGridSplitLog = [];
-    this._currentGridEntries = PartsRecorder.createEntries({ owner: gridNode, rowGroups });
+    this._currentGridEntries = PartsRecorder.createEntries({ owner: gridNode, currentRows });
     this._currentGridRecordedParts = this._currentGridEntries;
     this._currentGridNode.__html2pdfRecordedParts = this._currentGridRecordedParts; // Expose for DevTools and external diagnostics
 
@@ -172,7 +172,7 @@ export default class Grid {
     // ** and the gridNode is not too big (because of the content),
     // ** then we will split it.
     if (
-      rowGroups.length < this._minBreakableGridRows
+      currentRows.length < this._minBreakableGridRows
       && this._DOM.getElementOffsetHeight(gridNode) < fullPageHeight
     ) {
       this._debug._ && console.log(`%c END [grid.split]: DON'T SPLIT, it isn't breakable and fits in the page`, CONSOLE_CSS_END_LABEL);
@@ -194,8 +194,8 @@ export default class Grid {
 
     this._updateCurrentGridSplitBottom(firstPartHeight, 'start with initial window');
 
-    while (rowIndex < rowGroups.length) {
-      const row = rowGroups[rowIndex];
+    while (rowIndex < currentRows.length) {
+      const row = currentRows[rowIndex];
       const rowTop = this._getRowTop(row, gridNode);
       const rowBottom = this._getRowBottom(row, gridNode);
       const pageBottom = (typeof this._currentGridSplitBottom === 'number')
@@ -234,15 +234,15 @@ export default class Grid {
       }
 
       if (splitResult && splitResult.newRows.length) {
-        // Keep rowGroups/entries in sync with freshly generated slices.
-        this._node.replaceRowGroups({ rowGroups, index: rowIndex, newGroups: splitResult.newRows });
+        // Keep currentRows/entries in sync with freshly generated slices.
+        this._node.replaceCurrentRowsAfterRowSplit({ currentRows, index: rowIndex, rowSlices: splitResult.newRows });
         if (entries) {
-          entries.rowGroups = this._currentGridRowGroups;
+          entries.currentRows = this._currentGridRows;
         }
-        // Refresh guard-related flags after rowGroups mutate.
-        this._node.computeRowFlags({ rows: rowGroups, DOM: this._DOM });
+        // Refresh guard-related flags after currentRows mutate.
+        this._node.computeRowFlags({ rows: currentRows, DOM: this._DOM });
 
-        const firstSliceCells = rowGroups[rowIndex];
+        const firstSliceCells = currentRows[rowIndex];
         const firstSliceTop = this._getRowTop(firstSliceCells, gridNode);
         const firstSliceBottom = this._getRowBottom(firstSliceCells, gridNode);
         const placement = this._node.evaluateRowSplitPlacement({
@@ -331,12 +331,12 @@ export default class Grid {
   //  and thin wrappers around the shared paginator functions
   //  (_updateCurrentGridSplitBottom, _registerPageStartAt)
   //  plus adapter hooks (_createAndInsertGridSlice, _createAndInsertGridFinalSlice)
-  //  and a shared entries container so the adapter sees the same rowGroups reference
+  //  and a shared entries container so the adapter sees the same currentRows reference
   //  the paginator mutates, whether cells stay as elements or become wrappers.
 
   _resetCurrent() {
     this._currentGridNode = undefined;
-    this._currentGridRowGroups = undefined;
+    this._currentGridRows = undefined;
     this._currentGridEntries = undefined;
     this._currentGridRecordedParts = undefined;
     this._currentGridSplitBottom = undefined;
@@ -356,10 +356,10 @@ export default class Grid {
         return this._node.getTop(element, this._currentGridNode) + (this._currentGridFullPartHeight || 0);
       },
       getRows: () => {
-        if (!Array.isArray(this._currentGridRowGroups)) {
+        if (!Array.isArray(this._currentGridRows)) {
           return [];
         }
-        return this._currentGridRowGroups.map((group) => {
+        return this._currentGridRows.map((group) => {
           if (!group) {
             return null;
           }
@@ -393,7 +393,7 @@ export default class Grid {
   }
 
   _buildGridSplit({ startId, endId, node, entries }) {
-    const rowGroups = entries?.rowGroups || this._currentGridRowGroups || [];
+    const currentRows = entries?.currentRows || this._currentGridRows || [];
     if (startId === endId) {
       // Empty slice means pagination markers collided; log and assert in dev.
       this._debug._ && console.warn('[grid.split] _buildGridSplit: skip empty slice request', startId, endId);
@@ -401,11 +401,11 @@ export default class Grid {
       return null;
     }
     if (this._debug._) {
-      const rowsPreview = rowGroups.slice(startId, endId);
+      const rowsPreview = currentRows.slice(startId, endId);
       console.log(`=> [grid.split] _buildGridSplit: slice rows [${startId}, ${endId})`, rowsPreview);
     }
     const part = this._createAndInsertGridSlice({ startId, endId, node, entries });
-    const telemetryRows = this._collectGridTelemetryRows(rowGroups, startId, endId);
+    const telemetryRows = this._collectGridTelemetryRows(currentRows, startId, endId);
     this._recordGridPart(part, {
       startId,
       endId,
@@ -421,11 +421,11 @@ export default class Grid {
 
   _createAndInsertGridFinalSlice({ node, entries, startId }) {
     const part = GridAdapter.createAndInsertGridFinalSlice(this, { node, entries });
-    const rowGroups = entries?.rowGroups || this._currentGridRowGroups || [];
-    const telemetryRows = this._collectGridTelemetryRows(rowGroups, startId);
+    const currentRows = entries?.currentRows || this._currentGridRows || [];
+    const telemetryRows = this._collectGridTelemetryRows(currentRows, startId);
     this._recordGridPart(part, {
       startId,
-      endId: rowGroups.length,
+      endId: currentRows.length,
       type: 'final',
       rows: telemetryRows,
     });
@@ -433,11 +433,11 @@ export default class Grid {
   }
 
   // TODO(grid/table): evaluate moving telemetry collection into a shared helper (see docs/_Grid_Table_Refactor_Roadmap.md).
-  _collectGridTelemetryRows(rowGroups, startId, endId) {
-    if (!Array.isArray(rowGroups)) {
+  _collectGridTelemetryRows(currentRows, startId, endId) {
+    if (!Array.isArray(currentRows)) {
       return [];
     }
-    const slice = rowGroups.slice(startId, typeof endId === 'number' ? endId : undefined);
+    const slice = currentRows.slice(startId, typeof endId === 'number' ? endId : undefined);
     return slice.map((row, offset) => {
       const cells = Array.isArray(row) ? [...row] : [row];
       return {
