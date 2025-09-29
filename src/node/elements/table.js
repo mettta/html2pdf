@@ -415,6 +415,13 @@ export default class Table {
             epsilon: 0,
           });
 
+
+          // TODO: "Scale only the first slice..."
+          // ? Find out why we have a reduction in the first piece and in which case was this required?
+          // ? All our tests are performed without height fitting (with commented _scaleProblematicTDs).
+          // Commit:
+          // node/Table: Ensure the first slice fits the current page window (before registration)
+          // Maryna Balioura on 9/7/2025, 5:23:42 PM
           if (placement.placeOnCurrentPage) {
             // * Scale only the first slice to fit the remaining page space.
             if (placement.remainingWindowSpace > 0) {
