@@ -399,54 +399,14 @@ export default class Table {
             rowSlices: newRows,
           });
 
-          // * Decide if we must start the row on the next page.
-          // * 1) Content-level: isFirstPartEmptyInAnyTD — splitPoints reported an empty first fragment in some TD.
-          // * 2) Geometry-level: insufficientRemainingWindow — the little page space left forced escalation to full-page height.
-          // * If either is true, place first slice in a full‑page window on the next page.
-          const firstSlice = newRows[0];
-          const firstSliceTop = this._node.getTop(firstSlice, this._currentTable);
-          const firstSliceBottom = this._node.getBottom(firstSlice, this._currentTable);
-          const placement = this._node.evaluateRowSplitPlacement({
-            usedRemainingWindow: !insufficientRemainingWindow,
-            isFirstPartEmpty: isFirstPartEmptyInAnyTD,
-            firstSliceTop,
-            firstSliceBottom,
-            pageBottom: this._currentTableSplitBottom,
-            epsilon: 0,
+          rowIndex = this._handleNewRowSlicesPlacement({
+            rowIndex,
+            newRows,
+            insufficientRemainingWindow,
+            isFirstPartEmptyInAnyTD,
+            needsScalingInFullPage,
+            splitStartRowIndexes,
           });
-
-
-          // TODO: "Scale only the first slice..."
-          // ? Find out why we have a reduction in the first piece and in which case was this required?
-          // ? All our tests are performed without height fitting (with commented _scaleProblematicTDs).
-          // Commit:
-          // node/Table: Ensure the first slice fits the current page window (before registration)
-          // Maryna Balioura on 9/7/2025, 5:23:42 PM
-          if (placement.placeOnCurrentPage) {
-            // * Scale only the first slice to fit the remaining page space.
-            if (placement.remainingWindowSpace > 0) {
-              this._scaleProblematicTDs(firstSlice, placement.remainingWindowSpace, this._getRowShellHeights(firstSlice));
-            }
-            this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Row split — next slice starts new page');
-          } else {
-            // * Escalate to full-page window and scale the first slice if slicer requested it.
-            this._node.paginationApplyFullPageScaling({
-              needsScalingInFullPage: needsScalingInFullPage && Boolean(firstSlice),
-              payload: {
-                row: firstSlice,
-                targetHeight: this._currentTableFullPartContentHeight,
-              },
-              scaleCallback: ({ row, targetHeight }) => {
-                if (!row) return false;
-                this._debug._ && console.log('⚖️ _scaleProblematicTDs');
-                return this._scaleProblematicTDs(row, targetHeight, this._getRowShellHeights(row));
-              },
-            });
-            this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Empty first part — move row to next page');
-          }
-
-          // * Roll back index to re-check from the newly updated splitBottom context.
-          rowIndex -= 1;
 
         } else { // (!newRows.length)
 
@@ -591,6 +551,65 @@ export default class Table {
     // * Return both the new rows and a flag indicating if the first part is empty
     return { newRows, isFirstPartEmptyInAnyTD, needsScalingInFullPage };
 
+  }
+
+  _handleNewRowSlicesPlacement({
+    rowIndex,
+    newRows,
+    insufficientRemainingWindow,
+    isFirstPartEmptyInAnyTD,
+    needsScalingInFullPage,
+    splitStartRowIndexes,
+  }) {
+    const firstSlice = newRows[0];
+    if (!firstSlice) {
+      // Defensive fallback: if we somehow lost the first slice, move the row to next page.
+      this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Row split produced empty first slice');
+      return rowIndex - 1;
+    }
+
+    const firstSliceTop = this._node.getTop(firstSlice, this._currentTable);
+    const firstSliceBottom = this._node.getBottom(firstSlice, this._currentTable);
+    const placement = this._node.evaluateRowSplitPlacement({
+      usedRemainingWindow: !insufficientRemainingWindow,
+      isFirstPartEmpty: isFirstPartEmptyInAnyTD,
+      firstSliceTop,
+      firstSliceBottom,
+      pageBottom: this._currentTableSplitBottom,
+      epsilon: 0,
+    });
+
+    // TODO: "Scale only the first slice..."
+    // ? Find out why we have a reduction in the first piece and in which case was this required?
+    // ? All our tests are performed without height fitting (with commented _scaleProblematicTDs).
+    // Commit:
+    // node/Table: Ensure the first slice fits the current page window (before registration)
+    // Maryna Balioura on 9/7/2025, 5:23:42 PM
+    if (placement.placeOnCurrentPage) {
+      // * Scale only the first slice to fit the remaining page space.
+      if (placement.remainingWindowSpace > 0) {
+        this._scaleProblematicTDs(firstSlice, placement.remainingWindowSpace, this._getRowShellHeights(firstSlice));
+      }
+      this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Row split — next slice starts new page');
+    } else {
+      // * Escalate to full-page window and scale the first slice if slicer reported it.
+      this._node.paginationApplyFullPageScaling({
+        needsScalingInFullPage: needsScalingInFullPage && Boolean(firstSlice),
+        payload: {
+          row: firstSlice,
+          targetHeight: this._currentTableFullPartContentHeight,
+        },
+        scaleCallback: ({ row, targetHeight }) => {
+          if (!row) return false;
+          this._debug._ && console.log('⚖️ _scaleProblematicTDs');
+          return this._scaleProblematicTDs(row, targetHeight, this._getRowShellHeights(row));
+        },
+      });
+      this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Empty first part — move row to next page');
+    }
+
+    // * Roll back index to re-check from the newly updated splitBottom context.
+    return rowIndex - 1;
   }
 
   // ===== 📐 Metrics =====
