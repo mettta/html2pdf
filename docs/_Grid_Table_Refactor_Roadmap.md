@@ -24,8 +24,9 @@
   - [x] Adopt shared row slicing (sliceCellsBySplitPoints/buildRowSlices) via node modules.
   - [x] Share cell scaling/fallback helpers (needsScalingInFullPage, scaleCellsToHeight wrappers).
   - [x] Use shared evaluateRowSplitPlacement for tail vs full-page decisions.
-  - [x] Expose shared scaling helper (wrap scaleCellsToHeight / needsScalingInFullPage).
-  - [x] Port `_scaleProblematicTDs` logic to grid once shell heights are available; add dedicated tests for scaling behaviour.
+- [x] Expose shared scaling helper (wrap scaleCellsToHeight / needsScalingInFullPage).
+- [x] Port `_scaleProblematicTDs` logic to grid once shell heights are available; add dedicated tests for scaling behaviour.
+- [ ] Evaluate WeakMap-based computedStyle cache shared across pagination passes (current implementation caches styles per split pass only — see src/node/elements/grid.js #weakMap_cache / TODO).
 - [ ] **Integrate in grid**: replace bespoke grid logic with shared helpers, keeping grid-specific guards.
 - [ ] **Guard unsupported layouts**: ensure spans/dense flow bail early with recorder/log entries.
 

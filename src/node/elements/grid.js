@@ -212,8 +212,15 @@ export default class Grid {
       tickLoopGuard();
 
       const row = currentRows[rowIndex];
+      const cellStyles = Array.isArray(row) ? new Array(row.length) : null;
+      // cellStyles acts as a per-row cache: fetch computedStyle for a cell only once and reuse it
+      // in geometry helpers (row bottoms, shell heights). Grid never mutates these layout styles
+      // during a split pass, so caching per pass avoids repeated style lookups without risking stale data.
+      // cellStyles acts as a per-row cache: we fetch computedStyle for a cell only once
+      // and reuse it in geometry helpers (row bottoms, shell heights). Grid never mutates
+      // these structural styles, so caching within a split() pass is safe and saves layout work.
       const rowTop = this._getRowTop(row, gridNode);
-      const rowBottom = this._getRowBottom(row, gridNode);
+      const rowBottom = this._getRowBottom(row, gridNode, cellStyles);
       const pageBottom = (typeof this._currentGridSplitBottom === 'number')
         ? this._currentGridSplitBottom
         : firstPartHeight;
@@ -234,6 +241,7 @@ export default class Grid {
           gridNode: gridNode,
           firstPartHeight: remainingSpace,
           fullPagePartHeight,
+          cellStyles,
         });
         usedRemainingWindow = true;
       }
@@ -245,6 +253,7 @@ export default class Grid {
           gridNode: gridNode,
           firstPartHeight: fullPagePartHeight,
           fullPagePartHeight,
+          cellStyles,
         });
         usedRemainingWindow = false;
       }
@@ -464,7 +473,7 @@ export default class Grid {
     if (!Array.isArray(cells) || !cells.length || !(targetHeight > 0)) {
       return false;
     }
-    const shells = this._node.paginationComputeCellShellHeights({ cells });
+    const shells = this._computeGridCellShellHeights(cells);
     // In debug builds log the cell heights before/after scaling so we can confirm
     // geometry changed; otherwise silent overflow is hard to diagnose.
     const beforeHeights = this._debug._ ? cells.map(cell => this._DOM.getElementOffsetHeight(cell)) : null;
@@ -555,12 +564,12 @@ export default class Grid {
     });
   }
 
-  _splitGridRow({ rowIndex, row, gridNode, firstPartHeight, fullPagePartHeight }) {
+  _splitGridRow({ rowIndex, row, gridNode, firstPartHeight, fullPagePartHeight, cellStyles = null }) {
     if (!Array.isArray(row) || !row.length) {
       return { newRows: [], isFirstPartEmptyInAnyCell: false, needsScalingInFullPage: false };
     }
 
-    const shells = row.map(() => 0);
+    const shells = this._computeGridCellShellHeights(row, cellStyles);
     const computed = this._node.getSplitPointsPerCells(
       row,
       shells,
@@ -625,6 +634,60 @@ export default class Grid {
     };
   }
 
+  _computeGridCellShellHeights(cells, styles = null) {
+    // Grid rows do not wrap cells in TR shells; estimate each cell's structural contribution
+    // so slicers operate on content height only. Reuse cached computedStyle when available;
+    // consider promoting this cache to a WeakMap across passes (#TODO #weakMap_cache).
+    if (!Array.isArray(cells) || !cells.length) {
+      return [];
+    }
+    return cells.map((cell, index) => {
+      if (!cell) return 0;
+      let style = null;
+      if (styles) {
+        style = styles[index];
+        if (!style) {
+          style = this._DOM.getComputedStyle(cell);
+          styles[index] = style;
+        }
+      } else {
+        style = this._DOM.getComputedStyle(cell);
+      }
+      const paddingTop = parseFloat(style?.paddingTop) || 0;
+      const paddingBottom = parseFloat(style?.paddingBottom) || 0;
+      const borderTop = parseFloat(style?.borderTopWidth) || 0;
+      const borderBottom = parseFloat(style?.borderBottomWidth) || 0;
+      const marginTop = parseFloat(style?.marginTop) || 0;
+      const marginBottom = parseFloat(style?.marginBottom) || 0;
+      const paddingBorder = paddingTop + paddingBottom + borderTop + borderBottom;
+      const margin = Math.max(0, marginTop) + Math.max(0, marginBottom);
+
+      const cellHeight = this._DOM.getElementOffsetHeight(cell) || 0;
+      let contentHeight = 0;
+      if (typeof this._node.getContentHeightByProbe === 'function') {
+        try {
+          const measured = this._node.getContentHeightByProbe(cell, style);
+          if (Number.isFinite(measured) && measured >= 0) {
+            contentHeight = measured;
+          }
+        } catch (err) {
+          // Fallback handled below.
+        }
+      }
+
+      if (!(contentHeight > 0) || contentHeight > cellHeight) {
+        contentHeight = Math.max(0, cellHeight - paddingBorder);
+      }
+
+      let shell = cellHeight - contentHeight;
+      if (!Number.isFinite(shell)) {
+        shell = paddingBorder;
+      }
+      shell = Math.max(shell, paddingBorder);
+      return Math.max(0, shell + margin);
+    });
+  }
+
   _getRowTop(row, gridNode) {
     if (Array.isArray(row)) {
       let minTop = Infinity;
@@ -642,14 +705,23 @@ export default class Grid {
     return 0;
   }
 
-  _getRowBottom(row, gridNode) {
+  _getRowBottom(row, gridNode, cellStyles = null) {
     if (Array.isArray(row)) {
       let maxBottom = -Infinity;
-      row.forEach(cell => {
-        // Include margins because grid rows often rely on bottom margin and gap
-        // spacing; offsetHeight alone would miss that extra geometry and lead to
-        // false "fits exactly" decisions.
-        const candidate = this._node.getBottomWithMargin(cell, gridNode);
+      row.forEach((cell, index) => {
+        const baseBottom = this._node.getBottom(cell, gridNode);
+        let style = null;
+        if (cellStyles) {
+          style = cellStyles[index];
+          if (!style && cell) {
+            style = this._DOM.getComputedStyle(cell);
+            cellStyles[index] = style;
+          }
+        } else if (cell) {
+          style = this._DOM.getComputedStyle(cell);
+        }
+        const marginBottom = style ? parseFloat(style.marginBottom) || 0 : 0;
+        const candidate = baseBottom + marginBottom;
         if (Number.isFinite(candidate)) {
           maxBottom = Math.max(maxBottom, candidate);
         }
@@ -657,7 +729,10 @@ export default class Grid {
       return maxBottom === -Infinity ? 0 : maxBottom;
     }
     if (row) {
-      return this._node.getBottomWithMargin(row, gridNode) || 0;
+      const baseBottom = this._node.getBottom(row, gridNode) || 0;
+      const style = this._DOM.getComputedStyle(row);
+      const marginBottom = parseFloat(style?.marginBottom) || 0;
+      return baseBottom + marginBottom;
     }
     return 0;
   }
