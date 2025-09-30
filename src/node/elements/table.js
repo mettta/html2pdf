@@ -328,17 +328,20 @@ export default class Table {
 
   _resolveOverflowingRow({ evaluation, splitStartRowIndexes, extraCapacity }) {
     // Row exceeds the current window: decide between conservative fallback, slicing, or scaling.
-    const { row, rowIndex } = evaluation;
+    const resolutionContext = {
+      evaluation,
+      utils: {
+        rowHasSpan: (row) => this._rowHasSpan(row),
+        isSlice: (row) => this._node.isSlice(row),
+      },
+      handlers: {
+        handleRowWithRowspan: () => this._resolveRowWithRowspan({ evaluation, splitStartRowIndexes }),
+        handleSplittableRow: () => this._resolveSplittableRow({ evaluation, splitStartRowIndexes, extraCapacity }),
+        handleAlreadySlicedRow: () => this._resolveAlreadySlicedRow({ evaluation, splitStartRowIndexes }),
+      },
+    };
 
-    if (this._rowHasSpan(row)) {
-      return this._resolveRowWithRowspan({ evaluation, splitStartRowIndexes });
-    }
-
-    if (!this._node.isSlice(row)) {
-      return this._resolveSplittableRow({ evaluation, splitStartRowIndexes, extraCapacity });
-    }
-
-    return this._resolveAlreadySlicedRow({ evaluation, splitStartRowIndexes });
+    return this._node.paginationResolveOverflowingRow(resolutionContext);
   }
 
   _resolveSplittableRow({ evaluation, splitStartRowIndexes, extraCapacity }) {

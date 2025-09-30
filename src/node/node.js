@@ -20,6 +20,7 @@ import * as PaginationMetrics from './modules/pagination/metrics.js';
 import * as PaginationOverflow from './modules/pagination/overflow.js';
 import * as PaginationShortTail from './modules/pagination/shortTail.js';
 import * as PaginationEvaluation from './modules/pagination/evaluation.js';
+import * as PaginationResolution from './modules/pagination/resolution.js';
 import Paragraph from './elements/paragraph.js';
 import Table from './elements/table.js';
 import TableLike from './elements/tableLike.js';
@@ -64,6 +65,7 @@ export default class Node {
     Object.assign(this, PaginationOverflow);
     Object.assign(this, PaginationShortTail);
     Object.assign(this, PaginationEvaluation);
+    Object.assign(this, PaginationResolution);
 
     this._paragraph = new Paragraph({
       config: this._config,
