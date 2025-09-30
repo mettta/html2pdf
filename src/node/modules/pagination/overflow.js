@@ -28,6 +28,9 @@ export function scaleRowCellsToHeight({
   getRowShellHeights,
   scaleCellsToHeight,
 }) {
+  if (!ownerLabel) {
+    console.warn('[scaleRowCellsToHeight] 👤 Owner wanted!', { owner: ownerLabel });
+  }
   if (!row) {
     console.warn('[pagination.overflow] Missing row for scaling.', { owner: ownerLabel });
     return false;
@@ -81,6 +84,9 @@ export function handleRowOverflow({
   scaleProblematicCells,
   debugLogger,
 }) {
+  if (!ownerLabel) {
+    console.warn('[handleRowOverflow] 👤 Owner wanted!', { owner: ownerLabel });
+  }
   if (!Array.isArray(splitStartRowIndexes)) {
     console.warn('[pagination.overflow] splitStartRowIndexes must be an array.', { owner: ownerLabel });
     return rowIndex;
@@ -122,6 +128,10 @@ export function handleRowSplitFailure(params) {
     row,
     availableRowHeight,
   } = params;
+
+  if (!ownerLabel) {
+    console.warn('[handleRowSplitFailure] 👤 Owner wanted!', { owner: ownerLabel });
+  }
 
   if (!Number.isFinite(availableRowHeight) || availableRowHeight < 0) {
     console.warn('[pagination.overflow] availableRowHeight is missing or negative.', {
