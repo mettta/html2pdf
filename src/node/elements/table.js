@@ -248,12 +248,30 @@ export default class Table {
     this._debug._ && console.group(`🔲 %c Check the Row # ${origRowIndex} (from ${origRowCount})`, '',);
 
     // Stage 1 — capture geometry snapshot relative to the current split window.
-    const evaluation = this._buildRowEvaluationContext(rowIndex);
+    const evaluation = this._node.paginationBuildRowEvaluationContext({
+      rows: this._currentTableDistributedRows,
+      rowIndex,
+      table: this._currentTable,
+      splitBottom: this._currentTableSplitBottom,
+    });
 
     if (!evaluation?.row) {
       console.warn('[table.split] Missing row during evaluation.', { rowIndex });
       this.logGroupEnd(`Row # ${origRowIndex} (from ${origRowCount}) is checked`);
       return rowIndex;
+    }
+
+    if (this._debug._) {
+      const fitsCurrentWindow = evaluation.fitsCurrentWindow;
+      const logColor = fitsCurrentWindow ? 'green' : 'orange';
+      const logOps = fitsCurrentWindow ? '<=' : '>';
+      console.log(
+        `%c📐 does row fit? %c ${fitsCurrentWindow} %c :: ${evaluation.nextMarker} ${logOps} ${this._currentTableSplitBottom} %c(Δ=${evaluation.delta})`,
+        '',
+        `font-weight:bold;color:${logColor};`,
+        '',
+        `color:${logColor};`
+      );
     }
 
     this._debug._ && console.info({
@@ -277,13 +295,18 @@ export default class Table {
     // Stage 4 — special-case the last row:
     // if removing the final signpost frees enough height,
     // let the current row stay intact (no extra part, no slicing).
-    if (this._canAbsorbOverflowingLastRow({ evaluation, extraCapacity })) {
+    if (this._node.paginationCanAbsorbLastRow({
+      evaluation,
+      extraCapacity,
+      splitBottom: this._currentTableSplitBottom,
+      debug: this._debug,
+    })) {
       // 🫟 Early tail drop on the very first split attempt:
       // Special case: last row can fit if we remove the bottom signpost (final chunk has no footer label).
-      // * If this is the final chunk of last split row
-      // * and the final chunk height is small enough
-      // * to fit into the extra capacity of previous row (no bottom signpost + TFOOT),
-      // * skip creating the last slice row entirely.
+      // If this is the last data row and the last slice height is small enough
+      // to fit into the extra capacity of the final chunk (no bottom signpost + TFOOT),
+      // skip creating the last slice row entirely.
+      // FIXME: rowBottom is already measured in the evaluation helper; reuse stored geometry instead of recalculating.
       // Treat as fitting the final window: do not split and do not register a new chunk.
       this._debug._ && console.log('🫟 last-row-fits-without-bottom-signpost: skip split');
       this.logGroupEnd(`Row # ${origRowIndex} (from ${origRowCount}) is checked`);
@@ -302,64 +325,6 @@ export default class Table {
   }
 
   // ===== Row Split Internals =====
-
-  _buildRowEvaluationContext(rowIndex) {
-    // Gather row geometry relative to the current split window so decisions stay deterministic.
-    const row = this._currentTableDistributedRows[rowIndex];
-    if (!row) {
-      return null;
-    }
-    const rowTop = this._node.getTop(row, this._currentTable);
-    const rowBottom = this._node.getBottom(row, this._currentTable);
-    const nextRow = this._currentTableDistributedRows[rowIndex + 1];
-    const nextMarker = nextRow
-      ? this._node.getTop(nextRow, this._currentTable)
-      : rowBottom; // for the last row
-    const delta = nextMarker - this._currentTableSplitBottom;
-    const tailWindowHeight = this._currentTableSplitBottom - rowTop;
-    const fitsCurrentWindow = delta <= 0;
-
-    const logColor = fitsCurrentWindow ? 'green' : 'orange';
-    const logOps = fitsCurrentWindow ? '<=' : '>';
-    this._debug._ && console.log(
-      `%c📐 does row fit? %c ${fitsCurrentWindow} %c :: ${nextMarker} ${logOps} ${this._currentTableSplitBottom} %c(Δ=${delta})`,
-      '',                                     // 📐
-      `font-weight:bold;color:${logColor};`,  // true/false
-      '',                                     // numbers
-      `color:${logColor};`                    // delta
-    );
-
-    return {
-      rowIndex,
-      row,
-      rowTop,
-      rowBottom,
-      nextMarker,
-      delta,
-      tailWindowHeight,
-      isLastRow: !nextRow,
-      fitsCurrentWindow,
-    };
-  }
-
-  _canAbsorbOverflowingLastRow({ evaluation, extraCapacity }) {
-    // Short-tail optimisation: keep the last row in place when reclaimed final-slice budget covers the remainder.
-    if (!evaluation.isLastRow) {
-      return false;
-    }
-    const overflow = evaluation.rowBottom - this._currentTableSplitBottom;
-    this._debug._ && console.log('🫟 last-row-extra-check', {
-      overflow,
-      extraCapacity,
-      rowBottom: evaluation.rowBottom,
-      splitBottom: this._currentTableSplitBottom,
-    });
-    if (overflow <= extraCapacity) {
-      // Treat as fitting the final window: do not split and do not register a new chunk.
-      return true;
-    }
-    return false;
-  }
 
   _resolveOverflowingRow({ evaluation, splitStartRowIndexes, extraCapacity }) {
     // Row exceeds the current window: decide between conservative fallback, slicing, or scaling.
