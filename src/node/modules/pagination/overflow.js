@@ -114,6 +114,8 @@ export function handleRowOverflow({
  * Performs additional validation so callers see diagnostics before routing to overflow resolver.
  */
 export function handleRowSplitFailure(params) {
+  // * If only short tail space is available, move the row to next page (no scaling on tail).
+  // * If we are already in full-page context, scale ONLY problematic TD/Cell content to fit full-page height.
   const {
     ownerLabel,
     rowIndex,

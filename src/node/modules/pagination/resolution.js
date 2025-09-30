@@ -78,3 +78,85 @@ export function paginationResolveAlreadySlicedRow({
     fullPageHeight,
   });
 }
+
+export function paginationCalculateRowSplitBudget({
+  tailWindowHeight,
+  minMeaningfulRowSpace,
+  fullPartHeight,
+  debug,
+}) {
+    // * Insufficient remaining page space:
+    // * Remaining space cannot host a meaningful fragment of the row on the current page,
+    // * so we escalated to full-page height for the first part.
+  if (tailWindowHeight < minMeaningfulRowSpace) {
+    debug && debug._ && console.log(
+      `%c ${tailWindowHeight} < ${minMeaningfulRowSpace} %c (remainingPageSpace < minMeaningfulRowSpace) → use full-page budget for the first part`,
+      'color:red; font-weight:bold; background:#F1E9D2',
+      '',
+    );
+    return {
+      firstPartHeight: fullPartHeight,
+      insufficientRemainingWindow: true,
+    };
+  }
+
+  return {
+    firstPartHeight: tailWindowHeight,
+    insufficientRemainingWindow: false,
+  };
+}
+
+export function paginationProcessRowSplitResult({
+  evaluation,
+  splitResult,
+  splitStartRowIndexes,
+  insufficientRemainingWindow,
+  extraCapacity,
+  fullPageHeight,
+  debug,
+  handlers = {},
+}) {
+  const { newRows, isFirstPartEmptyInAnyTD, needsScalingInFullPage } = splitResult || {};
+  const { rowIndex, row, isLastRow, tailWindowHeight } = evaluation;
+
+  const {
+    onReplaceRow,
+    onAbsorbTail,
+    onRefreshRows,
+    onPlacement,
+    onSplitFailure,
+  } = handlers;
+
+  if (Array.isArray(newRows) && newRows.length) {
+    onReplaceRow?.({ evaluation, newRows });
+    if (isLastRow) {
+      onAbsorbTail?.({ evaluation, newRows, extraCapacity });
+    }
+    onRefreshRows?.({ evaluation, newRows, splitStartRowIndexes });
+    return onPlacement?.({
+      evaluation,
+      newRows,
+      insufficientRemainingWindow,
+      isFirstPartEmptyInAnyTD,
+      needsScalingInFullPage,
+      splitStartRowIndexes,
+    }) ?? evaluation.rowIndex;
+  }
+
+  // * If the split failed and the array of new rows is empty,
+  // * we need to take action, because the row did not fit.
+  if (debug && debug._) {
+    console.log(
+      `%c The row is not split. (ROW.${rowIndex})`,
+      'color:orange',
+      row,
+    );
+  }
+
+  return onSplitFailure?.({
+    evaluation,
+    splitStartRowIndexes,
+    availableRowHeight: tailWindowHeight,
+    fullPageHeight,
+  }) ?? evaluation.rowIndex;
+}

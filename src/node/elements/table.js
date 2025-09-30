@@ -335,6 +335,7 @@ export default class Table {
         isSlice: (row) => this._node.isSlice(row),
       },
       handlers: {
+        // Conservative fallback: defer to shared ROWSPAN handler with table-specific overflow logic.
         handleRowWithRowspan: () => this._node.paginationResolveRowWithRowspan({
           evaluation,
           splitStartRowIndexes,
@@ -357,7 +358,9 @@ export default class Table {
             }
           },
         }),
+        // Primary path: attempt to slice the row using table-specific DOM adapters.
         handleSplittableRow: () => this._resolveSplittableRow({ evaluation, splitStartRowIndexes, extraCapacity }),
+        // Already sliced row overflow: reuse shared handler to either move or scale.
         handleAlreadySlicedRow: () => this._node.paginationResolveAlreadySlicedRow({
           evaluation,
           splitStartRowIndexes,
@@ -398,9 +401,11 @@ export default class Table {
     // * We check whether there is enough space left on the current page
     // * to accommodate a reasonable portion of the broken line,
     // * or whether it is worth considering a full-size page.
-    const { firstPartHeight, insufficientRemainingWindow } = this._calculateRowSplitBudget({
+    const { firstPartHeight, insufficientRemainingWindow } = this._node.paginationCalculateRowSplitBudget({
       tailWindowHeight,
       minMeaningfulRowSpace,
+      fullPartHeight: this._currentTableFullPartContentHeight,
+      debug: this._debug,
     });
 
     this._debug._ && console.info({
@@ -421,95 +426,63 @@ export default class Table {
     );
     this._debug._ && console.log('%c newRows \n', 'color:magenta; font-weight:bold', splitResult.newRows);
 
-    const updatedIndex = this._processRowSplitResult({
+    const updatedIndex = this._node.paginationProcessRowSplitResult({
       evaluation,
       splitResult,
       splitStartRowIndexes,
       insufficientRemainingWindow,
       extraCapacity,
+      fullPageHeight: this._currentTableFullPartContentHeight,
+      debug: this._debug,
+      handlers: {
+        // Update DOM: swap original TR with freshly generated slices.
+        onReplaceRow: ({ evaluation, newRows }) => {
+          this._replaceRowInDOM(evaluation.row, newRows);
+        },
+        // Short-tail optimisation: fold the last slice back if the reclaimed budget allows.
+        onAbsorbTail: ({ evaluation, newRows, extraCapacity }) => {
+          this._node.absorbShortTrailingSliceIfFits({
+            slices: newRows,
+            extraCapacity,
+            ownerLabel: 'table',
+            debug: this._debug,
+          });
+        },
+        // Recorder/guards upkeep after DOM mutation.
+        onRefreshRows: ({ evaluation, newRows }) => {
+          this._node.paginationRefreshRowsAfterSplit(this._getSplitterAdapter(), {
+            rowIndex: evaluation.rowIndex,
+            rowSlices: newRows,
+          });
+        },
+        // Decide whether the first slice remains in the tail window or escalates to a new page.
+        onPlacement: ({ evaluation, newRows, insufficientRemainingWindow, isFirstPartEmptyInAnyTD, needsScalingInFullPage, splitStartRowIndexes }) => (
+          this._handleNewRowSlicesPlacement({
+            rowIndex: evaluation.rowIndex,
+            newRows,
+            insufficientRemainingWindow,
+            isFirstPartEmptyInAnyTD,
+            needsScalingInFullPage,
+            splitStartRowIndexes,
+          })
+        ),
+        // Generic fallback: move the row or scale TD content when slicing produced no fragments.
+        onSplitFailure: ({ evaluation, splitStartRowIndexes, availableRowHeight, fullPageHeight }) => (
+          this._resolveRowSplitFailure({
+            rowIndex: evaluation.rowIndex,
+            row: evaluation.row,
+            availableRowHeight,
+            fullPageHeight,
+            splitStartRowIndexes,
+            reasonTail: 'Split failed — move row to next page',
+            reasonFull: 'Split failed — scaled TDs for full-page',
+          })
+        ),
+      },
     });
 
     this.logGroupEnd(`🔳 Try to split the ROW ${rowIndex} (from ${this._currentTableDistributedRows.length}) (...if canSplitRow)`);
     return updatedIndex;
-  }
-
-  _calculateRowSplitBudget({ tailWindowHeight, minMeaningfulRowSpace }) {
-    if (tailWindowHeight < minMeaningfulRowSpace) {
-      // * Insufficient remaining page space:
-      // * Remaining space cannot host a meaningful fragment of the row on the current page,
-      // * so we escalated to full-page height for the first part.
-      this._debug._ && console.log(
-        `%c ${tailWindowHeight} < ${minMeaningfulRowSpace} %c (tail window too small) → use full-page window`,
-        'color:red; font-weight:bold; background:#F1E9D2',
-        '',
-      );
-      return {
-        firstPartHeight: this._currentTableFullPartContentHeight,
-        insufficientRemainingWindow: true,
-      };
-    }
-
-    return {
-      firstPartHeight: tailWindowHeight,
-      insufficientRemainingWindow: false,
-    };
-  }
-
-  _processRowSplitResult({ evaluation, splitResult, splitStartRowIndexes, insufficientRemainingWindow, extraCapacity }) {
-    const { newRows, isFirstPartEmptyInAnyTD, needsScalingInFullPage } = splitResult;
-    const { rowIndex, row, isLastRow, tailWindowHeight } = evaluation;
-
-    if (newRows.length) {
-      // * If the split was successful and the array of new rows is not empty,
-      // * we insert the new rows instead of the old ones.
-
-      // * Update the DOM and state with the new table rows.
-      this._replaceRowInDOM(row, newRows);
-
-      if (isLastRow) {
-        this._node.absorbShortTrailingSliceIfFits({
-          slices: newRows,
-          extraCapacity,
-          ownerLabel: 'table',
-          debug: this._debug,
-        });
-      }
-
-      // * Keep currentRows/entries/guards in sync with freshly generated slices via shared kernel helper.
-      this._node.paginationRefreshRowsAfterSplit(this._getSplitterAdapter(), {
-        rowIndex,
-        rowSlices: newRows,
-      });
-
-      return this._handleNewRowSlicesPlacement({
-        rowIndex,
-        newRows,
-        insufficientRemainingWindow,
-        isFirstPartEmptyInAnyTD,
-        needsScalingInFullPage,
-        splitStartRowIndexes,
-      });
-    }
-
-    // * If the split failed and the array of new rows is empty,
-    // * we need to take action, because the row did not fit.
-    this._debug._ && console.log(
-      `%c The row is not split. (ROW.${rowIndex})`,
-      'color:orange',
-      this._currentTableDistributedRows[rowIndex],
-    );
-
-    // * If only short tail space is available, move the row to next page (no scaling on tail).
-    // * If we are already in full-page context, scale ONLY problematic TD content to fit full-page height.
-    return this._resolveRowSplitFailure({
-      rowIndex,
-      row,
-      availableRowHeight: tailWindowHeight,
-      fullPageHeight: this._currentTableFullPartContentHeight,
-      splitStartRowIndexes,
-      reasonTail: 'Split failed — move row to next page',
-      reasonFull: 'Split failed — scaled TDs for full-page',
-    });
   }
 
   _splitTableRow(
