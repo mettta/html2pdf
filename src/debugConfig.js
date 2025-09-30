@@ -48,7 +48,7 @@ const debugConfig = {
     _: false,
   },
   table: {
-    _: false,
+    _: true,
   },
   tableLike: {
     _: false,
