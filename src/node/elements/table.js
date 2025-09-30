@@ -411,15 +411,14 @@ export default class Table {
 
           const currRowTop = this._node.getTop(currentRow, this._currentTable);
           const availableRowHeight = this._currentTableSplitBottom - currRowTop;
-          rowIndex = this._handleRowOverflow(
+          rowIndex = this._handleRowSplitFailure({
             rowIndex,
             currentRow,
             availableRowHeight,
-            this._currentTableFullPartContentHeight,
             splitStartRowIndexes,
-            'Split failed — move row to next page',
-            'Split failed — scaled TDs for full-page'
-          );
+            tailReason: 'Split failed — move row to next page',
+            fullReason: 'Split failed — scaled TDs for full-page',
+          });
         }
 
         this.logGroupEnd(`🔳 Try to split the ROW ${rowIndex} (from ${this._currentTableDistributedRows.length}) (...if canSplitRow)`);
@@ -433,20 +432,10 @@ export default class Table {
         // * try to fit large row by transforming the content.
         // * We check the actual resulting height of new lines here,
         // * after they have been inserted into the DOM, and they have been rechecked for fit.
-
-        // * And we need to know exactly how much the new line exceeds the limit.
-
-
-        // *** currentRowFitDelta = nextRowTopOrTableBottom - this._currentTableSplitBottom;
-        // * need to reduce row BIG content on currentRowFitDelta
-
-        // TODO: transform content
-        this._debug._ && console.warn('%c SUPER BIG', 'background:red;color:white', currentRowFitDelta,
-          {
-            // rowH: currRowHeight,
-            part: this._currentTableFullPartContentHeight
-          }
-        );
+        // * And we need to know exactly how much the new line exceeds the limit (`currentRowFitDelta`).
+        this._debug._ && console.warn('%c SUPER BIG', 'background:red;color:white', currentRowFitDelta, {
+          part: this._currentTableFullPartContentHeight,
+        });
 
         // * Transform TD content.
         // * - If we are at the tail of a page (short first part), do NOT scale — move row to next page.
@@ -456,10 +445,14 @@ export default class Table {
 
         const currRowTopForSlice = this._node.getTop(currentRow, this._currentTable);
         const availableRowHeight = this._currentTableSplitBottom - currRowTopForSlice;
-        rowIndex = this._handleRowOverflow(rowIndex, currentRow, availableRowHeight, this._currentTableFullPartContentHeight, splitStartRowIndexes,
-          `Slice doesn't fit tail — move to next page`,
-          'Scaled TD content to fit full page');
-
+        rowIndex = this._handleRowSplitFailure({
+          rowIndex,
+          currentRow,
+          availableRowHeight,
+          splitStartRowIndexes,
+          tailReason: `Slice doesn't fit tail — move to next page`,
+          fullReason: 'Scaled TD content to fit full page',
+        });
       }
     }
 
@@ -552,6 +545,9 @@ export default class Table {
     needsScalingInFullPage,
     splitStartRowIndexes,
   }) {
+    // Decide where freshly generated slices should live: keep first slice in the current
+    // tail window (possibly trimming to the remaining height) or escalate the whole row
+    // to a full-page window. Returns the updated rowIndex (usually decremented to re-check).
     const firstSlice = newRows[0];
     if (!firstSlice) {
       // Defensive fallback: if we somehow lost the first slice, move the row to next page.
@@ -852,14 +848,42 @@ export default class Table {
     }
   }
 
+  _handleRowSplitFailure({ rowIndex, currentRow, availableRowHeight, splitStartRowIndexes, tailReason, fullReason }) {
+    // When no slices were produced (or row was already marked as sliced) we fall back to
+    // the generic overflow resolver. TailReason/fullReason describe the decision path.
+    if (!(availableRowHeight >= 0)) {
+      console.warn('[table.split] Missing or negative availableRowHeight when handling split failure.', {
+        rowIndex,
+        availableRowHeight,
+        currentRow,
+      });
+    }
+    if (!currentRow) {
+      console.warn('[table.split] Missing currentRow in split failure handler.', { rowIndex });
+      return rowIndex;
+    }
+    // Delegate to the shared overflow handler so tail/full-page routing stays consistent.
+    return this._handleRowOverflow(
+      rowIndex,
+      currentRow,
+      availableRowHeight,
+      this._currentTableFullPartContentHeight,
+      splitStartRowIndexes,
+      tailReason,
+      fullReason,
+    );
+  }
+
   _handleRowOverflow(rowIndex, row, availableRowHeight, fullPageHeight, splitStartRowIndexes, reasonTail, reasonFull) {
     // * Decide how to resolve overflow for the current row against the current window.
-    // * Tail → move row to next page; Full-page → scale TDs, then move row.
-    // * Returns rowIndex - 1 to trigger re-check under the new window.
+    // ** Remaining window → move the row to the next page (remainder is insufficient, no scaling).
+    // ** Full-page window → scale problematic TD content to fit full-page height, then move.
+    // ** Always return rowIndex - 1 to trigger re-check under the new window context.
     if (availableRowHeight < fullPageHeight) {
       this._registerPageStartAt(rowIndex, splitStartRowIndexes, reasonTail);
       return rowIndex - 1;
     }
+    this._debug._ && console.log('⚠️ Full-page overflow: scaling row before moving', { rowIndex, reasonFull });
     this._scaleProblematicTDs(row, fullPageHeight, this._getRowShellHeights(row));
     this._registerPageStartAt(rowIndex, splitStartRowIndexes, reasonFull);
     return rowIndex - 1;
