@@ -33,3 +33,48 @@ export function paginationResolveOverflowingRow({
 
   return handleAlreadySlicedRow({ evaluation });
 }
+
+export function paginationResolveRowWithRowspan({
+  evaluation,
+  splitStartRowIndexes,
+  fullPageHeight,
+  resolveOverflow,
+  debug,
+  afterResolve,
+}) {
+  const { rowIndex, tailWindowHeight } = evaluation;
+  if (debug && debug._) {
+    console.log('%c ⚠️ Row has ROWSPAN; use conservative fallback (no slicing)', 'color:DarkOrange; font-weight:bold');
+  }
+  const result = resolveOverflow({
+    rowIndex,
+    evaluation,
+    availableRowHeight: tailWindowHeight,
+    splitStartRowIndexes,
+    fullPageHeight,
+  });
+  afterResolve?.({ evaluation, tailWindowHeight, fullPageHeight, result });
+  return result;
+}
+
+export function paginationResolveAlreadySlicedRow({
+  evaluation,
+  splitStartRowIndexes,
+  resolveSplitFailure,
+  fullPageHeight,
+  debug,
+}) {
+  const { rowIndex, row, tailWindowHeight, delta } = evaluation;
+  if (debug && debug._) {
+    console.log(`%c Row # ${rowIndex} is slice! but don't fit`, 'color:DarkOrange; font-weight:bold', row);
+    console.warn('%c SUPER BIG', 'background:red;color:white', delta, {
+      part: fullPageHeight,
+    });
+  }
+  return resolveSplitFailure({
+    evaluation,
+    splitStartRowIndexes,
+    availableRowHeight: tailWindowHeight,
+    fullPageHeight,
+  });
+}
