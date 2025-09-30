@@ -917,6 +917,8 @@ export default class Table {
 
     // Handle cases when slicing produced no fragments: emit diagnostics and route through overflow logic.
     const helpers = this._currentOverflowHelpers || this._composeOverflowHelpers();
+    // * If only short tail space is available, move the row to next page (no scaling on tail).
+    // * If we are already in full-page context, scale ONLY problematic TD content to fit full-page height.
     return this._node.handleRowSplitFailure({
       ownerLabel: helpers.ownerLabel,
       rowIndex,
