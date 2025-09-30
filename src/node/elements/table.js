@@ -274,20 +274,23 @@ export default class Table {
       tfootHeight: this._currentTableTfootHeight,
     });
 
-    // Stage 4 — special-case the last split row
+    // Stage 4 — special-case the last row:
+    // if removing the final signpost frees enough height,
+    // let the current row stay intact (no extra part, no slicing).
     if (this._canAbsorbOverflowingLastRow({ evaluation, extraCapacity })) {
-      // 🫟 Special case: last row can fit if we remove the bottom signpost (final chunk has no footer label).
+      // 🫟 Early tail drop on the very first split attempt:
+      // Special case: last row can fit if we remove the bottom signpost (final chunk has no footer label).
       // * If this is the final chunk of last split row
       // * and the final chunk height is small enough
       // * to fit into the extra capacity of previous row (no bottom signpost + TFOOT),
       // * skip creating the last slice row entirely.
-      // FIXME: rowBottom includes the value from evaluation; reuse it when de-duplicating measurement helpers.
+      // Treat as fitting the final window: do not split and do not register a new chunk.
       this._debug._ && console.log('🫟 last-row-fits-without-bottom-signpost: skip split');
       this.logGroupEnd(`Row # ${origRowIndex} (from ${origRowCount}) is checked`);
       return rowIndex;
     }
 
-    // Stage 5 —the row does not fit in the current window: route the row through spans fallback / slicing / scaling decisions.
+    // Stage 5 — the row does not fit in the current window: route the row through spans fallback / slicing / scaling decisions.
     const updatedIndex = this._resolveOverflowingRow({
       evaluation,
       splitStartRowIndexes,
@@ -360,59 +363,23 @@ export default class Table {
 
   _resolveOverflowingRow({ evaluation, splitStartRowIndexes, extraCapacity }) {
     // Row exceeds the current window: decide between conservative fallback, slicing, or scaling.
-    const { rowIndex, row, tailWindowHeight } = evaluation;
+    const { row, rowIndex } = evaluation;
 
     if (this._rowHasSpan(row)) {
-      // Conservative fallback for rows with ROWSPAN: don't slice TDs
-      // - If doesn't fit tail → move to next page
-      // - If doesn't fit full-page → scale problematic TDs to full-page height
-      this._debug._ && console.log('%c ⚠️ Row has ROWSPAN; use conservative fallback (no slicing)', 'color:DarkOrange; font-weight:bold');
-      const updatedIndex = this._resolveRowOverflow({
-        rowIndex,
-        row,
-        availableRowHeight: tailWindowHeight,
-        fullPageHeight: this._currentTableFullPartContentHeight,
-        splitStartRowIndexes,
-        reasonTail: 'Row with ROWSPAN — move to next page',
-        reasonFull: 'Row with ROWSPAN — scaled TDs to full page',
-      });
-      if (this._debug._ && tailWindowHeight >= this._currentTableFullPartContentHeight) {
-        console.warn('[table.fallback] ROWSPAN row required full-page scaling to fit.');
-      }
-      return updatedIndex;
+      return this._resolveRowWithRowspan({ evaluation, splitStartRowIndexes });
     }
 
     if (!this._node.isSlice(row)) {
-      // * 🏴 TRY TO SPLIT CURRENT ROW
-      return this._attemptToSplitRow({
-        evaluation,
-        splitStartRowIndexes,
-        extraCapacity,
-      });
+      return this._resolveSplittableRow({ evaluation, splitStartRowIndexes, extraCapacity });
     }
 
-    this._debug._ && console.log(
-      `%c Row # ${rowIndex} is slice! but don't fit`,
-      'color:DarkOrange; font-weight:bold',
-      row,
-    );
-    this._debug._ && console.warn('%c SUPER BIG', 'background:red;color:white', evaluation.delta, {
-      part: this._currentTableFullPartContentHeight,
-    });
-
-    return this._resolveRowSplitFailure({
-      rowIndex,
-      row,
-      availableRowHeight: tailWindowHeight,
-      fullPageHeight: this._currentTableFullPartContentHeight,
-      splitStartRowIndexes,
-      reasonTail: `Slice doesn't fit tail — move to next page`,
-      reasonFull: 'Scaled TD content to fit full page',
-    });
+    return this._resolveAlreadySlicedRow({ evaluation, splitStartRowIndexes });
   }
 
-  _attemptToSplitRow({ evaluation, splitStartRowIndexes, extraCapacity }) {
+  _resolveSplittableRow({ evaluation, splitStartRowIndexes, extraCapacity }) {
     const { rowIndex, row, tailWindowHeight, isLastRow, rowTop } = evaluation;
+    // * If the end of the current row is on the second page -
+    // * 🏴 TRY TO SPLIT CURRENT ROW
     this._debug._ && console.group(
       `%c 🔳 Try to split the ROW ${rowIndex} %c (from ${this._currentTableDistributedRows.length})`,
       'color:magenta;',
@@ -461,6 +428,59 @@ export default class Table {
 
     this.logGroupEnd(`🔳 Try to split the ROW ${rowIndex} (from ${this._currentTableDistributedRows.length}) (...if canSplitRow)`);
     return updatedIndex;
+  }
+
+  _resolveRowWithRowspan({ evaluation, splitStartRowIndexes }) {
+    const { rowIndex, row, tailWindowHeight } = evaluation;
+    // Conservative fallback for rows with ROWSPAN: don't slice TDs
+    // - If doesn't fit tail → move to next page
+    // - If doesn't fit full-page → scale problematic TDs to full-page height
+    this._debug._ && console.log('%c ⚠️ Row has ROWSPAN; use conservative fallback (no slicing)', 'color:DarkOrange; font-weight:bold');
+    const updatedIndex = this._resolveRowOverflow({
+      rowIndex,
+      row,
+      availableRowHeight: tailWindowHeight,
+      fullPageHeight: this._currentTableFullPartContentHeight,
+      splitStartRowIndexes,
+      reasonTail: 'Row with ROWSPAN — move to next page',
+      reasonFull: 'Row with ROWSPAN — scaled TDs to full page',
+    });
+    if (this._debug._ && tailWindowHeight >= this._currentTableFullPartContentHeight) {
+      console.warn('[table.fallback] ROWSPAN row required full-page scaling to fit.');
+    }
+    return updatedIndex;
+  }
+
+  _resolveAlreadySlicedRow({ evaluation, splitStartRowIndexes }) {
+    const { rowIndex, row, tailWindowHeight } = evaluation;
+    this._debug._ && console.log(
+      `%c Row # ${rowIndex} is slice! but don't fit`,
+      'color:DarkOrange; font-weight:bold',
+      row,
+    );
+    this._debug._ && console.warn('%c SUPER BIG', 'background:red;color:white', evaluation.delta, {
+      part: this._currentTableFullPartContentHeight,
+    });
+    // * If splitting is not possible because the row has the isRowSliced flag:
+    // * try to fit large row by transforming the content.
+    // * We check the actual resulting height of new lines here,
+    // * after they have been inserted into the DOM, and they have been rechecked for fit.
+    // * And we need to know exactly how much the new line exceeds the limit (`evaluation.delta`).
+
+    // * Transform TD content.
+    // * - If we are at the tail of a page (short first part), do NOT scale — move row to next page.
+    // * - If at a full-page context and TD still can’t fit, scale ONLY problematic TD contents to fit full-page height.
+    // * Note: fine-grained scaling may have already been applied in slicers.js (getSplitPoints).
+    // * This is a row-level fallback to guarantee geometry and prevent overflow.
+    return this._resolveRowSplitFailure({
+      rowIndex,
+      row,
+      availableRowHeight: tailWindowHeight,
+      fullPageHeight: this._currentTableFullPartContentHeight,
+      splitStartRowIndexes,
+      reasonTail: `Slice doesn't fit tail — move to next page`,
+      reasonFull: 'Scaled TD content to fit full page',
+    });
   }
 
   _calculateRowSplitBudget({ tailWindowHeight, minMeaningfulRowSpace }) {
