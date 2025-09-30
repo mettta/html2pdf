@@ -269,7 +269,10 @@ export default class Table {
     } else {
       // 🫟 Special case: last row can fit if we remove the bottom signpost (final chunk has no footer label).
       const isLastRow = !this._currentTableDistributedRows[rowIndex + 1];
-      const extraCapacity = this._getFinalPartReclaimedHeight(); // what we regain in the final part
+      const extraCapacity = this._node.calculateFinalPartReclaimedHeight({
+        signpostHeight: this._signpostHeight,
+        tfootHeight: this._currentTableTfootHeight,
+      }); // what we regain in the final part
 
       // TODO: make a function #last_tail
       // 🫟 Early tail drop for a row with one split:
@@ -380,9 +383,11 @@ export default class Table {
           this._replaceRowInDOM(currentRow, newRows);
 
           if (isLastRow) {
-            this._absorbTrailingSliceIfFits({
-              newRows,
+            this._node.absorbShortTrailingSliceIfFits({
+              slices: newRows,
               extraCapacity,
+              ownerLabel: 'table',
+              debug: this._debug,
             });
           }
 
@@ -713,10 +718,6 @@ export default class Table {
     this._currentTableEntries.rows.splice(index, 1, ...newRows);
   }
 
-  _getFinalPartReclaimedHeight() {
-    return (this._signpostHeight || 0) + (this._currentTableTfootHeight || 0);
-  }
-
   // ===== Split Geometry =====
 
   _setCurrentTableFirstSplitBottom() {
@@ -901,30 +902,6 @@ export default class Table {
       scaleProblematicCells: helpers.scaleProblematicCells,
       debugLogger: helpers.debugLogger,
     });
-  }
-
-  _absorbTrailingSliceIfFits({ newRows, extraCapacity }) {
-    // Tail drop (final chunk): if the last generated slice is small enough to fit in the reclaimed
-    // capacity of the final part (no bottom signpost + TFOOT), merge it into the previous slice.
-    if (!Array.isArray(newRows) || newRows.length < 2) {
-      console.warn('[table.tailDrop] Expected at least two slices to evaluate tail absorption, got:', newRows?.length);
-      return;
-    }
-    const tailSlice = newRows.at(-1);
-    if (!tailSlice) {
-      console.warn('[table.tailDrop] Missing tail slice for absorption check.');
-      return;
-    }
-    const tailHeight = this._DOM.getElementOffsetHeight(tailSlice) || 0;
-    if (tailHeight <= extraCapacity) {
-      this._debug._ && console.log('🫟 Tail drop absorbed last slice', { tailHeight, extraCapacity });
-      const previousSlice = newRows.at(-2);
-      if (previousSlice) {
-        this._DOM.moveRowContent(tailSlice, previousSlice);
-      }
-      this._DOM.removeNode(tailSlice);
-      newRows.pop();
-    }
   }
 
   _getRowShellHeights(row) {
