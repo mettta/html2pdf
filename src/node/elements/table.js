@@ -931,10 +931,6 @@ export default class Table {
     return delta;
   }
 
-  _lockCurrentTableWidths() {
-    this._node.lockTableWidths(this._currentTable);
-  }
-
   // ===== Builders =====
   // 👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪
 
