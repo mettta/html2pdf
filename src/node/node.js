@@ -17,6 +17,7 @@ import * as PaginationFitters from './modules/pagination/fitters.js';
 import * as PaginationState from './modules/pagination/state.js';
 import * as PaginationKernel from './modules/pagination/kernel.js';
 import * as PaginationMetrics from './modules/pagination/metrics.js';
+import * as PaginationOverflow from './modules/pagination/overflow.js';
 import Paragraph from './elements/paragraph.js';
 import Table from './elements/table.js';
 import TableLike from './elements/tableLike.js';
@@ -58,6 +59,7 @@ export default class Node {
     Object.assign(this, PaginationState);
     Object.assign(this, PaginationKernel);
     Object.assign(this, PaginationMetrics);
+    Object.assign(this, PaginationOverflow);
 
     this._paragraph = new Paragraph({
       config: this._config,

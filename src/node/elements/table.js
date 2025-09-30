@@ -80,6 +80,7 @@ export default class Table {
     this._logSplitBottom_ = [];
     // ** current per-run caches
     this._currentRowShellCache = undefined;
+    this._currentOverflowHelpers = undefined;
 
     // ** analysis flags (guards) — set by _analyzeCurrentTableStructure()
     // Whether any row contains ROWSPAN>1; triggers conservative fallback (no slicing for that row)
@@ -98,6 +99,7 @@ export default class Table {
     this._currentFullPageHeight = _fullPageHeight;
     this._currentRoot = _root;
     this._currentRowShellCache = new WeakMap();
+    this._currentOverflowHelpers = this._composeOverflowHelpers();
   }
 
   // ===== Preparation =====
@@ -300,15 +302,15 @@ export default class Table {
         this._debug._ && console.log('%c ⚠️ Row has ROWSPAN; use conservative fallback (no slicing)', 'color:DarkOrange; font-weight:bold');
         const currRowTop = this._node.getTop(currentRow, this._currentTable);
         const availableRowHeight = this._currentTableSplitBottom - currRowTop;
-        rowIndex = this._handleRowOverflow(
+        rowIndex = this._resolveRowOverflow({
           rowIndex,
-          currentRow,
+          row: currentRow,
           availableRowHeight,
-          this._currentTableFullPartContentHeight,
+          fullPageHeight: this._currentTableFullPartContentHeight,
           splitStartRowIndexes,
-          'Row with ROWSPAN — move to next page',
-          'Row with ROWSPAN — scaled TDs to full page'
-        );
+          reasonTail: 'Row with ROWSPAN — move to next page',
+          reasonFull: 'Row with ROWSPAN — scaled TDs to full page',
+        });
         if (this._debug._ && availableRowHeight >= this._currentTableFullPartContentHeight) {
           console.warn('[table.fallback] ROWSPAN row required full-page scaling to fit.');
         }
@@ -411,13 +413,14 @@ export default class Table {
 
           const currRowTop = this._node.getTop(currentRow, this._currentTable);
           const availableRowHeight = this._currentTableSplitBottom - currRowTop;
-          rowIndex = this._handleRowSplitFailure({
+          rowIndex = this._resolveRowSplitFailure({
             rowIndex,
-            currentRow,
+            row: currentRow,
             availableRowHeight,
+            fullPageHeight: this._currentTableFullPartContentHeight,
             splitStartRowIndexes,
-            tailReason: 'Split failed — move row to next page',
-            fullReason: 'Split failed — scaled TDs for full-page',
+            reasonTail: 'Split failed — move row to next page',
+            reasonFull: 'Split failed — scaled TDs for full-page',
           });
         }
 
@@ -445,13 +448,14 @@ export default class Table {
 
         const currRowTopForSlice = this._node.getTop(currentRow, this._currentTable);
         const availableRowHeight = this._currentTableSplitBottom - currRowTopForSlice;
-        rowIndex = this._handleRowSplitFailure({
+        rowIndex = this._resolveRowSplitFailure({
           rowIndex,
-          currentRow,
+          row: currentRow,
           availableRowHeight,
+          fullPageHeight: this._currentTableFullPartContentHeight,
           splitStartRowIndexes,
-          tailReason: `Slice doesn't fit tail — move to next page`,
-          fullReason: 'Scaled TD content to fit full page',
+          reasonTail: `Slice doesn't fit tail — move to next page`,
+          reasonFull: 'Scaled TD content to fit full page',
         });
       }
     }
@@ -568,14 +572,14 @@ export default class Table {
 
     // TODO: "Scale only the first slice..."
     // ? Find out why we have a reduction in the first piece and in which case was this required?
-    // ? All our tests are performed without height fitting (with commented _scaleProblematicTDs).
+    // ? All our tests are performed without height fitting (with commented helpers earlier).
     // Commit:
     // node/Table: Ensure the first slice fits the current page window (before registration)
     // Maryna Balioura on 9/7/2025, 5:23:42 PM
     if (placement.placeOnCurrentPage) {
       // * Scale only the first slice to fit the remaining page space.
       if (placement.remainingWindowSpace > 0) {
-        this._scaleProblematicTDs(firstSlice, placement.remainingWindowSpace, this._getRowShellHeights(firstSlice));
+        this._scaleProblematicCellsToHeight(firstSlice, placement.remainingWindowSpace, this._getRowShellHeights(firstSlice));
       }
       this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Row split — next slice starts new page');
     } else {
@@ -588,8 +592,8 @@ export default class Table {
         },
         scaleCallback: ({ row, targetHeight }) => {
           if (!row) return false;
-          this._debug._ && console.log('⚖️ _scaleProblematicTDs');
-          return this._scaleProblematicTDs(row, targetHeight, this._getRowShellHeights(row));
+          this._debug._ && console.log('⚖️ scaleProblematicCellsToHeight');
+          return this._scaleProblematicCellsToHeight(row, targetHeight, this._getRowShellHeights(row));
         },
       });
       this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Empty first part — move row to next page');
@@ -804,24 +808,99 @@ export default class Table {
 
   // ===== Overflow / Scaling =====
 
-  _scaleProblematicTDs(row, totalRowHeight, shellsOpt) {
-    // Two-tier safety note:
-    // - Fine-grained scaling may already occur inside slicers.js (getSplitPoints),
-    //   targeting specific inner elements that cannot be split.
-    // - This helper is a coarser, row/TD-level fallback used by table.js to ensure
-    //   geometry in full-page context. Tail cases are moved to the next page without scaling.
-    //
-    // Delegation:
-    // - Uses generic fitters.scaleCellsToHeight via this._node to scale only
-    //   overflowing TD contents within a row.
-    // - Per‑TD budget: target = max(0, totalRowHeight - TD shell height).
-    // - Returns true if any TD was scaled.
+  _composeOverflowHelpers() {
+    // Shared callbacks wrapping paginator + scaling hooks for reuse across helpers.
+    // Scaling callback must only shrink overflowing cell content (TD/TH for tables, cells for grids),
+    // keeping the structural row wrapper untouched so geometric reasoning remains predictable.
+    const scaleCellsToHeight = this._node.scaleCellsToHeight.bind(this._node);
+    const getRowShellHeights = this._getRowShellHeights.bind(this);
+    const registerPageStartAt = (index, splitIndexes, reason) => {
+      this._registerPageStartAt(index, splitIndexes, reason);
+    };
+    const debugLogger = this._debug && this._debug._
+      ? (message, payload) => console.log(message, payload)
+      : undefined;
 
-    const tds = [...this._DOM.getChildren(row)];
-    // Use cached shells if possible: compute-once per TR per split run.
-    const shells = Array.isArray(shellsOpt) ? shellsOpt : this._getRowShellHeights(row);
-    // Delegate to generic scaler available on Node (fitters.scaleCellsToHeight)
-    return this._node.scaleCellsToHeight(tds, totalRowHeight, shells);
+    const helpers = {
+      ownerLabel: 'table',
+      registerPageStartAt,
+      debugLogger,
+      scaleProblematicCells: (row, targetHeight, cachedShells) => this._node.scaleRowCellsToHeight({
+        ownerLabel: 'table',
+        DOM: this._DOM,
+        row,
+        targetHeight,
+        cachedShells,
+        getRowShellHeights,
+        scaleCellsToHeight,
+      }),
+    };
+
+    this._currentOverflowHelpers = helpers;
+    return helpers;
+  }
+
+  _scaleProblematicCellsToHeight(row, targetHeight, shellsOpt) {
+    // Scale only overflowing TD contents inside the row (shell height budget) — structure remains intact.
+    // Two-tier safety note:
+    // - Fine-grained scaling may already occur inside slicers.js (getSplitPoints), targeting nested nodes.
+    // - This helper is the coarse fallback that touches only overflowing TD contents so the row fits the budget.
+    //   TR geometry and non-problematic cells stay intact; grid/table callers wire their cell selectors.
+    // - Tail windows still prefer moving the row; scaling kicks in only in full-page contexts via overflow helpers.
+    const helpers = this._currentOverflowHelpers || this._composeOverflowHelpers();
+    return helpers.scaleProblematicCells(row, targetHeight, shellsOpt);
+  }
+
+  _resolveRowOverflow({
+    rowIndex,
+    row,
+    availableRowHeight,
+    fullPageHeight,
+    splitStartRowIndexes,
+    reasonTail,
+    reasonFull,
+  }) {
+    // Route overflowed row according to tail/full-page capacity while preserving shared logging.
+    const helpers = this._currentOverflowHelpers || this._composeOverflowHelpers();
+    return this._node.handleRowOverflow({
+      ownerLabel: helpers.ownerLabel,
+      rowIndex,
+      row,
+      availableRowHeight,
+      fullPageHeight,
+      splitStartRowIndexes,
+      reasonTail,
+      reasonFull,
+      registerPageStartAt: helpers.registerPageStartAt,
+      scaleProblematicCells: helpers.scaleProblematicCells,
+      debugLogger: helpers.debugLogger,
+    });
+  }
+
+  _resolveRowSplitFailure({
+    rowIndex,
+    row,
+    availableRowHeight,
+    fullPageHeight,
+    splitStartRowIndexes,
+    reasonTail,
+    reasonFull,
+  }) {
+    // Handle cases when slicing produced no fragments: emit diagnostics and route through overflow logic.
+    const helpers = this._currentOverflowHelpers || this._composeOverflowHelpers();
+    return this._node.handleRowSplitFailure({
+      ownerLabel: helpers.ownerLabel,
+      rowIndex,
+      row,
+      availableRowHeight,
+      fullPageHeight,
+      splitStartRowIndexes,
+      reasonTail,
+      reasonFull,
+      registerPageStartAt: helpers.registerPageStartAt,
+      scaleProblematicCells: helpers.scaleProblematicCells,
+      debugLogger: helpers.debugLogger,
+    });
   }
 
   _absorbTrailingSliceIfFits({ newRows, extraCapacity }) {
@@ -846,47 +925,6 @@ export default class Table {
       this._DOM.removeNode(tailSlice);
       newRows.pop();
     }
-  }
-
-  _handleRowSplitFailure({ rowIndex, currentRow, availableRowHeight, splitStartRowIndexes, tailReason, fullReason }) {
-    // When no slices were produced (or row was already marked as sliced) we fall back to
-    // the generic overflow resolver. TailReason/fullReason describe the decision path.
-    if (!(availableRowHeight >= 0)) {
-      console.warn('[table.split] Missing or negative availableRowHeight when handling split failure.', {
-        rowIndex,
-        availableRowHeight,
-        currentRow,
-      });
-    }
-    if (!currentRow) {
-      console.warn('[table.split] Missing currentRow in split failure handler.', { rowIndex });
-      return rowIndex;
-    }
-    // Delegate to the shared overflow handler so tail/full-page routing stays consistent.
-    return this._handleRowOverflow(
-      rowIndex,
-      currentRow,
-      availableRowHeight,
-      this._currentTableFullPartContentHeight,
-      splitStartRowIndexes,
-      tailReason,
-      fullReason,
-    );
-  }
-
-  _handleRowOverflow(rowIndex, row, availableRowHeight, fullPageHeight, splitStartRowIndexes, reasonTail, reasonFull) {
-    // * Decide how to resolve overflow for the current row against the current window.
-    // ** Remaining window → move the row to the next page (remainder is insufficient, no scaling).
-    // ** Full-page window → scale problematic TD content to fit full-page height, then move.
-    // ** Always return rowIndex - 1 to trigger re-check under the new window context.
-    if (availableRowHeight < fullPageHeight) {
-      this._registerPageStartAt(rowIndex, splitStartRowIndexes, reasonTail);
-      return rowIndex - 1;
-    }
-    this._debug._ && console.log('⚠️ Full-page overflow: scaling row before moving', { rowIndex, reasonFull });
-    this._scaleProblematicTDs(row, fullPageHeight, this._getRowShellHeights(row));
-    this._registerPageStartAt(rowIndex, splitStartRowIndexes, reasonFull);
-    return rowIndex - 1;
   }
 
   _getRowShellHeights(row) {
