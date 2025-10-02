@@ -22,6 +22,9 @@
 - Add automated coverage for existing grid examples before attempting deeper refactors.
 
 ### 2025-10-02 – Stage‑5 Adapter Audit
+- 2025-10-03: documented additional grid metrics TODOs (WeakMap caching for computed styles, margin handling, table-based shell comparison).
+
+- 2025-10-02: Rewired `Grid.split` to reuse Stage-5 shared helpers (overflow, placement). Added `_resolveGridOverflowingRow`, `_resolveGridSplittableRow`, and overflow callbacks mirroring Table; remaining work: ensure `_splitGridRow` handles guard edge cases (spans still skip).
 - Current `Grid.split` still runs a bespoke Stage-5 loop (`_splitGridRow`, manual placement). Needs to delegate to `paginationResolveOverflowingRow` / `paginationResolveSplittableRow` with Grid-specific callbacks.
 - Required adapters:
   - `gridEvaluateRow` equivalent → reuse `paginationBuildRowEvaluationContext` with grid rows; ensure row metadata cached (top/bottom, tail height).

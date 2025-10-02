@@ -76,8 +76,9 @@ export default class Grid {
 
     const layoutScan = this._scanGridLayout(gridNode, nodeComputedStyle);
     if (!layoutScan.safe) {
-      this._debug._ && console.warn('[grid.split] skip:', layoutScan.reason);
-      this._node.setInitStyle (false, gridNode, nodeComputedStyle);
+      this._debug._ && console.warn('[grid.split] skip unsafe layout', layoutScan); // { safe:false, reason: … }
+      this._debug._ && console.warn('[grid.split] Unsupported grid layout detected; keeping original grid intact.', layoutScan);
+      this._node.setInitStyle(false, gridNode, nodeComputedStyle);
       this._debug._ && console.groupEnd();
       return [];
     }
@@ -128,17 +129,16 @@ export default class Grid {
 
     const hasImplicitRowGaps = rowIndexSet.size > 0 && Math.max(...rowIndexSet) > currentRows.length;
     if (hasImplicitRowGaps) {
-      this._debug._ && console.warn('[grid.split] skip: implicit row gaps detected');
-      this._node.setInitStyle (false, gridNode, nodeComputedStyle);
+      this._debug._ && console.warn('[grid.split] Unsupported implicit row gap detected; keeping grid unsplit.', { hasImplicitRowGaps });
+      this._node.setInitStyle(false, gridNode, nodeComputedStyle);
       this._debug._ && console.groupEnd();
       return [];
     }
 
     if (hasRowSpan || hasColumnSpan) {
-      this._debug._ && console.warn('[grid.split] skip: span detected (row or column)');
-      this._node.setInitStyle (false, gridNode, nodeComputedStyle);
+      this._debug._ && console.warn('[grid.split] Grid contains row/column spans; using fallback (move row to next page).', { hasRowSpan, hasColumnSpan });
       this._debug._ && console.groupEnd();
-      return [];
+      return this._fallbackMoveGridToNextPage({ gridNode, nodeComputedStyle });
     }
 
     this._debug._ && console.log('[grid.split] currentRows:', currentRows)
@@ -189,8 +189,6 @@ export default class Grid {
     //  so page windows and split indexes are maintained by the same helpers Table uses.
 
     const splitStartRowIndexes = [];
-    let rowIndex = 0;
-    const EPS = 0.5;
     const entries = this._currentGridEntries;
     //  *** #tempLoopGuard
     //  loopGuardLimit is just a safety cap: the while-loop should process each grid row
@@ -208,122 +206,34 @@ export default class Grid {
 
     this._updateCurrentGridSplitBottom(firstPartHeight, 'start with initial window');
 
-    while (rowIndex < currentRows.length) {
+    for (let rowIndex = 0; rowIndex < currentRows.length; rowIndex += 1) {
       tickLoopGuard();
 
-      const row = currentRows[rowIndex];
-      const cellStyles = Array.isArray(row) ? new Array(row.length) : null;
-      // cellStyles acts as a per-row cache: fetch computedStyle for a cell only once and reuse it
-      // in geometry helpers (row bottoms, shell heights). Grid never mutates these layout styles
-      // during a split pass, so caching per pass avoids repeated style lookups without risking stale data.
-      // cellStyles acts as a per-row cache: we fetch computedStyle for a cell only once
-      // and reuse it in geometry helpers (row bottoms, shell heights). Grid never mutates
-      // these structural styles, so caching within a split() pass is safe and saves layout work.
-      const rowTop = this._getRowTop(row, gridNode);
-      const rowBottom = this._getRowBottom(row, gridNode, cellStyles);
-      const pageBottom = (typeof this._currentGridSplitBottom === 'number')
-        ? this._currentGridSplitBottom
-        : firstPartHeight;
+      // 🤖 Stage 5 — build row evaluation shared with Table; includes cached cell styles for reuse in split helpers.
 
-      if (rowBottom <= pageBottom + EPS) {
-        rowIndex += 1;
+      const evaluation = this._buildGridRowEvaluation({
+        rows: currentRows,
+        rowIndex,
+        gridNode,
+        splitBottom: this._currentGridSplitBottom,
+      });
+
+      if (!evaluation?.row) {
+        this._debug._ && console.warn('[grid.split] Missing row during evaluation; keeping grid unsplit at this row.', { rowIndex });
         continue;
       }
 
-      const remainingSpace = pageBottom - rowTop;
-      let splitResult = null;
-      let usedRemainingWindow = false;
-
-      if (remainingSpace > EPS) {
-        splitResult = this._splitGridRow({
-          rowIndex,
-          row,
-          gridNode: gridNode,
-          firstPartHeight: remainingSpace,
-          fullPagePartHeight,
-          cellStyles,
-        });
-        usedRemainingWindow = true;
-      }
-
-      if (!splitResult || !splitResult.newRows.length) {
-        splitResult = this._splitGridRow({
-          rowIndex,
-          row,
-          gridNode: gridNode,
-          firstPartHeight: fullPagePartHeight,
-          fullPagePartHeight,
-          cellStyles,
-        });
-        usedRemainingWindow = false;
-      }
-
-      if (splitResult && splitResult.newRows.length) {
-
-        // * Keep currentRows/entries/guards in sync with freshly generated slices via shared kernel helper.
-        this._node.paginationRefreshRowsAfterSplit(this._getSplitterAdapter(), {
-          rowIndex,
-          rowSlices: splitResult.newRows,
-        });
-
-        const firstSliceCells = currentRows[rowIndex];
-        const firstSliceTop = this._getRowTop(firstSliceCells, gridNode);
-        const firstSliceBottom = this._getRowBottom(firstSliceCells, gridNode);
-        const placement = this._node.evaluateRowSplitPlacement({
-          usedRemainingWindow,
-          isFirstPartEmpty: splitResult.isFirstPartEmptyInAnyCell,
-          firstSliceTop,
-          firstSliceBottom,
-          pageBottom,
-          epsilon: EPS,
-        });
-
-        if (placement.placeOnCurrentPage) {
-          if (placement.remainingWindowSpace > EPS) {
-            this._scaleGridCellsToHeight(firstSliceCells, placement.remainingWindowSpace);
-          }
-          this._registerPageStartAt(rowIndex + 1, splitStartRowIndexes, 'Grid row slice — next part starts page');
-        } else {
-          this._node.paginationApplyFullPageScaling({
-            needsScalingInFullPage: splitResult.needsScalingInFullPage,
-            payload: { cells: firstSliceCells, targetHeight: fullPagePartHeight },
-            scaleCallback: ({ cells, targetHeight }) => this._scaleGridCellsToHeight(cells, targetHeight),
-          });
-          this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Grid row overflow — move row to next page');
-        }
-
+      if (evaluation.rowBottom <= this._currentGridSplitBottom) {
+        this._debug._ && console.log('[grid.split] Row fits current window', { rowIndex, splitBottom: this._currentGridSplitBottom });
         continue;
       }
 
-      if (splitResult && splitResult.needsScalingInFullPage) {
-        // No slices generated but slicers signalled that full-page scaling is required.
-        // Apply the shared fallback immediately so the row fits before we move on.
-        const rowCellsForScaling = currentRows[rowIndex];
-        const cells = Array.isArray(rowCellsForScaling) ? rowCellsForScaling : [rowCellsForScaling].filter(Boolean);
-        if (cells.length) {
-          this._node.paginationApplyFullPageScaling({
-            needsScalingInFullPage: true,
-            payload: { cells, targetHeight: fullPagePartHeight },
-            scaleCallback: ({ cells: scalingCells, targetHeight }) => this._scaleGridCellsToHeight(scalingCells, targetHeight),
-          });
-        }
-        this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Grid oversized row scaled for full page');
-        continue;
+      const updatedIndex = this._resolveGridOverflowingRow({ evaluation, splitStartRowIndexes });
+      // 🤖 If Stage 5 fails to produce slices (needsScalingInFullPage), _forwardGridOverflowFallback handles full-page scaling before we retry the row.
+      if (updatedIndex < rowIndex) {
+        rowIndex = Math.max(updatedIndex, -1);
       }
-
-      if (rowIndex > 0) {
-        this._registerPageStartAt(rowIndex, splitStartRowIndexes, 'Grid row overflow — move row to next page');
-        continue;
-      }
-
-      this._debug._ && console.warn('[grid.split] first row cannot be split to fit page', { row });
-      this._node.setInitStyle (false, gridNode, nodeComputedStyle);
-      this._resetCurrent();
-      this._debug._ && console.groupEnd();
-      return [];
     }
-
-    this._debug._ && console.log('splitStartRowIndexes', splitStartRowIndexes);
 
     const finalStartId = splitStartRowIndexes.length ? splitStartRowIndexes.at(-1) : 0;
     // For telemetry: finalStartId mirrors table slices even though final build does not need it
@@ -341,40 +251,22 @@ export default class Grid {
       this._createAndInsertGridFinalSlice({ node: gridNode, entries, startId: finalStartId }),
     ];
 
-    this._debug._ && console.log(
-      'splits', splits
-    );
-    this._debug._ && console.log('[grid.split] recordedParts', this._currentGridRecordedParts?.parts); // available via gridNode.__html2pdfRecordedParts
+    this._debug._ && console.log('splitStartRowIndexes', splitStartRowIndexes);
+    this._debug._ && console.log('splits', splits);
+    this._debug._ && console.log('[grid.split] recordedParts', this._currentGridRecordedParts?.parts);
 
-    // create LAST PART
-    // TODO ??? is that really needed?
-    // const lastPart = this._node.createWithFlagNoBreak();
-    // gridNode.before(lastPart);
-    // this._DOM.insertAtEnd(
-    //   lastPart,
-    //   // this._node.createSignpost('(table continued)', this._signpostHeight),
-    //   gridNode
-    // );
-
-    // parts handling
-    splits.forEach((part, index) => this._DOM.setAttribute(part, '[part]', `${index}`));
-
-    this._node.setInitStyle (false, gridNode, nodeComputedStyle);
-
-    this._debug._ && console.log(`%c END [grid.split]`, CONSOLE_CSS_END_LABEL);
-    this._debug._ && console.groupEnd();
+    this._node.setInitStyle(false, gridNode, nodeComputedStyle);
     this._resetCurrent();
-
-    return splits
+    this._debug._ && console.groupEnd();
+    return splits;
   }
 
-  //? #grid_refactor
-  //  adds _resetCurrent, _getPaginatorAdapter,
-  //  and thin wrappers around the shared paginator functions
-  //  (_updateCurrentGridSplitBottom, _registerPageStartAt)
-  //  plus adapter hooks (_createAndInsertGridSlice, _createAndInsertGridFinalSlice)
-  //  and a shared entries container so the adapter sees the same currentRows reference
-  //  the paginator mutates, whether cells stay as elements or become wrappers.
+  _fallbackMoveGridToNextPage({ gridNode, nodeComputedStyle }) {
+    // 🤖 Span-heavy or otherwise unsupported layout: keep the grid intact and reset state.
+    this._node.setInitStyle(false, gridNode, nodeComputedStyle);
+    this._resetCurrent();
+    return [];
+  }
 
   _resetCurrent() {
     this._currentGridNode = undefined;
@@ -385,6 +277,358 @@ export default class Grid {
     this._currentGridFullPartHeight = undefined;
     this._currentGridSplitLog = undefined;
     this._currentGridRowFlags = undefined;
+  }
+
+  _resolveGridOverflowingRow({ evaluation, splitStartRowIndexes }) {
+    return this._node.paginationResolveOverflowingRow({
+      evaluation,
+      utils: {
+        rowHasSpan: () => false,
+        isSlice: (row) => this._isGridRowSlice(row),
+      },
+      handlers: {
+        handleRowWithRowspan: () => {
+          this._debug._ && console.warn('[grid.split] ROWSPAN guard triggered unexpectedly.', { evaluation });
+          this._registerPageStartAt(evaluation.rowIndex, splitStartRowIndexes, 'Grid ROWSPAN fallback — move row to next page');
+          return evaluation.rowIndex - 1;
+        },
+        handleSplittableRow: () => this._resolveGridSplittableRow({ evaluation, splitStartRowIndexes }),
+        handleAlreadySlicedRow: () => this._forwardGridOverflowFallback({
+          evaluation,
+          splitStartRowIndexes,
+          branch: 'alreadySliced',
+        }),
+      },
+    });
+  }
+
+  _resolveGridSplittableRow({ evaluation, splitStartRowIndexes }) {
+    const { rowIndex } = evaluation;
+    this._debug._ && console.group('%c[grid.split] Stage5 — splittable row', 'color:#0080ff', {
+      rowIndex,
+      row: evaluation.row,
+      tailWindowHeight: evaluation.tailWindowHeight,
+    });
+
+    const updatedIndex = this._node.paginationResolveSplittableRow({
+      evaluation,
+      splitStartRowIndexes,
+      extraCapacity: 0,
+      fullPageHeight: this._currentGridFullPartHeight,
+      minPartLines: this._minBreakableGridRows,
+      debug: this._debug,
+      decorateRowSlice: ({ rowWrapper, rowIndex: sourceRowIndex, sliceIndex }) => {
+        this._DOM.setAttribute(rowWrapper, `.grid_row_${sourceRowIndex}_part_${sliceIndex}`);
+      },
+      onBudgetInfo: ({ evaluation, firstPartHeight, fullPartHeight }) => {
+        this._debug._ && console.info('[grid.split] budget', {
+          rowIndex: evaluation.rowIndex,
+          tailWindowHeight: evaluation.tailWindowHeight,
+          firstPartHeight,
+          fullPartHeight,
+        });
+      },
+      handlers: this._getGridSplittableHandlers({ evaluation, splitStartRowIndexes }),
+    });
+
+    this.logGroupEnd('[grid.split] Stage5 — splittable row');
+    return updatedIndex;
+  }
+
+  _getGridSplittableHandlers({ evaluation, splitStartRowIndexes }) {
+    return {
+      onReplaceRow: ({ newRows }) => {
+        this._node.paginationRefreshRowsAfterSplit(this._getSplitterAdapter(), {
+          rowIndex: evaluation.rowIndex,
+          rowSlices: newRows,
+        });
+      },
+      onAbsorbTail: () => {},
+      onRefreshRows: ({ newRows }) => {
+        this._node.paginationRefreshRowsAfterSplit(this._getSplitterAdapter(), {
+          rowIndex: evaluation.rowIndex,
+          rowSlices: newRows,
+        });
+      },
+      onPlacement: ({ evaluation, newRows, insufficientRemainingWindow, isFirstPartEmptyInAnyTD, needsScalingInFullPage }) => (
+        this._node.paginationHandleRowSlicesPlacement({
+          evaluation,
+          table: this._currentGridNode,
+          newRows,
+          insufficientRemainingWindow,
+          isFirstPartEmptyInAnyTD,
+          needsScalingInFullPage,
+          splitStartRowIndexes,
+          pageBottom: this._currentGridSplitBottom,
+          fullPageHeight: this._currentGridFullPartHeight,
+          debug: this._debug,
+          registerPageStartCallback: ({ targetIndex, reason }) => this._registerPageStartAt(targetIndex, splitStartRowIndexes, reason),
+          scaleProblematicSliceCallback: (slice, targetHeight) => this._scaleGridCellsToHeight(slice, targetHeight),
+          applyFullPageScalingCallback: ({ row: slice, needsScalingInFullPage: needsScaling, fullPageHeight }) => {
+            this._node.paginationApplyFullPageScaling({
+              needsScalingInFullPage: needsScaling && Boolean(slice),
+              payload: {
+                cells: slice,
+                targetHeight: fullPageHeight,
+              },
+              scaleCallback: ({ cells, targetHeight }) => this._scaleGridCellsToHeight(cells, targetHeight),
+            });
+          },
+        })
+      ),
+      onSplitFailure: ({ evaluation, splitStartRowIndexes: indexes, availableRowHeight, fullPageHeight }) => (
+        this._forwardGridOverflowFallback({
+          evaluation,
+          splitStartRowIndexes: indexes,
+          availableRowHeight,
+          fullPageHeight,
+          branch: 'splitFailure',
+        })
+      ),
+    };
+  }
+
+  _forwardGridOverflowFallback({ evaluation, splitStartRowIndexes, availableRowHeight, fullPageHeight = this._currentGridFullPartHeight, branch }) {
+    const helpers = this._composeGridOverflowHelpers();
+    const payload = {
+      ownerLabel: `grid:${branch}` ,
+      gridNode: this._currentGridNode,
+      evaluation,
+      rowIndex: evaluation.rowIndex,
+      row: evaluation.row,
+      availableRowHeight,
+      fullPageHeight,
+      splitStartRowIndexes,
+      reasonTail: branch === 'splitFailure' ? 'Grid split failed — move row to next page' : 'Grid slice overflow — move row to next page',
+      reasonFull: branch === 'splitFailure' ? 'Grid split failed — scaled cells to full page' : 'Grid slice overflow — scaled cells to full page',
+      registerPageStartCallback: helpers.registerPageStartCallback,
+      scaleProblematicCellsCallback: helpers.scaleProblematicCellsCallback,
+      debugLogger: helpers.debugLogger,
+    };
+
+    this._debug._ && console.log('[grid.overflow]', branch, payload);
+
+    if (branch === 'splitFailure') {
+      return this._node.handleRowSplitFailure(payload);
+    // 🤖 Shared helper scales problematic cells via scaleProblematicCellsCallback before re-evaluating the row on a full page.
+    }
+    return this._node.handleRowOverflow(payload);
+  }
+
+  _buildGridRowEvaluation({ rows, rowIndex, gridNode, splitBottom }) {
+    if (!Array.isArray(rows)) {
+      return null;
+    }
+    const row = rows[rowIndex];
+    if (!row) {
+      return null;
+    }
+    const cellStyles = Array.isArray(row) ? new Array(row.length) : null;
+    const rowTop = this._getRowTop(row, gridNode, cellStyles);
+    const rowBottom = this._getRowBottom(row, gridNode, cellStyles);
+    const nextRow = rows[rowIndex + 1];
+    const nextMarker = nextRow ? this._getRowTop(nextRow, gridNode) : rowBottom;
+    const delta = nextMarker - splitBottom;
+    const tailWindowHeight = splitBottom - rowTop;
+    return {
+      rowIndex,
+      row,
+      rowTop,
+      rowBottom,
+      nextMarker,
+      delta,
+      tailWindowHeight,
+      isLastRow: !nextRow,
+      fitsCurrentWindow: delta <= 0,
+      cellStyles,
+    };
+  }
+
+
+  _composeGridOverflowHelpers() {
+    const registerPageStartCallback = this._registerPageStartAt.bind(this);
+    const scaleCellsToHeightCallback = this._scaleGridCellsToHeight.bind(this);
+    const debugLogger = this._debug && this._debug._
+      ? (message, payload) => console.log(message, payload)
+      : undefined;
+
+    return {
+      registerPageStartCallback,
+      scaleProblematicCellsCallback: (row, targetHeight) => {
+        if (!Array.isArray(row)) return false;
+        return this._scaleGridCellsToHeight(row, targetHeight);
+      // 🤖 Mirrors Table's scaleProblematicCellsCallback: shrink only overflowing cells so the row fits the window.
+      },
+      debugLogger,
+    };
+  }
+
+
+
+  _resolveGridOverflowingRow({ evaluation, splitStartRowIndexes }) {
+    return this._node.paginationResolveOverflowingRow({
+      evaluation,
+      utils: {
+        rowHasSpan: () => false,
+        isSlice: (row) => this._isGridRowSlice(row),
+      },
+      handlers: {
+        handleRowWithRowspan: () => {
+          this._debug._ && console.warn('[grid.split] ROWSPAN guard triggered unexpectedly.', { evaluation });
+          this._registerPageStartAt(evaluation.rowIndex, splitStartRowIndexes, 'Grid ROWSPAN fallback — move row to next page');
+          return evaluation.rowIndex - 1;
+        },
+        handleSplittableRow: () => this._resolveGridSplittableRow({ evaluation, splitStartRowIndexes }),
+        handleAlreadySlicedRow: () => this._forwardGridOverflowFallback({
+          evaluation,
+          splitStartRowIndexes,
+          branch: 'alreadySliced',
+        }),
+      },
+    });
+  }
+
+  _resolveGridSplittableRow({ evaluation, splitStartRowIndexes }) {
+    const { rowIndex } = evaluation;
+
+    this._debug._ && console.group('%c[grid.split] Stage5 — splittable row', 'color:#0080ff', {
+      rowIndex,
+      row: evaluation.row,
+      tailWindowHeight: evaluation.tailWindowHeight,
+    });
+
+    const budget = this._node.paginationCalculateRowSplitBudget({
+      tailWindowHeight: evaluation.tailWindowHeight,
+      minMeaningfulRowSpace: this._minBreakableGridRows,
+      fullPartHeight: this._currentGridFullPartHeight,
+      debug: this._debug,
+    });
+
+    const splitResult = this._splitGridRow({
+      rowIndex,
+      row: evaluation.row,
+      gridNode: this._currentGridNode,
+      firstPartHeight: budget.firstPartHeight,
+      fullPagePartHeight: this._currentGridFullPartHeight,
+      cellStyles: evaluation.cellStyles,
+    });
+
+    const updatedIndex = this._node.paginationProcessRowSplitResult({
+      evaluation,
+      splitResult,
+      splitStartRowIndexes,
+      insufficientRemainingWindow: budget.insufficientRemainingWindow,
+      extraCapacity: 0,
+      fullPageHeight: this._currentGridFullPartHeight,
+      debug: this._debug,
+      handlers: this._getGridSplittableHandlers({ evaluation, splitStartRowIndexes }),
+    });
+
+    this.logGroupEnd('[grid.split] Stage5 — splittable row');
+    return updatedIndex;
+  }
+
+  _getGridSplittableHandlers({ evaluation, splitStartRowIndexes }) {
+    return {
+      onReplaceRow: ({ newRows }) => {
+        this._node.paginationRefreshRowsAfterSplit(this._getSplitterAdapter(), {
+          rowIndex: evaluation.rowIndex,
+          rowSlices: newRows,
+        });
+      },
+      onAbsorbTail: () => {},
+      onRefreshRows: ({ newRows }) => {
+        this._node.paginationRefreshRowsAfterSplit(this._getSplitterAdapter(), {
+          rowIndex: evaluation.rowIndex,
+          rowSlices: newRows,
+        });
+      },
+      onPlacement: ({ evaluation, newRows, insufficientRemainingWindow, isFirstPartEmptyInAnyTD, needsScalingInFullPage }) => (
+        this._node.paginationHandleRowSlicesPlacement({
+          evaluation,
+          table: this._currentGridNode,
+          newRows,
+          insufficientRemainingWindow,
+          isFirstPartEmptyInAnyTD,
+          needsScalingInFullPage,
+          splitStartRowIndexes,
+          pageBottom: this._currentGridSplitBottom,
+          fullPageHeight: this._currentGridFullPartHeight,
+          debug: this._debug,
+          registerPageStartCallback: ({ targetIndex, reason }) => this._registerPageStartAt(targetIndex, splitStartRowIndexes, reason),
+          scaleProblematicSliceCallback: (slice, targetHeight) => this._scaleGridCellsToHeight(slice, targetHeight),
+          applyFullPageScalingCallback: ({ row: slice, needsScalingInFullPage: needsScaling, fullPageHeight }) => {
+            this._node.paginationApplyFullPageScaling({
+              needsScalingInFullPage: needsScaling && Boolean(slice),
+              payload: {
+                cells: slice,
+                targetHeight: fullPageHeight,
+              },
+              scaleCallback: ({ cells, targetHeight }) => this._scaleGridCellsToHeight(cells, targetHeight),
+            });
+          },
+        })
+      ),
+      onSplitFailure: ({ evaluation, splitStartRowIndexes: indexes, availableRowHeight, fullPageHeight }) => (
+        this._forwardGridOverflowFallback({
+          evaluation,
+          splitStartRowIndexes: indexes,
+          availableRowHeight,
+          fullPageHeight,
+          branch: 'splitFailure',
+        })
+      ),
+    };
+  }
+
+  _forwardGridOverflowFallback({ evaluation, splitStartRowIndexes, availableRowHeight, fullPageHeight = this._currentGridFullPartHeight, branch }) {
+    const helpers = this._composeGridOverflowHelpers();
+    const payload = {
+      ownerLabel: `grid:${branch}` ,
+      gridNode: this._currentGridNode,
+      evaluation,
+      rowIndex: evaluation.rowIndex,
+      row: evaluation.row,
+      availableRowHeight,
+      fullPageHeight,
+      splitStartRowIndexes,
+      reasonTail: branch === 'splitFailure' ? 'Grid split failed — move row to next page' : 'Grid slice overflow — move row to next page',
+      reasonFull: branch === 'splitFailure' ? 'Grid split failed — scaled cells to full page' : 'Grid slice overflow — scaled cells to full page',
+      registerPageStartCallback: helpers.registerPageStartCallback,
+      scaleProblematicCellsCallback: helpers.scaleProblematicCellsCallback,
+      debugLogger: helpers.debugLogger,
+    };
+
+    this._debug._ && console.log('[grid.overflow]', branch, payload);
+
+    if (branch === 'splitFailure') {
+      return this._node.handleRowSplitFailure(payload);
+    }
+    return this._node.handleRowOverflow(payload);
+  }
+
+  _composeGridOverflowHelpers() {
+    const registerPageStartCallback = this._registerPageStartAt.bind(this);
+    const debugLogger = this._debug && this._debug._
+      ? (message, payload) => console.log(message, payload)
+      : undefined;
+
+    return {
+      registerPageStartCallback,
+      scaleProblematicCellsCallback: (row, targetHeight) => {
+        if (!Array.isArray(row)) return false;
+        return this._scaleGridCellsToHeight(row, targetHeight);
+      },
+      debugLogger,
+    };
+  }
+
+  _isGridRowSlice(row) {
+    if (Array.isArray(row)) {
+      const cell = row.find(candidate => candidate instanceof HTMLElement);
+      return cell ? this._node.isSlice(cell) : false;
+    }
+    return row ? this._node.isSlice(row) : false;
   }
 
   _getPaginatorAdapter() {
@@ -645,6 +889,7 @@ export default class Grid {
       if (!cell) return 0;
       let style = null;
       if (styles) {
+        // 🤖 cache per-row computedStyle (consider elevating to WeakMap per grid split run)
         style = styles[index];
         if (!style) {
           style = this._DOM.getComputedStyle(cell);
@@ -660,6 +905,7 @@ export default class Grid {
       const marginTop = parseFloat(style?.marginTop) || 0;
       const marginBottom = parseFloat(style?.marginBottom) || 0;
       const paddingBorder = paddingTop + paddingBottom + borderTop + borderBottom;
+      // 🤖 margins treated as shell contribution so leftover height stays accurate
       const margin = Math.max(0, marginTop) + Math.max(0, marginBottom);
 
       const cellHeight = this._DOM.getElementOffsetHeight(cell) || 0;
@@ -684,11 +930,12 @@ export default class Grid {
         shell = paddingBorder;
       }
       shell = Math.max(shell, paddingBorder);
+      // 🤖 Align with Table: ensure shell always covers padding/border + margin so slicing budgets remain conservative.
       return Math.max(0, shell + margin);
     });
   }
 
-  _getRowTop(row, gridNode) {
+  _getRowTop(row, gridNode, cellStyles = null) {
     if (Array.isArray(row)) {
       let minTop = Infinity;
       row.forEach(cell => {
