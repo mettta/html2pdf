@@ -16,8 +16,8 @@
  * @param {HTMLElement} params.row - row whose cells should be scaled.
  * @param {number} params.targetHeight - height budget for the row content.
  * @param {Array<number>} [params.cachedShells] - optional pre-measured shell heights.
- * @param {function(HTMLElement):Array<number>} params.getRowShellHeights - callback returning per-cell shell heights.
- * @param {function(HTMLElement[], number, Array<number>):boolean} params.scaleCellsToHeight - fits cell content into target height.
+ * @param {function(HTMLElement):Array<number>} params.getRowShellHeightsCallback - callback returning per-cell shell heights.
+ * @param {function(HTMLElement[], number, Array<number>):boolean} params.scaleCellsToHeightCallback - fits cell content into target height.
  * @returns {boolean}
  */
 export function scaleRowCellsToHeight({
@@ -26,8 +26,8 @@ export function scaleRowCellsToHeight({
   row,
   targetHeight,
   cachedShells,
-  getRowShellHeights,
-  scaleCellsToHeight,
+  getRowShellHeightsCallback,
+  scaleCellsToHeightCallback,
 }) {
   if (!ownerLabel) {
     console.warn('[scaleRowCellsToHeight] 👤 Owner wanted!', { owner: ownerLabel });
@@ -36,7 +36,7 @@ export function scaleRowCellsToHeight({
     console.warn('[pagination.overflow] Missing row for scaling.', { owner: ownerLabel });
     return false;
   }
-  if (typeof scaleCellsToHeight !== 'function') {
+  if (typeof scaleCellsToHeightCallback !== 'function') {
     console.warn('[pagination.overflow] scaleCellsToHeight callback is required.', { owner: ownerLabel });
     return false;
   }
@@ -47,10 +47,10 @@ export function scaleRowCellsToHeight({
   const cells = children ? [...children] : [];
   const shells = Array.isArray(cachedShells)
     ? cachedShells
-    : typeof getRowShellHeights === 'function'
-      ? getRowShellHeights(row)
+    : typeof getRowShellHeightsCallback === 'function'
+      ? getRowShellHeightsCallback(row)
       : [];
-  return scaleCellsToHeight(cells, targetHeight, shells);
+  return scaleCellsToHeightCallback(cells, targetHeight, shells);
 }
 
 /**
@@ -68,8 +68,8 @@ export function scaleRowCellsToHeight({
  * @param {number[]} params.splitStartRowIndexes - accumulator with split markers.
  * @param {string} params.reasonTail - log message for tail move.
  * @param {string} params.reasonFull - log message for full-page handling.
- * @param {function(number, number[], string):void} params.registerPageStartAt - shared paginator hook.
- * @param {function(HTMLElement, number, Array<number>=):boolean} params.scaleProblematicCells
+ * @param {function(number, number[], string):void} params.registerPageStartCallback - shared paginator hook.
+ * @param {function(HTMLElement, number, Array<number>=):boolean} params.scaleProblematicCellsCallback
  * @param {function(string, object):void} [params.debugLogger]
  * @returns {number} - next row index to evaluate (re-check under new window)
  */
@@ -82,8 +82,8 @@ export function handleRowOverflow({
   splitStartRowIndexes,
   reasonTail,
   reasonFull,
-  registerPageStartAt,
-  scaleProblematicCells,
+  registerPageStartCallback,
+  scaleProblematicCellsCallback,
   debugLogger,
 }) {
   if (!ownerLabel) {
@@ -93,8 +93,8 @@ export function handleRowOverflow({
     console.warn('[pagination.overflow] splitStartRowIndexes must be an array.', { owner: ownerLabel });
     return rowIndex;
   }
-  if (typeof registerPageStartAt !== 'function') {
-    console.warn('[pagination.overflow] registerPageStartAt callback is required.', { owner: ownerLabel });
+  if (typeof registerPageStartCallback !== 'function') {
+    console.warn('[pagination.overflow] registerPageStart callback is required.', { owner: ownerLabel });
     return rowIndex;
   }
 
@@ -119,7 +119,7 @@ export function handleRowOverflow({
   if (availableRowHeight < fullPageHeight) {
     //      Here, availableRowHeight is the same as evaluation.tailWindowHeight,
     //      passed without changes (if there is no remainder, the value will be ≤ 0).
-    registerPageStartAt(rowIndex, splitStartRowIndexes, reasonTail);
+    registerPageStartCallback(rowIndex, splitStartRowIndexes, reasonTail);
     return rowIndex - 1;
   }
 
@@ -129,14 +129,14 @@ export function handleRowOverflow({
 
   //  ... otherwise we can try to “resolve” it in the full window by scaling the problematic CELLs content
   //  (scaleProblematicCells)...
-  if (typeof scaleProblematicCells === 'function') {
-    scaleProblematicCells(row, fullPageHeight);
+  if (typeof scaleProblematicCellsCallback === 'function') {
+    scaleProblematicCellsCallback(row, fullPageHeight);
   } else {
     console.warn('[pagination.overflow] scaleProblematicCells callback is missing.', { owner: ownerLabel, rowIndex });
   }
 
   // ... then register/update splitBottom, and reevaluate the row (rowIndex - 1)).
-  registerPageStartAt(rowIndex, splitStartRowIndexes, reasonFull);
+  registerPageStartCallback(rowIndex, splitStartRowIndexes, reasonFull);
   return rowIndex - 1;
 }
 

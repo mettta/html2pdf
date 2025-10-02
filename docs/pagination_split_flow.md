@@ -37,7 +37,7 @@
   - Builds row slices via shared slicers while allowing caller decoration/logging.
 - `paginationResolveSplittableRow({ evaluation, splitStartRowIndexes, extraCapacity, fullPageHeight, minPartLines, debug, decorateRowSlice, onBudgetInfo, handlers })`
   - Full splittable-row flow using shared budget/split/process helpers; Table’s `handlers.onSplitFailure` now calls `_forwardOverflowFallback` (logs `branch=splitFailure`).
-- `paginationHandleRowSlicesPlacement({ evaluation, table, newRows, insufficientRemainingWindow, isFirstPartEmptyInAnyTD, needsScalingInFullPage, splitStartRowIndexes, pageBottom, fullPageHeight, debug, registerPageStartAt, scaleProblematicSlice, applyFullPageScaling })`
+- `paginationHandleRowSlicesPlacement({ evaluation, table, newRows, insufficientRemainingWindow, isFirstPartEmptyInAnyTD, needsScalingInFullPage, splitStartRowIndexes, pageBottom, fullPageHeight, debug, registerPageStartCallback, scaleProblematicSliceCallback, applyFullPageScalingCallback })`
   - Shared placement logic deciding current-page vs full-page allocation.
 
 ## Table-Specific Callbacks

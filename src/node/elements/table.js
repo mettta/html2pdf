@@ -453,13 +453,13 @@ export default class Table {
             pageBottom: this._currentTableSplitBottom,
             fullPageHeight: this._currentTableFullPartContentHeight,
             debug: this._debug,
-            registerPageStartAt: ({ targetIndex, reason }) => this._registerPageStartAt(targetIndex, splitStartRowIndexes, reason),
-            scaleProblematicSlice: (slice, targetHeight) => {
+            registerPageStartCallback: ({ targetIndex, reason }) => this._registerPageStartAt(targetIndex, splitStartRowIndexes, reason),
+            scaleProblematicSliceCallback: (slice, targetHeight) => {
               if (!(targetHeight > 0)) return;
               this._debug._ && console.log('⚖️ scaleProblematicCellsToHeight');
               this._scaleProblematicCellsToHeight(slice, targetHeight, this._getRowShellHeights(slice));
             },
-            applyFullPageScaling: ({ row: slice, needsScalingInFullPage: needsScaling, fullPageHeight }) => {
+            applyFullPageScalingCallback: ({ row: slice, needsScalingInFullPage: needsScaling, fullPageHeight }) => {
               this._node.paginationApplyFullPageScaling({
                 needsScalingInFullPage: needsScaling && Boolean(slice),
                 payload: {
@@ -703,25 +703,25 @@ export default class Table {
     // Shared callbacks wrapping paginator + scaling hooks for reuse across helpers.
     // Scaling callback must only shrink overflowing cell content (TD/TH for tables, cells for grids),
     // keeping the structural row wrapper untouched so geometric reasoning remains predictable.
-    const scaleCellsToHeight = this._node.scaleCellsToHeight.bind(this._node);
-    const getRowShellHeights = this._getRowShellHeights.bind(this);
-    const registerPageStartAt = this._registerPageStartAt.bind(this);
+    const scaleCellsToHeightCallback = this._node.scaleCellsToHeight.bind(this._node);
+    const getRowShellHeightsCallback = this._getRowShellHeights.bind(this);
+    const registerPageStartCallback = this._registerPageStartAt.bind(this);
     const debugLogger = this._debug && this._debug._
       ? (message, payload) => console.log(message, payload)
       : undefined;
 
     const helpers = {
       ownerLabel: 'table',
-      registerPageStartAt,
+      registerPageStartCallback,
       debugLogger,
-      scaleProblematicCells: (row, targetHeight, cachedShells) => this._node.scaleRowCellsToHeight({
+      scaleProblematicCellsCallback: (row, targetHeight, cachedShells) => this._node.scaleRowCellsToHeight({
         ownerLabel: 'table',
         DOM: this._DOM,
         row,
         targetHeight,
         cachedShells,
-        getRowShellHeights,
-        scaleCellsToHeight,
+        getRowShellHeightsCallback,
+        scaleCellsToHeightCallback,
       }),
     };
 
@@ -738,7 +738,7 @@ export default class Table {
     //   TR geometry and non-problematic cells stay intact; grid/table callers wire their cell selectors.
     // - Tail windows still prefer moving the row; scaling kicks in only in full-page contexts via overflow helpers.
     const helpers = this._currentOverflowHelpers || this._composeOverflowHelpers();
-    return helpers.scaleProblematicCells(row, targetHeight, shellsOpt);
+    return helpers.scaleProblematicCellsCallback(row, targetHeight, shellsOpt);
   }
 
   _forwardOverflowFallback({
@@ -767,8 +767,8 @@ export default class Table {
       splitStartRowIndexes,
       reasonTail,
       reasonFull,
-      registerPageStartAt: helpers.registerPageStartAt,
-      scaleProblematicCells: helpers.scaleProblematicCells,
+      registerPageStartCallback: helpers.registerPageStartCallback,
+      scaleProblematicCellsCallback: helpers.scaleProblematicCellsCallback,
       debugLogger: helpers.debugLogger,
     };
 

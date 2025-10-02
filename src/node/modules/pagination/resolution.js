@@ -313,9 +313,9 @@ export function paginationHandleRowSlicesPlacement({
   pageBottom,
   fullPageHeight,
   debug,
-  registerPageStartAt,
-  scaleProblematicSlice,
-  applyFullPageScaling,
+  registerPageStartCallback,
+  scaleProblematicSliceCallback,
+  applyFullPageScalingCallback,
 }) {
   // Decide where freshly generated slices should live: keep first slice in the current
   // tail window (possibly trimming to the remaining height) or escalate the whole row
@@ -326,7 +326,7 @@ export function paginationHandleRowSlicesPlacement({
 
   if (!firstSlice) {
     // Defensive fallback: if we somehow lost the first slice, move the row to next page.
-    registerPageStartAt?.({ targetIndex: rowIndex, reason: 'Row split produced empty first slice' });
+    registerPageStartCallback?.({ targetIndex: rowIndex, reason: 'Row split produced empty first slice' });
     return rowIndex - 1;
   }
 
@@ -354,17 +354,17 @@ export function paginationHandleRowSlicesPlacement({
   if (placement.placeOnCurrentPage) {
     // * Scale only the first slice to fit the remaining page space.
     if (placement.remainingWindowSpace > 0) {
-      scaleProblematicSlice?.(firstSlice, placement.remainingWindowSpace);
+      scaleProblematicSliceCallback?.(firstSlice, placement.remainingWindowSpace);
     }
-    registerPageStartAt?.({ targetIndex: rowIndex + 1, reason: 'Row split — next slice starts new page' });
+    registerPageStartCallback?.({ targetIndex: rowIndex + 1, reason: 'Row split — next slice starts new page' });
   } else {
     // * Escalate to full-page window and scale the first slice if slicer reported it.
-    applyFullPageScaling?.({
+    applyFullPageScalingCallback?.({
       row: firstSlice,
       needsScalingInFullPage,
       fullPageHeight,
     });
-    registerPageStartAt?.({ targetIndex: rowIndex, reason: 'Empty first part — move row to next page' });
+    registerPageStartCallback?.({ targetIndex: rowIndex, reason: 'Empty first part — move row to next page' });
   }
 
   // * Roll back index to re-check from the newly updated splitBottom context.
