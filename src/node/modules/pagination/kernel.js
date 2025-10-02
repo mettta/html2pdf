@@ -52,7 +52,7 @@
  */
 
 /**
- * Validates that the adapter exposes the mandatory row replacement hook.
+ * 🤖 Ensure splitter adapter exposes mandatory row replacement hook before pagination mutates DOM.
  * @param {SplitterKernelAdapter} adapter
  */
 export function validateSplitterAdapter(adapter) {
@@ -68,8 +68,7 @@ export function validateSplitterAdapter(adapter) {
 }
 
 /**
- * Apply freshly generated row slices and refresh guard/metric caches via adapter hooks.
- * Ensures both table and grid follow the same post-split bookkeeping.
+ * 🤖 Apply fresh row slices and refresh guard/metric caches via adapter hooks, keeping shared bookkeeping aligned.
  *
  * @this {import('../../node.js').default}
  * @param {SplitterKernelAdapter} adapter

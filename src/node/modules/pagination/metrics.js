@@ -1,8 +1,8 @@
 // Shared pagination metrics helpers.
 
 /**
- * Compute per-cell shell heights (padding/border contributions) for table-like rows.
- * Approximates shell as (cell offset height) - (content height).
+ * 🤖 Measure per-cell shell heights (padding/border contributions) for table-like rows.
+ *  Namely, how much the shell itself without content contributes to the height of the cell.
  *
  * @this {Node}
  * @param {Object} params
@@ -17,8 +17,10 @@ export function paginationComputeCellShellHeights({ cells }) {
   return cells.map((cell) => {
     if (!cell) return 0;
     // Grid cells are not wrapped in TR/TD shells, so we approximate the structural
-    // contribution by inspecting padding/borders. Using offsetHeight - content height
+    // contribution by inspecting padding/borders. Using "(cell offset height) - (content height)"
     // is unreliable because getContentHeightByProbe detaches nodes and breaks offsetParent.
+    // TODO: optimize with getContentHeightByProbe for Table / Grid (root node as row wrapper)
+
     const style = this._DOM.getComputedStyle(cell);
     const paddingTop = parseFloat(style?.paddingTop) || 0;
     const paddingBottom = parseFloat(style?.paddingBottom) || 0;

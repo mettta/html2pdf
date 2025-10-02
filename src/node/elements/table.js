@@ -70,13 +70,17 @@ export default class Table {
     this._currentRoot = undefined;
     // ** current Table parameters calculated during preparation
     this._currentTableEntries = undefined;
+    // 🤖 Snapshot of created parts recorded for diagnostics and DevTools (moved with the table instance).
     this._currentTableRecordedParts = undefined;
+    // 🤖 Working array of rows (tbody + trailing tfoot) that Stage-5 logic mutates when slices are produced.
     this._currentTableDistributedRows = undefined;
     this._currentTableFirstPartContentBottom = undefined;
     this._currentTableFullPartContentHeight = undefined;
     this._currentTableTfootHeight = undefined;
     // ** current Table parameters updated dynamically during splitting
     this._currentTableSplitBottom = undefined;
+    // 🤖 Keep raw split-bottom checkpoints for debugging;
+    // todo: table.paginator can expose this to DevTools timelines.
     this._logSplitBottom_ = [];
     // ** current per-run caches
     this._currentRowShellCache = undefined;
@@ -94,6 +98,7 @@ export default class Table {
   }
 
   _setCurrent(_table, _pageBottom, _fullPageHeight, _root) {
+    // 🤖 Pin the current table context and provision per-run caches so downstream helpers read a consistent geometry snapshot.
     this._currentTable = _table;
     this._currentFirstPageBottom = _pageBottom;
     this._currentFullPageHeight = _fullPageHeight;
@@ -127,6 +132,7 @@ export default class Table {
   // ===== Split Flow =====
 
   _splitCurrentTable() {
+    // 🤖 Walk the distributed rows, register page breaks, and rebuild table slices so each chunk fits the available viewport.
     // TODO test more complex tables
 
 
@@ -237,6 +243,7 @@ export default class Table {
   }
 
   _evaluateAndResolveRow(rowIndex, splitStartRowIndexes) {
+    // 🤖 Evaluate a single row against the current split window, then either keep it, reclaim short-tail space, or trigger overflow handling.
     // Input: rowIndex; mutates splitStartRowIndexes
     // May split/replace TRs and advance splitBottom;
     // returns possibly decremented index (re-check under new window).
@@ -327,6 +334,7 @@ export default class Table {
   // ===== Row Split Internals =====
 
   _resolveOverflowingRow({ evaluation, splitStartRowIndexes, extraCapacity }) {
+    // 🤖 Route an overflowing row through ROWSPAN fallback, fresh slicing, or already-sliced recovery while keeping paginator state in sync.
     // Row exceeds the current window: decide between conservative fallback, slicing, or scaling.
     return this._node.paginationResolveOverflowingRow({
       evaluation,
@@ -383,6 +391,7 @@ export default class Table {
   }
 
   _resolveSplittableRow({ evaluation, splitStartRowIndexes, extraCapacity }) {
+    // 🤖 Delegate the Stage-5 "splittable" branch to shared pagination helpers and wire table-specific adapters for DOM mutations.
     const { rowIndex } = evaluation;
 
     this._debug._ && console.group(
@@ -537,6 +546,7 @@ export default class Table {
   }
 
   _getDistributedRows(entries) {
+    // 🤖 Build the logical row array that paginator consumes: tbody rows plus trailing tfoot when present.
     return [
       ...entries.rows,
       ...(entries.tfoot ? [entries.tfoot] : [])
@@ -588,6 +598,7 @@ export default class Table {
   }
 
   _updateCurrentTableEntriesAfterSplit(index, newRows) {
+    // 🤖 Persist newly generated slices inside cached table entries so future geometry reads the updated row list.
     this._currentTableEntries.rows.splice(index, 1, ...newRows);
   }
 
@@ -613,6 +624,7 @@ export default class Table {
   }
 
   _getPaginatorAdapter() {
+    // 🤖 Provide table-specific accessors so shared paginator utilities can read and update split-bottom geometry.
     return {
       label: 'table',
       getSplitBottom: () => this._currentTableSplitBottom,
@@ -628,6 +640,7 @@ export default class Table {
   }
 
   _getSplitterAdapter() {
+    // 🤖 Expose row collection/guard hooks for shared slicer helpers; keeps table entries and recorder metadata in sync after DOM edits.
     const guardConfigFactory = () => ({
       rows: this._currentTableDistributedRows || [],
       DOM: this._DOM,
@@ -683,6 +696,7 @@ export default class Table {
   // ===== Overflow / Scaling =====
 
   _composeOverflowHelpers() {
+    // 🤖 Bundle paginator callbacks and scaling hooks so overflow resolvers can issue page breaks and cell scaling without touching Table internals.
     // Shared callbacks wrapping paginator + scaling hooks for reuse across helpers.
     // Scaling callback must only shrink overflowing cell content (TD/TH for tables, cells for grids),
     // keeping the structural row wrapper untouched so geometric reasoning remains predictable.
@@ -713,6 +727,7 @@ export default class Table {
   }
 
   _scaleProblematicCellsToHeight(row, targetHeight, shellsOpt) {
+    // 🤖 Escalate to shared overflow scaler, passing cached shell heights so TD content shrinks precisely to the available height budget.
     // Scale only overflowing TD contents inside the row (shell height budget) — structure remains intact.
     // Two-tier safety note:
     // - Fine-grained scaling may already occur inside slicers.js (getSplitPoints), targeting nested nodes.
@@ -732,6 +747,7 @@ export default class Table {
     reasonTail,
     reasonFull,
   }) {
+    // 🤖 Decide whether to move the row to the next page or scale it in place, using shared overflow logic with table-specific callbacks.
     // Route overflowed row according to tail/full-page capacity while preserving shared logging.
     const helpers = this._currentOverflowHelpers || this._composeOverflowHelpers();
     return this._node.handleRowOverflow({
@@ -758,6 +774,7 @@ export default class Table {
     reasonTail,
     reasonFull,
   }) {
+    // 🤖 Recover from failed slicing attempts by delegating to overflow helpers that either move the row or scale problematic TD content.
 
     // FIXME: update these explanations:
     // * If splitting is not possible because the row has the isRowSliced flag:
@@ -792,6 +809,7 @@ export default class Table {
   }
 
   _getRowShellHeights(row) {
+    // 🤖 Cache per-cell shell heights so repeated scaling passes reuse the same geometry snapshot for the row wrapper.
     // * Get per-TD shell heights for a TR with caching.
     // * Uses a WeakMap per split run to avoid recomputation and to ensure automatic cleanup
     // * after TR nodes are replaced by splitting.
@@ -811,21 +829,25 @@ export default class Table {
   // 👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪
 
   _createTopSignpost() {
+    // 🤖 Build the continuation label shown above intermediate table parts.
     // TODO(config): move signpost text/height to external config
     return this._node.createSignpost('(table continued)', this._signpostHeight)
   }
 
   _createBottomSignpost() {
+    // 🤖 Build the continuation label shown below non-final parts to hint at more rows ahead.
     // TODO(config): move signpost text/height to external config
     return this._node.createSignpost('(table continues on the next page)', this._signpostHeight)
   }
 
   _replaceRowInDOM(row, newRows) {
+    // 🤖 Swap the original TR with generated slices, tagging the source row for debug visibility.
     this._debug._ && this._DOM.setAttribute(row, '.🚫_must_be_removed');
     this._DOM.insertInsteadOf(row, ...newRows);
   }
 
   _createAndInsertTableSlice({ startId, endId, table, tableEntries }) {
+    // 🤖 Clone structural pieces and attach a tbody fragment representing rows [startId, endId) as a standalone printable chunk.
     const part = TableAdapter.createAndInsertTableSlice(this, { startId, endId, table, tableEntries });
     const rows = Array.isArray(this._currentTableDistributedRows)
       ? this._currentTableDistributedRows.slice(startId, endId).map((row, offset) => ({
@@ -839,6 +861,7 @@ export default class Table {
   }
 
   _createAndInsertTableFinalSlice({ table, startId = 0 }) {
+    // 🤖 Prepare the last table part that retains TFOOT and rows from the final checkpoint onward.
     const part = TableAdapter.createAndInsertTableFinalSlice(this, { table });
     const totalRows = Array.isArray(this._currentTableDistributedRows)
       ? this._currentTableDistributedRows.length
@@ -855,6 +878,7 @@ export default class Table {
   }
 
   _recordTablePart(part, meta = {}) {
+    // 🤖 Store telemetry about generated table chunks so DevTools and diagnostics can inspect slice composition.
     const entries = this._currentTableRecordedParts;
     if (!entries || !part) {
       return null;

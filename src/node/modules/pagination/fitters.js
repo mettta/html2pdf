@@ -1,7 +1,9 @@
 // Shared pagination fitters for table/grid elements.
 
 /**
+ * 🤖 Delegate cell scaling to Node fitters so row content shrinks to target height.
  * Scale row cells to fit the given height using Node.fitters.
+ *
  * @this {Node}
  * @param {Object} params
  * @param {HTMLElement[]} params.cells
@@ -17,7 +19,9 @@ export function paginationScaleCellsToHeight({ cells, targetHeight, shells }) {
 }
 
 /**
+ * 🤖 Check slicer feedback before running full-page scaling.
  * Decide whether scaling should be applied given slicer feedback.
+ *
  * @param {Object} params
  * @param {boolean} params.needsScalingInFullPage
  * @param {Array} params.cells
@@ -28,6 +32,7 @@ export function paginationShouldScaleFullPage({ needsScalingInFullPage, cells })
 }
 
 /**
+ * 🤖 Apply full-page scaling when slicers request it, using caller-provided scaling callback.
  * Run full-page scaling fallback requested by slicers.
  * Accepts a custom scale callback so table/grid can reuse shared decision logic.
  *

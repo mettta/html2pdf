@@ -1,14 +1,18 @@
 // Shared pagination state helpers for table/grid.
 
 /**
- * Replace a single entry in entries.rows with the generated row slices after splitting.
- * Keeps downstream pagination passes aligned with the updated structure.
+ * 🤖 Swap the original row entry with generated slices inside cached table/grid entries.
+ * 🤖 Geometry: ensures subsequent measurements operate on the freshly inserted row fragments.
  */
 export function applyRowSlicesToEntriesAfterRowSplit(entries, index, rowSlices) {
   if (!entries || !Array.isArray(entries.rows)) return;
   entries.rows.splice(index, 1, ...rowSlices);
 }
 
+/**
+ * 🤖 Scan rows for ROWSPAN/COLSPAN/inconsistent cell counts and report guard flags.
+ * 🤖 Geometry: tracks structural irregularities that can break slicing so callers can fall back early.
+ */
 export function computeRowFlags({ rows, DOM, cellTagFilter, guardCallback }) {
   if (!Array.isArray(rows)) return {};
   let hasRowspan = false;

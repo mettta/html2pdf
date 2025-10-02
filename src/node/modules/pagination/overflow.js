@@ -5,9 +5,10 @@
 // which nodes are scaled so TR/grid-row structure remains unchanged.
 
 /**
- * Scale overflowing row cells to targetHeight using provided callbacks.
- * The caller supplies DOM/selectors so the helper remains framework-agnostic
- * and only problematic cell content is touched (no structural row mutations).
+ * 🤖 Shrink only the content of those cells that cause the overflow, using caller-supplied fitters.
+ * 🤖 Geometry: keeps the root/row shell and other cells untouched
+ *    while scaling problematic cells content
+ *    so the total row height matches the tail/full-page budget.
  *
  * @param {object} params
  * @param {string} [params.ownerLabel] - debug label for logs.
@@ -54,8 +55,9 @@ export function scaleRowCellsToHeight({
 
 /**
  * Decide how to resolve overflow for the current window.
- * Moves the row to the next page when tail capacity is insufficient,
- * or scales content in full-page context before registering the split.
+ *
+ * 🤖 Geometry: compares remaining window height with the dedicated full-page budget
+ *    and triggers scaling only when full height is available.
  *
  * @param {object} params
  * @param {string} [params.ownerLabel]
@@ -96,7 +98,27 @@ export function handleRowOverflow({
     return rowIndex;
   }
 
+  // * handleRowOverflow (and its wrapper handleRowSplitFailure) are only called
+  // * after Stage 5 in the table has determined that “the row does not fit in the current window.”
+  // * Next come three specific branches, each with its own conditions.
+  // *
+  // * 1) ROWSPAN fallback
+  //      rowHasSpan(row) == true
+  //      paginationResolveOverflowingRow → handleRowWithRowspan → paginationResolveRowWithRowspan
+  // * 2) Already-sliced row, which again does not fit
+  //      isSlice(row) == true
+  //      paginationResolveAlreadySlicedRow → resolveSplitFailure → _resolveRowSplitFailure → handleRowSplitFailure → handleRowOverflow
+  // * 3) A fresh row that could not be sliced into fragments
+  //      Entry condition: Stage 5 went through handleSplittableRow,
+  //      but paginationSplitRow returned an empty array newRows.
+  //      paginationProcessRowSplitResult calls onSplitFailure → _resolveRowSplitFailure → handleRowSplitFailure → handleRowOverflow
+  // *************
+  //  So these cases involve scaling problematic content.
+  //  But the budget for scaling is always maximum — and that is fullPageHeight.
+  //  If the current window tail is smaller than the maximum budget, we move the row (return rowIndex - 1)%
   if (availableRowHeight < fullPageHeight) {
+    //      Here, availableRowHeight is the same as evaluation.tailWindowHeight,
+    //      passed without changes (if there is no remainder, the value will be ≤ 0).
     registerPageStartAt(rowIndex, splitStartRowIndexes, reasonTail);
     return rowIndex - 1;
   }
@@ -105,19 +127,41 @@ export function handleRowOverflow({
     debugLogger('⚠️ Full-page overflow: scaling row before moving', { owner: ownerLabel, rowIndex, reasonFull });
   }
 
+  //  ... otherwise we can try to “resolve” it in the full window by scaling the problematic CELLs content
+  //  (scaleProblematicCells)...
   if (typeof scaleProblematicCells === 'function') {
     scaleProblematicCells(row, fullPageHeight);
   } else {
     console.warn('[pagination.overflow] scaleProblematicCells callback is missing.', { owner: ownerLabel, rowIndex });
   }
 
+  // ... then register/update splitBottom, and reevaluate the row (rowIndex - 1)).
   registerPageStartAt(rowIndex, splitStartRowIndexes, reasonFull);
   return rowIndex - 1;
 }
 
+//  handleRowSplitFailure exists so the “split produced no usable fragments” branch
+//  has its own gatekeeper before we hand control back to the general overflow resolver.
+//  When Stage 5 fails to slice a row we’re dealing with the highest-risk scenario:
+//  the DOM may already contain half-inserted nodes, geometry caches might be stale,
+//  and we must stop and look at the inputs before reusing the tail/full-page machinery.
+//  The wrapper does exactly that. First, it validates we still have the row node
+//  and a non‑negative availableRowHeight; missing data here means we cannot safely
+//  call the generic resolver. Second, it emits the failure‑specific diagnostics,
+//  making it obvious in logs that the slicer returned nothing and we’re falling back.
+//  Only after these guardrails does it delegate to handleRowOverflow,
+//  which assumes geometry is sane and focuses on the pure decision
+//  “move to next page or scale in full-page context”.
+//  Putting those checks directly into handleRowOverflow would force
+//  every normal overflow call to pay for failure-specific validation and logging,
+//  and would blur responsibility—handleRowOverflow would silently be doing two different jobs.
+//  By keeping handleRowSplitFailure as a dedicated shim, we isolate the slow path,
+//  retain explicit logging for the failure case, and keep the core overflow logic tight and single-purpose.
 /**
  * Wrapper around handleRowOverflow used when slicing failed and the row must fallback.
  * Performs additional validation so callers see diagnostics before routing to overflow resolver.
+ *
+ * 🤖 Validate fallback parameters and forward to tail/full-page resolver when slicing produced no usable fragments.
  */
 export function handleRowSplitFailure(params) {
   // * If only short tail space is available, move the row to next page (no scaling on tail).

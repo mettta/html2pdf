@@ -2,7 +2,10 @@
 // Mixed into Node so helpers can reuse measurement utilities and stay adapter-friendly.
 
 /**
- * Capture row geometry relative to the current split window.
+ * 🤖 Capture per-row geometry relative to the current split bottom.
+ * 🤖 Geometry: stores row top/bottom, next marker, and tail window height
+ * so Stage-5 decisions can reason about available space.
+ *
  * Returns null when rowIndex falls outside the provided rows array.
  */
 export function paginationBuildRowEvaluationContext({
@@ -42,7 +45,9 @@ export function paginationBuildRowEvaluationContext({
 }
 
 /**
- * Determine whether the reclaimed budget of the final slice (no bottom signpost + TFOOT)
+ * 🤖 Check whether reclaimed tail budget (no signpost + TFOOT) allows the last row to stay intact.
+ *
+ * Check whether the reclaimed budget of the final slice (no bottom signpost + TFOOT)
  * is sufficient to keep the last row without an extra split.
  */
 export function paginationCanAbsorbLastRow({

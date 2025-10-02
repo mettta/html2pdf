@@ -1,34 +1,42 @@
 // Element-level pagination helpers reused by Table and Grid splitters.
 
+// 🤖 Read debug configuration from adapter; prefer accessor when available for lazy evaluation.
 function resolveDebug(adapter) {
   if (!adapter) return undefined;
   if (typeof adapter.getDebug === 'function') return adapter.getDebug();
   return adapter.debug;
 }
 
+// 🤖 Determine whether paginator should assert while registering page starts.
 function resolveAssert(adapter) {
   if (!adapter) return false;
   if (typeof adapter.shouldAssert === 'function') return adapter.shouldAssert();
   return Boolean(adapter.assert);
 }
 
+// 🤖 Fetch current row collection so split markers can be validated.
 function resolveRows(adapter) {
   if (!adapter) return [];
   if (typeof adapter.getRows === 'function') return adapter.getRows() || [];
   return adapter.rows || [];
 }
 
+// 🤖 Obtain split-bottom log array for telemetry if adapter exposes it.
 function resolveLog(adapter) {
   if (!adapter) return null;
   if (typeof adapter.getSplitBottomLog === 'function') return adapter.getSplitBottomLog();
   return adapter.splitBottomLog || null;
 }
 
+// 🤖 Friendly label used in debug output (table/grid/etc.).
 function resolveLabel(adapter) {
-  return adapter?.label || 'element';
+  return adapter?.label || '👤 [paginator.label] element';
 }
 
 /**
+ * 🤖 Update split-bottom geometry via adapter accessor
+ * (numeric absolute bottom or element marker).
+ *
  * Update the current split bottom coordinate.
  * Accepts either a numeric value (absolute bottom) or an element
  * from which bottom is computed by the adapter.
@@ -73,6 +81,8 @@ export function updateSplitBottom(adapter, elementOrValue, message = 'unknown ca
 }
 
 /**
+ * 🤖 Register a new page start and advance splitBottom while keeping split markers monotonic.
+ *
  * Register the start of a new page at a given row index and
  * immediately advance the split bottom to the next page window.
  * Keeps splitStartRowIndexes strictly increasing; ignores invalid/duplicate indices.

@@ -3,8 +3,8 @@
 // All helpers expect to be mixed into the Node instance (this._DOM available).
 
 /**
- * Compute the extra capacity reclaimed in the final part when no bottom signpost is needed
- * and TFOOT stays attached to the original element.
+ * 🤖 Compute the height budget reclaimed in the final part when
+ *    bottom signpost is skipped and TFOOT stays with the table.
  *
  * Geometric intent:
  * - The final slice drops the bottom continuation label, restoring its height budget.
@@ -18,6 +18,8 @@ export function calculateFinalPartReclaimedHeight({ signpostHeight = 0, tfootHei
 }
 
 /**
+ * 🤖 Absorb short trailing slices into the previous fragment when reclaimed tail budget can host them.
+ *
  * Merge the last generated slice back into the previous one when reclaimed height
  * is sufficient to host it without creating an extra table/grid part.
  * This is a “short tail” optimisation: we only absorb fragments whose height is
@@ -29,6 +31,8 @@ export function calculateFinalPartReclaimedHeight({ signpostHeight = 0, tfootHei
  *   to avoid visually tiny fragments and to keep pagination stable.
  * - We only move the contents of the problematic slice (TD->TD for tables), then drop the
  *   empty slice wrapper. Pagination wrappers / enclosing table structure remain untouched.
+
+ * 🤖 Geometry: keeps the final chunk compact by moving TD content back and dropping the empty tail slice wrapper.
  */
 export function absorbShortTrailingSliceIfFits({ slices, extraCapacity = 0, ownerLabel = 'table', debug }) {
   if (!Array.isArray(slices) || slices.length < 2) {

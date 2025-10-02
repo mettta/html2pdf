@@ -2,7 +2,8 @@
 // Each helper is adapter-driven so table/grid can plug in their DOM utilities.
 
 /**
- * Slice each cell by its split points using provided adapter.
+ * 🤖 Slice each cell by split points reported by the slicer.
+ * 🤖 Geometry: preserves column alignment by generating per-cell fragments before reassembling row slices.
  * @this {Node}
  * @param {Object} params
  * @param {HTMLElement[]} params.cells
@@ -17,7 +18,8 @@ export function sliceCellsBySplitPoints({ cells, splitPointsPerCell, sliceCell }
 }
 
 /**
- * Build balanced row slices using adapter callbacks.
+ * 🤖 Assemble balanced row slices by stitching sliced cells column-by-column.
+ * 🤖 Geometry: ensures each slice inherits missing cells via fallback clones so column structure remains stable.
  *
  * @this {Node}
  * @param {Object} params
@@ -58,7 +60,7 @@ export function buildRowSlices({
 }
 
 /**
- * Convenience wrapper to slice cells and build balanced row fragments in one go.
+ * 🤖 Convenience wrapper: slice cells then build balanced row fragments.
  * @this {Node}
  */
 export function paginationBuildBalancedRowSlices({
@@ -93,8 +95,8 @@ export function paginationBuildBalancedRowSlices({
 }
 
 /**
- * Evaluate whether the first slice can stay on the current page window.
- * Returns placement decision and available tail height.
+ * 🤖 Evaluate whether the first slice stays in the current tail window and how much space is left.
+ * 🤖 Geometry: compares first slice top/bottom with splitBottom to drive placement/scale decisions.
  * @this {Node}
  */
 export function evaluateRowSplitPlacement({
@@ -123,8 +125,7 @@ export function evaluateRowSplitPlacement({
 }
 
 /**
- * Replace an entry inside currentRows with the generated row slices after split.
- * Keeps shared row caches aligned for subsequent pagination steps.
+ * 🤖 Replace the working row list entry with generated slices so future passes read updated geometry.
  * @this {Node}
  */
 export function replaceCurrentRowsAfterRowSplit({ currentRows, index, rowSlices }) {

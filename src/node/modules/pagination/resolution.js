@@ -1,6 +1,10 @@
 // Shared branching logic for resolving overflowing rows during pagination.
 // Heavy DOM mutations are delegated through adapter callbacks so table/grid can reuse the same flow.
 
+/**
+ * 🤖 Route an overflowing row through ROWSPAN fallback, fresh slicing, or already-sliced handling.
+ * 🤖 Geometry: inspects flags (ROWSPAN, slice markers) to pick the appropriate Stage-5 branch without duplicating caller logic.
+ */
 export function paginationResolveOverflowingRow({
   evaluation,
   utils = {},
@@ -34,6 +38,10 @@ export function paginationResolveOverflowingRow({
   return handleAlreadySlicedRow({ evaluation });
 }
 
+/**
+ * 🤖 Apply conservative overflow strategy for ROWSPAN rows: move to next page or scale in a full-page window.
+ * 🤖 Geometry: ROWSPAN prevents slicing, so we reuse the overflow resolver with the current tail height as available budget.
+ */
 export function paginationResolveRowWithRowspan({
   evaluation,
   splitStartRowIndexes,
@@ -57,6 +65,10 @@ export function paginationResolveRowWithRowspan({
   return result;
 }
 
+/**
+ * 🤖 Handle rows that are already marked as slices but still overflow, forwarding to overflow fallback.
+ * 🤖 Geometry: re-evaluates tail space and logging before invoking row-level recovery.
+ */
 export function paginationResolveAlreadySlicedRow({
   evaluation,
   splitStartRowIndexes,
@@ -79,6 +91,9 @@ export function paginationResolveAlreadySlicedRow({
   });
 }
 
+/**
+ * 🤖 Compute the height budget for the first slice: stay in tail window or escalate to full page if tail space is too small.
+ */
 export function paginationCalculateRowSplitBudget({
   tailWindowHeight,
   minMeaningfulRowSpace,
@@ -106,6 +121,10 @@ export function paginationCalculateRowSplitBudget({
   };
 }
 
+/**
+ * 🤖 Generate balanced row slices using shared split-point calculations and adapter callbacks.
+ * 🤖 Geometry: pre-measures cell shells then slices each cell so resulting rows preserve column alignment.
+ */
 export function paginationSplitRow({
   rowIndex,
   row,
@@ -169,6 +188,10 @@ export function paginationSplitRow({
   return { newRows, isFirstPartEmptyInAnyTD, needsScalingInFullPage };
 }
 
+/**
+ * 🤖 Orchestrate DOM replacement, recorder updates, placement, and fallback after slicing.
+ * 🤖 Geometry: decides whether the new slices stay on current page, absorb tail, or require full-page scaling.
+ */
 export function paginationProcessRowSplitResult({
   evaluation,
   splitResult,
@@ -225,6 +248,9 @@ export function paginationProcessRowSplitResult({
   }) ?? evaluation.rowIndex;
 }
 
+/**
+ * 🤖 Full Stage-5 pipeline for splittable rows: compute budget, slice, then post-process placement.
+ */
 export function paginationResolveSplittableRow({
   evaluation,
   splitStartRowIndexes,
@@ -272,6 +298,10 @@ export function paginationResolveSplittableRow({
   });
 }
 
+/**
+ * 🤖 Decide where the first slice lives: stay in tail window (with optional trimming) or move entire row to a full-page window.
+ * 🤖 Geometry: compares slice top/bottom against current splitBottom and registers page starts accordingly.
+ */
 export function paginationHandleRowSlicesPlacement({
   evaluation,
   table,
@@ -319,6 +349,8 @@ export function paginationHandleRowSlicesPlacement({
   //    ? Commit:
   //    ? node/Table: Ensure the first slice fits the current page window (before registration)
   //    ? Maryna Balioura on 9/7/2025, 5:23:42 PM
+
+  // TODO: CASE IN /table.html in the 1st slice (empty space vs ???)
   if (placement.placeOnCurrentPage) {
     // * Scale only the first slice to fit the remaining page space.
     if (placement.remainingWindowSpace > 0) {
