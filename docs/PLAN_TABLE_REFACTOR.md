@@ -10,7 +10,7 @@ Scope: keep current behavior; extract reusable logic; prepare for Grid adapter.
 
 ## Milestones
 1) Core paginator interface (ElementPaginator)
-   - File: `src/node/elements/table.paginator.js` (table-specific for now).
+   - File: `src/node/elements/structuredElementPaginator.js` (table-specific for now).
    - API: `updateSplitBottom(refElOrValue, reason)`, `registerPageStartAt(index, rows, reason)`.
    - Keep offset/probe-based metrics; no functional changes.
    - Note: This is element-level paginator for Table. Grid may get its own adapter or reuse later.

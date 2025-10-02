@@ -26,7 +26,7 @@ Document purpose: capture the current pagination pipeline inside `Table` (`src/n
 
 3. **Paginator Initialisation**
    - `_setCurrentTableFirstSplitBottom()` chooses between short first window (`firstPartContentBottom`) and full-page height when the first row already overflows.
-   - `TablePaginator` (`table.paginator.js`) tracks `splitBottom`, register page starts.
+   - `TablePaginator` (`structuredElementPaginator.js`) tracks `splitBottom`, register page starts.
 
 4. **Row Iteration Loop** (`_splitCurrentTable` → `_evaluateRowForSplitting`)
    For each distributed row (including tfoot rows appended for final chunk):

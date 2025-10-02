@@ -1,5 +1,5 @@
 import * as Logging from '../../utils/logging.js';
-import * as Paginator from './table.paginator.js';
+import * as Paginator from './structuredElementPaginator.js';
 import * as TableAdapter from './table.adapter.js';
 import * as PartsRecorder from '../modules/parts.recorder.js';
 
