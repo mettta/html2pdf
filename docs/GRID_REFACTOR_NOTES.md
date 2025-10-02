@@ -21,6 +21,16 @@
 - Capture per-item shell measurements for Grid to improve split budgets and scaling heuristics.
 - Add automated coverage for existing grid examples before attempting deeper refactors.
 
+### 2025-10-02 – Stage‑5 Adapter Audit
+- Current `Grid.split` still runs a bespoke Stage-5 loop (`_splitGridRow`, manual placement). Needs to delegate to `paginationResolveOverflowingRow` / `paginationResolveSplittableRow` with Grid-specific callbacks.
+- Required adapters:
+  - `gridEvaluateRow` equivalent → reuse `paginationBuildRowEvaluationContext` with grid rows; ensure row metadata cached (top/bottom, tail height).
+  - Overflow hooks: implement `registerPageStartCallback`, `scaleProblematicCellsCallback`, `getRowShellHeightsCallback` for grid (currently `_scaleGridCellsToHeight`, `_computeGridCellShellHeights`).
+  - Placement callbacks: map `scaleProblematicSliceCallback` / `applyFullPageScalingCallback` to grid cell scaler.
+- Telemetry/recorder: `_currentGridEntries` already mirrors Table; confirm `_recordGridPart` aligns with shared kernel expectations.
+- TODO: introduce `_forwardGridOverflowFallback` mirroring Table’s `_forwardOverflowFallback` once Stage‑5 wiring is shared.
+- Risks: grid guards (auto-flow, spans) must still short-circuit before Stage‑5 to avoid illegal adapters.
+
 ## Work Log
 - 2025-09-18: Prioritize regression tests for strictdoc grids, then extract reusable pagination steps incrementally (state prep, metrics, builders) with functional parity at each step.
 - 2025-09-19: Added runtime layout scan helpers and integrated slicer-based row splitting for monotonic grids (fallback to logging when scaling is required).
