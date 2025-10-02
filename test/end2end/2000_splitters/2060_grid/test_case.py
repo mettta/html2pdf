@@ -92,7 +92,7 @@ class Test(BaseCase):
 
     def test_9(self):
         # * @data-testid="like_image" was scaled
-        self.helper.do_open(case8_html_file_url)
+        self.helper.do_open(case9_html_file_url)
         self.helper.assert_document_has_pages(3)
         self.helper.assert_element_on_the_page('//*[@data-testid="chunk-1"]', 1)
         self.helper.assert_element_on_the_page('//*[@data-testid="chunk-4"]', 1)
