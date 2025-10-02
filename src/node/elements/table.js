@@ -349,7 +349,7 @@ export default class Table {
           splitStartRowIndexes,
           fullPageHeight: this._currentTableFullPartContentHeight,
           resolveOverflow: ({ evaluation, splitStartRowIndexes: indexes, availableRowHeight, fullPageHeight }) => (
-            this._resolveRowOverflow({
+            this._forwardOverflowFallback({
               rowIndex: evaluation.rowIndex,
               row: evaluation.row,
               availableRowHeight,
@@ -357,6 +357,7 @@ export default class Table {
               splitStartRowIndexes: indexes,
               reasonTail: 'Row with ROWSPAN — move to next page',
               reasonFull: 'Row with ROWSPAN — scaled TDs to full page',
+              branch: 'rowspan',
             })
           ),
           debug: this._debug,
@@ -375,7 +376,7 @@ export default class Table {
           fullPageHeight: this._currentTableFullPartContentHeight,
           debug: this._debug,
           resolveSplitFailure: ({ evaluation, splitStartRowIndexes: indexes, availableRowHeight, fullPageHeight }) => (
-            this._resolveRowSplitFailure({
+            this._forwardOverflowFallback({
               rowIndex: evaluation.rowIndex,
               row: evaluation.row,
               availableRowHeight,
@@ -383,6 +384,7 @@ export default class Table {
               splitStartRowIndexes: indexes,
               reasonTail: `Slice doesn't fit tail — move to next page`,
               reasonFull: 'Scaled TD content to fit full page',
+              branch: 'alreadySliced',
             })
           ),
         }),
@@ -472,17 +474,18 @@ export default class Table {
             },
           })
         ),
-        onSplitFailure: ({ evaluation, splitStartRowIndexes, availableRowHeight, fullPageHeight }) => (
-          this._resolveRowSplitFailure({
-            rowIndex: evaluation.rowIndex,
-            row: evaluation.row,
-            availableRowHeight,
-            fullPageHeight,
-            splitStartRowIndexes,
-            reasonTail: 'Split failed — move row to next page',
-            reasonFull: 'Scaled TDs to fit full-page',
-          })
-        ),
+      onSplitFailure: ({ evaluation, splitStartRowIndexes, availableRowHeight, fullPageHeight }) => (
+        this._forwardOverflowFallback({
+          rowIndex: evaluation.rowIndex,
+          row: evaluation.row,
+          availableRowHeight,
+          fullPageHeight,
+          splitStartRowIndexes,
+          reasonTail: 'Split failed — move row to next page',
+          reasonFull: 'Scaled TDs to fit full-page',
+          branch: 'splitFailure',
+        })
+      ),
       },
     });
 
@@ -738,7 +741,7 @@ export default class Table {
     return helpers.scaleProblematicCells(row, targetHeight, shellsOpt);
   }
 
-  _resolveRowOverflow({
+  _forwardOverflowFallback({
     rowIndex,
     row,
     availableRowHeight,
@@ -746,12 +749,17 @@ export default class Table {
     splitStartRowIndexes,
     reasonTail,
     reasonFull,
+    branch,
   }) {
-    // 🤖 Decide whether to move the row to the next page or scale it in place, using shared overflow logic with table-specific callbacks.
-    // Route overflowed row according to tail/full-page capacity while preserving shared logging.
+    // 🤖 Common entry point for overflow recovery: delegate to shared helpers with table-specific adapters.
+    // 🤖 Geometry: preserves detailed diagnostics per branch (ROWSPAN, already-sliced, split failure) while reusing one wiring path.
+    // 🤖 Branch legend:
+    // 🤖   - 'rowspan'       → Stage 5 fallback for rows containing ROWSPAN cells.
+    // 🤖   - 'alreadySliced' → Rows that already carry slice markers but still overflow the window.
+    // 🤖   - 'splitFailure'  → Fresh row failed to produce slices (shared splitter returned newRows = []).
     const helpers = this._currentOverflowHelpers || this._composeOverflowHelpers();
-    return this._node.handleRowOverflow({
-      ownerLabel: helpers.ownerLabel,
+    const payload = {
+      ownerLabel: `table:${branch}`,
       rowIndex,
       row,
       availableRowHeight,
@@ -762,50 +770,20 @@ export default class Table {
       registerPageStartAt: helpers.registerPageStartAt,
       scaleProblematicCells: helpers.scaleProblematicCells,
       debugLogger: helpers.debugLogger,
-    });
-  }
+    };
 
-  _resolveRowSplitFailure({
-    rowIndex,
-    row,
-    availableRowHeight,
-    fullPageHeight,
-    splitStartRowIndexes,
-    reasonTail,
-    reasonFull,
-  }) {
-    // 🤖 Recover from failed slicing attempts by delegating to overflow helpers that either move the row or scale problematic TD content.
+    if (this._debug._) {
+      console.log(
+        `%c[table.overflow] branch=${branch} rowIndex=${rowIndex} tail=${availableRowHeight} full=${fullPageHeight}`,
+        'color:orange; font-weight:bold',
+        { reasonTail, reasonFull }
+      );
+    }
 
-    // FIXME: update these explanations:
-    // * If splitting is not possible because the row has the isRowSliced flag:
-    // * try to fit large row by transforming the content.
-    // * We check the actual resulting height of new lines here,
-    // * after they have been inserted into the DOM, and they have been rechecked for fit.
-    // * And we need to know exactly how much the new line exceeds the limit (`evaluation.delta`).
-
-    // * Transform TD content.
-    // * - If we are at the tail of a page (short first part), do NOT scale — move row to next page.
-    // * - If at a full-page context and TD still can’t fit, scale ONLY problematic TD contents to fit full-page height.
-    // * Note: fine-grained scaling may have already been applied in slicers.js (getSplitPoints).
-    // * This is a row-level fallback to guarantee geometry and prevent overflow.
-
-    // Handle cases when slicing produced no fragments: emit diagnostics and route through overflow logic.
-    const helpers = this._currentOverflowHelpers || this._composeOverflowHelpers();
-    // * If only short tail space is available, move the row to next page (no scaling on tail).
-    // * If we are already in full-page context, scale ONLY problematic TD content to fit full-page height.
-    return this._node.handleRowSplitFailure({
-      ownerLabel: helpers.ownerLabel,
-      rowIndex,
-      row,
-      availableRowHeight,
-      fullPageHeight,
-      splitStartRowIndexes,
-      reasonTail,
-      reasonFull,
-      registerPageStartAt: helpers.registerPageStartAt,
-      scaleProblematicCells: helpers.scaleProblematicCells,
-      debugLogger: helpers.debugLogger,
-    });
+    if (branch === 'splitFailure') {
+      return this._node.handleRowSplitFailure(payload);
+    }
+    return this._node.handleRowOverflow(payload);
   }
 
   _getRowShellHeights(row) {

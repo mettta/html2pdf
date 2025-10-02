@@ -12,9 +12,10 @@
 3. **Stage 3 – Final budget**: `calculateFinalPartReclaimedHeight` + `paginationCanAbsorbLastRow` reuse signpost/TFOOT budget for the final slice.
 4. **Stage 4 – Short tail**: if reclaimed budget ≥ overflow → skip split, keep last row intact.
 5. **Stage 5 – Overflow branches**: `paginationResolveOverflowingRow` routes to:
-   - **ROWSPAN fallback** → `paginationResolveRowWithRowspan` (conservative move/scale).
-   - **Splittable row** → `paginationResolveSplittableRow` (budget → split → placement).
-   - **Already sliced** → `paginationResolveAlreadySlicedRow` (move/scale tail slices).
+   - **ROWSPAN fallback** → `paginationResolveRowWithRowspan` (conservative move/scale, logs via `branch=rowspan`).
+   - **Splittable row** → `paginationResolveSplittableRow` (budget → split → placement; placement delegates to `_forwardOverflowFallback` when tail/full-page decisions are needed).
+   - **Already sliced** → `paginationResolveAlreadySlicedRow` (move/scale tail slices, logs via `branch=alreadySliced`).
+   - **Split failure** → triggered inside `paginationProcessRowSplitResult` when `newRows` empty; Table routes to `_forwardOverflowFallback` with `branch=splitFailure`.
 
 ## Shared Helpers (Node Adapters)
 
@@ -35,7 +36,7 @@
 - `paginationSplitRow({ rowIndex, row, firstPartHeight, fullPageHeight, debug, decorateRowSlice })`
   - Builds row slices via shared slicers while allowing caller decoration/logging.
 - `paginationResolveSplittableRow({ evaluation, splitStartRowIndexes, extraCapacity, fullPageHeight, minPartLines, debug, decorateRowSlice, onBudgetInfo, handlers })`
-  - Full splittable-row flow using shared budget/split/process helpers.
+  - Full splittable-row flow using shared budget/split/process helpers; Table’s `handlers.onSplitFailure` now calls `_forwardOverflowFallback` (logs `branch=splitFailure`).
 - `paginationHandleRowSlicesPlacement({ evaluation, table, newRows, insufficientRemainingWindow, isFirstPartEmptyInAnyTD, needsScalingInFullPage, splitStartRowIndexes, pageBottom, fullPageHeight, debug, registerPageStartAt, scaleProblematicSlice, applyFullPageScaling })`
   - Shared placement logic deciding current-page vs full-page allocation.
 
@@ -45,14 +46,16 @@
 - `onAbsorbTail` → `absorbShortTrailingSliceIfFits`
 - `onRefreshRows` → `paginationRefreshRowsAfterSplit`
 - `onPlacement` → `paginationHandleRowSlicesPlacement`
-- `onSplitFailure` → `_resolveRowSplitFailure`
+- `onSplitFailure` → `_forwardOverflowFallback` (`branch=splitFailure`)
+  - `_forwardOverflowFallback` also services ROWSPAN (`branch=rowspan`) and already-sliced (`branch=alreadySliced`) via shared overflow helpers (`handleRowOverflow` / `handleRowSplitFailure`).
 
 ## Key Behaviours / Logs
 
 - **Short-tail skip**: `🫟 last-row-fits-without-bottom-signpost` (Stage 4).
 - **ROWSPAN conservative fallback**: `%c ⚠️ Row has ROWSPAN; use conservative fallback (no slicing)`
-- **Already-sliced overflow**: `%c Row # … is slice! but don't fit` + `%c SUPER BIG` warning.
-- **Splitting attempt**: `🔳 Try to split the ROW …` group log.
+- **Already-sliced overflow**: `%c Row # … is slice! but don't fit` + `%c SUPER BIG` warning (followed by `[table.overflow] branch=alreadySliced …`).
+- **Splitting attempt**: `🔳 Try to split the ROW …` group log; failure path emits `[table.overflow] branch=splitFailure …` before delegating to `handleRowSplitFailure`.
+- **ROWSPAN fallback**: `[table.overflow] branch=rowspan …` before delegating to `handleRowOverflow`.
 
 ## Coverage Checklist (Tests)
 
