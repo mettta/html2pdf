@@ -168,6 +168,7 @@ export default class Grid {
     this._currentGridEntries = PartsRecorder.createEntries({ owner: gridNode, currentRows });
     this._currentGridRecordedParts = this._currentGridEntries;
     this._currentGridNode.__html2pdfRecordedParts = this._currentGridRecordedParts; // Expose for DevTools and external diagnostics
+    this._currentGridShellCache = new WeakMap();
 
     // ** If there are enough rows for the split to be readable,
     // ** and the gridNode is not too big (because of the content),
@@ -277,6 +278,7 @@ export default class Grid {
     this._currentGridFullPartHeight = undefined;
     this._currentGridSplitLog = undefined;
     this._currentGridRowFlags = undefined;
+    this._currentGridShellCache = undefined;
   }
 
   _resolveGridOverflowingRow({ evaluation, splitStartRowIndexes }) {
@@ -717,7 +719,7 @@ export default class Grid {
     if (!Array.isArray(cells) || !cells.length || !(targetHeight > 0)) {
       return false;
     }
-    const shells = this._computeGridCellShellHeights(cells);
+    const shells = this._getGridShellHeights(cells); // 🤖 reuse cached shell heights when possible
     // In debug builds log the cell heights before/after scaling so we can confirm
     // geometry changed; otherwise silent overflow is hard to diagnose.
     const beforeHeights = this._debug._ ? cells.map(cell => this._DOM.getElementOffsetHeight(cell)) : null;
@@ -813,7 +815,7 @@ export default class Grid {
       return { newRows: [], isFirstPartEmptyInAnyCell: false, needsScalingInFullPage: false };
     }
 
-    const shells = this._computeGridCellShellHeights(row, cellStyles);
+    const shells = this._getGridShellHeights(row, cellStyles); // 🤖 reuse cached shell heights when possible
     const computed = this._node.getSplitPointsPerCells(
       row,
       shells,
@@ -877,6 +879,20 @@ export default class Grid {
       needsScalingInFullPage,
     };
   }
+
+  _getGridShellHeights(row, cellStyles = null) {
+    if (!this._currentGridShellCache) {
+      this._currentGridShellCache = new WeakMap();
+    }
+    if (this._currentGridShellCache.has(row)) {
+      return this._currentGridShellCache.get(row);
+    }
+    const targetCells = Array.isArray(row) ? row : [row].filter(Boolean);
+    const shells = this._computeGridCellShellHeights(targetCells, cellStyles);
+    this._currentGridShellCache.set(row, shells);
+    return shells;
+  }
+
 
   _computeGridCellShellHeights(cells, styles = null) {
     // Grid rows do not wrap cells in TR shells; estimate each cell's structural contribution
