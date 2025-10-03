@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+
+  <script
+    defer
+    data-debug-mode="true"
+    data-markup-debug-mode="true"
+    data-print-height='600px'
+    data-print-width='600px'
+    data-print-left-margin= '50px'
+    data-print-right-margin= '50px'
+    data-print-top-margin= '50px'
+    data-print-bottom-margin= '50px'
+    data-print-font-size='16px'
+    data-console-assert="true"
+
+    data-forced-page-break-selectors=''
+    data-page-break-after-selectors=''
+    data-page-break-before-selectors=''
+
+    data-no-break-selectors='.html2pdf4doc-no-break'
+    data-no-hanging-selectors='.html2pdf4doc-no-hanging'
+    src="../../../../dist/bundle.js"></script>
+</head>
+<style>
+  .grid {
+    display: grid;
+    grid-auto-flow: row; /* DEFAULT */
+    place-items: normal; /* DEFAULT, → stretch stretch */
+    place-content: normal; /* DEFAULT , → stretch stretch */
+    grid-template-columns: minmax(100px, min-content) minmax(100px, min-content) minmax(100px, min-content) minmax(0, 1fr);
+    gap: 6px;
+    background-color: rgba(0, 250, 250, 0.2);
+  }
+
+  .grid-cell {
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.75);
+    background-image: radial-gradient(rgba(0, 0, 0, 0.15) 1px, transparent 0);
+    background-size: 4px 4px;
+    background-position: -2px -2px;
+  }
+
+  .col0 {
+    /* grid-column: 1 / 2; */
+  }
+  .col2 {
+    /* grid-column: 2 / 3; */
+  }
+
+  .grid-caption {
+    grid-column: 1 / -1;
+    font-weight: bold;
+  }
+
+  .grid-banner {
+    grid-column: 1 / -1;
+  }
+
+  .content {
+    box-sizing: border-box;
+    background-color: white;
+    border: 1px solid #666;
+    min-height: 44px;
+    font-size: 14px;
+    line-height: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .low-box {
+    min-height: auto;
+    height: 20px;
+  }
+
+</style>
+
+<!--
+  * FILLER HEIGHT:
+  44 (content) * 4 + 6(gap) * 3 = 194
+  500 (page) - 194 = 306
+  * 306: 0-3 lines are on the 1st page (clean cut, without paging compensation)
+-->
+<!--
+  EXPECTED: cut line between lines 3 and 4.
+-->
+<body>
+  <div data-testid="pusher" filler="red" style="height:306px"></div>
+
+  <div class="grid" data-testid="root-element">
+    <div class="grid-cell grid-caption" data-testid="L0">
+      <div class="content">grid caption</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L1-0">
+      <div class="content key">[1] key</div>
+    </div>
+    <div class="grid-cell col1" data-testid="L1-1">
+      <div class="content value">[1] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L1-2">
+      <div class="content low-box value">[1] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L1-3">
+      <div class="content low-box value">[1] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L2-0">
+      <div class="content key">[2] key</div>
+    </div>
+    <div class="grid-cell col1" data-testid="L2-1">
+      <div class="content value">[2] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L2-2">
+      <div class="content low-box value">[2] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L2-3">
+      <div class="content low-box value">[2] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L3-0">
+      <div class="content key">[3] key</div>
+    </div>
+    <div class="grid-cell col1" data-testid="L3-1">
+      <div class="content value">[3] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L3-2">
+      <div class="content low-box value">[3] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L3-3">
+      <div class="content low-box value">[3] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L4-0">
+      <div class="content key">[4] key</div>
+    </div>
+    <div class="grid-cell col1" data-testid="L4-1">
+      <div class="content value">[4] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L4-2">
+      <div class="content low-box value">[4] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L4-3">
+      <div class="content low-box value">[4] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L5-0">
+      <div class="content key">[5] key</div>
+    </div>
+    <div class="grid-cell col1" data-testid="L5-1">
+      <div class="content value">[5] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L5-2">
+      <div class="content low-box value">[5] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L5-3">
+      <div class="content low-box value">[5] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L6-0">
+      <div class="content key">[6] key</div>
+    </div>
+    <div class="grid-cell col1" data-testid="L6-1">
+      <div class="content value">[6] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L6-2">
+      <div class="content low-box value">[6] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L6-3">
+      <div class="content low-box value">[6] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L7-0">
+      <div class="content key">[7] key</div>
+    </div>
+    <div class="grid-cell col1" data-testid="L7-1">
+      <div class="content value">[7] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L7-2">
+      <div class="content low-box value">[7] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L7-3">
+      <div class="content low-box value">[7] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L8-0">
+      <div class="content key">[8] key</div>
+    </div>
+    <div class="grid-cell col1" data-testid="L8-1">
+      <div class="content value">[8] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L8-2">
+      <div class="content low-box value">[8] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L8-3">
+      <div class="content low-box value">[8] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L9-0">
+      <div class="content key">[9] key</div>
+    </div>
+    <div class="grid-cell col1" data-testid="L9-1">
+      <div class="content value">[9] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L9-2">
+      <div class="content low-box value">[9] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L9-3">
+      <div class="content low-box value">[9] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L10-0">
+      <div class="content key">[10] key </div>
+    </div>
+    <div class="grid-cell col1" data-testid="L10-1">
+      <div class="content value">[10] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L10-2">
+      <div class="content low-box value">[10] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L10-3">
+      <div class="content low-box value">[10] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L11-0">
+      <div class="content key">[11] key </div>
+    </div>
+    <div class="grid-cell col1" data-testid="L11-1">
+      <div class="content value">[11] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L11-2">
+      <div class="content low-box value">[11] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L11-3">
+      <div class="content low-box value">[11] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L12-0">
+      <div class="content key">[12] key </div>
+    </div>
+    <div class="grid-cell col1" data-testid="L12-1">
+      <div class="content value">[12] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L12-2">
+      <div class="content low-box value">[12] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L12-3">
+      <div class="content low-box value">[12] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L13-0">
+      <div class="content key">[13] key </div>
+    </div>
+    <div class="grid-cell col1" data-testid="L13-1">
+      <div class="content value">[13] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L13-2">
+      <div class="content low-box value">[13] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L13-3">
+      <div class="content low-box value">[13] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L14-0">
+      <div class="content key">[14] key </div>
+    </div>
+    <div class="grid-cell col1" data-testid="L14-1">
+      <div class="content value">[14] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L14-2">
+      <div class="content low-box value">[14] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L14-3">
+      <div class="content low-box value">[14] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L15-0">
+      <div class="content key">[15] key </div>
+    </div>
+    <div class="grid-cell col1" data-testid="L15-1">
+      <div class="content value">[15] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L15-2">
+      <div class="content low-box value">[15] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L15-3">
+      <div class="content low-box value">[15] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L16-0">
+      <div class="content key">[16] key </div>
+    </div>
+    <div class="grid-cell col1" data-testid="L16-1">
+      <div class="content value">[16] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L16-2">
+      <div class="content low-box value">[16] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L16-3">
+      <div class="content low-box value">[16] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L17-0">
+      <div class="content key">[17] key </div>
+    </div>
+    <div class="grid-cell col1" data-testid="L17-1">
+      <div class="content value">[17] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L17-2">
+      <div class="content low-box value">[17] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L17-3">
+      <div class="content low-box value">[17] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L18-0">
+      <div class="content key">[18] key </div>
+    </div>
+    <div class="grid-cell col1" data-testid="L18-1">
+      <div class="content value">[18] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L18-2">
+      <div class="content low-box value">[18] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L18-3">
+      <div class="content low-box value">[18] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L19-0">
+      <div class="content key">[19] key </div>
+    </div>
+    <div class="grid-cell col1" data-testid="L19-1">
+      <div class="content value">[19] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L19-2">
+      <div class="content low-box value">[19] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L19-3">
+      <div class="content low-box value">[19] value-3</div>
+    </div>
+    <!-- - -->
+    <div class="grid-cell col0" data-testid="L20-0">
+      <div class="content key">[20] key </div>
+    </div>
+    <div class="grid-cell col1" data-testid="L20-1">
+      <div class="content value">[20] value-1</div>
+    </div>
+    <div class="grid-cell col2" data-testid="L20-2">
+      <div class="content low-box value">[20] value-2</div>
+    </div>
+    <div class="grid-cell col3" data-testid="L20-3">
+      <div class="content low-box value">[20] value-3</div>
+    </div>
+    <!-- - -->
+  </div>
+
+  <div data-testid="closer" filler="blue" style="height:10px"></div>
+</body>
+
+</html>
