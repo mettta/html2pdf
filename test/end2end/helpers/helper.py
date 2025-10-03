@@ -182,30 +182,45 @@ class Helper:
             f'{_content_flow_}{element_xpath}',
             by=By.XPATH,
         )
-        page_top_point = self.test_case.find_element(
-            f'{_page_start_}[@page="{page_number}"]',
-            by=By.XPATH,
-        )
+        element_y = element.location["y"]
+        # pages
         pages = self._get_amount_of_virtual_pages()
-
-        if page_number < pages:
-            next_page_top_point = self.test_case.find_element(
-                f'{_page_start_}[@page="{page_number + 1}"]',
+        # page_anchor
+        if page_number == 1:
+            page_anchor = self.test_case.find_element(
+                f'{_page_start_}[@page="{page_number}"]',
                 by=By.XPATH,
             )
-            cond1 = page_top_point.location["y"] <= element.location["y"]
-            cond2 = next_page_top_point.location["y"] >= element.location["y"]
+        else:
+            page_anchor = self.test_case.find_element(
+                f'{_page_start_}[@page="{page_number}"]/html2pdf-virtual-paper-gap',
+                by=By.XPATH,
+            )
+        page_y = page_anchor.location["y"]
+        # next_page_anchor
+        if page_number < pages:
+            next_page_anchor = self.test_case.find_element(
+                f'{_page_start_}[@page="{page_number + 1}"]/html2pdf-virtual-paper-gap',
+                by=By.XPATH,
+            )
+            next_page_y = next_page_anchor.location["y"]
+        else:
+            next_page_y = None
+
+        if next_page_y is not None:
+            cond1 = page_y < element_y
+            cond2 = next_page_y > element_y
             if report:
-                print('-> page_top_point: ', page_top_point.location["y"])
-                print('-> element: ', element.location["y"])
-                print('-> next_page_top_point: ', next_page_top_point.location["y"])
+                print('-> page_y: ', page_y)
+                print('-> element_y: ', element_y)
+                print('-> next_page_y: ', next_page_y)
             assert cond1 & cond2
         else:
             # The last page
-            cond1 = page_top_point.location["y"] <= element.location["y"]
+            cond1 = page_y < element_y
             if report:
-                print('-> page_top_point: ', page_top_point.location["y"])
-                print('-> element: ', element.location["y"])
+                print('-> page_y: ', page_y)
+                print('-> element_y: ', element_y)
             assert cond1
 
     # Element dimensions
