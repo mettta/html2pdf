@@ -223,6 +223,34 @@ class Helper:
                 print('-> element_y: ', element_y)
             assert cond1
 
+    # Element direct children
+
+    def assert_direct_children_absent(self, parent_xpath: str, child_xpaths) -> None:
+        """
+        Assert that the parent element does not have the specified direct children.
+
+        Args:
+            parent_xpath: XPath of the parent element
+            child_xpaths: list of XPath expressions for direct children to check absence of
+        """
+        parent = self.test_case.find_element(parent_xpath, by=By.XPATH)
+        for cx in child_xpaths:
+            found = parent.find_elements(By.XPATH, f"./{cx.lstrip('./')}")
+            assert len(found) == 0, f"Expected no direct child {cx} under {parent_xpath}"
+
+    def assert_direct_children_present(self, parent_xpath: str, child_xpaths) -> None:
+        """
+        Assert that the parent element has the specified direct children.
+
+        Args:
+            parent_xpath: XPath of the parent element
+            child_xpaths: list of XPath expressions for direct children to check presence of
+        """
+        parent = self.test_case.find_element(parent_xpath, by=By.XPATH)
+        for cx in child_xpaths:
+            found = parent.find_elements(By.XPATH, f"./{cx.lstrip('./')}")
+            assert len(found) > 0, f"Expected direct child {cx} under {parent_xpath}"
+
     # Element dimensions
 
     def assert_element_fit_height(self, element_xpath) -> None:
