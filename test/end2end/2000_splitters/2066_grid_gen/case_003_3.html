@@ -38,6 +38,8 @@
     grid-template-columns: minmax(100px, min-content) minmax(100px, min-content) minmax(100px, min-content) minmax(0, 1fr);
     gap: 6px;
     background-color: rgba(0, 250, 250, 0.2);
+
+    align-items: end;
   }
 
   .grid-cell {
@@ -80,20 +82,25 @@
     min-height: auto;
     height: 20px;
   }
-
 </style>
 
-<!--
-  * FILLER HEIGHT:
-  44 (content) * 4 + 6(gap) * 3 = 194
-  500 (page) - 194 = 306
-  * 306: 0-3 lines are on the 1st page (clean cut, without paging compensation)
+<!-- basic:
+    * FILLER HEIGHT:
+    44 (content) * 4 + 6(gap) * 3 = 194
+    500 (page) - 194 = 306
+    * 306: 0-3 lines are on the 1st page (clean cut, without paging compensation)
 -->
-<!--
-  EXPECTED: cut line between lines 3 and 4.
--->
+
 <body>
-  <div data-testid="pusher" filler="red" style="height:306px"></div>
+  <div data-testid="pusher" filler="red" style="height:270px"></div>
+  <!--
+      EXPECTED: cut line between lines 3 and 4.
+      BAG:
+      * Pusher with height 257...280 px
+      (range 307...330 px makes the same for the next iteration)
+      leaves low-box content of the 4th line on the previous line
+      and moves large content of the 4th line to the next page.
+   -->
 
   <div class="grid" data-testid="root-element">
     <div class="grid-cell grid-caption" data-testid="L0">

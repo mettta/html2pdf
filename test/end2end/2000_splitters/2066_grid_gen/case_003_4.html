@@ -38,6 +38,8 @@
     grid-template-columns: minmax(100px, min-content) minmax(100px, min-content) minmax(100px, min-content) minmax(0, 1fr);
     gap: 6px;
     background-color: rgba(0, 250, 250, 0.2);
+
+    align-items: end;
   }
 
   .grid-cell {
@@ -46,13 +48,6 @@
     background-image: radial-gradient(rgba(0, 0, 0, 0.15) 1px, transparent 0);
     background-size: 4px 4px;
     background-position: -2px -2px;
-  }
-
-  .col0 {
-    /* grid-column: 1 / 2; */
-  }
-  .col2 {
-    /* grid-column: 2 / 3; */
   }
 
   .grid-caption {
@@ -81,19 +76,45 @@
     height: 20px;
   }
 
+  /* FOR TEST: */
+
+  .content {
+    display: inline;
+  }
+  .col0 {
+    align-self: center;
+  }
+  .col1,
+  .grid-caption {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .col2 {
+    align-self: start;
+  }
+  .col3 {
+    align-self: end;
+  }
 </style>
 
-<!--
-  * FILLER HEIGHT:
-  44 (content) * 4 + 6(gap) * 3 = 194
-  500 (page) - 194 = 306
-  * 306: 0-3 lines are on the 1st page (clean cut, without paging compensation)
+<!-- basic:
+    * FILLER HEIGHT:
+    44 (content) * 4 + 6(gap) * 3 = 194
+    500 (page) - 194 = 306
+    * 306: 0-3 lines are on the 1st page (clean cut, without paging compensation)
 -->
-<!--
-  EXPECTED: cut line between lines 3 and 4.
--->
+
 <body>
   <div data-testid="pusher" filler="red" style="height:306px"></div>
+  <!--
+      EXPECTED: cut line between lines 3 and 4.
+      BAG:
+      * Pusher with height 257...280 px
+      (range 307...330 px makes the same for the next iteration)
+      leaves low-box content of the 4th line on the previous line
+      and moves large content of the 4th line to the next page.
+   -->
 
   <div class="grid" data-testid="root-element">
     <div class="grid-cell grid-caption" data-testid="L0">
@@ -101,7 +122,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L1-0">
-      <div class="content key">[1] key</div>
+      <div class="content low-box key">[1] key</div>
     </div>
     <div class="grid-cell col1" data-testid="L1-1">
       <div class="content value">[1] value-1</div>
@@ -114,7 +135,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L2-0">
-      <div class="content key">[2] key</div>
+      <div class="content low-box key">[2] key</div>
     </div>
     <div class="grid-cell col1" data-testid="L2-1">
       <div class="content value">[2] value-1</div>
@@ -127,7 +148,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L3-0">
-      <div class="content key">[3] key</div>
+      <div class="content low-box key">[3] key</div>
     </div>
     <div class="grid-cell col1" data-testid="L3-1">
       <div class="content value">[3] value-1</div>
@@ -140,7 +161,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L4-0">
-      <div class="content key" data-testid="content-L4-0">[4] key</div>
+      <div class="content low-box key" data-testid="content-L4-0">[4] key</div>
     </div>
     <div class="grid-cell col1" data-testid="L4-1">
       <div class="content value" data-testid="content-L4-1">[4] value-1</div>
@@ -153,7 +174,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L5-0">
-      <div class="content key">[5] key</div>
+      <div class="content low-box key">[5] key</div>
     </div>
     <div class="grid-cell col1" data-testid="L5-1">
       <div class="content value">[5] value-1</div>
@@ -166,7 +187,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L6-0">
-      <div class="content key">[6] key</div>
+      <div class="content low-box key">[6] key</div>
     </div>
     <div class="grid-cell col1" data-testid="L6-1">
       <div class="content value">[6] value-1</div>
@@ -179,7 +200,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L7-0">
-      <div class="content key">[7] key</div>
+      <div class="content low-box key">[7] key</div>
     </div>
     <div class="grid-cell col1" data-testid="L7-1">
       <div class="content value">[7] value-1</div>
@@ -192,7 +213,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L8-0">
-      <div class="content key">[8] key</div>
+      <div class="content low-box key">[8] key</div>
     </div>
     <div class="grid-cell col1" data-testid="L8-1">
       <div class="content value">[8] value-1</div>
@@ -205,7 +226,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L9-0">
-      <div class="content key">[9] key</div>
+      <div class="content low-box key">[9] key</div>
     </div>
     <div class="grid-cell col1" data-testid="L9-1">
       <div class="content value">[9] value-1</div>
@@ -218,7 +239,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L10-0">
-      <div class="content key">[10] key </div>
+      <div class="content low-box key">[10] key </div>
     </div>
     <div class="grid-cell col1" data-testid="L10-1">
       <div class="content value">[10] value-1</div>
@@ -231,7 +252,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L11-0">
-      <div class="content key">[11] key </div>
+      <div class="content low-box key">[11] key </div>
     </div>
     <div class="grid-cell col1" data-testid="L11-1">
       <div class="content value">[11] value-1</div>
@@ -244,7 +265,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L12-0">
-      <div class="content key">[12] key </div>
+      <div class="content low-box key">[12] key </div>
     </div>
     <div class="grid-cell col1" data-testid="L12-1">
       <div class="content value">[12] value-1</div>
@@ -257,7 +278,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L13-0">
-      <div class="content key">[13] key </div>
+      <div class="content low-box key">[13] key </div>
     </div>
     <div class="grid-cell col1" data-testid="L13-1">
       <div class="content value">[13] value-1</div>
@@ -270,7 +291,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L14-0">
-      <div class="content key">[14] key </div>
+      <div class="content low-box key">[14] key </div>
     </div>
     <div class="grid-cell col1" data-testid="L14-1">
       <div class="content value">[14] value-1</div>
@@ -283,7 +304,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L15-0">
-      <div class="content key">[15] key </div>
+      <div class="content low-box key">[15] key </div>
     </div>
     <div class="grid-cell col1" data-testid="L15-1">
       <div class="content value">[15] value-1</div>
@@ -296,7 +317,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L16-0">
-      <div class="content key">[16] key </div>
+      <div class="content low-box key">[16] key </div>
     </div>
     <div class="grid-cell col1" data-testid="L16-1">
       <div class="content value">[16] value-1</div>
@@ -309,7 +330,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L17-0">
-      <div class="content key">[17] key </div>
+      <div class="content low-box key">[17] key </div>
     </div>
     <div class="grid-cell col1" data-testid="L17-1">
       <div class="content value">[17] value-1</div>
@@ -322,7 +343,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L18-0">
-      <div class="content key">[18] key </div>
+      <div class="content low-box key">[18] key </div>
     </div>
     <div class="grid-cell col1" data-testid="L18-1">
       <div class="content value">[18] value-1</div>
@@ -335,7 +356,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L19-0">
-      <div class="content key">[19] key </div>
+      <div class="content low-box key">[19] key </div>
     </div>
     <div class="grid-cell col1" data-testid="L19-1">
       <div class="content value">[19] value-1</div>
@@ -348,7 +369,7 @@
     </div>
     <!-- - -->
     <div class="grid-cell col0" data-testid="L20-0">
-      <div class="content key">[20] key </div>
+      <div class="content low-box key">[20] key </div>
     </div>
     <div class="grid-cell col1" data-testid="L20-1">
       <div class="content value">[20] value-1</div>
