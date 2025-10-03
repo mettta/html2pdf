@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
 from seleniumbase import BaseCase
+import os
 
 # Elements should appear in the DOM on success:
 # only once
@@ -20,6 +21,38 @@ _frontpage_content_ = _paper_flow_ + '//html2pdf-frontpage'
 _header_content_ = _paper_flow_ + '//html2pdf-header'
 _footer_content_ = _paper_flow_ + '//html2pdf-footer'
 
+# --- Local file URL helpers ---------------------------------------------------
+
+def make_file_url(base_folder: str, filename: str) -> str:
+    """Build a file:/// URL for a given filename residing in base_folder.
+
+    Example:
+        make_file_url("/path/to/cases", "case001.html")
+        -> "file:////path/to/cases/case001.html"
+    """
+    return f"file:///{os.path.join(base_folder, filename)}"
+
+
+def case_url_num(base_folder: str, n: int, prefix: str = "case", ext: str = "html") -> str:
+    """Build a canonical test-case URL like case001.html in base_folder.
+
+    Args:
+        base_folder: directory that contains the HTML fixtures
+        n: case number (will be zero‑padded to 3 digits)
+        prefix: filename prefix (default: "case")
+        ext: file extension (default: "html")
+
+        Format f"case{n:03}.html":
+        n = 1  → case001.html
+        n = 10 → case010.html
+        n = 100 → case100.html
+    """
+    return make_file_url(base_folder, f"{prefix}{n:03}.{ext}")
+
+def case_url(base_folder: str, n, prefix: str = "case", ext: str = "html") -> str:
+    # n is str: "001", "010", "100" ... → case_001.html
+    return make_file_url(base_folder, f"{prefix}_{n}.{ext}")
+
 class Helper:
     def __init__(self, test_case: BaseCase) -> None:
         assert isinstance(test_case, BaseCase)
@@ -37,6 +70,20 @@ class Helper:
     def do_open_and_assert_title(self, file: str, title: str) -> None:
         self.do_open(file)
         self.test_case.assert_title(title)
+
+    def open_case_num(self, base_folder: str, n: int, prefix: str = "case", ext: str = "html") -> None:
+        """Open a numbered HTML test case from base_folder.
+
+        Example usage in tests:
+            self.helper.open_case(path_to_this_test_file_folder, 1)
+            OR
+            self.helper.open_case(path_to_this_test_file_folder, 7, prefix="grid", ext="htm")
+            # -> file:///.../grid007.htm
+        """
+        self.do_open(case_url(base_folder, n, prefix, ext))
+
+    def open_case(self, base_folder: str, n: str, prefix: str = "case", ext: str = "html") -> None:
+        self.do_open(case_url(base_folder, n, prefix, ext))
 
     # html2pdf elements
 
