@@ -90,37 +90,68 @@ export default class Grid {
     let hasRowSpan = false;
     let hasColumnSpan = false;
     const rowIndexSet = new Set();
-    let previousRowTop = null;
+
+    // ***** Rely on vertical position only:
+    // ***** we support linear, monotonic grids for now.
+    // * We track a row’s vertical band (top/bottom) and only start a new row
+    // * when a cell falls outside that band;
+    // * explicit grid-row-start indices still short-circuit when present.
+    let currentRowTrack = null;
+    let currentRowTop = null;
+    let currentRowBottom = null;
 
     gridCells.forEach((gridCell) => {
-      // ***** Rely on vertical position only:
-      // ***** we support linear, monotonic grids for now.
+      const cellStyle = this._DOM.getComputedStyle(gridCell);
+      const rowStart = parseInt(cellStyle.gridRowStart, 10);
+      const hasRowIndex = Number.isFinite(rowStart);
       const top = this._node.getTop(gridCell, gridNode);
+      const bottom = this._node.getBottom(gridCell, gridNode);
 
-      // * first element of a new line
-      if (
-        !currentRows.length || previousRowTop == null       // * 1st row
-        || Math.abs(top - previousRowTop) > ROW_TOP_STEP  // * new row
-      ) {
-        currentRows.push([gridCell]); // * add cell #0 to new row group
-        previousRowTop = top;       // * note down the top of new row
-        return;
+      let startNewRow = false;
+
+      if (!currentRows.length) {
+        // 🤖 first cell always seeds the row bucket
+        startNewRow = true;
+      } else if (hasRowIndex && currentRowTrack != null) {
+        // 🤖 when CSS explicitly names grid row tracks, rely on that index
+        startNewRow = rowStart !== currentRowTrack;
+      } else if (currentRowBottom != null) {
+        // 🤖 fallback: treat the row as a vertical band;
+        //    if the next cell sits below the band, start a new row
+        startNewRow = top >= (currentRowBottom - ROW_TOP_STEP);
+      } else if (currentRowTop != null) {
+        startNewRow = Math.abs(top - currentRowTop) > ROW_TOP_STEP;
+      } else {
+        startNewRow = true;
       }
 
-      // * ordinary element of the current row
-      currentRows[currentRows.length - 1].push(gridCell);
+      if (startNewRow) {
+        currentRows.push([gridCell]);
+        currentRowTrack = hasRowIndex ? rowStart : null;
+        currentRowTop = top;
+        currentRowBottom = bottom;
+      } else {
+        currentRows[currentRows.length - 1].push(gridCell);
+        if (hasRowIndex && currentRowTrack == null) {
+          currentRowTrack = rowStart;
+        }
+        if (currentRowTop == null || top < currentRowTop) {
+          currentRowTop = top;
+        }
+        if (currentRowBottom == null || bottom > currentRowBottom) {
+          currentRowBottom = bottom;
+        }
+      }
 
       // ** Detect spans and collect row-start indices.
       // ** If row-starts jump beyond known current rows (implicit tracks/gaps),
       // ** or any cell spans rows/columns, skip splitting this grid.
-      const cellStyle = this._DOM.getComputedStyle(gridCell);
       const rowEnd = cellStyle.gridRowEnd || '';
       const colEnd = cellStyle.gridColumnEnd || '';
       hasRowSpan = hasRowSpan || rowEnd.includes('span');
       hasColumnSpan = hasColumnSpan || colEnd.includes('span');
 
-      const rowStart = parseInt(cellStyle.gridRowStart, 10);
-      Number.isFinite(rowStart) && rowIndexSet.add(rowStart);
+      hasRowIndex && rowIndexSet.add(rowStart);
       // todo: span w/o 'span' keyword
       // todo: gridRowEnd/gridColumnEnd as Num/-1
       // todo: gridRowStart asNaN (named lines)
