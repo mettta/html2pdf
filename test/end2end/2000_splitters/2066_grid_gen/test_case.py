@@ -187,3 +187,57 @@ class Test(BaseCase):
         # TC-GRID-003 series
         self.helper.open_case(path_to_this_test_file_folder, '003_7')
         self.check_series_003(self.helper)
+
+    def test_003_10(self):
+        # TC-GRID-003 series
+        # first empty slice cells / null-branch in getSplitPointsPerCells
+        chunk_1 = '//*[@data-testid="root-element"][1]'
+        chunk_2 = '//*[@data-testid="root-element"][2]'
+        children_1 = [
+            # top row 0
+            '//*[@data-testid="L0"]',
+            # bottom row 1
+            '//*[@data-testid="L1-0"]',
+            '//*[@data-testid="L1-1"]',
+            '//*[@data-testid="L1-2"]',
+            '//*[@data-testid="L1-3"]',
+        ]
+        wrong_children_1 = [
+            # under the bottom row 1
+            '//*[@data-testid="L2-0"]',
+            '//*[@data-testid="L2-1"]',
+            '//*[@data-testid="L2-2"]',
+            '//*[@data-testid="L2-3"]'
+        ]
+        children_2 = [
+            # top row 2
+            '//*[@data-testid="L2-0"]',
+            '//*[@data-testid="L2-1"]',
+            '//*[@data-testid="L2-2"]',
+            '//*[@data-testid="L2-3"]',
+            # bottom row 6 (last)
+            '//*[@data-testid="L6-0"]',
+            '//*[@data-testid="L6-1"]',
+            '//*[@data-testid="L6-2"]',
+            '//*[@data-testid="L6-3"]',
+        ]
+        wrong_children_2 = [
+            # above the top row 2
+            '//*[@data-testid="L1-0"]',
+            '//*[@data-testid="L1-1"]',
+            '//*[@data-testid="L1-2"]',
+            '//*[@data-testid="L1-3"]',
+        ]
+        self.helper.open_case(path_to_this_test_file_folder, '003_10')
+        self.helper.assert_html2pdf_success()
+        self.helper.assert_document_has_pages(2)
+        # 1 ----------------------------------
+        self.helper.assert_element_on_the_page('//*[@data-testid="pusher"]', 1)
+        self.helper.assert_element_on_the_page(chunk_1, 1)
+        self.helper.assert_direct_children_present(chunk_1, children_1)
+        self.helper.assert_direct_children_absent(chunk_1, wrong_children_1)
+        # 2 ----------------------------------
+        self.helper.assert_element_on_the_page(chunk_2, 2)
+        self.helper.assert_direct_children_present(chunk_2, children_2)
+        self.helper.assert_direct_children_absent(chunk_2, wrong_children_2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="closer"]', 2)
