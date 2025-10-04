@@ -398,7 +398,19 @@ export function getSplitPointsPerCells(
     _isDebug(this) && console.group(`(•) Split CELL.${ind} in:`, parentItem);
     const firstH = rowFirstPartHeight - (shells[ind] || 0);
     const fullH = rowFullPageHeight - (shells[ind] || 0);
+    // * If there is no content, inject placeholder content
+    // * with offsetParent (using createNeutralBlock)
+    // * before the first pass (•) so that the optically empty cell
+    // * does not generate a null branch (the first empty fragment)
+    // * and does not trigger a second pass (••)
+    let content = this.getPreparedChildren(cell);
+    if(!content.length) {
+      const placeholder = this.createNeutralBlock();
+      this._DOM.insertAtEnd(cell, placeholder);
+    }
+    // * Prepare children splitting long nodes
     const ch = this.getSplitChildren(cell, firstH, fullH, parentItem);
+    // * Find split points
     const pts = this.getSplitPoints({
       rootNode: cell,
       children: ch,
