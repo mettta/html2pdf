@@ -101,3 +101,33 @@ class Test(BaseCase):
         self.helper.assert_element_on_the_page('//*[@data-testid="like_image"]', 2)
         self.helper.assert_element_on_the_page('//*[@data-testid="chunk-5"]', 3)
         self.helper.assert_element_on_the_page('//*[@data-testid="chunk-8"]', 3)
+
+    def test_20(self):
+        # * @data-testid="like_image" was scaled
+        chunk_1 = '//*[@data-testid="root-element"][1]'
+        chunk_2 = '//*[@data-testid="root-element"][2]'
+        self.helper.open_case(path_to_this_test_file_folder, '20')
+        self.helper.assert_document_has_pages(2)
+        # 1 ----------------------------------
+        self.helper.assert_element_on_the_page('//*[@data-testid="pusher"]', 1)
+        self.helper.assert_element_on_the_page(chunk_1, 1)
+        # 2 ----------------------------------
+        self.helper.assert_element_on_the_page(chunk_2, 2)
+
+    def test_21(self):
+        # * @data-testid="like_image" was scaled
+        chunk_1 = '//*[@data-testid="root-element"][1]'
+        chunk_2 = '//*[@data-testid="root-element"][2]'
+        chunk_3 = '//*[@data-testid="root-element"][3]'
+        self.helper.open_case(path_to_this_test_file_folder, '21')
+        self.helper.assert_document_has_pages(2)
+        # 1 ----------------------------------
+        self.helper.assert_element_on_the_page('//*[@data-testid="pusher"]', 1)
+        self.helper.assert_element_on_the_page(chunk_1, 1)
+        # 2 ----------------------------------
+        self.helper.assert_element_on_the_page(chunk_2, 2)
+        # 2 ----------------------------------
+        self.helper.assert_element_on_the_page(chunk_3, 3)
+
+    # def test_22(self):
+    # def test_23(self):
