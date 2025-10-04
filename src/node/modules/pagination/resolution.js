@@ -132,25 +132,31 @@ export function paginationSplitRow({
   fullPageHeight,
   debug,
   decorateRowSlice,
+  rowAdapter,
 }) {
   if (!row) {
     return { newRows: [], isFirstPartEmptyInAnyTD: false, needsScalingInFullPage: false };
   }
 
-  // * Measure TD shells before slicing — downstream placement relies on these fixed heights.
-  const shellHeights = this.getTableRowShellHeightByTD(row);
-  debug && debug._ && console.log('🧿 currentRowTdHeights', shellHeights);
+  const adapter = rowAdapter ?? createDefaultRowAdapter.call(this, { row, rowIndex, decorateRowSlice });
 
-  this.setFlagSlice(row);
-  const originalCells = [...this._DOM.getChildren(row)];
+  const parentForSplit = adapter.getParentContainer?.({ row, rowIndex }) ?? row;
+  const originalCells = adapter.getOriginalCells?.({ row, rowIndex }) ?? [];
+  if (!Array.isArray(originalCells) || originalCells.length === 0) {
+    return { newRows: [], isFirstPartEmptyInAnyTD: false, needsScalingInFullPage: false };
+  }
 
-  // *️⃣ Determine split points per cell (with sanitisation) so table/grid share identical slice geometry.
+  const shellHeights = adapter.getShellHeights?.({ row, rowIndex, cells: originalCells }) ?? [];
+  debug && debug._ && console.log('🧿 row shell heights', shellHeights);
+
+  adapter.markOriginalRow?.({ row, rowIndex, cells: originalCells });
+
   const computed = this.getSplitPointsPerCells(
     originalCells,
     shellHeights,
     firstPartHeight,
     fullPageHeight,
-    row,
+    parentForSplit,
   ) || {};
   debug && debug._ && console.log('[✖️] getSplitPointsPerCells result:', computed);
 
@@ -158,25 +164,30 @@ export function paginationSplitRow({
   const isFirstPartEmptyInAnyTD = computed.isFirstPartEmptyInAnyCell;
   const needsScalingInFullPage = computed.needsScalingInFullPage;
 
+  const sliceCell = adapter.sliceCell || (({ cell, index, splitPoints }) => this.sliceNodeBySplitPoints({ index, rootNode: cell, splitPoints }));
+  const beginRow = adapter.beginRow || (({ originalRow, sliceIndex }) => {
+    const rowWrapper = this._DOM.cloneNodeWrapper(originalRow);
+    decorateRowSlice?.({ rowWrapper, rowIndex, sliceIndex, originalRow });
+    return { rowWrapper };
+  });
+  const cloneCellFallback = adapter.cloneCellFallback || ((origCell) => this._DOM.cloneNodeWrapper(origCell));
+  const handleCell = adapter.handleCell || (({ context, cellClone }) => {
+    this._DOM.insertAtEnd(context.rowWrapper, cellClone);
+  });
+  const finalizeRow = adapter.finalizeRow || (({ context }) => context.rowWrapper);
+
   const newRows = [];
   const hasSplits = splitPointsPerCell.some(points => Array.isArray(points) && points.length);
   if (hasSplits) {
-    // * Build balanced row slices. Caller may decorate each slice (e.g. tracing attributes in table).
     const generatedRows = this.paginationBuildBalancedRowSlices({
       originalRow: row,
       originalCells,
       splitPointsPerCell,
-      sliceCell: ({ cell, index, splitPoints }) => this.sliceNodeBySplitPoints({ index, rootNode: cell, splitPoints }),
-      beginRow: ({ originalRow, sliceIndex }) => {
-        const rowWrapper = this._DOM.cloneNodeWrapper(originalRow);
-        decorateRowSlice?.({ rowWrapper, rowIndex, sliceIndex, originalRow });
-        return { rowWrapper };
-      },
-      cloneCellFallback: (origCell) => this._DOM.cloneNodeWrapper(origCell),
-      handleCell: ({ context, cellClone }) => {
-        this._DOM.insertAtEnd(context.rowWrapper, cellClone);
-      },
-      finalizeRow: ({ context }) => context.rowWrapper,
+      sliceCell,
+      beginRow,
+      cloneCellFallback,
+      handleCell,
+      finalizeRow,
     });
     newRows.push(...generatedRows);
   } else if (debug && debug._) {
@@ -186,6 +197,56 @@ export function paginationSplitRow({
   debug && debug._ && console.log('%c newRows \n', 'color:magenta; font-weight:bold', newRows);
 
   return { newRows, isFirstPartEmptyInAnyTD, needsScalingInFullPage };
+}
+
+function createDefaultRowAdapter({ row, rowIndex, decorateRowSlice }) {
+  const isArrayRow = Array.isArray(row);
+  const self = this;
+
+  return {
+    getParentContainer: () => (isArrayRow ? null : row),
+    getOriginalCells: () => (
+      isArrayRow
+        ? [...row]
+        : [...self._DOM.getChildren(row)]
+    ),
+    getShellHeights: ({ cells }) => (
+      isArrayRow
+        ? []
+        : self.getTableRowShellHeightByTD(row)
+    ),
+    markOriginalRow: ({ cells }) => {
+      if (isArrayRow) {
+        // cells.forEach(cell => self.setFlagSlice(cell));
+      } else {
+        self.setFlagSlice(row);
+      }
+    },
+    // * beginRow is the starter template for each future slice.
+    // * For grid (row = array of cells) we prep { cells: [] } — only the cells are kept; they share the original grid container.
+    // * For table (row = <tr>), we clone the <tr> so the new fragment inherits borders, attributes, and width limits; dev-attrs/log flags are applied right away.
+    beginRow: ({ originalRow, sliceIndex }) => {
+      if (isArrayRow) {
+        return { cells: [] };
+      }
+      const rowWrapper = self._DOM.cloneNodeWrapper(originalRow);
+      decorateRowSlice?.({ rowWrapper, rowIndex, sliceIndex, originalRow });
+      return { rowWrapper };
+    },
+    cloneCellFallback: (origCell) => self._DOM.cloneNodeWrapper(origCell),
+    handleCell: ({ context, cellClone }) => {
+      if (isArrayRow) {
+        self.setFlagSlice(cellClone);
+        context.cells.push(cellClone);
+      } else {
+        self._DOM.insertAtEnd(context.rowWrapper, cellClone);
+      }
+    },
+    // * finalizeRow returns what paginationProcessRowSplitResult will insert:
+    // * For grid it returns the built cell array (context.cells) that the grid-adapter can render into a DOM fragment.
+    // * For table it returns the ready <tr> clone (context.rowWrapper) — directly inserted into the table.
+    finalizeRow: ({ context }) => (isArrayRow ? context.cells : context.rowWrapper),
+  };
 }
 
 /**
@@ -277,6 +338,9 @@ export function paginationResolveSplittableRow({
 
   onBudgetInfo?.({ evaluation, firstPartHeight: budget.firstPartHeight, fullPartHeight: fullPageHeight });
 
+  const rowSliceAdapterFactory = handlers.getRowSliceAdapter;
+  const rowSliceAdapter = rowSliceAdapterFactory?.({ evaluation, row, rowIndex: evaluation.rowIndex, decorateRowSlice });
+
   const splitResult = this.paginationSplitRow({
     rowIndex: evaluation.rowIndex,
     row,
@@ -284,6 +348,7 @@ export function paginationResolveSplittableRow({
     fullPageHeight,
     debug,
     decorateRowSlice,
+    rowAdapter: rowSliceAdapter,
   });
 
   return this.paginationProcessRowSplitResult({

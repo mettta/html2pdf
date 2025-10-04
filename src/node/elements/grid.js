@@ -319,7 +319,9 @@ export default class Grid {
 
   _getGridSplittableHandlers({ evaluation, splitStartRowIndexes }) {
     return {
+      getRowSliceAdapter: ({ row }) => this._createGridRowSliceAdapter({ row, rowIndex: evaluation.rowIndex }),
       onReplaceRow: ({ newRows }) => {
+        this._removeOriginalGridRowCells(evaluation.row);
         this._node.paginationRefreshRowsAfterSplit(this._getSplitterAdapter(), {
           rowIndex: evaluation.rowIndex,
           rowSlices: newRows,
@@ -505,13 +507,18 @@ export default class Grid {
       debug: this._debug,
     });
 
-    const splitResult = this._splitGridRow({
+    const splitResult = this._node.paginationSplitRow({
       rowIndex,
       row: evaluation.row,
-      gridNode: this._currentGridNode,
       firstPartHeight: budget.firstPartHeight,
-      fullPagePartHeight: this._currentGridFullPartHeight,
-      cellStyles: evaluation.cellStyles,
+      fullPageHeight: this._currentGridFullPartHeight,
+      debug: this._debug,
+      decorateRowSlice: ({ rowWrapper, rowIndex: sourceRowIndex, sliceIndex }) => {
+        if (rowWrapper instanceof HTMLElement) {
+          this._DOM.setAttribute(rowWrapper, `.grid_row_${sourceRowIndex}_part_${sliceIndex}`);
+        }
+      },
+      rowAdapter: this._createGridRowSliceAdapter({ row: evaluation.row, rowIndex, cellStyles: evaluation.cellStyles }),
     });
 
     const updatedIndex = this._node.paginationProcessRowSplitResult({
@@ -527,6 +534,49 @@ export default class Grid {
 
     this.logGroupEnd('[grid.split] Stage5 — splittable row');
     return updatedIndex;
+  }
+
+  _createGridRowSliceAdapter({ row, rowIndex, cellStyles }) {
+    if (!Array.isArray(row)) {
+      return null;
+    }
+
+    const gridNode = this._currentGridNode;
+    const anchor = row[0] || null;
+    const self = this;
+
+    return {
+      getParentContainer: () => gridNode,
+      getOriginalCells: () => [...row],
+      getShellHeights: () => self._getGridShellHeights(row, cellStyles),
+      markOriginalRow: ({ cells }) => {
+        cells.forEach(cell => self._node.setFlagSlice(cell));
+      },
+      beginRow: () => ({ fragment: self._DOM.createDocumentFragment(), cells: [] }),
+      cloneCellFallback: (originalCell) => self._DOM.cloneNodeWrapper(originalCell),
+      handleCell: ({ context, cellClone }) => {
+        self._node.setFlagSlice(cellClone);
+        context.fragment.append(cellClone);
+        context.cells.push(cellClone);
+      },
+      finalizeRow: ({ context }) => {
+        if (anchor) {
+          self._DOM.insertBefore(anchor, context.fragment);
+        }
+        return context.cells;
+      },
+    };
+  }
+
+  _removeOriginalGridRowCells(row) {
+    if (!Array.isArray(row)) {
+      return;
+    }
+    row.forEach(cell => {
+      if (cell instanceof HTMLElement) {
+        this._DOM.removeNode(cell);
+      }
+    });
   }
 
   _isGridRowSlice(row) {
@@ -712,76 +762,6 @@ export default class Grid {
       rows,
       meta: extraMeta,
     });
-  }
-
-  _splitGridRow({ rowIndex, row, gridNode, firstPartHeight, fullPagePartHeight, cellStyles = null }) {
-    if (!Array.isArray(row) || !row.length) {
-      return { newRows: [], isFirstPartEmptyInAnyCell: false, needsScalingInFullPage: false };
-    }
-
-    const shells = this._getGridShellHeights(row, cellStyles); // 🤖 reuse cached shell heights when possible
-    const computed = this._node.getSplitPointsPerCells(
-      row,
-      shells,
-      firstPartHeight,
-      fullPagePartHeight,
-      gridNode
-    );
-
-    let { needsScalingInFullPage } = computed;
-    const splitPointsPerCell = (computed.splitPointsPerCell || []).map((points) => {
-      if (!Array.isArray(points) || !points.length) {
-        return [];
-      }
-      if (points.length === 1 && points[0] === null) {
-        // Slicers emit [null] when a cell cannot be split – table path interprets
-        // this as “scale the whole row on the next page”. Mirror that here so grid
-        // escalates to full-page fallback instead of attempting to build slices
-        // with phantom entries.
-        needsScalingInFullPage = true;
-        return [];
-      }
-      return points.filter(point => point != null);
-    });
-
-    const hasSplits = splitPointsPerCell.some(list => list.length);
-
-    if (!hasSplits) {
-      return {
-        newRows: [],
-        isFirstPartEmptyInAnyCell: computed.isFirstPartEmptyInAnyCell,
-        needsScalingInFullPage,
-      };
-    }
-
-    row.forEach(cell => this._node.setFlagSlice(cell));
-
-    const anchor = row[0];
-    const generatedRows = this._node.paginationBuildBalancedRowSlices({
-      originalRow: row,
-      originalCells: row,
-      splitPointsPerCell,
-      sliceCell: ({ cell, index, splitPoints }) => this._node.sliceNodeBySplitPoints({ index, rootNode: cell, splitPoints }),
-      beginRow: () => ({ fragment: this._DOM.createDocumentFragment(), cells: [] }),
-      cloneCellFallback: (originalCell) => this._DOM.cloneNodeWrapper(originalCell),
-      handleCell: ({ context, cellClone }) => {
-        this._node.setFlagSlice(cellClone);
-        context.fragment.append(cellClone);
-        context.cells.push(cellClone);
-      },
-      finalizeRow: ({ context }) => {
-        this._DOM.insertBefore(anchor, context.fragment);
-        return context.cells;
-      },
-    });
-
-    row.forEach(cell => this._DOM.removeNode(cell));
-
-    return {
-      newRows: generatedRows,
-      isFirstPartEmptyInAnyCell: computed.isFirstPartEmptyInAnyCell,
-      needsScalingInFullPage,
-    };
   }
 
   // 🤖 Estimate how much vertical space (in px) the row needs to host the minimum meaningful amount of content before splitting.
