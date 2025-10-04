@@ -30,6 +30,8 @@ export default class Grid {
     // 1) move to config
     // Grid:
     this._minBreakableGridRows = 4;
+    this._minGridRowContentLines = 2; // minimum lines of content a slice must retain in a tail window
+    this._gridCellLineHeightCache = new WeakMap();
 
     // TODO make function
     // * From config:
@@ -279,6 +281,7 @@ export default class Grid {
     this._currentGridSplitLog = undefined;
     this._currentGridRowFlags = undefined;
     this._currentGridShellCache = undefined;
+    this._gridCellLineHeightCache = new WeakMap();
   }
 
   _getGridSplittableHandlers({ evaluation, splitStartRowIndexes }) {
@@ -334,7 +337,7 @@ export default class Grid {
     };
   }
 
-  _forwardGridOverflowFallback({ evaluation, splitStartRowIndexes, availableRowHeight, fullPageHeight = this._currentGridFullPartHeight, branch }) {
+  _forwardGridOverflowFallback({ evaluation, splitStartRowIndexes, availableRowHeight, fullPageHeight = this._currentGridFullPartHeight, branch, reasonTail, reasonFull }) {
     const helpers = this._composeGridOverflowHelpers();
     const payload = {
       ownerLabel: `grid:${branch}` ,
@@ -345,8 +348,8 @@ export default class Grid {
       availableRowHeight,
       fullPageHeight,
       splitStartRowIndexes,
-      reasonTail: branch === 'splitFailure' ? 'Grid split failed — move row to next page' : 'Grid slice overflow — move row to next page',
-      reasonFull: branch === 'splitFailure' ? 'Grid split failed — scaled cells to full page' : 'Grid slice overflow — scaled cells to full page',
+      reasonTail: reasonTail || (branch === 'splitFailure' ? 'Grid split failed — move row to next page' : 'Grid slice overflow — move row to next page'),
+      reasonFull: reasonFull || (branch === 'splitFailure' ? 'Grid split failed — scaled cells to full page' : 'Grid slice overflow — scaled cells to full page'),
       registerPageStartCallback: helpers.registerPageStartCallback,
       scaleProblematicCellsCallback: helpers.scaleProblematicCellsCallback,
       debugLogger: helpers.debugLogger,
@@ -443,9 +446,28 @@ export default class Grid {
       tailWindowHeight: evaluation.tailWindowHeight,
     });
 
+    const minMeaningfulRowSpace = this._estimateGridRowMeaningfulSpace({
+      row: evaluation.row,
+      cellStyles: evaluation.cellStyles,
+      minContentLines: this._minGridRowContentLines,
+    });
+
+    if (!(minMeaningfulRowSpace > 0)) {
+      console.warn('[grid.metrics] Meaningful row space is unavailable; falling back to overflow handler.');
+      return this._forwardGridOverflowFallback({
+        evaluation,
+        splitStartRowIndexes,
+        availableRowHeight: evaluation.tailWindowHeight,
+        fullPageHeight: this._currentGridFullPartHeight,
+        branch: 'metricsMissing',
+        reasonTail: 'Grid row metrics missing — move row to next page',
+        reasonFull: 'Grid row metrics missing — scaled cells to full page',
+      });
+    }
+
     const budget = this._node.paginationCalculateRowSplitBudget({
       tailWindowHeight: evaluation.tailWindowHeight,
-      minMeaningfulRowSpace: this._minBreakableGridRows,
+      minMeaningfulRowSpace,
       fullPartHeight: this._currentGridFullPartHeight,
       debug: this._debug,
     });
@@ -727,6 +749,91 @@ export default class Grid {
       isFirstPartEmptyInAnyCell: computed.isFirstPartEmptyInAnyCell,
       needsScalingInFullPage,
     };
+  }
+
+  // 🤖 Estimate how much vertical space (in px) the row needs to host the minimum meaningful amount of content before splitting.
+  _estimateGridRowMeaningfulSpace({ row, cellStyles = null, minContentLines = this._minGridRowContentLines }) {
+    if (!Array.isArray(row) || row.length === 0) {
+      console.warn('[grid.metrics] Row payload missing while estimating split budget.');
+      return null;
+    }
+
+    const shells = this._getGridShellHeights(row, cellStyles);
+    const styles = Array.isArray(cellStyles) ? cellStyles : null;
+    const fallbackLines = Math.max(1, minContentLines);
+    let maxCellBudget = 0;
+
+    row.forEach((cell, index) => {
+      if (!(cell instanceof HTMLElement)) {
+        console.warn('[grid.metrics] Unexpected non-element cell in row; ignoring during split budget calculation.', { cell, index });
+        return;
+      }
+
+      let style = styles ? styles[index] : null;
+      if (!style) {
+        style = this._DOM.getComputedStyle(cell);
+        if (styles) {
+          styles[index] = style;
+        }
+      }
+
+      const lineHeight = this._resolveGridCellLineHeight({ cell, style });
+      const structuralShell = shells?.[index] || 0;
+      const cellBudget = structuralShell + lineHeight * fallbackLines;
+      maxCellBudget = Math.max(maxCellBudget, cellBudget);
+    });
+
+    if (!(maxCellBudget > 0)) {
+      console.warn('[grid.metrics] Failed to measure meaningful row space.');
+      return null;
+    }
+
+    return maxCellBudget;
+  }
+
+  // 🤖 Resolve the effective line-height for a grid cell, falling back to measured values when CSS omits explicit numbers.
+  _resolveGridCellLineHeight({ cell, style }) {
+    // * use cached value, if available
+    const cache = this._gridCellLineHeightCache;
+    const cached = cache?.get(cell);
+    if (cached > 0) {
+      return cached;
+    }
+
+    // * style must be passed
+    if (!style) {
+      console.warn('[grid.metrics] style not passed for _resolveGridCellLineHeight', { cell });
+      style = this._DOM.getComputedStyle(cell);
+    }
+
+    // * check in style
+    let numeric = parseFloat(style?.lineHeight);
+    if (numeric > 0) {
+      cache?.set(cell, numeric);
+      return numeric;
+    }
+
+    // * check in style fontSize & approximate
+    const fontSize = parseFloat(style?.fontSize);
+    if (Number.isFinite(fontSize) && fontSize > 0) {
+      const derived = fontSize * 1.2;
+      cache?.set(cell, derived);
+      return derived;
+    }
+
+    // * perform calculations (DOM mutation)
+    numeric = this._node.getLineHeight(cell);
+    if (numeric > 0) {
+      cache?.set(cell, numeric);
+      return numeric;
+    }
+
+    // * We are unlikely to get here after calculations via Probe.
+    // * But if that happens, let's cache a frequently occurring value
+    // * for the failed cell, and return it.
+    const DEFAULT_BASELINE = 16;
+    cache?.set(cell, DEFAULT_BASELINE);
+    return DEFAULT_BASELINE;
   }
 
   _getGridShellHeights(row, cellStyles = null) {
