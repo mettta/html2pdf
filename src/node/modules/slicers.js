@@ -25,9 +25,15 @@ export function getSplitPoints({
   children,
   firstPartHeight,
   fullPageHeight,
+  firstChild,
 
   points = [],
 }) {
+
+  // * We need to cache the firstChild of the root node,
+  // * because when we descend into the children and enter recursion,
+  // * we cannot access the points.push(null) branch because the
+  // * knowledge about the firstChild of the root is lost.
 
   const registerPoint = (element) => {
 
@@ -40,8 +46,11 @@ export function getSplitPoints({
 
     // * If we try to register the first element as a new page: `point === children[0]`,
     // * it is a something big that does not fit in first (short) tail part.
-    // * And this candidate should not be an only child. So there is at least one more (children[1]).
-    if (!points.length && point === children[0] && children[1]) {
+    // ? remove this statement!
+    // // And this candidate should not be an only child. So there is at least one more (children[1]).
+    // ! remove this '&& children[1]' from condition!
+    // FIXME (need be tested).
+    if (!points.length && point === firstChild) { // && children[1]
       _isDebug(this) && console.log('%c !points.length && point === children[0] && children[1]', 'color:red');
       _isDebug(this) && console.log('%c 🅾️ push(null) in registerPoint()', 'color:red');
       points.push(null)
@@ -49,6 +58,7 @@ export function getSplitPoints({
       //     Caller can immediately trigger the second pass with full-page window.
       return true;
     } else {
+      console.log('%c 🧼🧼🧼🧼 push(point) in registerPoint()', 'color:violet', {point, points, firstChild}, points.length);
       points.push(point)
       return false;
     }
@@ -215,6 +225,7 @@ export function getSplitPoints({
             children: currentElementChildren,
             firstPartHeight,
             fullPageHeight,
+            firstChild,
 
             points,
           });
@@ -249,7 +260,7 @@ export function getSplitPoints({
                 currentElement,
                 `height: ${currentElementHeight}`
               );
-              if (!points.length && currentElement === children[0]) {
+              if (!points.length && currentElement === firstChild) {
                 _isDebug(this) && console.warn('🅾️ (1) points.push(null) in isUnbreakableOversized');
                 points.push(null);
                 // 🤖 Early abort after placing sentinel: let the second pass handle next window.
@@ -302,7 +313,7 @@ export function getSplitPoints({
               `height: ${currentElementHeight}`
             );
             _isDebug(this) && console.warn('🅾️ (2) points.push(null) in isUnbreakableOversized');
-            if (!points.length && currentElement === children[0]) {
+            if (!points.length && currentElement === firstChild) {
               points.push(null);
               // 🤖 Early abort after placing sentinel: proceed to second pass.
               return points;
@@ -410,12 +421,15 @@ export function getSplitPointsPerCells(
     }
     // * Prepare children splitting long nodes
     const ch = this.getSplitChildren(cell, firstH, fullH, parentItem);
+    const firstChild = ch[0];
+    console.log('firstChild', firstChild);
     // * Find split points
     const pts = this.getSplitPoints({
       rootNode: cell,
       children: ch,
       firstPartHeight: firstH,
       fullPageHeight: fullH,
+      firstChild: firstChild,
     });
     _isDebug(this) && console.log(`(•) return splitPoints for CELL#${ind}`, pts);
     _isDebug(this) && console.groupEnd();
@@ -423,6 +437,7 @@ export function getSplitPointsPerCells(
   });
 
   const isFirstPartEmptyInAnyCell = firstPass.some(isFirstSliceEmpty);
+  console.log('🧽🧽🧽🧽🧽🧽🧽 isFirstPartEmptyInAnyCell', isFirstPartEmptyInAnyCell);
 
   let splitPointsPerCell = firstPass;
   let needsScalingInFullPage = false;
@@ -433,11 +448,14 @@ export function getSplitPointsPerCells(
       const firstH = rowFirstPartHeight - (shells[ind] || 0); // for symmetry
       const fullH = rowFullPageHeight - (shells[ind] || 0);
       const ch = this.getSplitChildren(cell, firstH, fullH, parentItem);
+      const firstChild = ch[0];
+      console.log('firstChild', firstChild);
       const pts = this.getSplitPoints({
         rootNode: cell,
         children: ch,
         firstPartHeight: fullH,
         fullPageHeight: fullH,
+        firstChild: firstChild,
       });
       _isDebug(this) && console.log(`(••) return splitPoints for CELL#${ind}`, pts);
       _isDebug(this) && console.groupEnd();
@@ -448,6 +466,7 @@ export function getSplitPointsPerCells(
     for (let i = 0; i < splitPointsPerCell.length; i++) {
       const pts = splitPointsPerCell[i];
       if (isFirstSliceEmpty(pts) && pts.length === 1) {
+        console.log('🧽🧽🧽🧽🧽🧽🧽 needsScalingInFullPage', splitPointsPerCell[i]);
         splitPointsPerCell[i] = [];
         needsScalingInFullPage = true;
       }
@@ -566,6 +585,7 @@ export function sliceNodeContentBySplitPoints({ index, rootNode, splitPoints }) 
 
 // 🤖 Helper: check sentinel that marks an empty first slice in split points result
 export function isFirstSliceEmpty(points) {
+  console.log('🧽🧽🧽🧽🧽🧽🧽🧽🧽🧽🧽🧽🧽 isFirstSliceEmpt(y) points[0]', points[0]);
   return Array.isArray(points) && points.length > 0 && points[0] === null;
 }
 
