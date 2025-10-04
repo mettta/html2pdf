@@ -32,6 +32,7 @@ export default class Grid {
     this._minBreakableGridRows = 4;
     this._minGridRowContentLines = 2; // minimum lines of content a slice must retain in a tail window
     this._gridCellLineHeightCache = new WeakMap();
+    this._gridComputedStyleCache = new WeakMap();
 
     // TODO make function
     // * From config:
@@ -62,7 +63,7 @@ export default class Grid {
     const gridCells = this._node.getPreparedChildren(gridNode);
     this._node.lockNodesWidths(gridCells);
 
-    const nodeComputedStyle = computedStyle ? computedStyle : this._DOM.getComputedStyle(gridNode);
+    const nodeComputedStyle = computedStyle ? computedStyle : this._getComputedStyleCached(gridNode);
     // * Use this._node.setInitStyle:
     // * In some layouts grid stays `position: static`; force a relative context so
     // * offset-based getters work (otherwise offsets are taken from body and rows
@@ -101,7 +102,7 @@ export default class Grid {
     let currentRowBottom = null;
 
     gridCells.forEach((gridCell) => {
-      const cellStyle = this._DOM.getComputedStyle(gridCell);
+      const cellStyle = this._getComputedStyleCached(gridCell);
       const rowStart = parseInt(cellStyle.gridRowStart, 10);
       const hasRowIndex = Number.isFinite(rowStart);
       const top = this._node.getTop(gridCell, gridNode);
@@ -313,6 +314,7 @@ export default class Grid {
     this._currentGridRowFlags = undefined;
     this._currentGridShellCache = undefined;
     this._gridCellLineHeightCache = new WeakMap();
+    this._gridComputedStyleCache = new WeakMap();
   }
 
   _getGridSplittableHandlers({ evaluation, splitStartRowIndexes }) {
@@ -802,7 +804,7 @@ export default class Grid {
 
       let style = styles ? styles[index] : null;
       if (!style) {
-        style = this._DOM.getComputedStyle(cell);
+        style = this._getComputedStyleCached(cell);
         if (styles) {
           styles[index] = style;
         }
@@ -834,7 +836,7 @@ export default class Grid {
     // * style must be passed
     if (!style) {
       console.warn('[grid.metrics] style not passed for _resolveGridCellLineHeight', { cell });
-      style = this._DOM.getComputedStyle(cell);
+      style = this._getComputedStyleCached(cell);
     }
 
     // * check in style
@@ -880,11 +882,30 @@ export default class Grid {
     return shells;
   }
 
+  // 🤖 Cache computed styles per cell during a split run to avoid repeated layout reads across helpers.
+  _getComputedStyleCached(element) {
+    if (!element) {
+      console.warn('[grid.split] the element was not passed to _getComputedStyleCached');
+      return null;
+    }
+    const cache = this._gridComputedStyleCache;
+    if (!cache) {
+      return this._DOM.getComputedStyle(element);
+    }
+    const cached = cache.get(element);
+    if (cached) {
+      return cached;
+    }
+    const style = this._DOM.getComputedStyle(element);
+    cache.set(element, style);
+    return style;
+  }
+
 
   _computeGridCellShellHeights(cells, styles = null) {
     // Grid rows do not wrap cells in TR shells; estimate each cell's structural contribution
-    // so slicers operate on content height only. Reuse cached computedStyle when available;
-    // consider promoting this cache to a WeakMap across passes (#TODO #weakMap_cache).
+    // so slicers operate on content height only. Reuse cached computedStyle via WeakMap to avoid
+    // repeated layout reads when traversing the same row multiple times.
     if (!Array.isArray(cells) || !cells.length) {
       return [];
     }
@@ -892,14 +913,14 @@ export default class Grid {
       if (!cell) return 0;
       let style = null;
       if (styles) {
-        // 🤖 cache per-row computedStyle (consider elevating to WeakMap per grid split run)
+        // 🤖 reuse entry-level cache when helper array provides slots
         style = styles[index];
         if (!style) {
-          style = this._DOM.getComputedStyle(cell);
+          style = this._getComputedStyleCached(cell);
           styles[index] = style;
         }
       } else {
-        style = this._DOM.getComputedStyle(cell);
+        style = this._getComputedStyleCached(cell);
       }
       const paddingTop = parseFloat(style?.paddingTop) || 0;
       const paddingBottom = parseFloat(style?.paddingBottom) || 0;
@@ -964,11 +985,11 @@ export default class Grid {
         if (cellStyles) {
           style = cellStyles[index];
           if (!style && cell) {
-            style = this._DOM.getComputedStyle(cell);
+            style = this._getComputedStyleCached(cell);
             cellStyles[index] = style;
           }
         } else if (cell) {
-          style = this._DOM.getComputedStyle(cell);
+          style = this._getComputedStyleCached(cell);
         }
         const marginBottom = style ? parseFloat(style.marginBottom) || 0 : 0;
         const candidate = baseBottom + marginBottom;
@@ -980,7 +1001,7 @@ export default class Grid {
     }
     if (row) {
       const baseBottom = this._node.getBottom(row, gridNode) || 0;
-      const style = this._DOM.getComputedStyle(row);
+      const style = this._getComputedStyleCached(row);
       const marginBottom = parseFloat(style?.marginBottom) || 0;
       return baseBottom + marginBottom;
     }
