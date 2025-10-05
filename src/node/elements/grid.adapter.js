@@ -5,6 +5,17 @@ export function createAndInsertGridSlice(context, { startId, endId, node, entrie
   const part = context._DOM.cloneNodeWrapper(node);
   context._node.copyNodeWidth(part, node);
   context._node.setFlagNoBreak(part);
+
+  if (startId) {
+    // * normalize top cut for table slices
+    // ? may affect the table design
+    // todo: include in user config
+    context._node.markTopCut(part);
+  }
+  // * normalize bottom cut for table slices
+  context._node.markBottomCut(part);
+
+
   node.before(part);
 
   const currentRows = entries?.currentRows || fallbackCurrentRows || [];
@@ -48,7 +59,13 @@ export function createAndInsertGridSlice(context, { startId, endId, node, entrie
 }
 
 export function createAndInsertGridFinalSlice(context, { node, entries }) {
-  // Final slice is the original node (flagged no-break) left in place.
+  // * Final slice is the original node (flagged no-break) left in place.
+
+  // * normalize top cut for table slices
+  // ? may affect the table design
+  // todo: include in user config
+  context._node.markTopCut(node);
+
   context._node.setFlagNoBreak(node);
   return node;
 }

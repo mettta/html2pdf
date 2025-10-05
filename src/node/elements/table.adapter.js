@@ -29,13 +29,6 @@ export function createAndInsertTableSlice(ctx, { startId, endId, table, tableEnt
 
   const partEntries = tableEntries.rows.slice(startId, endId);
 
-  if (startId) {
-    ctx._DOM.insertAtEnd(
-      tableSliceWrapper,
-      createTopSignpost(ctx),
-    );
-  }
-
   const tableSlice = ctx._node.createTable({
     wrapper: ctx._DOM.cloneNodeWrapper(table),
     colgroup: ctx._DOM.cloneNode(tableEntries.colgroup),
@@ -44,6 +37,20 @@ export function createAndInsertTableSlice(ctx, { startId, endId, table, tableEnt
     // tfoot is only in the final part
     tbody: partEntries,
   });
+
+  if (startId) {
+    ctx._DOM.insertAtEnd(
+      tableSliceWrapper,
+      createTopSignpost(ctx),
+    );
+
+    // * normalize top cut for table slices
+    // ? may affect the table design
+    // todo: include in user config
+    // ctx._node.markTopCut(tableSlice);
+  }
+  // * normalize bottom cut for table slices
+  ctx._node.markBottomCut(tableSlice);
 
   ctx._DOM.insertAtEnd(
     tableSliceWrapper,
@@ -57,6 +64,12 @@ export function createAndInsertTableSlice(ctx, { startId, endId, table, tableEnt
 // 🤖 Create the final slice wrapper, moving the original table (with TFOOT) and adding top continuation label.
 export function createAndInsertTableFinalSlice(ctx, { table }) {
   const tableSliceWrapper = ctx._node.createWithFlagNoBreak();
+
+  // * normalize top cut for table slices
+  // ? may affect the table design
+  // todo: include in user config
+  // ctx._node.markTopCut(table);
+
   ctx._DOM.insertBefore(table, tableSliceWrapper);
   ctx._DOM.insertAtEnd(
     tableSliceWrapper,

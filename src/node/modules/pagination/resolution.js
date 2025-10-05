@@ -194,6 +194,10 @@ export function paginationSplitRow({
     console.log('🔴 There is no Split');
   }
 
+  // ********************
+  // * normalize cuts in the resulting cells in rows
+  newRows.length && this.markSliceCutsInRows(newRows);
+
   debug && debug._ && console.log('%c newRows \n', 'color:magenta; font-weight:bold', newRows);
 
   return { newRows, isFirstPartEmptyInAnyTD, needsScalingInFullPage };

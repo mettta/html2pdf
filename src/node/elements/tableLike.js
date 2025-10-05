@@ -137,7 +137,7 @@ export default class TableLike {
     });
 
     // * Mark nodes as parts
-    this._node.markPartNodesWithClass(newPreElementsArray);
+    this._node.markSliceCuts(newPreElementsArray);
 
     // * We need to keep the original node,
     // * we may need it as a parent in this._parseNode().
