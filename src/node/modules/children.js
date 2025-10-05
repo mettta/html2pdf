@@ -233,6 +233,72 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
   return children
 }
 
+/**
+ * @this {Node}
+ */
+export function getFirstChildrenChain(node) {
+  const chain = []
+
+  if (!node || !this || !this._DOM) {
+    return chain
+  }
+
+  let current = node
+
+  // 🤖 Track the leading edge of the layout tree by following the foremost child at each depth.
+  while (current) {
+    let child = this._DOM.getFirstElementChild(current)
+
+    // 🤖 Skip invisible shells so the traversal hugs the actual flow boundary.
+    while (child && this.shouldSkipFlowElement(child, { context: 'getFirstChildren:firstChild' })) {
+      child = this._DOM.getRightNeighbor(child)
+    }
+
+    if (!child) {
+      // 🤖 Stop when the forward contour runs out of participating children.
+      break
+    }
+
+    chain.push(child)
+    current = child
+  }
+
+  return chain
+}
+
+/**
+ * @this {Node}
+ */
+export function getLastChildrenChain(node) {
+  const chain = []
+
+  if (!node || !this || !this._DOM) {
+    return chain
+  }
+
+  let current = node
+
+  // 🤖 Trace the trailing edge of the layout tree by diving into rearmost children.
+  while (current) {
+    let child = this._DOM.getLastElementChild(current)
+
+    // 🤖 Skip invisible shells so the descent hugs the lower flow outline.
+    while (child && this.shouldSkipFlowElement(child, { context: 'getLastChildren:lastChild' })) {
+      child = this._DOM.getLeftNeighbor(child)
+    }
+
+    if (!child) {
+      // 🤖 Stop when the backward contour loses participating descendants.
+      break
+    }
+
+    chain.push(child)
+    current = child
+  }
+
+  return chain
+}
+
 // 🔒 private
 
 /**
