@@ -370,7 +370,7 @@ ${SELECTOR.paperBody} {
 }
 ${SELECTOR.runningSafety} {
   background: #f200ff;
-  outline: 0.1px solid #f200ff88;
+  outline: 0.1px dashed #f200ff88;
 }
 ${SELECTOR.frontpageContent} {
   background: #00fcff20;
