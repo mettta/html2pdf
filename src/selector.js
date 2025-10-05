@@ -74,6 +74,8 @@ const SELECTOR = {
   // *** SPECIAL
   topCutPart: '.html2pdf-top-cut',
   bottomCutPart: '.html2pdf-bottom-cut',
+  cleanTopCut: '.html2pdf-clean-top-cut',
+  cleanBottomCut: '.html2pdf-clean-bottom-cut',
 
   // * TOC
   tocPageNumber: 'html2pdf-toc-page-number'

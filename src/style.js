@@ -330,6 +330,16 @@ ${SELECTOR.bottomCutPart} {
   margin-bottom: 0 !important;
   border-bottom: none !important;
 }
+${SELECTOR.cleanTopCut} {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: none !important;
+}
+${SELECTOR.cleanBottomCut} {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  border-bottom: none !important;
+}
     `;
   }
 

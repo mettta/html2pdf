@@ -523,7 +523,13 @@ export function sliceNodeBySplitPoints({ index, rootNode, splitPoints }) {
     const slice = this.cloneAndCleanOutsideRange(rootNode, startElement, endElement);
     // * Range is [startElement .. endElement) — end is exclusive.
 
-    if (slice.childNodes.length > 0) {
+    this.normalizeContentCuts({
+      slice,
+      top: startElement !== null,
+      bottom: endElement !== null,
+    });
+
+    if (this._DOM.getChildNodes(slice).length > 0) {
       slices.push(slice);
     }
   }
@@ -531,6 +537,32 @@ export function sliceNodeBySplitPoints({ index, rootNode, splitPoints }) {
   _isDebug(this) && console.log(slices);
   _isDebug(this) && console.groupEnd(`🔪 (${index}) sliceNodeBySplitPoints`);
   return slices;
+}
+
+/**
+ * @this {Node}
+ */
+export function normalizeContentCuts({
+  slice,
+  top = false,
+  bottom = false,
+}) {
+  if (!slice) {
+    _isDebug(this) && console.log('[normalizeContentCuts] no slice has been passed; return');
+    return
+  };
+
+  if (top) {
+    const topChain = [...this.getFirstChildrenChain(slice)];
+    topChain.forEach(el => this.markCleanTopCut(el));
+    _isDebug(this) && console.log('[normalizeContentCuts] topChain 👗', topChain);
+  }
+
+  if (bottom) {
+    const bottomChain = [...this.getLastChildrenChain(slice)];
+    bottomChain.forEach(el => this.markCleanBottomCut(el));
+    _isDebug(this) && console.log('[normalizeContentCuts] bottomChain 👗', bottomChain);
+  }
 }
 
 /**

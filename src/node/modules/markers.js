@@ -48,6 +48,22 @@ export function unmarkPageStartElement(element) {
 /**
  * @this {Node}
  */
+export function markCleanTopCut(element) {
+  _isDebug(this) && console.log('[mark ⊤ cut]', element);
+  element && this._DOM.setAttribute(element, this._selector.cleanTopCut);
+}
+
+/**
+ * @this {Node}
+ */
+export function markCleanBottomCut(element) {
+  _isDebug(this) && console.log('[mark ⊥ cut]', element);
+  element && this._DOM.setAttribute(element, this._selector.cleanBottomCut);
+}
+
+/**
+ * @this {Node}
+ */
 export function markTopCut(element) {
   _isDebug(this) && console.log('[mark ⊤ cut]', element);
   element && this._DOM.setAttribute(element, this._selector.topCutPart);
