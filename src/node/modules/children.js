@@ -259,6 +259,14 @@ export function getFirstChildrenChain(node) {
       break
     }
 
+    if (this.isWrappedTextNode(child)) {
+      // 🤖 Hitting a wrapped text node means the linear flow turns into inline glyphs; remove its carrier block to keep the structural ridge.
+      if (chain[chain.length - 1] === current) {
+        chain.pop()
+      }
+      break
+    }
+
     chain.push(child)
     current = child
   }
@@ -289,6 +297,14 @@ export function getLastChildrenChain(node) {
 
     if (!child) {
       // 🤖 Stop when the backward contour loses participating descendants.
+      break
+    }
+
+    if (this.isWrappedTextNode(child)) {
+      // 🤖 Encountering a wrapped text node signals the flow collapses into inline text; drop its holder to keep the terminal edge clean.
+      if (chain[chain.length - 1] === current) {
+        chain.pop()
+      }
       break
     }
 
