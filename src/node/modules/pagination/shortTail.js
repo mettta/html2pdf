@@ -36,17 +36,17 @@ export function calculateFinalPartReclaimedHeight({ signpostHeight = 0, tfootHei
  */
 export function absorbShortTrailingSliceIfFits({ slices, extraCapacity = 0, ownerLabel = 'table', debug }) {
   if (!Array.isArray(slices) || slices.length < 2) {
-    console.warn(`[${ownerLabel}.shortTail] Expected at least two slices to evaluate tail absorption, got:`, slices?.length);
+    debug && debug._ && console.warn(`[${ownerLabel}.shortTail] Expected at least two slices to evaluate tail absorption, got:`, slices?.length);
     return;
   }
   const tailSlice = slices.at(-1);
   if (!tailSlice) {
-    console.warn(`[${ownerLabel}.shortTail] Missing tail slice for absorption check.`);
+    debug && debug._ && console.warn(`[${ownerLabel}.shortTail] Missing tail slice for absorption check.`);
     return;
   }
   const domFacade = this?._DOM;
   if (!domFacade) {
-    console.warn(`[${ownerLabel}.shortTail] Missing DOM facade on Node instance.`);
+    debug && debug._ && console.warn(`[${ownerLabel}.shortTail] Missing DOM facade on Node instance.`);
     return;
   }
   const tailHeight = domFacade.getElementOffsetHeight(tailSlice) || 0;
