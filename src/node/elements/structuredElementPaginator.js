@@ -74,7 +74,7 @@ export function updateSplitBottom(adapter, elementOrValue, message = 'unknown ca
     console.log(
       `%c♻️ [${resolveLabel(adapter)}] update splitBottom (with ${elementOrValue}) \n • ${message}`,
       'color: green; font-weight: bold',
-      '\n', prev, '->', next,
+      '\n', (prev ? prev : '•••'), '->', next,
       log ? `\n log: ${log}` : ''
     );
   }
