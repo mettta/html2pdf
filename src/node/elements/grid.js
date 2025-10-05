@@ -29,7 +29,7 @@ export default class Grid {
     // todo
     // 1) move to config
     // Grid:
-    this._minBreakableGridRows = 4;
+    this._minBreakableGridRows = 1;
     this._minGridRowContentLines = 2; // minimum lines of content a slice must retain in a tail window
     this._gridCellLineHeightCache = new WeakMap();
     this._gridComputedStyleCache = new WeakMap();
