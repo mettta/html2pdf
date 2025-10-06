@@ -48,6 +48,9 @@ export function getPreparedChildren(element) {
     _isDebug(this) && console.info('🚸 getPreparedChildren: return children for complexTextBlock', children);
     // return children
 
+  } else if (!_hasRenderableChild.call(this, element)) {
+    _isDebug(this) && console.info('🪲 getPreparedChildren: empty node, skip & return []', element);
+    return [];
   } else {
 
     children = [...this._DOM.getChildNodes(element)]
@@ -151,6 +154,11 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
 
     return children = this._paragraph.split(node) || [];
 
+  }
+
+  if (!_hasRenderableChild.call(this, node)) {
+    _isDebug(this) && console.info('🪲 getSplitChildren: empty node, return []', node);
+    return [];
   }
 
   const nodeComputedStyle = this._DOM.getComputedStyle(node);
@@ -378,6 +386,23 @@ function _isVerticalFlowDisrupted(arrayOfElements) {
       return isTrue;
     }
   )
+}
+
+function _hasRenderableChild(node) {
+  // 🤖 Linear scan: O(k) over childNodes, stops as soon as a renderable child is found,
+  //    so real-world nodes exit early while truly empty nodes avoid deeper processing.
+  let child = node.firstChild;
+  while (child) {
+    if (this._DOM.isElementNode(child)) {
+      if (!this.shouldSkipFlowElement(child, { context: 'hasRenderableChild' })) {
+        return true;
+      }
+    } else if (this.isSignificantTextNode(child)) {
+      return true;
+    }
+    child = child.nextSibling;
+  }
+  return false;
 }
 
 // ???
