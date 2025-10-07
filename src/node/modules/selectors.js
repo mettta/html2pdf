@@ -278,6 +278,19 @@ export function isGridAutoFlowRow(computedStyle) {
  */
 export function isFullySPlitted(node) {
   const _style = this._DOM.getComputedStyle(node);
+export function isFlexRow(element, style) {
+  if (!(element instanceof HTMLElement)) {
+    return
+  }
+  const computedStyle = style || this._DOM.getComputedStyle(element);
+  const display = computedStyle.display;
+  if (display !== 'flex' && display !== 'inline-flex') {
+    return false;
+  }
+  const direction = computedStyle.flexDirection || '';
+  return direction.startsWith('row');
+}
+
   return (
     this.isPRE(node, _style) ||
     this.isTableNode(node, _style) ||

@@ -198,6 +198,12 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
     ) || [];
 
   } else if (this.isGridAutoFlowRow(this._DOM.getComputedStyle(node))) {
+  } else if (this.isFlexRow(node, nodeComputedStyle)) {
+    _isDebug(this) && console.info('🩷 Flex ROW', node);
+    // TODO: make class
+    let prepared_children = this.getPreparedChildren(node);
+    children = _stripZeroHeightFlexChildren.call(this, prepared_children);
+
     // ** If it is a grid element.
     // ????? Process only some modifications of grids!
     // ***** There's an inline grid check here, too.
@@ -367,6 +373,20 @@ function _collectAndBundleInlineElements(children) {
   })
 
   return newChildren
+}
+
+function _stripZeroHeightFlexChildren(children) {
+  // TODO #need_test: add fixtures with flex rows mixing zero-height service nodes and flowing content.
+  const filtered = children.filter(child => {
+    const height = this._DOM.getElementOffsetHeight(child);
+    if (height > 0) {
+      return true;
+    }
+    // 🤖 Zero-height flex children should not influence slicing;
+    //    their overflow is carried by siblings.
+    return false;
+  });
+  return filtered.length > 0 ? filtered : children;
 }
 
 /**
