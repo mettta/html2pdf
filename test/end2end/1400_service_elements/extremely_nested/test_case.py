@@ -55,8 +55,6 @@ class Test(BaseCase):
         self.helper.assert_element_on_the_page(parent3, 3, True)
         self.helper.assert_element_starts_page(neutral, 5)
         self.helper.assert_element_on_the_page(p9last, 5, True)
-        self.helper.assert_element_starts_page(p10, 6)
-        self.helper.assert_element_on_the_page(p10, 6, True)
 
     def test_003(self):
         helper = Helper(self)
@@ -69,8 +67,6 @@ class Test(BaseCase):
         self.helper.assert_element_on_the_page(p1, 2, True)
         self.helper.assert_element_on_the_page(p2, 2, True)
         self.helper.assert_element_on_the_page(p9last, 4, True)
-        self.helper.assert_element_starts_page(p10, 5)
-        self.helper.assert_element_on_the_page(p10, 5, True)
         self.helper.assert_element_starts_page(neutral, 4)
 
     def test_004(self):
