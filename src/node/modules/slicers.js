@@ -30,6 +30,11 @@ export function getSplitPoints({
   points = [],
 }) {
 
+  if (!children.length) {
+    _isDebug(this) && console.log('🧶 [getSplitPoints] %c has no children, early returns []', 'font-weight:bold', {rootNode});
+    return []
+  }
+
   // * We need to cache the firstChild of the root node,
   // * because when we descend into the children and enter recursion,
   // * we cannot access the points.push(null) branch because the
@@ -107,16 +112,8 @@ export function getSplitPoints({
   // This normalization is specific to this TD context.
 
   _isDebug(this) && console.group(`walking through ${children.length} children`, children); // Collapsed
+
   for (let i = 0; i < children.length; i++) {
-
-    const currentElement = children[i];
-    const previousElement = children[i - 1];
-    const nextElement = children[i + 1];
-
-    _isDebug(this) && console.log({currentElement, previousElement, nextElement});
-
-    // ⚠️ See comment above about normalization.
-    const nextElementTop = nextElement ? this.getNormalizedTop(nextElement, rootNode, _rootComputedStyle) : undefined;
 
     let floater; // * floater: bottom boundary (in rootNode coordinates) for the current slice.
     let capacity; // * capacity: vertical height budget for the current slice’s content.
@@ -139,6 +136,26 @@ export function getSplitPoints({
       capacity = fullPageHeight;
     }
 
+    const currentElement = children[i];
+    const previousElement = children[i - 1];
+    const nextElement = children[i + 1];
+
+    _isDebug(this) && console.log({currentElement, previousElement, nextElement});
+
+    // ⚠️ See comment above about normalization.
+    let nextElementTop;
+    let isNextElementTopFinite = false;
+    if (nextElement) {
+      nextElementTop = this.getNormalizedTop(nextElement, rootNode, _rootComputedStyle);
+      if (Number.isFinite(nextElementTop)) {
+        isNextElementTopFinite = true;
+      } else {
+        // 🤖 Treat unmeasurable next-element top as an overflow candidate.
+        _isDebug(this) && console.warn('[getSplitPoints] nextElementTop is not finite', { nextElement, nextElementTop });
+      }
+    }
+
+
     if (this.isForcedPageBreak(currentElement)) {
       //register
       registerPoint(currentElement);
@@ -148,223 +165,269 @@ export function getSplitPoints({
       _isDebug(this) && console.warn(
         '🍎', [currentElement], 'isForcedPageBreak'
       );
+      continue;
     }
 
-    if (nextElementTop <= floater) {
-      // * CurrentElement does fit in the remaining space on the page.
+    let shouldSplitCurrent = false;
+    let currentElementBottom;
 
-      _isDebug(this) && console.log(`current fits: (next top) ${nextElementTop} <= ${floater} (floater)`, [currentElement]);
+    if (nextElement && isNextElementTopFinite && nextElementTop <= floater) {
+      currentElementBottom = this.getNormalizedBottomWithMargin(currentElement, rootNode, _rootComputedStyle); // ⚠️ See comment above about normalization.
 
-      // * go to next index
-    } else { // *** (nextElementTop > floater) --> currentElement ?
+      if (currentElementBottom <= floater) {
+        // * CurrentElement does fit in the remaining space on the page.
+        _isDebug(this) && console.log('[getSplitPoints]', i,
+          `current fits tail window: nextTop ${nextElementTop} <= ${floater}, currentBottom ${currentElementBottom} <= ${floater}`,
+        );
+        // * go to next index
+        continue;
+      }
+
+      // 🤖 nextElement stays within the floater, but currentElement itself overflows — treat as split case.
+      _isDebug(this) && console.log('[getSplitPoints] nextTop <= floater but currentBottom overflow', {
+        currentElement,
+        currentElementBottom,
+        floater,
+        nextElement,
+        nextElementTop,
+      });
+      shouldSplitCurrent = true;
+    }
+
+    if (!shouldSplitCurrent && nextElement && (!isNextElementTopFinite || nextElementTop > floater)) {
       // * Next element will definitely be on the next page.
       // * And the CurrentElement? It's not clear yet. Let's check its bottom.
+      _isDebug(this) && console.log('[getSplitPoints]',
+        `next overtook the floater : (nextElementTop) ${nextElementTop} > ${floater}`, {currentElement},
+        "does current overflow? let's check.",
+        { isNextElementTopFinite }
+      );
 
       if (this.isSVG(currentElement) || this.isIMG(currentElement)) {
         // TODO needs testing
         _isDebug(this) && console.log('%cIMAGE', 'color:red;text-weight:bold')
       }
 
-      const currentElementBottom = this.getNormalizedBottomWithMargin(currentElement, rootNode, _rootComputedStyle); // ⚠️ See comment above about normalization.
-
-      _isDebug(this) && console.log(`current does not fit: (next top) ${nextElementTop} > ${floater} (floater)`, [currentElement]);
-      _isDebug(this) && console.log(`? (curr bottom) ${currentElementBottom} // ${floater} (floater)`, [currentElement]);
+      currentElementBottom = this.getNormalizedBottomWithMargin(currentElement, rootNode, _rootComputedStyle); // ⚠️ See comment above about normalization.
 
       if (currentElementBottom <= floater) {
-        // * CurrentElement does fit in the remaining space on the page.
+        if (isNextElementTopFinite) {
+          // * CurrentElement does fit in the remaining space on the page.
+          _isDebug(this) && console.log('[getSplitPoints]',
+            `current fits: (currentElementBottom) ${currentElementBottom} <= ${floater}, 🍎 register nextElement as Point.`, {currentElement, nextElement});
 
-        _isDebug(this) && console.log(`(curr bottom) ${currentElementBottom} <= ${floater} (floater)`, [currentElement]);
-
-        if (nextElement) {
-          // ** the nextElement is found
-
-          // TODO like in pages?
-          // if (this.isNoHanging(currentElement)) {
-          //   // -- current fits but it can't be the last
-          //   _isDebug(this) && console.log('💟💟 currentElement _isNoHanging');
-          //   registerPoint(currentElement); // ????????????
-          // }
-
-          _isDebug(this) && console.log('🍎 register nextElement as Point:', [nextElement]);
-          registerPoint(nextElement);
-        } else {
-          // ** No nextElement - this is the end of element list.
-          _isDebug(this) && console.log('=== this is the end of element list ///');
-
-          // TODO: move this case up to `if (nextElementTop <= floater)`
+          const pushedNull = registerPoint(nextElement);
+          if (pushedNull) {
+            _isDebug(this) && console.log('%cNULL CASE, return', 'color:red;text-weight:bold');
+            return points;
+          }
+          // * go to next index
+          continue;
         }
 
+        // 🤖 Unable to measure the next element; keep scanning without splitting.
+        _isDebug(this) && console.log('[getSplitPoints] nextElementTop not finite and current fits tail window', {
+          currentElementBottom,
+          floater,
+          nextElement,
+        });
       } else {
+        // *** currentElementBottom > floater
         // * CurrentElement does NOT fit in the remaining space on the page.
         _isDebug(this) && console.log(
-          `current does NOT fit (curr bottom) ${currentElementBottom} > ${floater} (floater)`,
-          [currentElement],
-          `🍎 try to split it`
+          `🔪🥒 try to split overflowing current: (currentElementBottom > ) ${currentElementBottom} > ${floater}`, {currentElement},
         );
 
-        // * Try to split it.
+        shouldSplitCurrent = true;
+      }
+    }
 
-        let localPoints = [];
+    if (!nextElement) {
+      _isDebug(this) && console.log('%c[getSplitPoints] !nextElement', 'color:red');
+      // * I am my parent's only child, and even if my bottom fits on the page,
+      // * I will have to merge with the bottom edges of my parent,
+      // * who we already know does not fit (which is why we are here).
+      // * That's why I'm immediately going into a branch of splitting here.
 
-        // TODO: The code below requires further refinement.
+      _isDebug(this) && console.log('%c[getSplitPoints] * Try to split it. 🔪🥒', 'color:blue');
+      currentElementBottom = currentElementBottom ?? this.getNormalizedBottomWithMargin(currentElement, rootNode, _rootComputedStyle); // ⚠️ See comment above about normalization.
 
-        const currentElementChildren = this.getSplitChildren(currentElement, firstPartHeight, fullPageHeight, rootNode);
-
-        // * Parse children:
-        if (currentElementChildren.length) {
-
-          // * Process children if exist:
-          // 🤖 Intentional: we pass the SAME `points` array into recursion.
-          //     This accumulates split markers for the whole TD content and
-          //     allows checks like `localPoints.length === 0` to mean
-          //     "we are still in the first slice (tail window) of this TD".
-          //     Do NOT replace with a new array — first-slice semantics would break.
-          localPoints = getSplitPoints.call(this, {
-            rootNode,
-            rootComputedStyle: _rootComputedStyle,
-            children: currentElementChildren,
-            firstPartHeight,
-            fullPageHeight,
-            firstChild,
-
-            points,
-          });
-
-          // *** END of 'has children'
-
-          if (localPoints.length === 0) {
-            // 🤖 Case: current element (with children) did not produce inner split points
-            //     in the first slice. This is the "tail window" scenario.
-            //     We use `room = max(firstPartHeight, fullPageHeight)` here ON PURPOSE:
-            //       - The first part can be as large as, or even larger than, a full page
-            //         (e.g., no top signpost deducted for the first part), so `room` is the
-            //         maximum admissible height for a non‑breakable element in the first slice.
-            //       - The action (move to next page vs. scale) is STILL deferred to the
-            //         row/table layer to maintain strict geometry; slicers only classify.
-            const room = Math.max(firstPartHeight, fullPageHeight);
-
-            const currentElementHeight = this._DOM.getElementOffsetHeight(currentElement);
-            const isUnbreakableOversized =
-              currentElementHeight > room &&
-              (
-                !localPoints.length ||
-                (localPoints.length === 1 && localPoints[0] === null)
-              );
-
-            _isDebug(this) && console.log('room (Math.max)', room);
-
-            if (isUnbreakableOversized) {
-              _isDebug(this) && console.warn(
-                '%c⚠️ UNSPLITTABLE OVERSIZED ELEMENT — SCALE IT',
-                'color:white; background:red; font-weight:bold;',
-                currentElement,
-                `height: ${currentElementHeight}`
-              );
-              if (!points.length && currentElement === firstChild) {
-                _isDebug(this) && console.warn('🅾️ (1) points.push(null) in isUnbreakableOversized');
-                points.push(null);
-                // 🤖 Early abort after placing sentinel: let the second pass handle next window.
-                return points;
-              }
-              // 🤖 Early scaling here breaks strict geometry when the paginator
-              //     later re-computes the window (moves to full-page). Better approach:
-              //     - Register split (null/next) and let table.js decide scaling:
-              //       either scale tail (if really tail case) or scale in full-page.
-              //     - Leave this call disabled (see similar handling in the 'no children' branch).
-              // this.fitElementWithinHeight(currentElement, room)
-              if (nextElement) {
-                const pushedNull = registerPoint(nextElement);
-                if (pushedNull) return points;
-              }
-            } else {
-
-              // FIXME: быстрый фикс, но помог. Проверить тщательно логику.
-              // Element is unbreakable and fits a full page, but does not fit the tail.
-              // Start the next page from currentElement (first slice may be empty when it is the first).
-              // 🤖 If this starts the next page from currentElement, and it happens to be
-              //     the very first child (empty first slice), registerPoint will push null
-              //     and we should abort to let the second pass run immediately.
-              if (registerPoint(currentElement)) return points;
-            }
+      let containerElement = currentElement;
+      if (currentElement.parentElement && rootNode.contains(currentElement.parentElement)) {
+        let ancestor = currentElement.parentElement;
+        while (ancestor && rootNode.contains(ancestor)) {
+          if (ancestor === rootNode) {
+            // 🤖 Stop climbing before hitting the root itself — its height reflects row layout, not local overflow.
+            break;
           }
+          if (this._DOM.getRightNeighbor(ancestor)) {
+            break;
+          }
+          containerElement = ancestor;
+          ancestor = ancestor.parentElement;
+        }
+      }
+
+      const containerBottom = containerElement === currentElement
+        ? currentElementBottom
+        : this.getNormalizedBottomWithMargin(containerElement, rootNode, _rootComputedStyle); // ⚠️ See comment above about normalization.
+      if (containerBottom <= floater) {
+        _isDebug(this) && console.log('%c 🍕 [getSplitPoints] !nextElement branch fits with container shell', 'color:violet', {
+          currentElementBottom,
+          containerBottom,
+          floater,
+          containerElement,
+        });
+        // 🤖 Последний ребёнок (вместе с оболочкой) помещается целиком: оставляем как есть.
+        continue;
+      }
+
+      // * Try to split it. 🔪🥒.  🍉
+      shouldSplitCurrent = true;
+    }
 
 
+    // 🤖 Non-finite nextElementTop is already captured above; keep evaluating current overflow state here.
+
+    if (!shouldSplitCurrent) {
+      continue;
+    }
+
+    // * Try to split it. 🔪🥒.  🍉
+
+
+    let localPoints = [];
+
+    // TODO: The code below requires further refinement.
+
+    const currentElementChildren = this.getSplitChildren(currentElement, firstPartHeight, fullPageHeight, rootNode);
+
+    // * Parse children:
+    if (currentElementChildren.length) {
+
+      // * Process children if exist:
+      // 🤖 Intentional: we pass the SAME `points` array into recursion.
+      //     This accumulates split markers for the whole TD content and
+      //     allows checks like `localPoints.length === 0` to mean
+      //     "we are still in the first slice (tail window) of this TD".
+      //     Do NOT replace with a new array — first-slice semantics would break.
+      localPoints = getSplitPoints.call(this, {
+        rootNode,
+        rootComputedStyle: _rootComputedStyle,
+        children: currentElementChildren,
+        firstPartHeight,
+        fullPageHeight,
+        firstChild,
+
+        points,
+      });
+
+      // *** END of 'has children'
+
+      if (localPoints.length === 0) {
+        // 🤖 Case: current element (with children) did not produce inner split points
+        //     in the first slice. This is the "tail window" scenario.
+        //     We use `room = max(firstPartHeight, fullPageHeight)` here ON PURPOSE:
+        //       - The first part can be as large as, or even larger than, a full page
+        //         (e.g., no top signpost deducted for the first part), so `room` is the
+        //         maximum admissible height for a non‑breakable element in the first slice.
+        //       - The action (move to next page vs. scale) is STILL deferred to the
+        //         row/table layer to maintain strict geometry; slicers only classify.
+        const room = Math.max(firstPartHeight, fullPageHeight);
+
+        const currentElementHeight = this._DOM.getElementOffsetHeight(currentElement);
+        const isUnbreakableOversized =
+          currentElementHeight > room &&
+          (
+            !localPoints.length ||
+            (localPoints.length === 1 && localPoints[0] === null)
+          );
+
+        _isDebug(this) && console.log('room (Math.max)', room);
+
+        if (isUnbreakableOversized) {
+          _isDebug(this) && console.warn(
+            '%c⚠️ UNSPLITTABLE OVERSIZED ELEMENT — SCALE IT',
+            'color:white; background:red; font-weight:bold;',
+            currentElement,
+            `height: ${currentElementHeight}`
+          );
+          if (!points.length && currentElement === firstChild) {
+            _isDebug(this) && console.warn('🅾️ (1) points.push(null) in isUnbreakableOversized');
+            points.push(null);
+            // 🤖 Early abort after placing sentinel: let the second pass handle next window.
+            return points;
+          }
+          // 🤖 Early scaling here breaks strict geometry when the paginator
+          //     later re-computes the window (moves to full-page). Better approach:
+          //     - Register split (null/next) and let table.js decide scaling:
+          //       either scale tail (if really tail case) or scale in full-page.
+          //     - Leave this call disabled (see similar handling in the 'no children' branch).
+          // this.fitElementWithinHeight(currentElement, room)
+          if (nextElement) {
+            const pushedNull = registerPoint(nextElement);
+            if (pushedNull) return points;
+          }
         } else {
 
-          // !currentElementChildren.length
-          _isDebug(this) && console.log('🍎 currentElementChildren.length == 0');
+          // FIXME: быстрый фикс, но помог. Проверить тщательно логику.
+          // Element is unbreakable and fits a full page, but does not fit the tail.
+          // Start the next page from currentElement (first slice may be empty when it is the first).
+          // 🤖 If this starts the next page from currentElement, and it happens to be
+          //     the very first child (empty first slice), registerPoint will push null
+          //     and we should abort to let the second pass run immediately.
+          if (registerPoint(currentElement)) return points;
+        }
+      }
 
-          // 🤖 NOTE: scaling is intentionally disabled here (see commented code below).
-          //     Tail vs full-page decisions are handled in a higher layer (row/table),
-          //     which ensures consistent window geometry before any scaling occurs.
+    } else {
 
-          const currentElementHeight = this._DOM.getElementOffsetHeight(currentElement);
-          const isUnbreakableOversized =
-            currentElementHeight > capacity &&
-            (
-              !localPoints.length ||
-              (localPoints.length === 1 && localPoints[0] === null)
-            );
-          if (isUnbreakableOversized) {
-            _isDebug(this) && console.warn(
-              '%c⚠️ UNSPLITTABLE OVERSIZED ELEMENT — SCALE IT',
-              'color:white; background:red; font-weight:bold;',
-              currentElement,
-              `height: ${currentElementHeight}`
-            );
-            _isDebug(this) && console.warn('🅾️ (2) points.push(null) in isUnbreakableOversized');
-            if (!points.length && currentElement === firstChild) {
-              points.push(null);
-              // 🤖 Early abort after placing sentinel: proceed to second pass.
-              return points;
-            }
-            // 🤖 Keep scaling disabled here for the same reason as above: avoid early
-            //     visual transform before the paginator repositions the window.
-            // this.fitElementWithinHeight(currentElement, capacity)
-            if (nextElement) {
-              console.warn('🅾️🅾️🅾️🅾️🅾️🅾️🅾️🅾️ registerPoint(nextElement)');
-              registerPoint(nextElement)
-            }
-          } else {
+      // !currentElementChildren.length
+      _isDebug(this) && console.log('🍎 currentElementChildren.length == 0');
+
+      // 🤖 NOTE: scaling is intentionally disabled here (see commented code below).
+      //     Tail vs full-page decisions are handled in a higher layer (row/table),
+      //     which ensures consistent window geometry before any scaling occurs.
+
+      const currentElementHeight = this._DOM.getElementOffsetHeight(currentElement);
+      const isUnbreakableOversized =
+        currentElementHeight > capacity &&
+        (
+          !localPoints.length ||
+          (localPoints.length === 1 && localPoints[0] === null)
+        );
+      if (isUnbreakableOversized) {
+        _isDebug(this) && console.warn(
+          '%c⚠️ UNSPLITTABLE OVERSIZED ELEMENT — SCALE IT',
+          'color:white; background:red; font-weight:bold;',
+          currentElement,
+          `height: ${currentElementHeight}`
+        );
+        _isDebug(this) && console.warn('🅾️ (2) points.push(null) in isUnbreakableOversized');
+        if (!points.length && currentElement === firstChild) {
+          points.push(null);
+          // 🤖 Early abort after placing sentinel: proceed to second pass.
+          return points;
+        }
+        // 🤖 Keep scaling disabled here for the same reason as above: avoid early
+        //     visual transform before the paginator repositions the window.
+        // this.fitElementWithinHeight(currentElement, capacity)
+        if (nextElement) {
+          console.warn('🅾️🅾️🅾️🅾️🅾️🅾️🅾️🅾️ registerPoint(nextElement)');
+          registerPoint(nextElement)
+        }
+      } else {
 
 
-            // * If no children,
-            // * move element to the next page.
-            if (registerPoint(currentElement)) return points;
-            // ** But,
+        // * If no children,
+        // * move element to the next page.
+        if (registerPoint(currentElement)) return points;
+        // ** But,
 
-          }
+      }
 
-        } // *** END of 'no children'
-      } // *** END of 'currentElementBottom > floater'
+    } // *** END of 'no children'
 
-      // const currentElementHeight = this._DOM.getElementOffsetHeight(currentElement);
-      // const innerPoints = getSplitPoints.call(this, {
-      //   rootNode: currentElement,
-      //   children: currentElementChildren,
-      //   firstPartHeight,
-      //   fullPageHeight,
-      //   points: []
-      // });
-
-      // const isUnbreakableOversized =
-      //   currentElementHeight > fullPageHeight &&
-      //   (
-      //     !innerPoints.length ||
-      //     (innerPoints.length === 1 && innerPoints[0] === null)
-      //   );
-
-      // if (isUnbreakableOversized) {
-      //   _isDebug(this) && console.warn(
-      //     '%c⚠️ UNSPLITTABLE OVERSIZED ELEMENT — SCALE IT',
-      //     'color:white; background:red; font-weight:bold;',
-      //     currentElement,
-      //     `height: ${currentElementHeight}`
-      //   );
-      //   this.fitElementWithinHeight(currentElement, fullPageHeight);
-      // }
-
-    }
   }
   _isDebug(this) && console.groupEnd(`walking through ${children.length} children`);
 
@@ -407,30 +470,29 @@ export function getSplitPointsPerCells(
 
   const firstPass = cells.map((cell, ind) => {
     _isDebug(this) && console.group(`(•) Split CELL.${ind} in:`, parentItem);
+
+    let pts = [];
+
     const firstH = rowFirstPartHeight - (shells[ind] || 0);
     const fullH = rowFullPageHeight - (shells[ind] || 0);
-    // * If there is no content, inject placeholder content
-    // * with offsetParent (using createNeutralBlock)
-    // * before the first pass (•) so that the optically empty cell
-    // * does not generate a null branch (the first empty fragment)
-    // * and does not trigger a second pass (••)
-    let content = this.getPreparedChildren(cell);
-    if(!content.length) {
-      const placeholder = this.createNeutralBlock();
-      this._DOM.insertAtEnd(cell, placeholder);
-    }
+
     // * Prepare children splitting long nodes
-    const ch = this.getSplitChildren(cell, firstH, fullH, parentItem);
-    const firstChild = ch[0];
-    console.log('firstChild', firstChild);
-    // * Find split points
-    const pts = this.getSplitPoints({
-      rootNode: cell,
-      children: ch,
-      firstPartHeight: firstH,
-      fullPageHeight: fullH,
-      firstChild: firstChild,
-    });
+    let ch = this.getSplitChildren(cell, firstH, fullH, parentItem);
+    if(ch.length) {
+      const firstChild = ch[0];
+      console.log('firstChild', firstChild);
+      // * Find split points
+      pts = this.getSplitPoints({
+        rootNode: cell,
+        children: ch,
+        firstPartHeight: firstH,
+        fullPageHeight: fullH,
+        firstChild: firstChild,
+      });
+    } else {
+      _isDebug(this) && console.log(`(•) empty cell #${ind}`);
+    }
+
     _isDebug(this) && console.log(`(•) return splitPoints for CELL#${ind}`, pts);
     _isDebug(this) && console.groupEnd();
     return pts;
@@ -450,13 +512,16 @@ export function getSplitPointsPerCells(
       const ch = this.getSplitChildren(cell, firstH, fullH, parentItem);
       const firstChild = ch[0];
       console.log('firstChild', firstChild);
-      const pts = this.getSplitPoints({
+      let pts = [];
+      if (ch.length) {
+        pts = this.getSplitPoints({
         rootNode: cell,
         children: ch,
         firstPartHeight: fullH,
         fullPageHeight: fullH,
         firstChild: firstChild,
-      });
+        });
+      }
       _isDebug(this) && console.log(`(••) return splitPoints for CELL#${ind}`, pts);
       _isDebug(this) && console.groupEnd();
       return pts;
@@ -617,8 +682,11 @@ export function sliceNodeContentBySplitPoints({ index, rootNode, splitPoints }) 
 
 // 🤖 Helper: check sentinel that marks an empty first slice in split points result
 export function isFirstSliceEmpty(points) {
+  if (!Array.isArray(points)) {
+    return false;
+  }
   console.log('🧽🧽🧽🧽🧽🧽🧽🧽🧽🧽🧽🧽🧽 isFirstSliceEmpt(y) points[0]', points[0]);
-  return Array.isArray(points) && points.length > 0 && points[0] === null;
+  return points.length > 0 && points[0] === null;
 }
 
 /**
