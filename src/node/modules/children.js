@@ -197,13 +197,13 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
       nodeComputedStyle,
     ) || [];
 
-  } else if (this.isGridAutoFlowRow(this._DOM.getComputedStyle(node))) {
   } else if (this.isFlexRow(node, nodeComputedStyle)) {
     _isDebug(this) && console.info('🩷 Flex ROW', node);
     // TODO: make class
     let prepared_children = this.getPreparedChildren(node);
     children = _stripZeroHeightFlexChildren.call(this, prepared_children);
 
+  } else if (this.isGridAutoFlowRow(node, nodeComputedStyle)) {
     // ** If it is a grid element.
     // ????? Process only some modifications of grids!
     // ***** There's an inline grid check here, too.
@@ -355,7 +355,7 @@ function _collectAndBundleInlineElements(children) {
   const newChildren = [];
 
   children.forEach(child => {
-    if (this.isInline(this._DOM.getComputedStyle(child))) {
+    if (this.isInline(child)) {
       if (!complexTextBlock) {
         // the first inline child
         complexTextBlock = this.createComplexTextBlock();
@@ -435,7 +435,7 @@ function _processInlineChildren(children) {
   const newChildren = [];
 
   children.forEach(child => {
-    if (this.isInline(this._DOM.getComputedStyle(child))) {
+    if (this.isInline(child)) {
       if (!complexTextBlock) {
         // the first inline child
         complexTextBlock = this.createComplexTextBlock();
