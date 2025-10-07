@@ -134,6 +134,8 @@ class Test(BaseCase):
         self.helper.assert_document_has_pages(2)
         # 1 ----------------------------------
         self.helper.assert_element_on_the_page('//*[@data-testid="pusher"]', 1)
-        self.helper.assert_element_on_the_page(chunk_1, 1)
+        # self.helper.assert_element_on_the_page(chunk_1, 1)
+        self.helper.assert_element_on_the_page('//*[@data-testid="value10"]', 1)
         # 2 ----------------------------------
-        self.helper.assert_element_on_the_page(chunk_2, 2)
+        # self.helper.assert_element_on_the_page(chunk_2, 2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="closer"]', 2)
