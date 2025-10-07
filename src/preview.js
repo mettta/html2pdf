@@ -208,7 +208,7 @@ export default class Preview {
     // * and are now subtracting it to compensate.
     // FIXME -1
     (separator && this._paper.footerHeight) && this._DOM.setStyles(pageDivider, { marginTop: this._paper.footerHeight - 1 + 'px' });
-    this._paper.headerHeight && this._DOM.setStyles(pageDivider, { marginBottom: this._paper.headerHeight - 1 + 'px' });
+    this._paper.headerHeight && this._DOM.setStyles(pageDivider, { paddingBottom: this._paper.headerHeight - 1 + 'px' });
 
     return pageDivider;
   }
