@@ -246,7 +246,7 @@ export default class Paragraph {
     const linedChildren = preparedChildren.flatMap(child => {
       return (this._estimateLineCount(child) > 1) ? this._breakItIntoLines(child) : child;
     });
-    const splitters = this._findNewLineStarts(linedChildren);
+    const splitters = this._findNewLineStarts(linedChildren, node);
 
     const parts = splitters.map((splitter, i) => {
       const startElement = linedChildren[splitter];
@@ -327,7 +327,8 @@ export default class Paragraph {
 
     // Split the splittedItem into lines.
     // Let's find the elements that start a new line.
-    const beginnerNumbers = this._findNewLineStarts(wrappedWordArray);
+
+    const beginnerNumbers = this._findNewLineStarts(wrappedWordArray, splittedItem);
 
     // Create the needed number of lines,
     // fill them with text from wordArray, relying on the data from beginnerNumbers,
@@ -355,17 +356,32 @@ export default class Paragraph {
     return newLines;
   }
 
-  _findNewLineStarts(wrappedWordsArray) {
+  _findNewLineStarts(wrappedWordsArray, wrapper) {
+    // * The heuristics _findNewLineStarts stop working if the line height is small
+    // * and the lines overlap each other. Therefore, we set a temporary protective line height,
+    // * which will make the difference between lines more explicit;
+    // * it does not affect the calculation result — we need the beginnings of lines,
+    // * not their vertical parameters.
+    const cashInlineLineHeight = wrapper.style.lineHeight;
+    wrapper.style.lineHeight = 2;
+
     // Split the splittedItem into lines.
     // Let's find the elements that start a new line.
+
     const newLineStartNumbers = wrappedWordsArray.reduce(
       (result, currentWord, currentIndex) => {
-        if (currentIndex > 0 && (wrappedWordsArray[currentIndex - 1].offsetTop + wrappedWordsArray[currentIndex - 1].offsetHeight) <= currentWord.offsetTop) {
+        const prevTop = (currentIndex > 0) ? wrappedWordsArray[currentIndex - 1].offsetTop : undefined;
+        const prevHth = (currentIndex > 0) ? wrappedWordsArray[currentIndex - 1].offsetHeight : undefined;
+        const currTop = currentWord.offsetTop;
+        if (currentIndex > 0 && (prevTop + prevHth) <= currTop) {
           result.push(currentIndex);
         }
         return result;
       }, [0]
     );
+
+    // * return initial style
+    wrapper.style.lineHeight = cashInlineLineHeight;
     return newLineStartNumbers
   }
 }

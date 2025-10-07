@@ -291,7 +291,7 @@ export default class Pre {
       });
 
       // * Mark nodes as parts
-      this._node.markPartNodesWithClass(newPreElementsArray);
+      this._node.markSliceCuts(newPreElementsArray);
 
       this._debug._ && console.log(
         ...consoleMark,

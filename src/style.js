@@ -75,6 +75,12 @@ ${SELECTOR.pageDivider} {
   overflow: auto;
 }
 
+${SELECTOR.pageStartMarker} {
+  /* always after pageDivider, which has bottom padding
+     and does not absorb margin of the following element */
+  margin-top: 0 !important;
+}
+
 ${SELECTOR.virtualPaper} {
   display: grid;
   grid-template-columns: 1fr;
@@ -330,6 +336,16 @@ ${SELECTOR.bottomCutPart} {
   margin-bottom: 0 !important;
   border-bottom: none !important;
 }
+${SELECTOR.cleanTopCut} {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: none !important;
+}
+${SELECTOR.cleanBottomCut} {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  border-bottom: none !important;
+}
     `;
   }
 
@@ -360,7 +376,7 @@ ${SELECTOR.paperBody} {
 }
 ${SELECTOR.runningSafety} {
   background: #f200ff;
-  outline: 0.1px solid #f200ff88;
+  outline: 0.1px dashed #f200ff88;
 }
 ${SELECTOR.frontpageContent} {
   background: #00fcff20;

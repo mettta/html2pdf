@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
 from seleniumbase import BaseCase
+import os
 
 # Elements should appear in the DOM on success:
 # only once
@@ -20,6 +21,38 @@ _frontpage_content_ = _paper_flow_ + '//html2pdf-frontpage'
 _header_content_ = _paper_flow_ + '//html2pdf-header'
 _footer_content_ = _paper_flow_ + '//html2pdf-footer'
 
+# --- Local file URL helpers ---------------------------------------------------
+
+def make_file_url(base_folder: str, filename: str) -> str:
+    """Build a file:/// URL for a given filename residing in base_folder.
+
+    Example:
+        make_file_url("/path/to/cases", "case001.html")
+        -> "file:////path/to/cases/case001.html"
+    """
+    return f"file:///{os.path.join(base_folder, filename)}"
+
+
+def case_url_num(base_folder: str, n: int, prefix: str = "case", ext: str = "html") -> str:
+    """Build a canonical test-case URL like case001.html in base_folder.
+
+    Args:
+        base_folder: directory that contains the HTML fixtures
+        n: case number (will be zero‑padded to 3 digits)
+        prefix: filename prefix (default: "case")
+        ext: file extension (default: "html")
+
+        Format f"case{n:03}.html":
+        n = 1  → case001.html
+        n = 10 → case010.html
+        n = 100 → case100.html
+    """
+    return make_file_url(base_folder, f"{prefix}{n:03}.{ext}")
+
+def case_url(base_folder: str, n, prefix: str = "case", ext: str = "html") -> str:
+    # n is str: "001", "010", "100" ... → case_001.html
+    return make_file_url(base_folder, f"{prefix}_{n}.{ext}")
+
 class Helper:
     def __init__(self, test_case: BaseCase) -> None:
         assert isinstance(test_case, BaseCase)
@@ -37,6 +70,20 @@ class Helper:
     def do_open_and_assert_title(self, file: str, title: str) -> None:
         self.do_open(file)
         self.test_case.assert_title(title)
+
+    def open_case_num(self, base_folder: str, n: int, prefix: str = "case", ext: str = "html") -> None:
+        """Open a numbered HTML test case from base_folder.
+
+        Example usage in tests:
+            self.helper.open_case(path_to_this_test_file_folder, 1)
+            OR
+            self.helper.open_case(path_to_this_test_file_folder, 7, prefix="grid", ext="htm")
+            # -> file:///.../grid007.htm
+        """
+        self.do_open(case_url(base_folder, n, prefix, ext))
+
+    def open_case(self, base_folder: str, n: str, prefix: str = "case", ext: str = "html") -> None:
+        self.do_open(case_url(base_folder, n, prefix, ext))
 
     # html2pdf elements
 
@@ -135,31 +182,74 @@ class Helper:
             f'{_content_flow_}{element_xpath}',
             by=By.XPATH,
         )
-        page_top_point = self.test_case.find_element(
-            f'{_page_start_}[@page="{page_number}"]',
-            by=By.XPATH,
-        )
+        element_y = element.location["y"]
+        # pages
         pages = self._get_amount_of_virtual_pages()
-
-        if page_number < pages:
-            next_page_top_point = self.test_case.find_element(
-                f'{_page_start_}[@page="{page_number + 1}"]',
+        # page_anchor
+        if page_number == 1:
+            page_anchor = self.test_case.find_element(
+                f'{_page_start_}[@page="{page_number}"]',
                 by=By.XPATH,
             )
-            cond1 = page_top_point.location["y"] <= element.location["y"]
-            cond2 = next_page_top_point.location["y"] >= element.location["y"]
+        else:
+            page_anchor = self.test_case.find_element(
+                f'{_page_start_}[@page="{page_number}"]/html2pdf-virtual-paper-gap',
+                by=By.XPATH,
+            )
+        page_y = page_anchor.location["y"]
+        # next_page_anchor
+        if page_number < pages:
+            next_page_anchor = self.test_case.find_element(
+                f'{_page_start_}[@page="{page_number + 1}"]/html2pdf-virtual-paper-gap',
+                by=By.XPATH,
+            )
+            next_page_y = next_page_anchor.location["y"]
+        else:
+            next_page_y = None
+
+        if next_page_y is not None:
+            cond1 = page_y < element_y
+            cond2 = next_page_y > element_y
             if report:
-                print('-> page_top_point: ', page_top_point.location["y"])
-                print('-> element: ', element.location["y"])
-                print('-> next_page_top_point: ', next_page_top_point.location["y"])
+                print('-> page_y: ', page_y)
+                print('-> element_y: ', element_y)
+                print('-> next_page_y: ', next_page_y)
             assert cond1 & cond2
         else:
             # The last page
-            cond1 = page_top_point.location["y"] <= element.location["y"]
+            cond1 = page_y < element_y
             if report:
-                print('-> page_top_point: ', page_top_point.location["y"])
-                print('-> element: ', element.location["y"])
+                print('-> page_y: ', page_y)
+                print('-> element_y: ', element_y)
             assert cond1
+
+    # Element direct children
+
+    def assert_direct_children_absent(self, parent_xpath: str, child_xpaths) -> None:
+        """
+        Assert that the parent element does not have the specified direct children.
+
+        Args:
+            parent_xpath: XPath of the parent element
+            child_xpaths: list of XPath expressions for direct children to check absence of
+        """
+        parent = self.test_case.find_element(parent_xpath, by=By.XPATH)
+        for cx in child_xpaths:
+            found = parent.find_elements(By.XPATH, f"./{cx.lstrip('./')}")
+            assert len(found) == 0, f"Expected no direct child {cx} under {parent_xpath}"
+
+    def assert_direct_children_present(self, parent_xpath: str, child_xpaths) -> None:
+        """
+        Assert that the parent element has the specified direct children.
+
+        Args:
+            parent_xpath: XPath of the parent element
+            child_xpaths: list of XPath expressions for direct children to check presence of
+        """
+        parent = self.test_case.find_element(parent_xpath, by=By.XPATH)
+        for cx in child_xpaths:
+            found = parent.find_elements(By.XPATH, f"./{cx.lstrip('./')}")
+            assert len(found) > 0, f"Expected direct child {cx} under {parent_xpath}"
 
     # Element dimensions
 
