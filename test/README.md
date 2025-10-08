@@ -45,21 +45,31 @@ We use **Sinon** to mock, stub, and spy on dependencies in unit tests. It helps 
 - Mock time-based functions like `setTimeout`.
 
 ## Running Tests
-1.	**Run all tests:**
+
+### JavaScript Tests
+#### Run all tests
+
 ```bash
 npm run test
 ```
-2.	**Unit tests:**
+
+#### Unit tests
+
 ```bash
 npm run test:unit
 ```
-3.	**Integration tests:**
+
+#### Integration tests:
+
 ```bash
 npm run test:integration
 ```
 
-4.	**End-to-End tests** (Python):
+### End-to-End tests (Python):
+
 End-to-end (E2E) tests are written in Python and live outside the JavaScript test infrastructure.
+
+#### Run all E2E tests
 
 Run them using the Invoke CLI:
 
@@ -73,12 +83,53 @@ Or using the short alias:
 invoke te
 ```
 
-Optional flags:
+#### Optional flags:
+
 - `--focus=TableSplit` — run only matching test groups
 - `--exit-first` — stop after the first failure
 - `--long-timeouts` — increase allowed test durations
 - `--parallelize` — run tests in parallel (if supported)
 
+### Focusing on Selected Tests
+
+You can temporarily limit E2E test runs to a single test (or a few) without renaming or deleting other tests.
+
+1. Mark the desired test(s) with `@focus` shortcut:
+
+   *(an alias exposed in `conftest.py`; no need to import `pytest`):*
+
+   ```python
+   @focus
+   def test_only_this():
+       ...
+   ```
+
+   Alternatively, you can still use the original pytest syntax:
+
+   ```python
+   import pytest
+   @pytest.mark.focus
+   def test_only_this():
+   ...
+   ```
+
+2. **Default behavior:**
+
+- If no tests are marked focus → all tests run as usual.
+- If at least one test is marked focus → only the focused tests run; all others are skipped automatically.
+
+3. **Overriding the filter:**
+
+- To run **all** tests even *when some are marked focus*, set the environment variable:
+    ```bash
+    RUN_ALL=1 invoke te
+    ```
+  or pass the extra pytest flag:
+    ```bash
+    invoke te -- --no-focus
+    ```
+
+### Randomized Test Generation
 For randomized test generation and execution:
 
 ```bash
