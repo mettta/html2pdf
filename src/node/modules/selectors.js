@@ -154,6 +154,16 @@ export function isComplexTextBlock(element) {
 /**
  * @this {Node}
  */
+export function isSyntheticTextWrapper(element) {
+  return this.isComplexTextBlock(element)
+         || this.isWrappedTextNode(element)
+         || this.isWrappedTextLine(element)
+         || this.isWrappedTextGroup(element);
+}
+
+/**
+ * @this {Node}
+ */
 export function isNoBreak(element, _style) {
   return this.isSelectorMatching(element, this._selector.flagNoBreak)
     || this.isWrappedTextLine(element)
