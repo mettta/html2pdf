@@ -113,7 +113,7 @@ export function isLineKept(current, next) {
 /**
  * @this {Node}
  */
-export  function setInitStyle(on, rootNode, rootComputedStyle) {
+export function setInitStyle(on, rootNode, rootComputedStyle) {
   const INIT_POS_SELECTOR = '[init-position]';
   const INIT_ALI_SELECTOR = '[init-vertical-align]';
   const UTILITY_POS = 'relative';

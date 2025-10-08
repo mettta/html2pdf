@@ -166,3 +166,6 @@ Inline vs CSS vs Media vs Special
 * Many large IMAGEs on a page: memory/speed, stable placement between runs.
 * Re-pagination (resize/print scaling): IMAGE placement remains stable.
 * With vs without cache: same IMAGE placement points.
+
+## 16. TODO
+* Find all media with overflow width and process them beforehand?  Then we will measure and adjust them by height.

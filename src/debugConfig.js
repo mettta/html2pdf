@@ -27,6 +27,7 @@ const debugConfig = {
     // * `Node` modules
     children: false,
     creators: false,
+    flowFilters: false,
     fitters: false,
     getters: false,
     markers: false,
@@ -35,7 +36,6 @@ const debugConfig = {
     selectors: false,
     slicers: false,
     splitters: false,
-    flowFilters: false,
     wrappers: false,
   },
   paragraph: {

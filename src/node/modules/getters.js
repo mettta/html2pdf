@@ -230,8 +230,6 @@ export function getLineHeight(node) {
   return lineHeight;
 }
 
-// TODO: not used?
-
 /**
  * @this {Node}
  *
@@ -258,6 +256,7 @@ export function getTableRowHeight(tr, lines = 0) {
  * and detect its actual height through the delta
  * of the tops of the TR following it.
  */
+// TODO: not used?
 export function getTableEmptyRowHeight(tr) {
   const initialTop = this._DOM.getElementOffsetTop(tr);
   const clone = this._DOM.cloneNodeWrapper(tr);

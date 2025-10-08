@@ -53,8 +53,8 @@ Goal: map out grid-specific risks before we extend the splitter beyond simple mo
 
 ## 9. Content that cannot be broken
 - **Examples**: large images/SVG, charts.
-- **Strategy**: once row slicing is available, trigger fallback similar to Table: move full row to next page, scale content if even full page fails.
-- **Detection**: via slicers (`getSplitPoints` returning null) or by measuring child height > window.
+- **Strategy**: current splitter attempts to slice row content via existing slicers; if even full-page budget reports `needsScalingInFullPage`, we log and keep the grid intact (scaling TODO).
+- **Detection**: via slicers (`getSplitPoints` returning null or `needsScalingInFullPage`), or by measuring child height > window.
 
 ## 10. CSS selectors sensitive to order
 - **Scenario**: the page relies on `:nth-child` order.

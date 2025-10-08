@@ -23,3 +23,11 @@ export function logGroupEnd(string) {
   this._debug._ && console.log(`%c ▲ ${string} `, CONSOLE_CSS_END_LABEL);
   this._debug._ && console.groupEnd();
 }
+
+/**
+ * @this {Node}
+ * 🚨 🛑 ⛔ 🚫 ⚠️
+ */
+export function strictAssert(cond, ...param) {
+  this._assert && console.assert(cond, '⛔', ...param);
+}

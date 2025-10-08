@@ -26,7 +26,7 @@ const _isDebug = debugFor('children');
  * @this {Node}
  */
 export function getPreparedChildren(element) {
-  _isDebug(this) && console.group(`getPreparedChildren of`, element);
+  _isDebug(this) && console.groupCollapsed(`getPreparedChildren of`, element);
   let children = [];
 
   // Check children:
@@ -48,6 +48,9 @@ export function getPreparedChildren(element) {
     _isDebug(this) && console.info('🚸 getPreparedChildren: return children for complexTextBlock', children);
     // return children
 
+  } else if (!_hasRenderableChild.call(this, element)) {
+    _isDebug(this) && console.info('🪲 getPreparedChildren: empty node, skip & return []', element);
+    return [];
   } else {
 
     children = [...this._DOM.getChildNodes(element)]
@@ -153,6 +156,11 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
 
   }
 
+  if (!_hasRenderableChild.call(this, node)) {
+    _isDebug(this) && console.info('🪲 getSplitChildren: empty node, return []', node);
+    return [];
+  }
+
   const nodeComputedStyle = this._DOM.getComputedStyle(node);
 
   // TODO: Keep nodeComputedStyle in Set for the parent node so that it does not need to be recalculated when queried from within it.
@@ -189,7 +197,13 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
       nodeComputedStyle,
     ) || [];
 
-  } else if (this.isGridAutoFlowRow(this._DOM.getComputedStyle(node))) {
+  } else if (this.isFlexRow(node, nodeComputedStyle)) {
+    _isDebug(this) && console.info('🩷 Flex ROW', node);
+    // TODO: make class
+    let prepared_children = this.getPreparedChildren(node);
+    children = _stripZeroHeightFlexChildren.call(this, prepared_children);
+
+  } else if (this.isGridAutoFlowRow(node, nodeComputedStyle)) {
     // ** If it is a grid element.
     // ????? Process only some modifications of grids!
     // ***** There's an inline grid check here, too.
@@ -233,6 +247,82 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
   return children
 }
 
+/**
+ * @this {Node}
+ */
+export function getFirstChildrenChain(node) {
+  const chain = []
+
+  if (!node || !this || !this._DOM) {
+    return chain
+  }
+
+  let current = node
+
+  // 🤖 Track the leading edge of the layout tree by following the foremost child at each depth.
+  while (current) {
+    let child = this._DOM.getFirstElementChild(current)
+
+    // 🤖 Skip invisible shells so the traversal hugs the actual flow boundary.
+    while (child && this.shouldSkipFlowElement(child, { context: 'getFirstChildren:firstChild' })) {
+      child = this._DOM.getRightNeighbor(child)
+    }
+
+    if (!child) {
+      // 🤖 Stop when the forward contour runs out of participating children.
+      break
+    }
+
+    if (this.isSyntheticTextWrapper(child)) {
+      // 🤖 Hitting a wrapped text node means the linear flow turns into inline glyphs.
+      break
+    }
+
+    chain.push(child)
+    current = child
+  }
+
+  return chain
+}
+
+/**
+ * @this {Node}
+ */
+export function getLastChildrenChain(node) {
+  const chain = []
+
+  if (!node || !this || !this._DOM) {
+    return chain
+  }
+
+  let current = node
+
+  // 🤖 Trace the trailing edge of the layout tree by diving into rearmost children.
+  while (current) {
+    let child = this._DOM.getLastElementChild(current)
+
+    // 🤖 Skip invisible shells so the descent hugs the lower flow outline.
+    while (child && this.shouldSkipFlowElement(child, { context: 'getLastChildren:lastChild' })) {
+      child = this._DOM.getLeftNeighbor(child)
+    }
+
+    if (!child) {
+      // 🤖 Stop when the backward contour loses participating descendants.
+      break
+    }
+
+    if (this.isSyntheticTextWrapper(child)) {
+      // 🤖 Encountering a wrapped text node signals the flow collapses into inline text.
+      break
+    }
+
+    chain.push(child)
+    current = child
+  }
+
+  return chain
+}
+
 // 🔒 private
 
 /**
@@ -259,7 +349,7 @@ function _collectAndBundleInlineElements(children) {
   const newChildren = [];
 
   children.forEach(child => {
-    if (this.isInline(this._DOM.getComputedStyle(child))) {
+    if (this.isInline(child)) {
       if (!complexTextBlock) {
         // the first inline child
         complexTextBlock = this.createComplexTextBlock();
@@ -277,6 +367,20 @@ function _collectAndBundleInlineElements(children) {
   })
 
   return newChildren
+}
+
+function _stripZeroHeightFlexChildren(children) {
+  // TODO #need_test: add fixtures with flex rows mixing zero-height service nodes and flowing content.
+  const filtered = children.filter(child => {
+    const height = this._DOM.getElementOffsetHeight(child);
+    if (height > 0) {
+      return true;
+    }
+    // 🤖 Zero-height flex children should not influence slicing;
+    //    their overflow is carried by siblings.
+    return false;
+  });
+  return filtered.length > 0 ? filtered : children;
 }
 
 /**
@@ -298,6 +402,23 @@ function _isVerticalFlowDisrupted(arrayOfElements) {
   )
 }
 
+function _hasRenderableChild(node) {
+  // 🤖 Linear scan: O(k) over childNodes, stops as soon as a renderable child is found,
+  //    so real-world nodes exit early while truly empty nodes avoid deeper processing.
+  let child = node.firstChild;
+  while (child) {
+    if (this._DOM.isElementNode(child)) {
+      if (!this.shouldSkipFlowElement(child, { context: 'hasRenderableChild' })) {
+        return true;
+      }
+    } else if (this.isSignificantTextNode(child)) {
+      return true;
+    }
+    child = child.nextSibling;
+  }
+  return false;
+}
+
 // ???
 /**
 * @this {Node}
@@ -308,7 +429,7 @@ function _processInlineChildren(children) {
   const newChildren = [];
 
   children.forEach(child => {
-    if (this.isInline(this._DOM.getComputedStyle(child))) {
+    if (this.isInline(child)) {
       if (!complexTextBlock) {
         // the first inline child
         complexTextBlock = this.createComplexTextBlock();

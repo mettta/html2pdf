@@ -154,11 +154,21 @@ export function isComplexTextBlock(element) {
 /**
  * @this {Node}
  */
-export function isNoBreak(element, _style = this._DOM.getComputedStyle(element)) {
+export function isSyntheticTextWrapper(element) {
+  return this.isComplexTextBlock(element)
+         || this.isWrappedTextNode(element)
+         || this.isWrappedTextLine(element)
+         || this.isWrappedTextGroup(element);
+}
+
+/**
+ * @this {Node}
+ */
+export function isNoBreak(element, _style) {
   return this.isSelectorMatching(element, this._selector.flagNoBreak)
     || this.isWrappedTextLine(element)
     || this.isWrappedTextGroup(element)
-    || this.isInlineBlock(_style)
+    || this.isInlineBlock(element, _style)
     || this.notSolved(element);
   // TODO
 }
@@ -187,8 +197,11 @@ export function isForcedPageBreak(element) {
 /**
  * @this {Node}
  */
-export function isInline(computedStyle) {
-  // todo: amend with (element, _style = this._DOM.getComputedStyle(element))
+export function isInline(element, style) {
+  if (!(element instanceof HTMLElement)) {
+    return
+  }
+  const computedStyle = style || this._DOM.getComputedStyle(element);
   const display = computedStyle.display;
   const res = display === "inline"
     || display === "inline-block"
@@ -201,8 +214,11 @@ export function isInline(computedStyle) {
 /**
  * @this {Node}
  */
-export function isInlineBlock(computedStyle) {
-  // todo: amend with (element, _style = this._DOM.getComputedStyle(element))
+export function isInlineBlock(element, style) {
+  if (!(element instanceof HTMLElement)) {
+    return
+  }
+  const computedStyle = style || this._DOM.getComputedStyle(element);
   const display = computedStyle.display;
   const res = display === "inline-block"
     || display === "inline-table"
@@ -214,8 +230,11 @@ export function isInlineBlock(computedStyle) {
 /**
  * @this {Node}
  */
-export function isGrid(computedStyle) {
-  // todo: amend with (element, _style = this._DOM.getComputedStyle(element))
+export function isGrid(element, style) {
+  if (!(element instanceof HTMLElement)) {
+    return
+  }
+  const computedStyle = style || this._DOM.getComputedStyle(element);
   const display = computedStyle.display;
   const res = display === "grid";
   return res;
@@ -224,48 +243,63 @@ export function isGrid(computedStyle) {
 /**
  * @this {Node}
  */
-export function isTableLikeNode(element, _style = this._DOM.getComputedStyle(element)) {
+export function isTableLikeNode(element, style) {
+  if (!(element instanceof HTMLElement)) {
+    return
+  }
+  const computedStyle = style || this._DOM.getComputedStyle(element);
   return this._DOM.getElementTagName(element) !== 'TABLE'
     && [
       'table'
-    ].includes(_style.display);
+    ].includes(computedStyle.display);
 }
 
 /**
  * @this {Node}
  */
-export function isTableNode(element, _style = this._DOM.getComputedStyle(element)) {
+export function isTableNode(element, style) {
+  if (!(element instanceof HTMLElement)) {
+    return
+  }
+  const computedStyle = style || this._DOM.getComputedStyle(element);
   //*** STRICTDOC specific
   //*** add scroll for wide tables */
   //* issue#1370 https://css-tricks.com/preventing-a-grid-blowout/ */
   // so table can has 'block' and 'nowrap'.
   return this._DOM.getElementTagName(element) === 'TABLE'
     || // ! &&
-    ['table'].includes(_style.display);
+    ['table'].includes(computedStyle.display);
 }
 
 /**
  * @this {Node}
  */
-export function isPRE(element, _style = this._DOM.getComputedStyle(element)) {
+export function isPRE(element, style) {
+  if (!(element instanceof HTMLElement)) {
+    return
+  }
+  const computedStyle = style || this._DOM.getComputedStyle(element);
   // this._DOM.getElementTagName(element) === 'PRE'
   return [
     'block'
-  ].includes(_style.display)
+  ].includes(computedStyle.display)
     && [
       'pre',
       'pre-wrap',
       'pre-line',
       'break-spaces',
       'nowrap'
-    ].includes(_style.whiteSpace);
+    ].includes(computedStyle.whiteSpace);
 }
 
 /**
  * @this {Node}
  */
-export function isGridAutoFlowRow(computedStyle) {
-  // todo: amend with (element, _style = this._DOM.getComputedStyle(element))
+export function isGridAutoFlowRow(element, style) {
+  if (!(element instanceof HTMLElement)) {
+    return
+  }
+  const computedStyle = style || this._DOM.getComputedStyle(element);
   const display = computedStyle.display;
   const gridAutoFlow = computedStyle.gridAutoFlow;
   const res1 = (display === "grid") || (display === "inline-grid");
@@ -276,13 +310,29 @@ export function isGridAutoFlowRow(computedStyle) {
 /**
  * @this {Node}
  */
-export function isFullySPlitted(node) {
-  const _style = this._DOM.getComputedStyle(node);
+export function isFlexRow(element, style) {
+  if (!(element instanceof HTMLElement)) {
+    return
+  }
+  const computedStyle = style || this._DOM.getComputedStyle(element);
+  const display = computedStyle.display;
+  if (display !== 'flex' && display !== 'inline-flex') {
+    return false;
+  }
+  const direction = computedStyle.flexDirection || '';
+  return direction.startsWith('row');
+}
+
+/**
+ * @this {Node}
+ */
+export function isFullySPlitted(element, style) {
+  const computedStyle = style || this._DOM.getComputedStyle(element);
   return (
-    this.isPRE(node, _style) ||
-    this.isTableNode(node, _style) ||
-    this.isTableLikeNode(node, _style) ||
-    this.isGridAutoFlowRow(_style) // todo
+    this.isPRE(element, computedStyle) ||
+    this.isTableNode(element, computedStyle) ||
+    this.isTableLikeNode(element, computedStyle) ||
+    this.isGridAutoFlowRow(element, computedStyle) // todo
   );
 }
 
