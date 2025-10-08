@@ -127,7 +127,6 @@ class Test(BaseCase):
         # 2 ----------------------------------
         self.helper.assert_element_on_the_page(chunk_3, 3)
 
-    @focus
     def test_22(self):
         chunk_1 = '//*[@data-testid="root-element"][1]'
         chunk_2 = '//*[@data-testid="root-element"][2]'
@@ -135,8 +134,8 @@ class Test(BaseCase):
         self.helper.assert_document_has_pages(2)
         # 1 ----------------------------------
         self.helper.assert_element_on_the_page('//*[@data-testid="pusher"]', 1)
-        # self.helper.assert_element_on_the_page(chunk_1, 1)
+        self.helper.assert_element_on_the_page(chunk_1, 1)
         self.helper.assert_element_on_the_page('//*[@data-testid="value10"]', 1)
         # 2 ----------------------------------
-        # self.helper.assert_element_on_the_page(chunk_2, 2)
+        self.helper.assert_element_on_the_page(chunk_2, 2)
         self.helper.assert_element_on_the_page('//*[@data-testid="closer"]', 2)
