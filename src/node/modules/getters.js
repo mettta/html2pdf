@@ -4,6 +4,20 @@ import { debugFor } from '../utils/debugFor.js';
 const _isDebug = debugFor('getters');
 
 /**
+ * Returns element's top position measured in page-candidate context.
+ * Used when evaluating elements as potential page starts.
+ *
+ * Previously, we used getTopWithMargin().
+ * Top margin is excluded since it's reset on new pages now.
+ *
+ * @this {Node}
+ */
+export function getTopForPageStartCandidate(element, root) {
+  const top = this.getTop(element, root);
+  return top
+}
+
+/**
  * Returns offsetTop of element relative to root, normalized by root's padding-top.
  *
  * In layouts like TD, the available height is usually precomputed excluding padding-top.

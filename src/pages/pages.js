@@ -274,7 +274,7 @@ export default class Pages {
       );
     }
 
-    const pageTop = this._node.getTopWithMargin(pageStart, this._root);
+    const pageTop = this._node.getTopForPageStartCandidate(pageStart, this._root);
     const pageBottom = pageTop + this._referenceHeight;
     this.pages.push({
       pageStart: pageStart,
@@ -496,7 +496,7 @@ export default class Pages {
             const justUpdatedPageBottom = this.pages.at(-1).pageBottom;
 
             // check if here is more then 1 split
-            // this._node.getTopWithMargin(pageStart, this._root) + this._referenceHeight
+            // this._node.getTopForPageStartCandidate(pageStart, this._root) + this._referenceHeight
 
             this._debug._parseNode && console.log(_currentPageBottom, justUpdatedPageBottom, parentBottom);
 
@@ -555,7 +555,7 @@ export default class Pages {
 
     if ((currentElementTop >= newPageBottom) && (currentElementBottom - currentElementTop)) {
       const canUseParentTop = isFirstChild && Boolean(parent);
-      const parentTop = canUseParentTop ? this._node.getTopWithMargin(parent, this._root) : undefined;
+      const parentTop = canUseParentTop ? this._node.getTopForPageStartCandidate(parent, this._root) : undefined;
       const beginningTail = Boolean(parentTop) && (currentElementTop - parentTop >= this._referenceHeight);
 
       if (beginningTail) {
