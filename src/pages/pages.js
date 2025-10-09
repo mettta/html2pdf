@@ -193,6 +193,24 @@ export default class Pages {
 
   }
 
+  _registerFirstPage() {
+    this._registerPageStart(this._DOM.getElement(this._selector.contentFlowStart, this._contentFlow));
+  }
+
+  _isContentFlowShort() {
+    const contentFlowEnd = this._DOM.getElement(this._selector.contentFlowEnd, this._contentFlow);
+    const contentFlowBottom = this._node.getBottom(contentFlowEnd, this._root);
+    const result = contentFlowBottom < this._referenceHeight;
+    this._debug._ && result && console.log(`contentFlow (${contentFlowBottom}) fits on the page (${this._referenceHeight})`);
+    return result;
+  }
+
+  _resolveForcedPBInsideContentFlow() {
+    this._node.findAllForcedPageBreakInside(this._contentFlow).forEach(
+      element => this._registerPageStart(element)
+    );
+  }
+
   _calculate() {
 
     this._debug._ && console.groupCollapsed('•• init data ••');
@@ -211,29 +229,19 @@ export default class Pages {
     );
     this._debug._ && console.groupEnd('•• init data ••');
 
-    // register a FIRST page
-    // TODO: make a service function
-    this._registerPageStart(this._DOM.getElement(this._selector.contentFlowStart, this._contentFlow));
+    // ✳️ register a FIRST page
+    this._registerFirstPage();
 
-    // IF contentFlow is less than one page,
-
-    const contentFlowBottom = this._node.getBottomWithMargin(this._contentFlow, this._root);
-    if (contentFlowBottom < this._referenceHeight) {
-      // In the case of a single page,
-      // we don't examine the contentFlow children.
-
-      this._debug._ && console.log(`contentFlow (${contentFlowBottom}) fits on the page (${this._referenceHeight})`);
-
+    // ✴️ if contentFlow is less than one page
+    if (this._isContentFlowShort()) {
+      // In the case of a single page, we don't examine the contentFlow children.
       // Check for forced page breaks, and if they are, we register these pages.
       // If not - we'll have a single page.
-      this._node.findAllForcedPageBreakInside(this._contentFlow).forEach(
-        element => this._registerPageStart(element)
-      );
-
+      this._resolveForcedPBInsideContentFlow();
       return;
     }
 
-    // ELSE:
+    // ✳️ continue to analyze contentFlow children
 
     const content = this._node.getPreparedChildren(this._contentFlow);
     this._debug._ && console.groupCollapsed('%c🚸 children(contentFlow)', CONSOLE_CSS_LABEL_PAGES);
@@ -241,11 +249,8 @@ export default class Pages {
     this._debug._ && console.groupEnd('%c🚸 children(contentFlow)', CONSOLE_CSS_LABEL_PAGES);
 
     this._parseNodes({
-      // don't register the parent here,
-      // only on inner nodes that do not split
       array: content
     });
-
   }
 
   _registerPageStart(pageStart, improveResult = false) {
