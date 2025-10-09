@@ -260,8 +260,7 @@ export default class Pages {
       '\n  passed pageStart:', pageStart,
     );
 
-    // Improving the result should also be skipped, as we would have to look for
-    // a variant before the already registered page.
+    // ✴️ skip for already registered page.
     if (this._node.isPageStartElement(pageStart)) return;
 
     if (improveResult) {
@@ -302,11 +301,7 @@ export default class Pages {
     parent,
     parentBottom,
   }) {
-    this._debug._parseNodes && console.log(
-      '🔵 _parseNodes',
-      '\narray:', [...array],
-      '\nparent:', parent
-    );
+    this._debug._parseNodes && console.log('🔵 _parseNodes', {array, parent});
 
     for (let i = 0; i < array.length; i++) {
       const currentElement = array[i];
@@ -373,9 +368,8 @@ export default class Pages {
       }
       );
 
-    // THE END of content flow:
-    // if there is no next element, then we are in a case
-    // where the 'html2pdf-content-flow-end' element is current.
+    // ✴️ THE END of content flow:
+    // if there is no next element, then we are in a case where the 'html2pdf-content-flow-end' element is current.
     if (!nextElement) {
       this._node.markProcessed(currentElement, 'content-flow-end');
       this._debug._parseNode && console.log('%c END _parseNode (!nextElement)', CONSOLE_CSS_END_LABEL);
