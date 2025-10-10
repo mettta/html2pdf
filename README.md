@@ -56,6 +56,24 @@ To run unit tests:
 npm test
 ```
 
+End-to-end tests are orchestrated through the Python Invoke tasks in `tasks.py`.
+Run them with:
+
+```sh
+invoke test-end2end
+```
+
+Pass exactly one of the browser mode flags when you need to control how the
+tests launch the browser:
+
+- `invoke test-end2end --headless` — default headless mode (no visible window).
+- `invoke test-end2end --headless2` — alternate headless backend used on some CI
+  setups.
+- `invoke test-end2end --headed` — run with a visible browser for debugging.
+
+The same flags are available for the randomized suite (`invoke
+test-end2end-random`) and the short alias (`invoke te`).
+
 ## Testing web server
 
 To run the web server:
