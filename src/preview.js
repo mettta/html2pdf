@@ -50,6 +50,7 @@ export default class Preview {
     this._processFirstPage();
     this._processOtherPages();
     (this._config.mask === true || this._config.mask === 'true') && this._addMask();
+    this._makeRootVisible();
   }
 
   _addMask() {
@@ -105,6 +106,10 @@ export default class Preview {
       maskWindow: _bodyHeight,
       maskFirstShift: _printBodyMaskWindowFirstShift,
     })
+  }
+
+  _makeRootVisible() {
+    this._DOM.setStyles(this._root, {'visibility': 'visible'});
   }
 
   _processFirstPage() {

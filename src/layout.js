@@ -158,7 +158,7 @@ export default class Layout {
 
   _createRoot() {
     const root = this._node.create(this._selector.root);
-
+    this._DOM.setStyles(root, {'visibility': 'hidden'});
     this.root = root;
     return root;
   }
