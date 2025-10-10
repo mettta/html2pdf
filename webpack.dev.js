@@ -100,6 +100,7 @@ export default merge(common, {
       patterns: [
         { from: './examples/css', to: 'css' },
         { from: './examples/strictdoc/css', to: 'strictdoc/css' },
+        { from: './examples/strictdoc/assets', to: 'strictdoc/assets' },
         { from: './examples/assets', to: 'assets' },
       ],
     }),
