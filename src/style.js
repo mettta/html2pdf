@@ -75,12 +75,6 @@ ${SELECTOR.pageDivider} {
   overflow: auto;
 }
 
-${SELECTOR.pageDivider} + ${SELECTOR.pageStartMarker} {
-  /* after pageDivider: it has bottom padding and does not absorb margin of the following element */
-  /* only after pageDivider: style should not be applied before the preview is generated */
-  margin-top: 0 !important;
-}
-
 ${SELECTOR.virtualPaper} {
   display: grid;
   grid-template-columns: 1fr;

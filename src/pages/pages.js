@@ -280,9 +280,12 @@ export default class Pages {
 
     const pageTop = this._node.getTopForPageStartCandidate(pageStart, this._root);
     const pageBottom = pageTop + this._referenceHeight;
+    const prevPageEnd = this._DOM.getLeftNeighbor(pageStart);
     this.pages.push({
       pageStart: pageStart,
       pageBottom: pageBottom,
+      pageTop: pageTop,
+      prevPageEnd: prevPageEnd,
     });
     this._node.markPageStartElement(pageStart, this.pages.length);
     this._debug._registerPageStart && console.log(
@@ -391,6 +394,7 @@ export default class Pages {
       this._registerPageStart(element, improveResult);
       refreshPageBottom();
     };
+
     const currentElementBottom = this._node.getBottomWithMargin(currentElement, this._root);
 
     // * We want to keep the passed 'parentBottom' value so that we can pass it

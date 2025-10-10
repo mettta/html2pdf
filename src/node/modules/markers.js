@@ -36,11 +36,6 @@ export function setFlagSlice(element) {
  */
 export function markPageStartElement(element, page) {
   this._DOM.setAttribute(element, this._selector.pageStartMarker, page);
-    /* always after pageDivider, which has bottom padding
-       and does not absorb margin of the following element.
-       Therefore, we will reset it for safety reasons.
-     */
-  this._DOM.setStyles(element, { marginTop: `0 !important` });
 }
 
 /**
@@ -48,6 +43,13 @@ export function markPageStartElement(element, page) {
  */
 export function unmarkPageStartElement(element) {
   this._DOM.removeAttribute(element, this._selector.pageStartMarker);
+}
+
+/**
+ * @this {Node}
+ */
+export function markPageEndElement(element, pageNum) {
+  this._DOM.setAttribute(element, this._selector.pageEndMarker, pageNum);
 }
 
 /**
