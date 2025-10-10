@@ -350,7 +350,7 @@ export default class Pages {
 
     this._debug._parseNode && console.group(
       `%c_parseNode`, CONSOLE_CSS_PRIMARY_PAGES,
-      `${isFirstChild ? '★ [[[first ★' : isLastChild ? '★ last]]] ★' : '<- regular ->'}`,
+      `${isFirstChild && isLastChild ? '★ [first+last]' : isFirstChild ? '★ [first]' : isLastChild ? '★ [last]' : '<- regular ->'}`,
       '📄', this.pages.length,
         { currentElement },
       );
