@@ -74,7 +74,7 @@ End-to-end (E2E) tests are written in Python and live outside the JavaScript tes
 Run them using the Invoke CLI:
 
 ```bash
-invoke test_end2end
+invoke test-end2end
 ```
 
 Or using the short alias:
@@ -89,6 +89,8 @@ invoke te
 - `--exit-first` — stop after the first failure
 - `--long-timeouts` — increase allowed test durations
 - `--parallelize` — run tests in parallel (if supported)
+- `--headless`, `--headless2`, `--headed` — pick the Selenium browser mode (pass at most one)
+- `--silent` or `--q` — run pytest in quiet mode (`-q`)
 
 #### Focusing on Selected Tests
 
@@ -133,7 +135,7 @@ You can temporarily limit E2E test runs to a single test (or a few) without rena
 For randomized test generation and execution:
 
 ```bash
-invoke test_end2end_random
+invoke test-end2end-random
 ```
 
 This will generate input data and run tests against the output folder.

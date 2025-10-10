@@ -193,6 +193,24 @@ export default class Pages {
 
   }
 
+  _registerFirstPage() {
+    this._registerPageStart(this._DOM.getElement(this._selector.contentFlowStart, this._contentFlow));
+  }
+
+  _isContentFlowShort() {
+    const contentFlowEnd = this._DOM.getElement(this._selector.contentFlowEnd, this._contentFlow);
+    const contentFlowBottom = this._node.getBottom(contentFlowEnd, this._root);
+    const result = contentFlowBottom < this._referenceHeight;
+    this._debug._ && result && console.log(`contentFlow (${contentFlowBottom}) fits on the page (${this._referenceHeight})`);
+    return result;
+  }
+
+  _resolveForcedPBInsideContentFlow() {
+    this._node.findAllForcedPageBreakInside(this._contentFlow).forEach(
+      element => this._registerPageStart(element)
+    );
+  }
+
   _calculate() {
 
     this._debug._ && console.groupCollapsed('•• init data ••');
@@ -211,29 +229,19 @@ export default class Pages {
     );
     this._debug._ && console.groupEnd('•• init data ••');
 
-    // register a FIRST page
-    // TODO: make a service function
-    this._registerPageStart(this._DOM.getElement(this._selector.contentFlowStart, this._contentFlow));
+    // ✳️ register a FIRST page
+    this._registerFirstPage();
 
-    // IF contentFlow is less than one page,
-
-    const contentFlowBottom = this._node.getBottomWithMargin(this._contentFlow, this._root);
-    if (contentFlowBottom < this._referenceHeight) {
-      // In the case of a single page,
-      // we don't examine the contentFlow children.
-
-      this._debug._ && console.log(`contentFlow (${contentFlowBottom}) fits on the page (${this._referenceHeight})`);
-
+    // ✴️ if contentFlow is less than one page
+    if (this._isContentFlowShort()) {
+      // In the case of a single page, we don't examine the contentFlow children.
       // Check for forced page breaks, and if they are, we register these pages.
       // If not - we'll have a single page.
-      this._node.findAllForcedPageBreakInside(this._contentFlow).forEach(
-        element => this._registerPageStart(element)
-      );
-
+      this._resolveForcedPBInsideContentFlow();
       return;
     }
 
-    // ELSE:
+    // ✳️ continue to analyze contentFlow children
 
     const content = this._node.getPreparedChildren(this._contentFlow);
     this._debug._ && console.groupCollapsed('%c🚸 children(contentFlow)', CONSOLE_CSS_LABEL_PAGES);
@@ -241,11 +249,8 @@ export default class Pages {
     this._debug._ && console.groupEnd('%c🚸 children(contentFlow)', CONSOLE_CSS_LABEL_PAGES);
 
     this._parseNodes({
-      // don't register the parent here,
-      // only on inner nodes that do not split
       array: content
     });
-
   }
 
   _registerPageStart(pageStart, improveResult = false) {
@@ -255,8 +260,7 @@ export default class Pages {
       '\n  passed pageStart:', pageStart,
     );
 
-    // Improving the result should also be skipped, as we would have to look for
-    // a variant before the already registered page.
+    // ✴️ skip for already registered page.
     if (this._node.isPageStartElement(pageStart)) return;
 
     if (improveResult) {
@@ -274,11 +278,14 @@ export default class Pages {
       );
     }
 
-    const pageTop = this._node.getTopWithMargin(pageStart, this._root);
+    const pageTop = this._node.getTopForPageStartCandidate(pageStart, this._root);
     const pageBottom = pageTop + this._referenceHeight;
+    const prevPageEnd = this._DOM.getLeftNeighbor(pageStart);
     this.pages.push({
       pageStart: pageStart,
       pageBottom: pageBottom,
+      pageTop: pageTop,
+      prevPageEnd: prevPageEnd,
     });
     this._node.markPageStartElement(pageStart, this.pages.length);
     this._debug._registerPageStart && console.log(
@@ -297,11 +304,7 @@ export default class Pages {
     parent,
     parentBottom,
   }) {
-    this._debug._parseNodes && console.log(
-      '🔵 _parseNodes',
-      '\narray:', [...array],
-      '\nparent:', parent
-    );
+    this._debug._parseNodes && console.log('🔵 _parseNodes', {array, parent});
 
     for (let i = 0; i < array.length; i++) {
       const currentElement = array[i];
@@ -350,7 +353,7 @@ export default class Pages {
 
     this._debug._parseNode && console.group(
       `%c_parseNode`, CONSOLE_CSS_PRIMARY_PAGES,
-      `${isFirstChild ? '★ [[[first ★' : isLastChild ? '★ last]]] ★' : '<- regular ->'}`,
+      `${isFirstChild && isLastChild ? '★ [first+last]' : isFirstChild ? '★ [first]' : isLastChild ? '★ [last]' : '<- regular ->'}`,
       '📄', this.pages.length,
         { currentElement },
       );
@@ -368,9 +371,8 @@ export default class Pages {
       }
       );
 
-    // THE END of content flow:
-    // if there is no next element, then we are in a case
-    // where the 'html2pdf-content-flow-end' element is current.
+    // ✴️ THE END of content flow:
+    // if there is no next element, then we are in a case where the 'html2pdf-content-flow-end' element is current.
     if (!nextElement) {
       this._node.markProcessed(currentElement, 'content-flow-end');
       this._debug._parseNode && console.log('%c END _parseNode (!nextElement)', CONSOLE_CSS_END_LABEL);
@@ -392,6 +394,7 @@ export default class Pages {
       this._registerPageStart(element, improveResult);
       refreshPageBottom();
     };
+
     const currentElementBottom = this._node.getBottomWithMargin(currentElement, this._root);
 
     // * We want to keep the passed 'parentBottom' value so that we can pass it
@@ -496,7 +499,7 @@ export default class Pages {
             const justUpdatedPageBottom = this.pages.at(-1).pageBottom;
 
             // check if here is more then 1 split
-            // this._node.getTopWithMargin(pageStart, this._root) + this._referenceHeight
+            // this._node.getTopForPageStartCandidate(pageStart, this._root) + this._referenceHeight
 
             this._debug._parseNode && console.log(_currentPageBottom, justUpdatedPageBottom, parentBottom);
 
@@ -555,7 +558,7 @@ export default class Pages {
 
     if ((currentElementTop >= newPageBottom) && (currentElementBottom - currentElementTop)) {
       const canUseParentTop = isFirstChild && Boolean(parent);
-      const parentTop = canUseParentTop ? this._node.getTopWithMargin(parent, this._root) : undefined;
+      const parentTop = canUseParentTop ? this._node.getTopForPageStartCandidate(parent, this._root) : undefined;
       const beginningTail = Boolean(parentTop) && (currentElementTop - parentTop >= this._referenceHeight);
 
       if (beginningTail) {

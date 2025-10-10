@@ -523,6 +523,8 @@ export default class Table {
       '<tr style="padding:0;border:0;"><td style="padding:0;border:0;"></td></tr>'
     );
 
+    // TODO: Top margin is excluded since it's reset on new pages now!
+    const tableTop = this._node.getTopForPageStartCandidate(this._currentTable, this._currentRoot);
     // * getTopWithMargin vs getTop
     // * The margin must be taken into account,
     // * because it is included in the calculation of the tableWrapperHeight

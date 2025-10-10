@@ -274,11 +274,40 @@ export default class DocumentObjectModel {
   }
 
   setStyles(element, styles) {
-    // styles is object
-    Object.entries(styles)
-      .forEach(([key, value]) =>
-        element.style[key] = value);
+    // possibly styles:
+    // {
+    // transform: 'scale(0.998003992015968)',
+    // transformOrigin: 'top center',
+    // width: '500px',
+    // 'min-width': '500px',
+    // 'margin-bottom': ['0', 'important'],
+    // }
+    Object.entries(styles).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        // ['0', 'important']
+        this.setStyle(element, key, value[0], value[1] || '');
+      } else {
+        this.setStyle(element, key, value);
+      }
+    });
   }
+
+  setStyle(element, key, value, priority = '') {
+    const cssProp = this._toKebab(key);
+    if (value == null || value === '') {
+      element.style.removeProperty(cssProp);
+    } else {
+      element.style.setProperty(cssProp, String(value), priority);
+    }
+  }
+
+  _toKebab = (key) => {
+    if (key.includes('-')) return key;
+    // webkitLineClamp -> -webkit-line-clamp
+    const m = key.match(/^(webkit|moz|ms|o)(?=[A-Z])/);
+    if (m) key = '-' + m[1] + '-' + key.slice(m[1].length);
+    return key.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase());
+  };
 
   addClasses(element, ...cls) {
     element.classList.add(...cls);

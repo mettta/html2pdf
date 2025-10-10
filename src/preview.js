@@ -176,6 +176,8 @@ export default class Preview {
     // ADD FOOTER and HEADER into Content Flow (as page break),
     // ADD ONLY HEADER into Content Flow before the first page.
 
+    this._preventPageOverflow(pageIndex);
+
     const pageDivider = this._createPageBreaker(pageIndex, separator);
     // This wrapper pageDivider must be inserted into the DOM immediately,
     // because in the process of creating and inserting the footer into the DOM,
@@ -186,6 +188,24 @@ export default class Preview {
     separator && this._insertFooterSpacer(pageDivider, this._paper.footerHeight, separator);
     this._insertHeaderSpacer(pageDivider, this._paper.headerHeight);
     this._updatePageStartElementAttrValue(element, pageIndex);
+  }
+
+  _preventPageOverflow(pageIndex) {
+    // * Reset margins on both sides of the page break to prevent overflow.
+    // * This styles should not be applied before the preview is generated.
+    const currentPageFirstElement = this._pages[pageIndex].pageStart;
+    const previousPageLastElement = this._pages[pageIndex].prevPageEnd;
+    if (previousPageLastElement) {
+      this._node.markPageEndElement(previousPageLastElement, pageIndex - 1);
+      this._DOM.setStyles(previousPageLastElement, {'margin-bottom': ['0', 'important']});
+    } else {
+      this._debug._ && console.warn(pageIndex > 0, `[preview] There is no page end element before ${pageIndex}. Perhaps it's a 'beginningTail'.`, )
+    }
+    if (currentPageFirstElement) {
+      this._DOM.setStyles(currentPageFirstElement, {'margin-top': ['0', 'important']});
+    } else {
+      console.assert(0, '[preview] [_preventPageOverflow] current page First Element do not pass! page:', pageIndex)
+    }
   }
 
   _createPageBreaker(pageIndex, separator) {
@@ -323,7 +343,7 @@ export default class Preview {
     // in Paper Flow and Content Flow, and compensate for it.
     const balancer = this._node.getTop(paperSeparator, this._root) - this._node.getTop(contentSeparator, this._root);
 
-    this._DOM.setStyles(balancingFooter, { marginBottom: balancer + 'px' });
+    this._DOM.setStyles(balancingFooter, { 'margin-bottom': balancer + 'px' });
 
     // TODO check if negative on large documents
     this._assert && console.assert(balancer >= 0, `balancer is negative: ${balancer} < 0`, contentSeparator);
