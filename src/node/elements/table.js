@@ -520,7 +520,8 @@ export default class Table {
       this._currentTable,
       // * We need content for the outer table tag to be rendered, but we reset
       // * the TD/TR styles because they are later considered individually for each cell.
-      '<tr style="padding:0;border:0;"><td style="padding:0;border:0;"></td></tr>'
+      '<tr style="padding:0;border:0;"><td style="padding:0;border:0;"></td></tr>',
+      false // * margins on the chunks are cleared
     );
 
     // TODO: Top margin is excluded since it's reset on new pages now!

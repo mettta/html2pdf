@@ -47,7 +47,7 @@ export function createAndInsertTableSlice(ctx, { startId, endId, table, tableEnt
     // * normalize top cut for table slices
     // ? may affect the table design
     // todo: include in user config
-    // ctx._node.markTopCut(tableSlice);
+    ctx._node.markTopCut(tableSlice);
   }
   // * normalize bottom cut for table slices
   ctx._node.markBottomCut(tableSlice);
@@ -68,7 +68,7 @@ export function createAndInsertTableFinalSlice(ctx, { table }) {
   // * normalize top cut for table slices
   // ? may affect the table design
   // todo: include in user config
-  // ctx._node.markTopCut(table);
+  ctx._node.markTopCut(table);
 
   ctx._DOM.insertBefore(table, tableSliceWrapper);
   ctx._DOM.insertAtEnd(
