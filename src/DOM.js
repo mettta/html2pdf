@@ -233,7 +233,7 @@ export default class DocumentObjectModel {
     const first = selector.charAt(0);
 
     if (first === '.' || first === '#') {
-      this._debug._ && console.log(`you're really sure ${selector} is attribute selector?`)
+      this.log('getAttribute', `you're really sure ${selector} is attribute selector?`)
     }
 
     if (first === '[') {
@@ -273,7 +273,7 @@ export default class DocumentObjectModel {
       element.setAttribute(attr, (value ? value : ''));
       return
     }
-    this._debug._ && console.log(`you're really sure ${selector} is a selector?`)
+    this.log('setAttribute', `you're really sure ${selector} is a selector?`)
   }
 
   setStyles(element, styles) {

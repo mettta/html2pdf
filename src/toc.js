@@ -10,7 +10,8 @@ export default class Toc {
 
     // * From config:
     this._globalDebugMode = config.debugMode;
-    this._debug = this._globalDebugMode ? { ...config.debugConfig.toc } : {};
+    this._debug = config.debugMode ? { ...config.debugConfig.toc } : {};
+    this._assert = config.consoleAssert ? true : false;
 
     this._DOM = DOM;
     this._node = node;

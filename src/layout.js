@@ -112,7 +112,7 @@ export default class Layout {
       console.error('Failed to initialize the root element.');
       return
     }
-    this._debug._ && console.log('initial root:',this._initialRoot);
+    this.log('create Layout', 'initial root:',this._initialRoot);
 
     // * Create new layout elements.
     this._createRoot();
