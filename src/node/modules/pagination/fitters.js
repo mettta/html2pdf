@@ -1,5 +1,8 @@
 // Shared pagination fitters for table/grid elements.
 
+import { debugFor } from '../../utils/debugFor.js';
+const _isDebug = debugFor('pagination');
+
 /**
  * 🤖 Delegate cell scaling to Node fitters so row content shrinks to target height.
  * Scale row cells to fit the given height using Node.fitters.
@@ -51,7 +54,7 @@ export function paginationApplyFullPageScaling({ needsScalingInFullPage, scaleCa
   }
   const result = scaleCallback(payload || {});
   if (!result && this && this._debug && this._debug._) {
-    console.warn('[pagination.scaling] requested full-page scaling but callback reported no change', payload);
+    _isDebug(this) && console.warn('[pagination.scaling] requested full-page scaling but callback reported no change', payload);
   }
   return Boolean(result);
 }

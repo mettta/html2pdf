@@ -1,5 +1,8 @@
 // Shared splitter kernel helpers and adapter contract definitions.
 
+import { debugFor } from '../../utils/debugFor.js';
+const _isDebug = debugFor('pagination');
+
 /**
  * @typedef {Object} SplitterRowGuardConfig
  * @property {Array} rows - Row collection evaluated by guard helpers.

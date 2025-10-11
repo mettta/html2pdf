@@ -2,6 +2,9 @@
 // Keep calculations in one place so grid/table reuse the same heuristics.
 // All helpers expect to be mixed into the Node instance (this._DOM available).
 
+import { debugFor } from '../../utils/debugFor.js';
+const _isDebug = debugFor('pagination');
+
 /**
  * 🤖 Compute the height budget reclaimed in the final part when
  *    bottom signpost is skipped and TFOOT stays with the table.

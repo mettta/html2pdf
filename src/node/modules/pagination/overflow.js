@@ -4,6 +4,9 @@
 // Important: helpers operate on problematic cell content only — caller controls
 // which nodes are scaled so TR/grid-row structure remains unchanged.
 
+import { debugFor } from '../../utils/debugFor.js';
+const _isDebug = debugFor('pagination');
+
 /**
  * 🤖 Shrink only the content of those cells that cause the overflow, using caller-supplied fitters.
  * 🤖 Geometry: keeps the root/row shell and other cells untouched
@@ -30,14 +33,14 @@ export function scaleRowCellsToHeight({
   scaleCellsToHeightCallback,
 }) {
   if (!ownerLabel) {
-    console.warn('[scaleRowCellsToHeight] 👤 Owner wanted!', { owner: ownerLabel });
+    _isDebug(this) && console.warn('[scaleRowCellsToHeight] 👤 Owner wanted!', { owner: ownerLabel });
   }
   if (!row) {
-    console.warn('[pagination.overflow] Missing row for scaling.', { owner: ownerLabel });
+    _isDebug(this) && console.warn('[pagination.overflow] Missing row for scaling.', { owner: ownerLabel });
     return false;
   }
   if (typeof scaleCellsToHeightCallback !== 'function') {
-    console.warn('[pagination.overflow] scaleCellsToHeight callback is required.', { owner: ownerLabel });
+    _isDebug(this) && console.warn('[pagination.overflow] scaleCellsToHeight callback is required.', { owner: ownerLabel });
     return false;
   }
   const domFacade = DOM;
@@ -87,14 +90,14 @@ export function handleRowOverflow({
   debugLogger,
 }) {
   if (!ownerLabel) {
-    console.warn('[handleRowOverflow] 👤 Owner wanted!', { owner: ownerLabel });
+    _isDebug(this) && console.warn('[handleRowOverflow] 👤 Owner wanted!', { owner: ownerLabel });
   }
   if (!Array.isArray(splitStartRowIndexes)) {
-    console.warn('[pagination.overflow] splitStartRowIndexes must be an array.', { owner: ownerLabel });
+    _isDebug(this) && console.warn('[pagination.overflow] splitStartRowIndexes must be an array.', { owner: ownerLabel });
     return rowIndex;
   }
   if (typeof registerPageStartCallback !== 'function') {
-    console.warn('[pagination.overflow] registerPageStart callback is required.', { owner: ownerLabel });
+    _isDebug(this) && console.warn('[pagination.overflow] registerPageStart callback is required.', { owner: ownerLabel });
     return rowIndex;
   }
 
@@ -132,7 +135,7 @@ export function handleRowOverflow({
   if (typeof scaleProblematicCellsCallback === 'function') {
     scaleProblematicCellsCallback(row, fullPageHeight);
   } else {
-    console.warn('[pagination.overflow] scaleProblematicCells callback is missing.', { owner: ownerLabel, rowIndex });
+    _isDebug(this) && console.warn('[pagination.overflow] scaleProblematicCells callback is missing.', { owner: ownerLabel, rowIndex });
   }
 
   // ... then register/update splitBottom, and reevaluate the row (rowIndex - 1)).
@@ -174,18 +177,18 @@ export function handleRowSplitFailure(params) {
   } = params;
 
   if (!ownerLabel) {
-    console.warn('[handleRowSplitFailure] 👤 Owner wanted!', { owner: ownerLabel });
+    _isDebug(this) && console.warn('[handleRowSplitFailure] 👤 Owner wanted!', { owner: ownerLabel });
   }
 
   if (!Number.isFinite(availableRowHeight) || availableRowHeight < 0) {
-    console.warn('[pagination.overflow] availableRowHeight is missing or negative.', {
+    _isDebug(this) && console.warn('[pagination.overflow] availableRowHeight is missing or negative.', {
       owner: ownerLabel,
       rowIndex,
       availableRowHeight,
     });
   }
   if (!row) {
-    console.warn('[pagination.overflow] Missing row in split failure handler.', {
+    _isDebug(this) && console.warn('[pagination.overflow] Missing row in split failure handler.', {
       owner: ownerLabel,
       rowIndex,
     });

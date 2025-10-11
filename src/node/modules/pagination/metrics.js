@@ -1,5 +1,8 @@
 // Shared pagination metrics helpers.
 
+import { debugFor } from '../../utils/debugFor.js';
+const _isDebug = debugFor('pagination');
+
 /**
  * 🤖 Measure per-cell shell heights (padding/border contributions) for table-like rows.
  *  Namely, how much the shell itself without content contributes to the height of the cell.

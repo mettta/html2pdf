@@ -63,7 +63,7 @@ export function getSplitPoints({
       //     Caller can immediately trigger the second pass with full-page window.
       return true;
     } else {
-      console.log('%c 🧼🧼🧼🧼 push(point) in registerPoint()', 'color:violet', {point, points, firstChild}, points.length);
+      _isDebug(this) && console.log('%c 🧼🧼🧼🧼 push(point) in registerPoint()', 'color:violet', {point, points, firstChild}, points.length);
       points.push(point)
       return false;
     }
@@ -183,7 +183,7 @@ export function getSplitPoints({
       // ⚠️ See comment above about normalization.
       const anchorTop = getNormalizedTopCached(points.at(-1));
       if (!Number.isFinite(anchorTop)) {
-        console.warn('🛑 [getSplitPoints] non-finite anchorTop — aborting slice computation', {
+        _isDebug(this) && console.warn('🛑 [getSplitPoints] non-finite anchorTop — aborting slice computation', {
           anchor: points.at(-1),
           anchorTop,
           fullPageHeight,
@@ -480,7 +480,7 @@ export function getSplitPoints({
         //     visual transform before the paginator repositions the window.
         // this.fitElementWithinHeight(currentElement, capacity)
         if (nextElement) {
-          console.warn('🅾️🅾️🅾️🅾️🅾️🅾️🅾️🅾️ registerPoint(nextElement)');
+          _isDebug(this) && console.warn('🅾️🅾️🅾️🅾️🅾️🅾️🅾️🅾️ registerPoint(nextElement)');
           const pushedNull = registerPoint(nextElement);
           // 🤖 Case: Unbreakable Oversized Without Children — `pushedNull` bubbles up when even the next sibling would start at the first child.
           // 🤖 Geometrically this declares the first page empty; we stop so the fallback logic can reschedule layout.
@@ -549,7 +549,7 @@ export function getSplitPointsPerCells(
     let ch = this.getSplitChildren(cell, firstH, fullH, parentItem);
     if(ch.length) {
       const firstChild = ch[0];
-      console.log('firstChild', firstChild);
+      _isDebug(this) && console.log('firstChild', firstChild);
       // * Find split points
       pts = this.getSplitPoints({
         rootNode: cell,
@@ -568,7 +568,7 @@ export function getSplitPointsPerCells(
   });
 
   const isFirstPartEmptyInAnyCell = firstPass.some(isFirstSliceEmpty);
-  console.log('🧽🧽🧽🧽🧽🧽🧽 isFirstPartEmptyInAnyCell', isFirstPartEmptyInAnyCell);
+  _isDebug(this) && console.log('🧽🧽🧽🧽🧽🧽🧽 isFirstPartEmptyInAnyCell', isFirstPartEmptyInAnyCell);
 
   let splitPointsPerCell = firstPass;
   let needsScalingInFullPage = false;
@@ -580,7 +580,7 @@ export function getSplitPointsPerCells(
       const fullH = rowFullPageHeight - (shells[ind] || 0);
       const ch = this.getSplitChildren(cell, firstH, fullH, parentItem);
       const firstChild = ch[0];
-      console.log('firstChild', firstChild);
+      _isDebug(this) && console.log('firstChild', firstChild);
       let pts = [];
       if (ch.length) {
         pts = this.getSplitPoints({
@@ -600,7 +600,7 @@ export function getSplitPointsPerCells(
     for (let i = 0; i < splitPointsPerCell.length; i++) {
       const pts = splitPointsPerCell[i];
       if (isFirstSliceEmpty(pts) && pts.length === 1) {
-        console.log('🧽🧽🧽🧽🧽🧽🧽 needsScalingInFullPage', splitPointsPerCell[i]);
+        _isDebug(this) && console.log('🧽🧽🧽🧽🧽🧽🧽 needsScalingInFullPage', splitPointsPerCell[i]);
         splitPointsPerCell[i] = [];
         needsScalingInFullPage = true;
       }
@@ -752,7 +752,6 @@ export function isFirstSliceEmpty(points) {
   if (!Array.isArray(points)) {
     return false;
   }
-  console.log('🧽🧽🧽🧽🧽🧽🧽🧽🧽🧽🧽🧽🧽 isFirstSliceEmpt(y) points[0]', points[0]);
   return points.length > 0 && points[0] === null;
 }
 
