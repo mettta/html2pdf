@@ -690,7 +690,7 @@ export default class Grid {
     if (startId === endId) {
       // Empty slice means pagination markers collided; log and assert in dev.
       this._debug._ && console.warn('[grid.split] _buildGridSplit: skip empty slice request', startId, endId);
-      this._assert && console.assert(false, '[grid.split] _buildGridSplit: empty slice encountered');
+      this.strictAssert(false, '[grid.split] _buildGridSplit: empty slice encountered');
       return null;
     }
     if (this._debug._) {

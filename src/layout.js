@@ -1,4 +1,5 @@
 import Style from './style.js';
+import * as Logging from './utils/logging.js';
 
 export default class Layout {
 
@@ -10,6 +11,9 @@ export default class Layout {
   }) {
     // init result flag
     this.success = false;
+
+    this._assert = config.consoleAssert ? true : false;
+    Object.assign(this, Logging);
 
     // * public
     this.root;
@@ -57,18 +61,18 @@ export default class Layout {
       // * success!
       this.success = true;
     } else {
-      this._assert && console.assert(this._DOM.getParentNode(this.root) === this._initialRoot, 'Failed to insert the layout root into the DOM.')
-      this._assert && console.assert(this._DOM.getElementOffsetParent(this.paperFlow) === this.root, 'Failed to insert the paperFlow element into the DOM.')
-      this._assert && console.assert(this._DOM.getElementOffsetParent(this.contentFlow) === this.root, 'Failed to insert the contentFlow element into the DOM.')
+      this.strictAssert(this._DOM.getParentNode(this.root) === this._initialRoot, 'Failed to insert the layout root into the DOM.')
+      this.strictAssert(this._DOM.getElementOffsetParent(this.paperFlow) === this.root, 'Failed to insert the paperFlow element into the DOM.')
+      this.strictAssert(this._DOM.getElementOffsetParent(this.contentFlow) === this.root, 'Failed to insert the contentFlow element into the DOM.')
       return
     }
 
   }
 
   _getTemplates() {
-    this._assert && console.assert(this._selector.frontpageTemplate, 'frontpageTemplate selector is missing');
-    this._assert && console.assert(this._selector.headerTemplate, 'headerTemplate selector is missing');
-    this._assert && console.assert(this._selector.footerTemplate, 'footerTemplate selector is missing');
+    this.strictAssert(this._selector.frontpageTemplate, 'frontpageTemplate selector is missing');
+    this.strictAssert(this._selector.headerTemplate, 'headerTemplate selector is missing');
+    this.strictAssert(this._selector.footerTemplate, 'footerTemplate selector is missing');
     this.frontpageTemplate = this._DOM.getInnerHTML(this._selector.frontpageTemplate);
     this.headerTemplate = this._DOM.getInnerHTML(this._selector.headerTemplate);
     this.footerTemplate = this._DOM.getInnerHTML(this._selector.footerTemplate);
@@ -96,7 +100,7 @@ export default class Layout {
     } else if (body) {
       this._DOM.insertBefore(body, styleElement);
     } else {
-      this._assert && console.assert(false, 'We expected to find the HEAD and BODY tags.');
+      this.strictAssert(false, 'We expected to find the HEAD and BODY tags.');
     }
   }
 
@@ -180,7 +184,7 @@ export default class Layout {
   _ignoreUnprintableEnvironment(root) {
     if (root === this._DOM.body) {
       // ! now this is impossible, because a new root is created, and always has a parent
-      this._assert && console.assert(false, "misshapen root")
+      this.strictAssert(false, "misshapen root")
       return
     }
 
