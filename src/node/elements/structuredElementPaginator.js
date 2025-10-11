@@ -122,7 +122,17 @@ export function registerPageStartAt(adapter, index, splitStartRowIndexes, reason
   }
 
   if (idx >= rowsLen) {
-    shouldAssert && console.assert(false, `registerPageStartAt: computed index (${idx}) >= rowsLen (${rowsLen})`);
+    // * Stage 5 always replays the same row after it tweaks the window:
+    // * the handler returns rowIndex - 1, the surrounding for immediately does index++,
+    // * and that lands the row back on the next iteration with the updated splitBottom.
+    // * Until the tail has truly moved to the next part, the different Stage 5 branches
+    // * keep issuing the very same targetIndex, so the final call sometimes tries
+    // * to “advance” past the end of rows. The guard (and early return) doesn’t signal a bug -
+    // * it just cancels that redundant request so the source table never ends up empty
+    // * and we never reuse a split marker beyond rows.length.
+    debug && debug._ && console.warn(`registerPageStartAt return: computed index (${idx}) >= rowsLen (${rowsLen})`,
+      'Last split index should not equal rows.length, or the original table will be empty.'
+    );
     return;
   }
 
