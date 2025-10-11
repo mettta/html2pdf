@@ -60,7 +60,7 @@ export default class Pre {
     // * the upper margin is considered for the first part,
     // * both margins are zeroed for the middle parts,
     // * and the lower margin will be considered in further calculations.
-    const preWrapperHeight = this._node.getEmptyNodeHeight(node, '', false);
+    const preWrapperHeight = this._node.getEmptyNodeHeightByProbe(node, '', false);
 
     // * Let's check the probable number of rows in the simplest case,
     // * as if the element had the style.whiteSpace=='pre'

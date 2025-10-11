@@ -179,7 +179,7 @@ export default class Grid {
 
     // ** Prepare gridNode parameters for splitting
     const nodeTop = this._node.getTop(gridNode, root);
-    const nodeWrapperHeight = this._node.getEmptyNodeHeight(gridNode);
+    const nodeWrapperHeight = this._node.getEmptyNodeHeightByProbe(gridNode);
     const firstPartHeight = pageBottom
       - nodeTop
       // - this._signpostHeight

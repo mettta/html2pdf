@@ -208,7 +208,7 @@ export function getMaxWidth(node) {
 /**
  * @this {Node}
  */
-export function getEmptyNodeHeight(node, inner = '', margins = true) {
+export function getEmptyNodeHeightByProbe(node, inner = '', margins = true) {
   // An inner is expected for elements with a specific structure,
   // e.g. “<tr><td></td></td></tr>” for a table.
   const wrapper = this.create();

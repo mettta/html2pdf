@@ -516,7 +516,7 @@ export default class Table {
   _collectCurrentTableMetrics() {
     // * Calculate table wrapper (empty table element) height
     // * to estimate the available space for table content.
-    const tableWrapperHeight = this._node.getEmptyNodeHeight(
+    const tableWrapperHeight = this._node.getEmptyNodeHeightByProbe(
       this._currentTable,
       // * We need content for the outer table tag to be rendered, but we reset
       // * the TD/TR styles because they are later considered individually for each cell.
@@ -538,7 +538,7 @@ export default class Table {
     this._currentTableTfootHeight = this._DOM.getElementOffsetHeight(this._currentTableEntries.tfoot) || 0;
 
     this._currentTableFirstPartContentBottom = this._currentFirstPageBottom
-      - tableTopWithTopMargin
+      - tableTop // tableTopWithTopMargin
       - tableWrapperHeight
       - this._signpostHeight;
 

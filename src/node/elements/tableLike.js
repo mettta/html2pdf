@@ -61,7 +61,7 @@ export default class TableLike {
     const sortOfLines = this._node.getPreparedChildren(node);
 
     const nodeTop = this._node.getTop(node, root);
-    const nodeWrapperHeight = this._node.getEmptyNodeHeight(node);
+    const nodeWrapperHeight = this._node.getEmptyNodeHeightByProbe(node);
 
     // ** Prepare parameters for splitters calculation
     const firstPartSpace = pageBottom - nodeTop - nodeWrapperHeight;
