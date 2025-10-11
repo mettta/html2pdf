@@ -39,8 +39,9 @@ class Test(BaseCase):
         self.helper.assert_document_has_pages(1, True)
 
     def test_02(self):
+        # exactly
         self.helper.do_open(case2_html_file_url)
-        self.helper.assert_document_has_pages(2, True)
+        self.helper.assert_document_has_pages(1, True)
 
     def test_03(self):
         self.helper.do_open(case3_html_file_url)

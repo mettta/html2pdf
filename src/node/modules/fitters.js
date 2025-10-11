@@ -175,3 +175,62 @@ export function lockNodesWidths(nodes) {
     }
   });
 }
+
+/**
+ * Estimate extra empty space (px) under an inline <img> caused by baseline alignment.
+ * Fast path: uses only computed font-size & line-height; no canvas, no layout reads.
+ *
+ * Formula:
+ *          gap ≈ halfLeading + descentRatio * fontSize
+ * where halfLeading = max(0, (lineHeight - fontSize)/2)
+ *
+ * * Usage:
+ *  const px = estimateInlineImgGapBelow(parentElement);
+ *  or with a safer upper bound for unknown fonts:
+ *  const pxSafe = estimateInlineImgGapBelow(parentElement, { descentRatio: 0.26, safety: 1.05 });
+ *
+ * @this {Node}
+ *
+ * @param {Element} parentEl - inline formatting context parent of the image
+ * @param {Object} [opt]
+ * @param {number} [opt.descentRatio=0.22]
+ *   Heuristic fraction of font-size that approximates font descent.
+ *   - Typical western/Latin fonts have descent ≈ 18–28% of em.
+ *   - 0.22 is a pragmatic middle; adjust per your font stack if needed.
+ * @param {number} [opt.normalLH=1.2]
+ *   Fallback multiplier for CSS `line-height: normal` (UA default is ~1.2).
+ * @param {number} [opt.safety=1.0]
+ *   Extra safety factor (>1 inflates estimate). Example: 1.05 adds ~5% headroom.
+ * @returns {number} Integer pixels, rounded up.
+ */
+export function estimateInlineImgGapBelow(parentEl, opt = {}) {
+  const { descentRatio = 0.22, normalLH = 1.2, safety = 1.0 } = opt;
+
+  const cs = getComputedStyle(parentEl);
+  const fs = parseFloat(cs.fontSize) || 0;
+
+  // Resolve line-height: 'normal' -> normalLH * font-size
+  let lh;
+  if (cs.lineHeight === 'normal' || !cs.lineHeight) {
+    lh = normalLH * fs;
+  } else {
+    // Handles unitless and px values uniformly
+    const n = parseFloat(cs.lineHeight);
+    lh = Number.isFinite(n) ? n : normalLH * fs;
+  }
+
+  // Lower half of leading (empty space added above & below the em box).
+  const halfLeading = Math.max(0, (lh - fs) / 2);
+
+  // Descent approximation: fraction of em (font-size).
+  // Rationale:
+  //   - Fonts vary; 0.18–0.28 is common for Latin scripts.
+  //   - Choose 0.22 as default; bump to 0.24–0.26 if you use fonts with larger descents.
+  const descent = descentRatio * fs;
+
+  // Estimated gap under baseline-aligned inline image
+  const raw = (halfLeading + descent) * safety;
+
+  // Return integer px, rounded up (conservative).
+  return Math.ceil(raw);
+}

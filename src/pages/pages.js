@@ -729,9 +729,14 @@ export default class Pages {
           ? this._node.getTop(parent, this._root)
           : undefined;
 
+        // * subtract the extra empty space under an inline <img> caused by baseline alignment,
+        // * from the space available for the image.
+        const imgGapBelow = this._node.estimateInlineImgGapBelow(parent);
+
         // include the wrapper's top margin only for the first child; otherwise
         // measure from the current image top.
-        let availableImageNodeSpace = newPageBottom - (parentTopForImage ?? currentImageTop);
+        //! let availableImageNodeSpace = newPageBottom - (parentTopForImage ?? currentImageTop);
+        let availableImageNodeSpace = newPageBottom - currentImageTop - imgGapBelow;
         // if parentBottom: the node is last,
         // so let's subtract the probable margins at the bottom of the node,
         // which take away the available space for image-node placement:
@@ -742,7 +747,7 @@ export default class Pages {
         );
         // if parent: the node is first,
         // so let's include the parent's top margins:
-        let fullPageImageNodeSpace = this._referenceHeight - (
+        let fullPageImageNodeSpace = this._referenceHeight - imgGapBelow - (
            parentTopForImage !== undefined
             ? (currentImageTop - parentTopForImage)
             : 0
@@ -771,7 +776,7 @@ export default class Pages {
         if (currentImageHeight < availableImageNodeSpace) {
           // just leave it on the current page
           this._node.markProcessed(currentElement, 'IMG that fits, and next starts on next');
-          registerPageStart(nextElement);
+          !this._node.isContentFlowEnd(nextElement) && registerPageStart(nextElement);
           this._debug._parseNode && console.log('Register next elements; 🖼️🖼️🖼️ IMG fits:', currentElement);
           this._debug._parseNode && console.log('%c END _parseNode 🖼️ IMG fits', CONSOLE_CSS_END_LABEL);
           this._debug._parseNode && console.groupEnd();
@@ -793,7 +798,7 @@ export default class Pages {
             hspace: this._referenceWidth
           });
           // and leave it on the current page
-          registerPageStart(nextElement);
+          !this._node.isContentFlowEnd(nextElement) && registerPageStart(nextElement);
           this._debug._parseNode && console.log('%c END _parseNode 🖼️ IMG scaled', CONSOLE_CSS_END_LABEL);
           this._debug._parseNode && console.groupEnd();
           return
