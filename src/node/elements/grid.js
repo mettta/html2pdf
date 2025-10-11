@@ -16,13 +16,12 @@ export default class Grid {
     // * From config:
     this._debug = config.debugMode ? { ...config.debugConfig.grid } : {};
     this._assert = config.consoleAssert ? true : false;
+    Object.assign(this, Logging);
 
     // * Private
     this._DOM = DOM;
     this._selector = selector;
     this._node = node;
-
-    Object.assign(this, Logging);
 
     this._resetCurrent();
 
@@ -58,7 +57,7 @@ export default class Grid {
     // - fallback for non-breakable items (IMG/SVG) via scaling similar to Table.
     // - guard/skip complex layouts (non-monotonic placement, spans) with explicit logs.
 
-    this._debug._ && console.group('%c_splitGridNode', 'background:#00FFFF', gridNode);
+    this._debug._ && console.group('%c split Grid Node', 'background:#00FFFF', gridNode);
 
     const gridCells = this._node.getPreparedChildren(gridNode);
     this._node.lockNodesWidths(gridCells);
@@ -163,23 +162,23 @@ export default class Grid {
 
     const hasImplicitRowGaps = rowIndexSet.size > 0 && Math.max(...rowIndexSet) > currentRows.length;
     if (hasImplicitRowGaps) {
-      this._debug._ && console.warn('[grid.split] Unsupported implicit row gap detected; keeping grid unsplit.', { hasImplicitRowGaps });
+      this._debug._ && console.warn('[grid.split]', 'Unsupported implicit row gap detected; keeping grid unsplit.', { hasImplicitRowGaps });
       this._node.setInitStyle(false, gridNode, nodeComputedStyle);
       this._debug._ && console.groupEnd();
       return [];
     }
 
     if (hasRowSpan || hasColumnSpan) {
-      this._debug._ && console.warn('[grid.split] Grid contains row/column spans; using fallback (move row to next page).', { hasRowSpan, hasColumnSpan });
+      this._debug._ && console.warn('[grid.split]', 'Grid contains row/column spans; using fallback (move row to next page).', { hasRowSpan, hasColumnSpan });
       this._debug._ && console.groupEnd();
       return this._fallbackMoveGridToNextPage({ gridNode, nodeComputedStyle });
     }
 
-    this._debug._ && console.log('[grid.split] currentRows:', currentRows)
+    this.log('grid.split', 'currentRows:', currentRows)
 
     // ** Prepare gridNode parameters for splitting
     const nodeTop = this._node.getTop(gridNode, root);
-    const nodeWrapperHeight = this._node.getEmptyNodeHeight(gridNode);
+    const nodeWrapperHeight = this._node.getEmptyNodeHeightByProbe(gridNode);
     const firstPartHeight = pageBottom
       - nodeTop
       // - this._signpostHeight
@@ -188,7 +187,7 @@ export default class Grid {
       // - 2 * this._signpostHeight
       - nodeWrapperHeight;
 
-    this._debug._ && console.log({firstPartHeight, fullPagePartHeight});
+    this.log('grid.split', {firstPartHeight, fullPagePartHeight});
 
     //? #grid_refactor
     //  captures the active grid node, current rows, and full-page metrics
@@ -211,10 +210,9 @@ export default class Grid {
       currentRows.length < this._minBreakableGridRows
       && this._DOM.getElementOffsetHeight(gridNode) < fullPageHeight
     ) {
-      this._debug._ && console.log(`%c END [grid.split]: DON'T SPLIT, it isn't breakable and fits in the page`, CONSOLE_CSS_END_LABEL);
       this._node.setInitStyle(false, gridNode, nodeComputedStyle);
       this._resetCurrent();
-      this._debug._ && console.groupEnd();
+      this.logGroupEnd(`%c END [grid.split]: DON'T SPLIT, it isn't breakable and fits in the page`);
       return []
     }
 
@@ -259,7 +257,7 @@ export default class Grid {
       }
 
       if (evaluation.rowBottom <= this._currentGridSplitBottom) {
-        this._debug._ && console.log('[grid.split] Row fits current window', { rowIndex, splitBottom: this._currentGridSplitBottom });
+        this.log('grid.split', 'Row fits current window', { rowIndex, splitBottom: this._currentGridSplitBottom });
         continue;
       }
 
@@ -286,13 +284,15 @@ export default class Grid {
       this._createAndInsertGridFinalSlice({ node: gridNode, entries, startId: finalStartId }),
     ];
 
-    this._debug._ && console.log('splitStartRowIndexes', splitStartRowIndexes);
-    this._debug._ && console.log('splits', splits);
-    this._debug._ && console.log('[grid.split] recordedParts', this._currentGridRecordedParts?.parts);
+    this.log('grid.split', {
+      splitStartRowIndexes,
+      splits,
+      'recordedParts': this._currentGridRecordedParts?.parts
+    });
 
     this._node.setInitStyle(false, gridNode, nodeComputedStyle);
     this._resetCurrent();
-    this._debug._ && console.groupEnd();
+    this.logGroupEnd('split Grid Node');
     return splits;
   }
 
@@ -690,7 +690,7 @@ export default class Grid {
     if (startId === endId) {
       // Empty slice means pagination markers collided; log and assert in dev.
       this._debug._ && console.warn('[grid.split] _buildGridSplit: skip empty slice request', startId, endId);
-      this._assert && console.assert(false, '[grid.split] _buildGridSplit: empty slice encountered');
+      this.strictAssert(false, '[grid.split] _buildGridSplit: empty slice encountered');
       return null;
     }
     if (this._debug._) {

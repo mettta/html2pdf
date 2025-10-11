@@ -1,6 +1,9 @@
 // Shared helpers for balancing row slices across table-like elements.
 // Each helper is adapter-driven so table/grid can plug in their DOM utilities.
 
+import { debugFor } from '../../utils/debugFor.js';
+const _isDebug = debugFor('pagination');
+
 /**
  * 🤖 Slice each cell by split points reported by the slicer.
  * 🤖 Geometry: preserves column alignment by generating per-cell fragments before reassembling row slices.

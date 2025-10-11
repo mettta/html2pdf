@@ -176,17 +176,17 @@ export default class Table {
       '\n Distributed Rows', [...this._currentTableDistributedRows]
     );
 
-    this._assert && console.assert(
+    this.strictAssert(
       // 🚨 No 0 indexes. First split cannot start from 0.
       splitStartRowIndexes.every(i => Number.isInteger(i) && i > 0 && i <= this._currentTableDistributedRows.length),
       'splitStartRowIndexes contains invalid indexes'
     );
-    this._assert && console.assert(
+    this.strictAssert(
       // 🚨 Strictly increasing, no duplicates.
       splitStartRowIndexes.every((val, i, arr) => i === 0 || val > arr[i - 1]),
       'splitStartRowIndexes must be strictly ascending and without duplicates'
     );
-    this._assert && console.assert(
+    this.strictAssert(
       // 🚨 Last split must not consume 100% of the table, original must keep rows.
       splitStartRowIndexes.at(-1) !== this._currentTableDistributedRows.length,
       'Last split index should not equal rows.length, or the original table will be empty.'
@@ -516,11 +516,12 @@ export default class Table {
   _collectCurrentTableMetrics() {
     // * Calculate table wrapper (empty table element) height
     // * to estimate the available space for table content.
-    const tableWrapperHeight = this._node.getEmptyNodeHeight(
+    const tableWrapperHeight = this._node.getEmptyNodeHeightByProbe(
       this._currentTable,
       // * We need content for the outer table tag to be rendered, but we reset
       // * the TD/TR styles because they are later considered individually for each cell.
-      '<tr style="padding:0;border:0;"><td style="padding:0;border:0;"></td></tr>'
+      '<tr style="padding:0;border:0;"><td style="padding:0;border:0;"></td></tr>',
+      false // * margins on the chunks are cleared
     );
 
     // TODO: Top margin is excluded since it's reset on new pages now!
@@ -538,7 +539,7 @@ export default class Table {
     this._currentTableTfootHeight = this._DOM.getElementOffsetHeight(this._currentTableEntries.tfoot) || 0;
 
     this._currentTableFirstPartContentBottom = this._currentFirstPageBottom
-      - tableTopWithTopMargin
+      - tableTop // tableTopWithTopMargin
       - tableWrapperHeight
       - this._signpostHeight;
 

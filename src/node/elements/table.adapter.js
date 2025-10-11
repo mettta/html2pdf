@@ -15,14 +15,12 @@ function createBottomSignpost(ctx) {
 // 🤖 Create and insert a non-final table slice (tbody fragment) before the original table.
 // 🤖 Geometry: clones structural pieces (caption/thead/colgroup) and wraps rows [startId, endId) into a no-break container.
 export function createAndInsertTableSlice(ctx, { startId, endId, table, tableEntries }) {
-  if (ctx._assert) {
-    const rowsLen = (tableEntries && tableEntries.rows) ? tableEntries.rows.length : 0;
-    console.assert(Number.isInteger(startId) && Number.isInteger(endId),
-      `createAndInsertTableSlice: non-integer bounds: startId=${startId}, endId=${endId}`);
-    console.assert(rowsLen >= 0, `createAndInsertTableSlice: invalid rows length: ${rowsLen}`);
-    console.assert(startId >= 0 && endId >= 0 && startId < endId && endId <= rowsLen,
-      `createAndInsertTableSlice: out-of-range slice [${startId}, ${endId}) for rowsLen=${rowsLen}`);
-  }
+  ctx.strictAssert(Number.isInteger(startId) && Number.isInteger(endId),
+  `createAndInsertTableSlice: non-integer bounds: startId=${startId}, endId=${endId}`);
+  const rowsLen = (tableEntries && tableEntries.rows) ? tableEntries.rows.length : 0;
+  ctx.strictAssert(rowsLen >= 0, `createAndInsertTableSlice: invalid rows length: ${rowsLen}`);
+  ctx.strictAssert(startId >= 0 && endId >= 0 && startId < endId && endId <= rowsLen,
+    `createAndInsertTableSlice: out-of-range slice [${startId}, ${endId}) for rowsLen=${rowsLen}`);
 
   const tableSliceWrapper = ctx._node.createWithFlagNoBreak();
   ctx._DOM.insertBefore(table, tableSliceWrapper);
@@ -47,7 +45,7 @@ export function createAndInsertTableSlice(ctx, { startId, endId, table, tableEnt
     // * normalize top cut for table slices
     // ? may affect the table design
     // todo: include in user config
-    // ctx._node.markTopCut(tableSlice);
+    ctx._node.markTopCut(tableSlice);
   }
   // * normalize bottom cut for table slices
   ctx._node.markBottomCut(tableSlice);
@@ -68,7 +66,7 @@ export function createAndInsertTableFinalSlice(ctx, { table }) {
   // * normalize top cut for table slices
   // ? may affect the table design
   // todo: include in user config
-  // ctx._node.markTopCut(table);
+  ctx._node.markTopCut(table);
 
   ctx._DOM.insertBefore(table, tableSliceWrapper);
   ctx._DOM.insertAtEnd(

@@ -1,3 +1,5 @@
+import * as Logging from './utils/logging.js';
+
 export default class DocumentObjectModel {
 
   constructor({ DOM, config }) {
@@ -9,6 +11,7 @@ export default class DocumentObjectModel {
     // * private
     this._debug = config.debugMode ? { ...config.debugConfig.DOM } : {};
     this._assert = config.consoleAssert ? true : false;
+    Object.assign(this, Logging);
   }
 
   // CREATE ELEMENTS
@@ -66,7 +69,7 @@ export default class DocumentObjectModel {
     while (source.firstChild) {
       target.append(source.firstChild);
     }
-    this._assert && console.assert(this.getInnerHTML(source) === "");
+    this.strictAssert(this.getInnerHTML(source) === "");
   }
 
   // Move content from one table row (TR) to another TR, TD-to-TD.
@@ -80,8 +83,8 @@ export default class DocumentObjectModel {
     // Validate tag names where possible
     const srcTag = this.getElementTagName(sourceTR);
     const tgtTag = this.getElementTagName(targetTR);
-    this._assert && console.assert(srcTag === 'TR', `moveRowContent(): source is not TR, got ${srcTag}`);
-    this._assert && console.assert(tgtTag === 'TR', `moveRowContent(): target is not TR, got ${tgtTag}`);
+    this.strictAssert(srcTag === 'TR', `moveRowContent(): source is not TR, got ${srcTag}`);
+    this.strictAssert(tgtTag === 'TR', `moveRowContent(): target is not TR, got ${tgtTag}`);
 
     const srcCells = [...this.getChildren(sourceTR)];
     const tgtCells = [...this.getChildren(targetTR)];
@@ -112,12 +115,12 @@ export default class DocumentObjectModel {
   // GET ELEMENT
 
   getAll(selectors, target = this.document) {
-    this._assert && console.assert(selectors);
+    this.strictAssert(selectors);
     if (typeof selectors === 'string') {
       selectors = selectors.split(',').filter(Boolean);
     }
-    this._assert && console.assert(Array.isArray(selectors), 'Selectors must be provided as an array or string (one selector or multiple selectors, separated by commas). Now the selectors are:', selectors);
-    this._assert && console.assert(selectors.length > 0, 'getAll(selectors), selectors:', selectors);
+    this.strictAssert(Array.isArray(selectors), 'Selectors must be provided as an array or string (one selector or multiple selectors, separated by commas). Now the selectors are:', selectors);
+    this.strictAssert(selectors.length > 0, 'getAll(selectors), selectors:', selectors);
 
     if (selectors.length === 1) {
       return [...this.getAllElements(selectors[0], target)]
@@ -130,12 +133,12 @@ export default class DocumentObjectModel {
 
 
   getElement(selector, target = this.document) {
-    this._assert && console.assert(selector);
+    this.strictAssert(selector);
     return target.querySelector(selector);
   }
 
   getAllElements(selector, target = this.document) {
-    this._assert && console.assert(selector);
+    this.strictAssert(selector);
     return target.querySelectorAll(selector);
   }
 
@@ -230,11 +233,11 @@ export default class DocumentObjectModel {
     const first = selector.charAt(0);
 
     if (first === '.' || first === '#') {
-      this._debug._ && console.log(`you're really sure ${selector} is attribute selector?`)
+      this.log('getAttribute', `you're really sure ${selector} is attribute selector?`)
     }
 
     if (first === '[') {
-      this._assert && console.assert(
+      this.strictAssert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);
@@ -263,14 +266,14 @@ export default class DocumentObjectModel {
       element.id = id;
       return
     } else if (first === '[') {
-      this._assert && console.assert(
+      this.strictAssert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);
       element.setAttribute(attr, (value ? value : ''));
       return
     }
-    this._debug._ && console.log(`you're really sure ${selector} is a selector?`)
+    this.log('setAttribute', `you're really sure ${selector} is a selector?`)
   }
 
   setStyles(element, styles) {
@@ -322,7 +325,7 @@ export default class DocumentObjectModel {
     }
 
     const first = selector.charAt(0);
-    this._assert && console.assert(first.match(/[a-zA-Z#\[\.]/), `removeAttribute() expects a valid selector, but received ${selector}`)
+    this.strictAssert(first.match(/[a-zA-Z#\[\.]/), `removeAttribute() expects a valid selector, but received ${selector}`)
 
     if (first === '.') {
       const cl = selector.substring(1);
@@ -333,7 +336,7 @@ export default class DocumentObjectModel {
       element.removeAttribute(id);
       return
     } else if (first === '[') {
-      this._assert && console.assert(
+      this.strictAssert(
         selector.at(-1) === ']', `the ${selector} selector is not OK.`
       );
       const attr = selector.substring(1, selector.length - 1);

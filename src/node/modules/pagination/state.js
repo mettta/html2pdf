@@ -1,5 +1,8 @@
 // Shared pagination state helpers for table/grid.
 
+import { debugFor } from '../../utils/debugFor.js';
+const _isDebug = debugFor('pagination');
+
 /**
  * 🤖 Swap the original row entry with generated slices inside cached table/grid entries.
  * 🤖 Geometry: ensures subsequent measurements operate on the freshly inserted row fragments.

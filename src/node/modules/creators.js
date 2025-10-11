@@ -20,7 +20,7 @@ export function create(selector, textContent) {
     } else if (first.match(/[a-zA-Z]/)) {
       element = this._DOM.createElement(selector);
     } else {
-      this._assert && console.assert(false, `Expected valid html selector ot tag name, but received:`, selector)
+      this.strictAssert(false, `Expected valid html selector ot tag name, but received:`, selector)
       return
     }
   }

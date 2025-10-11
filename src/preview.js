@@ -1,4 +1,5 @@
 import addCSSMask from './mask.js';
+import * as Logging from './utils/logging.js';
 
 export default class Preview {
 
@@ -19,6 +20,7 @@ export default class Preview {
     this._config = config;
     this._debug = config.debugMode ? { ...config.debugConfig.preview } : {};
     this._assert = config.consoleAssert ? true : false;
+    Object.assign(this, Logging);
 
     this._DOM = DOM;
     this._selector = selector;
@@ -50,6 +52,7 @@ export default class Preview {
     this._processFirstPage();
     this._processOtherPages();
     (this._config.mask === true || this._config.mask === 'true') && this._addMask();
+    this._makeRootVisible();
   }
 
   _addMask() {
@@ -94,7 +97,7 @@ export default class Preview {
     const _printBodyMaskWindowFirstShift = _printTopMargin + _headerHeight;
     const _maskStep = _printPaperHeight + _virtualPagesGap;
 
-    this._assert && console.assert(
+    this.strictAssert(
       (_printPaperHeight === _bodyHeight + _headerHeight + _printTopMargin + _footerHeight + _printBottomMargin),
       'Paper size calculation params do not match'
     );
@@ -105,6 +108,10 @@ export default class Preview {
       maskWindow: _bodyHeight,
       maskFirstShift: _printBodyMaskWindowFirstShift,
     })
+  }
+
+  _makeRootVisible() {
+    this._DOM.setStyles(this._root, {'visibility': 'visible'});
   }
 
   _processFirstPage() {
@@ -204,7 +211,7 @@ export default class Preview {
     if (currentPageFirstElement) {
       this._DOM.setStyles(currentPageFirstElement, {'margin-top': ['0', 'important']});
     } else {
-      console.assert(0, '[preview] [_preventPageOverflow] current page First Element do not pass! page:', pageIndex)
+      this.strictAssert(0, '[preview] [_preventPageOverflow] current page First Element do not pass! page:', pageIndex)
     }
   }
 
@@ -346,7 +353,7 @@ export default class Preview {
     this._DOM.setStyles(balancingFooter, { 'margin-bottom': balancer + 'px' });
 
     // TODO check if negative on large documents
-    this._assert && console.assert(balancer >= 0, `balancer is negative: ${balancer} < 0`, contentSeparator);
+    this.strictAssert(balancer >= 0, `balancer is negative: ${balancer} < 0`, contentSeparator);
   }
 
 }

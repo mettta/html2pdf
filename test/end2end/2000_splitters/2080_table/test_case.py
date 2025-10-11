@@ -58,74 +58,66 @@ class Test(BaseCase):
         self.helper.assert_element_on_the_page('//*[@data-testid="R0"]', 1)
         self.helper.assert_element_on_the_page('//*[@data-testid="R11"]', 1)
         # 2
-        self.helper.assert_element_on_the_page('//*[@data-testid="G0"]', 2)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G9"]', 2)
         self.helper.assert_element_on_the_page('//*[@data-testid="G_0"]', 2)
         self.helper.assert_element_on_the_page('//*[@data-testid="G_7"]', 2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G0"]', 2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G11"]', 2)
         # 3
-        self.helper.assert_element_on_the_page('//*[@data-testid="G10"]', 3)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G11"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="B_0"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="B_3"]', 3)
         self.helper.assert_element_on_the_page('//*[@data-testid="B0"]', 3)
         self.helper.assert_element_on_the_page('//*[@data-testid="B5"]', 3)
 
     def test_2(self):
         # 4 pages
-        # The first page contains an element that pushes the table downward,
-        # so only two red content lines fit on the 1st page.
-        # The remaining red line continues on the 2nd page.
-        # The second green row begins on the 3rd page,
-        # but due to service break labels it doesn’t fit completely,
-        # so its two green content lines are moved to the final 4rd page,
-        # where they appear together with the last blue row, which fits entirely.
         self.helper.do_open(case2_html_file_url)
         self.helper.assert_document_has_pages(4)
         # 1
         self.helper.assert_element_on_the_page('//*[@data-testid="R0"]', 1)
-        self.helper.assert_element_on_the_page('//*[@data-testid="R1"]', 1)
+        self.helper.assert_element_on_the_page('//*[@data-testid="R2"]', 1)
         # 2
-        self.helper.assert_element_on_the_page('//*[@data-testid="R2"]', 2)
-        self.helper.assert_element_on_the_page('//*[@data-testid="R11"]', 2)
-        # 3
-        self.helper.assert_element_on_the_page('//*[@data-testid="G0"]', 3)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G9"]', 3)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G_0"]', 3)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G_7"]', 3)
-        # 4
-        self.helper.assert_element_on_the_page('//*[@data-testid="G10"]', 4)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G11"]', 4)
-        self.helper.assert_element_on_the_page('//*[@data-testid="B0"]', 4)
-        self.helper.assert_element_on_the_page('//*[@data-testid="B5"]', 4)
-
-    def test_3(self):
-        # 4 pages
-        # Same as in test_2, but a different partitioning.
-        self.helper.do_open(case3_html_file_url)
-        self.helper.assert_document_has_pages(4)
-        # 1
-        self.helper.assert_element_on_the_page('//*[@data-testid="R0"]', 1)
-        self.helper.assert_element_on_the_page('//*[@data-testid="R6"]', 1)
-        self.helper.assert_element_on_the_page('//*[@data-testid="R_0"]', 1)
-        self.helper.assert_element_on_the_page('//*[@data-testid="R_6"]', 1)
-        # 2
-        self.helper.assert_element_on_the_page('//*[@data-testid="R7"]', 2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="R3"]', 2)
         self.helper.assert_element_on_the_page('//*[@data-testid="R11"]', 2)
         self.helper.assert_element_on_the_page('//*[@data-testid="G0"]', 2)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G4"]', 2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G2"]', 2)
         self.helper.assert_element_on_the_page('//*[@data-testid="G_0"]', 2)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G_4"]', 2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G_2"]', 2)
         # 3
-        self.helper.assert_element_on_the_page('//*[@data-testid="G5"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G3"]', 3)
         self.helper.assert_element_on_the_page('//*[@data-testid="G11"]', 3)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G_5"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G_3"]', 3)
         self.helper.assert_element_on_the_page('//*[@data-testid="G_7"]', 3)
-        self.helper.assert_element_on_the_page('//*[@data-testid="B_0"]', 3)
-        self.helper.assert_element_on_the_page('//*[@data-testid="B_2"]', 3)
         self.helper.assert_element_on_the_page('//*[@data-testid="B0"]', 3)
         self.helper.assert_element_on_the_page('//*[@data-testid="B2"]', 3)
         # 4
         self.helper.assert_element_on_the_page('//*[@data-testid="B_3"]', 4)
         self.helper.assert_element_on_the_page('//*[@data-testid="B3"]', 4)
         self.helper.assert_element_on_the_page('//*[@data-testid="B5"]', 4)
+
+    def test_3(self):
+        # 3 pages
+        self.helper.do_open(case3_html_file_url)
+        self.helper.assert_document_has_pages(3)
+        # 1
+        self.helper.assert_element_on_the_page('//*[@data-testid="R0"]', 1)
+        self.helper.assert_element_on_the_page('//*[@data-testid="R7"]', 1)
+        self.helper.assert_element_on_the_page('//*[@data-testid="R_0"]', 1)
+        self.helper.assert_element_on_the_page('//*[@data-testid="R_6"]', 1)
+        # 2
+        self.helper.assert_element_on_the_page('//*[@data-testid="R8"]', 2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="R11"]', 2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G0"]', 2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G7"]', 2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G_0"]', 2)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G_7"]', 2)
+        # 3
+        self.helper.assert_element_on_the_page('//*[@data-testid="G8"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G11"]', 3)
+
+        self.helper.assert_element_on_the_page('//*[@data-testid="B_0"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="B_3"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="B0"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="B5"]', 3)
 
     def test_4(self):
         # 4 pages
@@ -142,12 +134,10 @@ class Test(BaseCase):
         self.helper.assert_element_on_the_page('//*[@data-testid="box"]', 2)
         # 3
         self.helper.assert_element_on_the_page('//*[@data-testid="G0"]', 3)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G9"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G11"]', 3)
         self.helper.assert_element_on_the_page('//*[@data-testid="G_0"]', 3)
         self.helper.assert_element_on_the_page('//*[@data-testid="G_7"]', 3)
         # 4
-        self.helper.assert_element_on_the_page('//*[@data-testid="G10"]', 4)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G11"]', 4)
         self.helper.assert_element_on_the_page('//*[@data-testid="B0"]', 4)
         self.helper.assert_element_on_the_page('//*[@data-testid="B5"]', 4)
 
@@ -166,21 +156,13 @@ class Test(BaseCase):
         self.helper.assert_element_on_the_page('//*[@data-testid="box"]', 2)
         # 3
         self.helper.assert_element_on_the_page('//*[@data-testid="R0"]', 3)
-        self.helper.assert_element_on_the_page('//*[@data-testid="R9"]', 3)
+        self.helper.assert_element_on_the_page('//*[@data-testid="R11"]', 3)
         # 4
-        self.helper.assert_element_on_the_page('//*[@data-testid="R10"]', 4)
-        self.helper.assert_element_on_the_page('//*[@data-testid="R11"]', 4)
         self.helper.assert_element_on_the_page('//*[@data-testid="G0"]', 4)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G7"]', 4)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G_0"]', 4)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G_7"]', 4)
+        self.helper.assert_element_on_the_page('//*[@data-testid="G11"]', 4)
         # 5
-        self.helper.assert_element_on_the_page('//*[@data-testid="G8"]', 5)
-        self.helper.assert_element_on_the_page('//*[@data-testid="G11"]', 5)
         self.helper.assert_element_on_the_page('//*[@data-testid="B0"]', 5)
         self.helper.assert_element_on_the_page('//*[@data-testid="B5"]', 5)
-        self.helper.assert_element_on_the_page('//*[@data-testid="B_0"]', 5)
-        self.helper.assert_element_on_the_page('//*[@data-testid="B_3"]', 5)
 
     def test_6(self):
         # 2 pages

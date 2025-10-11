@@ -1,3 +1,5 @@
+import * as Logging from './utils/logging.js';
+
 export default class Validator {
   constructor({
     config,
@@ -14,6 +16,7 @@ export default class Validator {
     this._root = layout.root;
 
     this._assert = config.consoleAssert ? true : false;
+    Object.assign(this, Logging);
   }
 
   init() {
@@ -33,7 +36,7 @@ export default class Validator {
       return accumulator
     }, []);
 
-    this._assert && console.assert(!brokenDividers.length, 'Problems with preview generation on the following pages: ', brokenDividers)
+    this.strictAssert(!brokenDividers.length, 'Problems with preview generation on the following pages: ', brokenDividers)
 
   }
 }

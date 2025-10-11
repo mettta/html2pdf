@@ -25,7 +25,7 @@ export function isSelectorMatching(element, selector) {
     return this._DOM.hasID(element, id);
 
   } else if (first === '[') {
-    _isDebug(this) && console.assert(
+    this.strictAssert(
       selector.at(-1) === ']', `the ${selector} selector is not OK.`
     );
     const attr = selector.substring(1, selector.length - 1);

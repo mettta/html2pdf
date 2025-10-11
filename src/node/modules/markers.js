@@ -149,7 +149,7 @@ export function markSliceCutsInRows(rows) {
       rowWrapper = undefined; // not exists
       cellWrappers = row; // cells in virtual row
     } else {
-      console.assert(0, 'we expected TR or an array of elements!')
+      this.strictAssert(0, 'we expected TR or an array of elements!')
     }
 
     if (!rowWrapper && !cellWrappers.length) {

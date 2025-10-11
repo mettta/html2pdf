@@ -37,6 +37,8 @@ const debugConfig = {
     slicers: false,
     splitters: false,
     wrappers: false,
+    // * `pagination` modules
+    pagination: false,
   },
   paragraph: {
     _: false,

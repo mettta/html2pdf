@@ -1,4 +1,5 @@
 import arrayFromString from './arrayFromString.js';
+import * as Logging from '../utils/logging.js';
 
 const CONSOLE_CSS_COLOR_PAGES = '#66CC00';
 const CONSOLE_CSS_PRIMARY_PAGES = `color: ${CONSOLE_CSS_COLOR_PAGES};font-weight:bold`;
@@ -19,6 +20,8 @@ export default class Pages {
     referenceWidth,
     referenceHeight
   }) {
+
+    Object.assign(this, Logging);
 
     // * From config:
     this._debug = config.debugMode ? { ...config.debugConfig.pages } : {};
@@ -609,8 +612,7 @@ export default class Pages {
       return
     }
 
-    this._debug._
-      && console.assert( // is filtered in the function _gerChildren()
+    this.strictAssert( // is filtered in the function _gerChildren()
       this._DOM.getElementOffsetParent(currentElement),
       'it is expected that the element has an offset parent',
       currentElement);
@@ -846,7 +848,7 @@ export default class Pages {
           '\n🥁 fullPageFactor', fullPageFactor,
         );
 
-        this._debug._parseNode && console.assert(availableSpaceFactor < 1);
+        this.strictAssert(availableSpaceFactor < 1);
 
         // Try to fit currentElement into the remaining space
         // on the current(last) page (availableSpace).

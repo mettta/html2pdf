@@ -12,6 +12,7 @@ export default class Paragraph {
   }) {
     // * From config:
     this._debug = config.debugMode ? { ...config.debugConfig.paragraph } : {};
+    this._assert = config.consoleAssert ? true : false;
     // * Private
     this._DOM = DOM;
     this._selector = selector;
@@ -135,7 +136,7 @@ export default class Paragraph {
           return result;
         }
 
-        this._debug._ && console.assert(
+        this.strictAssert(
             true,
             'groupedPartiallyLinedChildren: An unexpected case of splitting a complex paragraph into lines.',
             '\nOn the element:',
@@ -192,7 +193,7 @@ export default class Paragraph {
         if (arr.length == 0) {
           newLine = arr[0];
           newLine.setAttribute('role', '🚫');
-          console.assert(arr.length == 0, 'The string cannot be empty (_splitComplexTextBlockIntoLines)')
+          this.strictAssert(arr.length == 0, 'The string cannot be empty (_splitComplexTextBlockIntoLines)')
         } else if (arr.length == 1) {
           newLine = arr[0];
         } else {

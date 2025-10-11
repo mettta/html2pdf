@@ -1,6 +1,9 @@
 // Shared branching logic for resolving overflowing rows during pagination.
 // Heavy DOM mutations are delegated through adapter callbacks so table/grid can reuse the same flow.
 
+import { debugFor } from '../../utils/debugFor.js';
+const _isDebug = debugFor('pagination');
+
 /**
  * 🤖 Route an overflowing row through ROWSPAN fallback, fresh slicing, or already-sliced handling.
  * 🤖 Geometry: inspects flags (ROWSPAN, slice markers) to pick the appropriate Stage-5 branch without duplicating caller logic.
@@ -51,9 +54,7 @@ export function paginationResolveRowWithRowspan({
   afterResolve,
 }) {
   const { rowIndex, tailWindowHeight } = evaluation;
-  if (debug && debug._) {
-    console.log('%c ⚠️ Row has ROWSPAN; use conservative fallback (no slicing)', 'color:DarkOrange; font-weight:bold');
-  }
+  _isDebug(this) && console.log('%c ⚠️ Row has ROWSPAN; use conservative fallback (no slicing)', 'color:DarkOrange; font-weight:bold');
   const result = resolveOverflow({
     rowIndex,
     evaluation,
@@ -77,12 +78,10 @@ export function paginationResolveAlreadySlicedRow({
   debug,
 }) {
   const { rowIndex, row, tailWindowHeight, delta } = evaluation;
-  if (debug && debug._) {
-    console.log(`%c Row # ${rowIndex} is slice! but don't fit`, 'color:DarkOrange; font-weight:bold', row);
-    console.warn('%c SUPER BIG', 'background:red;color:white', delta, {
-      part: fullPageHeight,
-    });
-  }
+  _isDebug(this) && console.log(`%c Row # ${rowIndex} is slice! but don't fit`, 'color:DarkOrange; font-weight:bold', row);
+  _isDebug(this) && console.warn('%c SUPER BIG', 'background:red;color:white', delta, {
+    part: fullPageHeight,
+  });
   return resolveSplitFailure({
     evaluation,
     splitStartRowIndexes,
@@ -190,8 +189,8 @@ export function paginationSplitRow({
       finalizeRow,
     });
     newRows.push(...generatedRows);
-  } else if (debug && debug._) {
-    console.log('🔴 There is no Split');
+  } else {
+    _isDebug(this) && console.log('🔴 There is no Split');
   }
 
   // ********************
@@ -297,13 +296,11 @@ export function paginationProcessRowSplitResult({
 
   // * If the split failed and the array of new rows is empty,
   // * we need to take action, because the row did not fit.
-  if (debug && debug._) {
-    console.log(
+  _isDebug(this) && console.log(
       `%c The row is not split. (ROW.${rowIndex})`,
       'color:orange',
       row,
     );
-  }
 
   return onSplitFailure?.({
     evaluation,

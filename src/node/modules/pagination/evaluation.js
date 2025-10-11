@@ -1,6 +1,9 @@
 // Shared helpers for building row evaluation snapshots during pagination.
 // Mixed into Node so helpers can reuse measurement utilities and stay adapter-friendly.
 
+import { debugFor } from '../../utils/debugFor.js';
+const _isDebug = debugFor('pagination');
+
 /**
  * 🤖 Capture per-row geometry relative to the current split bottom.
  * 🤖 Geometry: stores row top/bottom, next marker, and tail window height
@@ -60,13 +63,13 @@ export function paginationCanAbsorbLastRow({
     return false;
   }
   const overflow = evaluation.rowBottom - splitBottom;
-  if (debug && debug._) {
-    console.log('🫟 last-row-extra-check', {
+
+  _isDebug(this) && console.log('🫟 last-row-extra-check', {
       overflow,
       extraCapacity,
       rowBottom: evaluation.rowBottom,
       splitBottom,
     });
-  }
+
   return overflow <= extraCapacity;
 }
