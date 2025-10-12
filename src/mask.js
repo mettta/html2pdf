@@ -12,6 +12,14 @@ export function generateCSSMask({
     // and then push down to the height of the top margin.
     // And repeat vertically.
 
+    // ${SELECTOR.root}::after
+    // Safety placeholder for the bottom margin of the paper.
+    // Works together with the mask in media print mode:
+    // -- the mask shows the content window,
+    // -- the bottom margin of the page is zero, to prevent overflow,
+    // -- a strip (h=printBottomMargin) in the color of the paper (can be changed in the Config)
+    //    is added to the bottom margin on each page.
+
     return `
     -webkit-mask-image: linear-gradient(
       black 0,
