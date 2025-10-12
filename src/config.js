@@ -56,6 +56,8 @@ export default function createConfig(params) {
     printTopMargin: '12mm',
     printBottomMargin: '12mm',
     printFontSize: '12pt', // todo 16+ // 1:18px 2:36px 3:54px
+    // misk
+    paperColor: 'white',
     // print A4 default
     printWidth: '210mm', // todo <170
     printHeight: '297mm', // todo ~400

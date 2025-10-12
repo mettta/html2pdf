@@ -1,0 +1,217 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="keywords"
+    content="strictdoc, documentation, documentation-tool, requirements-management, requirements, documentation-generator, requirement-specifications, requirements-engineering, technical-documentation, requirements-specification">
+  <meta name="description" content="strictdoc. Software for technical documentation and requirements management.">
+  <meta name="strictdoc-export-type" content="static">
+  <meta name="strictdoc-document-level" content="2">
+  <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/layout.css">
+  <link rel="stylesheet" href="assets/content.css">
+  <link rel="stylesheet" href="assets/node.css">
+  <link rel="stylesheet" href="assets/node_content.css">
+  <link rel="stylesheet" href="assets/element.css">
+  <link rel="stylesheet" href="assets/form.css">
+  <link rel="stylesheet" href="assets/requirement__temporary.css">
+  <link rel="stylesheet" href="assets/autogen.css">
+  <link rel="stylesheet" href="assets/html2pdf4doc.css">
+  <script defer data-console-assert="true" data-debug-mode='true' data-preloader="true"
+    data-preloader-target="[html2pdf-preloader]" data-preloader-background="#F2F5F9" data-forced-page-break-selectors=""
+    data-page-break-after-selectors=".pdf-toc .free_text" data-page-break-before-selectors="H2"
+    data-no-break-selectors=".html2pdf4doc-no-break sdoc-section-title sdoc-meta sdoc-node-title .pdf-toc-row"
+    data-no-hanging-selectors=".html2pdf4doc-no-hanging sdoc-section-title sdoc-anchor sdoc-meta .admonition-title sdoc-node-title sdoc-node-field-label strong:only-child"
+    src="../../../../dist/bundle.js"></script>
+  <title>User Guide - PDF</title>
+</head>
+
+<body data-viewtype="html2pdf" data-turbo="false">
+  <div class="mars">
+  </div>
+  <div class="layout" id="layout">
+    <main class="layout_main">
+      <div html2pdf-preloader class="main">
+        <div html2pdf class="content">
+          <sdoc-node node-style="readonly" node-role="requirement" show-node-type-name="SECTION" node-view="narrative"
+            class="html2pdf4doc-no-break" data-testid="node-requirement"> <sdoc-anchor id="17.6.1-JUnit-XML"
+              data-anchor="17.6.1-JUnit-XML" node-role="requirement">
+            </sdoc-anchor><sdoc-node-content node-view="narrative" data-level="17.6.1" class="html2pdf4doc-no-break"
+              show-node-type-name="SECTION" data-testid="requirement-style-narrative">
+              <sdoc-node-title data-level="17.6.1">
+                <h4><sdoc-autogen>17.6.1. JUnit XML</sdoc-autogen></h4>
+              </sdoc-node-title> <sdoc-scope class="node_fields_group-secondary">
+                <sdoc-node-field-label>MID:</sdoc-node-field-label>
+                <sdoc-node-field data-field-type="singleline"
+                  data-field-label="MID"><sdoc-autogen>e9c94abacb12425980aec8ed7ee752cb</sdoc-autogen></sdoc-node-field>
+              </sdoc-scope></sdoc-node-content>
+          </sdoc-node>
+          <sdoc-node node-style="readonly" node-role="requirement" show-node-type-name="TEXT" node-view="narrative"
+            data-testid="node-requirement"> <sdoc-anchor id="eba63ebd45624139a8773cf42fe7d670"
+              data-anchor="eba63ebd45624139a8773cf42fe7d670" node-role="requirement">
+            </sdoc-anchor><sdoc-node-content node-view="narrative" data-level="" show-node-type-name="TEXT"
+              data-testid="requirement-style-narrative"> <sdoc-scope
+                class="node_fields_group-secondary html2pdf4doc-no-hanging">
+                <sdoc-node-field-label>MID:</sdoc-node-field-label>
+                <sdoc-node-field data-field-type="singleline"
+                  data-field-label="MID"><sdoc-autogen>eba63ebd45624139a8773cf42fe7d670</sdoc-autogen></sdoc-node-field>
+              </sdoc-scope>
+              <sdoc-scope class="node_fields_group-primary">
+                <sdoc-node-field-label>STATEMENT:</sdoc-node-field-label>
+                <sdoc-node-field data-field-label="statement"><sdoc-autogen>
+                    <div class="document">
+                      <p>JUnit XML format is mostly identical between different tools that produce it but there are
+                        subtle differences that must be handled case by case. StrictDoc supports several JUnit XML
+                        flavors. To be discovered by StrictDoc, the XML files must have one of the following extensions:
+                      </p>
+                      <table border="1" class="docutils">
+                        <caption>Supported JUnit XML formats</caption>
+                        <colgroup>
+                          <col width="60%">
+                          <col width="40%">
+                        </colgroup>
+                        <thead valign="bottom">
+                          <tr>
+                            <th class="head">Tool</th>
+                            <th class="head">Extension</th>
+                          </tr>
+                        </thead>
+                        <tbody valign="top">
+                          <tr>
+                            <td>Pytest</td>
+                            <td>Which billion book interesting western perform matter. Floor across offer adult
+                              individual.
+                              Majority building opportunity turn another offer.<tt
+                                class="docutils literal">.pytest.junit.xml</tt></td>
+                          </tr>
+                          <tr>
+                            <td>CTest</td>
+                            <td><tt class="docutils literal">.ctest.junit.xml</tt></td>
+                          </tr>
+                          <tr>
+                            <td>Google Test</td>
+                            <td><tt class="docutils literal">.gtest.junit.xml</tt></td>
+                          </tr>
+                          <tr>
+                            <td>LLVM Integrated Tester (LIT)</td>
+                            <td><tt class="docutils literal">.lit.junit.xml</tt></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <div class="admonition note">
+                        <p class="first admonition-title">Note</p>
+                        <p class="last">After the existing JUnit XML flavors have been implemented, it should be easy to
+                          add more tools in case their output differs.</p>
+                      </div>
+                      <div class="admonition warning">
+                        <p class="first admonition-title">Warning</p>
+                        <p class="last">The JUnit XML feature's status is experimental. The functionality has been
+                          implemented and passes basic integration tests but it has not received enough testing by the
+                          users. StrictDoc's own documentation is already using this feature and the JUnit XML
+                          traceability will be part of StrictDoc's own qualification package. It is expected that the
+                          JUnit XML will become a stable feature by no late than 2025 Q4.</p>
+                      </div>
+                    </div>
+                  </sdoc-autogen></sdoc-node-field> </sdoc-scope></sdoc-node-content>
+          </sdoc-node>
+        </div>
+      </div>
+      <style html2pdf-header-style>
+        html2pdf-header {
+          padding-top: 0;
+        }
+
+        .html2pdf-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          column-gap: 32px;
+          font-size: small;
+          line-height: 1;
+          color: rgba(0, 0, 0, 0.5);
+          border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+          padding-bottom: 8px;
+        }
+
+        .html2pdf-header-left {
+          text-align: left;
+          flex-shrink: 0;
+        }
+
+        .html2pdf-header-right {
+          text-align: right;
+          font-weight: bold;
+        }
+      </style>
+      <template html2pdf-header>
+        <div class="html2pdf-header">
+          <div class="html2pdf-header-left">StrictDoc Documentation</div>
+          <div class="html2pdf-header-right">User Guide</div>
+        </div>
+      </template>
+      <style html2pdf-footer-style>
+        html2pdf-footer {
+          padding-bottom: 0;
+        }
+
+        .html2pdf-footer {
+          display: flex;
+          justify-content: space-between;
+          column-gap: 16px;
+          font-size: small;
+          line-height: 1;
+          color: rgba(0, 0, 0, 0.5);
+          border-top: 1px solid rgba(0, 0, 0, 0.25);
+          padding-top: 8px;
+        }
+
+        .html2pdf-footer-left {
+          text-align: left;
+        }
+
+        .html2pdf-footer-right {
+          text-align: right;
+        }
+
+        .html2pdf-header-page_placeholder {
+          width: 54px;
+          /* max for pattern 888/888 */
+          flex-shrink: 0;
+          text-indent: -10000px;
+        }
+      </style>
+      <template html2pdf-footer>
+        <div html2pdf-page-number>
+          <span html2pdf-page-number-current></span>/<span html2pdf-page-number-total></span>
+        </div>
+        <div class="html2pdf-footer">
+          <div class="html2pdf-footer-left">2025-09-27</div>
+          <div class="html2pdf-footer-right"></div>
+          <div class="html2pdf-header-page_placeholder"></div>
+        </div>
+      </template>
+    </main>
+    <footer class="layout_footer">
+      <div class="footer">
+        Built with
+        <a class="strictdoc__link" href="https://github.com/strictdoc-project/strictdoc" target="_blank">StrictDoc</a>
+        <a class="strictdoc__version" href="https://github.com/strictdoc-project/strictdoc/releases/tag/0.12.1"
+          target="_blank">
+          <svg height="16" viewbox="0 0 16 16" version="1.1" width="16">
+            <path fill-rule="evenodd"
+              d="M2.5 7.775V2.75a.25.25 0 01.25-.25h5.025a.25.25 0 01.177.073l6.25 6.25a.25.25 0 010 .354l-5.025 5.025a.25.25 0 01-.354 0l-6.25-6.25a.25.25 0 01-.073-.177zm-1.5 0V2.75C1 1.784 1.784 1 2.75 1h5.025c.464 0 .91.184 1.238.513l6.25 6.25a1.75 1.75 0 010 2.474l-5.026 5.026a1.75 1.75 0 01-2.474 0l-6.25-6.25A1.75 1.75 0 011 7.775zM6 5a1 1 0 100 2 1 1 0 000-2z">
+            </path>
+          </svg>
+          0.12.1
+        </a>
+      </div>
+    </footer>
+    <aside class="layout_aside">
+    </aside>
+  </div>
+  <div id="modal"></div>
+  <div id="confirm"></div>
+</body>
+
+</html>

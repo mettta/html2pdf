@@ -44,6 +44,7 @@ export default class Style {
   margin-left: ${this.config.printLeftMargin};
   margin-right: ${this.config.printRightMargin};
   margin-top: ${this.config.printTopMargin};
+  /* margin-bottom: ${this.config.printBottomMargin}; */
   margin-bottom: 0; /* hack */
 }
 
@@ -269,13 +270,28 @@ ${SELECTOR.printForcedPageBreak} {
     padding: 0;
   }
 
+  ${SELECTOR.root}::after {
+    /* Safety placeholder for the bottom margin of the paper */
+    --paper-color: ${this.config.paperColor};
+    content: '';
+    position: fixed;
+    pointer-events: none;
+    z-index: 2147483647;
+    background: var(--paper-color, white);
+    inset: 0;
+    top: unset;
+    height: ${this.config.printBottomMargin};
+  }
+
   ${SELECTOR.paperFlow} {
     padding-bottom: 0;
   }
 
   ${SELECTOR.contentFlow} {
+  /*
     -webkit-mask-image: none !important;
             mask-image: none !important;
+  */
   }
 
   ${SELECTOR.printIgnore} {
