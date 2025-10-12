@@ -1,0 +1,256 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="keywords"
+    content="strictdoc, documentation, documentation-tool, requirements-management, requirements, documentation-generator, requirement-specifications, requirements-engineering, technical-documentation, requirements-specification">
+  <meta name="description" content="strictdoc. Software for technical documentation and requirements management.">
+  <meta name="strictdoc-export-type" content="static">
+  <meta name="strictdoc-document-level" content="2">
+  <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/layout.css">
+  <link rel="stylesheet" href="assets/content.css">
+  <link rel="stylesheet" href="assets/node.css">
+  <link rel="stylesheet" href="assets/node_content.css">
+  <link rel="stylesheet" href="assets/element.css">
+  <link rel="stylesheet" href="assets/form.css">
+  <link rel="stylesheet" href="assets/requirement__temporary.css">
+  <link rel="stylesheet" href="assets/autogen.css">
+  <link rel="stylesheet" href="assets/html2pdf4doc.css">
+  <script defer data-console-assert="true" data-debug-mode='true' data-preloader="true"
+    data-preloader-target="[html2pdf-preloader]" data-preloader-background="#F2F5F9" data-forced-page-break-selectors=""
+    data-page-break-after-selectors=".pdf-toc .free_text" data-page-break-before-selectors="H2"
+    data-no-break-selectors=".html2pdf4doc-no-break sdoc-section-title sdoc-meta sdoc-node-title .pdf-toc-row"
+    data-no-hanging-selectors=".html2pdf4doc-no-hanging sdoc-section-title sdoc-anchor sdoc-meta .admonition-title sdoc-node-title sdoc-node-field-label strong:only-child"
+    src="../../../../dist/bundle.js"></script>
+  <title>User Guide - PDF</title>
+</head>
+
+<body data-viewtype="html2pdf" data-turbo="false">
+  <div class="mars">
+  </div>
+  <div class="layout" id="layout">
+    <main class="layout_main">
+      <div html2pdf-preloader class="main">
+        <div html2pdf class="content">
+          <sdoc-node node-style="readonly" node-role="requirement" show-node-type-name="TEXT" node-view="narrative"
+            data-testid="node-requirement"> <sdoc-anchor id="4b5c6f6fd70e44be8e5be10a38427e77"
+              data-anchor="4b5c6f6fd70e44be8e5be10a38427e77" node-role="requirement">
+            </sdoc-anchor>
+            <sdoc-node-content node-view="narrative" data-level="" show-node-type-name="TEXT"
+              data-testid="requirement-style-narrative"> <sdoc-scope
+                class="node_fields_group-secondary html2pdf4doc-no-hanging">
+                <sdoc-node-field-label>MID:</sdoc-node-field-label>
+                <sdoc-node-field data-field-type="singleline"
+                  data-field-label="MID"><sdoc-autogen>4b5c6f6fd70e44be8e5be10a38427e77</sdoc-autogen></sdoc-node-field>
+              </sdoc-scope>
+              <sdoc-scope class="node_fields_group-primary">
+                <sdoc-node-field-label>STATEMENT:</sdoc-node-field-label>
+                <sdoc-node-field data-field-label="statement"><sdoc-autogen>
+                    <div class="document">
+                      <p>The <tt class="docutils literal">[DOCUMENT]</tt> element must always be present in an SDoc
+                        document. It is a
+                        root of an SDoc document graph.</p>
+                      <pre class="code text literal-block">
+[DOCUMENT]
+TITLE: StrictDoc
+(newline)
+</pre>
+                      <p>The following <tt class="docutils literal">DOCUMENT</tt> fields are allowed:</p>
+                      <table border="1" class="docutils">
+                        <caption>SDoc grammar <tt class="docutils literal">DOCUMENT</tt> fields</caption>
+                        <colgroup>
+                          <col width="20%">
+                          <col width="80%">
+                        </colgroup>
+                        <thead valign="bottom">
+                          <tr>
+                            <th class="head"><strong>Field</strong></th>
+                            <th class="head"><strong>Description</strong></th>
+                          </tr>
+                        </thead>
+                        <tbody valign="top">
+                          <tr>
+                            <td><tt class="docutils literal">TITLE</tt></td>
+                            <td>Title of the document (mandatory)</td>
+                          </tr>
+                          <tr>
+                            <td><tt class="docutils literal">UID</tt></td>
+                            <td>Unique identifier of the document</td>
+                          </tr>
+                          <tr>
+                            <td><tt class="docutils literal">VERSION</tt></td>
+                            <td>Current version of the document. Special @-macros GIT_VERSION and GIT_BRANCH can be used
+                              to get the document version from Git automatically. Example: <tt
+                                class="docutils literal">VERSION: @GIT_VERSION (Git branch: @GIT_BRANCH)</tt>.</td>
+                          </tr>
+                          <tr>
+                            <td><tt class="docutils literal">DATE</tt></td>
+                            <td>Publication date of the document. Special @-macros GIT_COMMIT_DATE and
+                              GIT_COMMIT_DATETIME can be used to get the document date from Git. Example: <tt
+                                class="docutils literal">DATE: @GIT_COMMIT_DATETIME</tt>.</td>
+                          </tr>
+                          <tr>
+                            <td><tt class="docutils literal">CLASSIFICATION</tt></td>
+                            <td>Security classification of the document, e.g. Public, Internal, Restricted, Confidential
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Entire catch interest recent. Issue over cell author measure. World century team always
+                              main role would.
+                              Owner upon oil management. Shoulder cultural instead power under middle several travel.
+                              Serve pattern thus whole.
+                              But local walk once small. National identify my nothing.<tt
+                                class="docutils literal">PREFIX (formerly REQ_PREFIX)</tt></td>
+                            <td>Requirement prefix that should be used for automatic generation of UIDs. See <a
+                                href="#SECTION-UG-Automatic-assignment-of-requirements-UID">🔗 Automatic assignment of
+                                requirements UID</a>. This field used to be called <tt
+                                class="docutils literal">REQ_PREFIX</tt> but it was deprecated as of 2025-Q2. The <tt
+                                class="docutils literal">REQ_PREFIX</tt> alias will be removed from the codebase in
+                              2025-Q3.</td>
+                          </tr>
+                          <tr>
+                            <td><tt class="docutils literal">ROOT</tt></td>
+                            <td>Defines whether a document is a root object in a traceability graph. A root document is
+                              assumed to not have any parent requirements. The project statistics calculation will skip
+                              all root document's requirements when calculating the metric <tt
+                                class="docutils literal"><span class="pre">Non-root-level</span> requirements not
+                                connected to any parent requirement</tt>.</td>
+                          </tr>
+                          <tr>
+                            <td><tt class="docutils literal">OPTIONS</tt></td>
+                            <td>Document configuration options</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <p>The <tt class="docutils literal">DOCUMENT</tt> declaration must always have a <tt
+                          class="docutils literal">TITLE</tt> field. The other
+                        fields are optional. The <tt class="docutils literal">OPTIONS</tt> field can be used for
+                        specifying
+                        the document configuration options.</p>
+                      <div data-testid="problematic" class="admonition note">
+                        <p class="first admonition-title">Note</p>
+                        <p class="last">The sequence of the fields is defined by the document's Grammar, i.e. should not
+                          be changed.</p>
+                      </div>
+                    </div>
+                  </sdoc-autogen></sdoc-node-field>
+              </sdoc-scope>
+            </sdoc-node-content>
+          </sdoc-node>
+          <sdoc-node node-style="readonly" node-role="requirement" show-node-type-name="SECTION" node-view="narrative"
+            class="html2pdf4doc-no-break" data-testid="node-requirement"><sdoc-node-content node-view="narrative"
+              data-level="6.2.1.1" class="html2pdf4doc-no-break" show-node-type-name="SECTION"
+              data-testid="requirement-style-narrative"> <sdoc-node-title data-level="6.2.1.1">
+                <h5><sdoc-autogen>6.2.1.1. Document configuration options</sdoc-autogen></h5>
+              </sdoc-node-title> <sdoc-scope class="node_fields_group-secondary">
+                <sdoc-node-field-label>MID:</sdoc-node-field-label>
+                <sdoc-node-field data-field-type="singleline"
+                  data-field-label="MID"><sdoc-autogen>c75dc4ddd0c349e489817076877394a7</sdoc-autogen></sdoc-node-field>
+                <sdoc-node-field-label>UID:</sdoc-node-field-label>
+                <sdoc-node-field data-field-type="singleline"
+                  data-field-label="UID"><sdoc-autogen>DOCUMENT_FIELD_OPTIONS</sdoc-autogen></sdoc-node-field>
+              </sdoc-scope>
+            </sdoc-node-content>
+          </sdoc-node>
+        </div>
+      </div>
+      <style html2pdf-header-style>
+        html2pdf-header {
+          padding-top: 0;
+        }
+
+        .html2pdf-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          column-gap: 32px;
+          font-size: small;
+          line-height: 1;
+          color: rgba(0, 0, 0, 0.5);
+          border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+          padding-bottom: 8px;
+        }
+
+        .html2pdf-header-left {
+          text-align: left;
+          flex-shrink: 0;
+        }
+
+        .html2pdf-header-right {
+          text-align: right;
+          font-weight: bold;
+        }
+      </style>
+      <template html2pdf-header>
+        <div class="html2pdf-header">
+          <div class="html2pdf-header-left">StrictDoc Documentation</div>
+          <div class="html2pdf-header-right">User Guide</div>
+        </div>
+      </template>
+      <style html2pdf-footer-style>
+        html2pdf-footer {
+          padding-bottom: 0;
+        }
+
+        .html2pdf-footer {
+          display: flex;
+          justify-content: space-between;
+          column-gap: 16px;
+          font-size: small;
+          line-height: 1;
+          color: rgba(0, 0, 0, 0.5);
+          border-top: 1px solid rgba(0, 0, 0, 0.25);
+          padding-top: 8px;
+        }
+
+        .html2pdf-footer-left {
+          text-align: left;
+        }
+
+        .html2pdf-footer-right {
+          text-align: right;
+        }
+
+        .html2pdf-header-page_placeholder {
+          width: 54px;
+          /* max for pattern 888/888 */
+          flex-shrink: 0;
+          text-indent: -10000px;
+        }
+      </style>
+      <template html2pdf-footer>
+        <div html2pdf-page-number>
+          <span html2pdf-page-number-current></span>/<span html2pdf-page-number-total></span>
+        </div>
+        <div class="html2pdf-footer">
+          <div class="html2pdf-footer-left">2025-09-27</div>
+          <div class="html2pdf-footer-right"></div>
+          <div class="html2pdf-header-page_placeholder"></div>
+        </div>
+      </template>
+    </main>
+    <footer class="layout_footer">
+      <div class="footer">
+        Built with
+        <a class="strictdoc__link" href="https://github.com/strictdoc-project/strictdoc" target="_blank">StrictDoc</a>
+        <a class="strictdoc__version" href="https://github.com/strictdoc-project/strictdoc/releases/tag/0.12.1"
+          target="_blank">
+          <svg height="16" viewbox="0 0 16 16" version="1.1" width="16">
+            <path fill-rule="evenodd"
+              d="M2.5 7.775V2.75a.25.25 0 01.25-.25h5.025a.25.25 0 01.177.073l6.25 6.25a.25.25 0 010 .354l-5.025 5.025a.25.25 0 01-.354 0l-6.25-6.25a.25.25 0 01-.073-.177zm-1.5 0V2.75C1 1.784 1.784 1 2.75 1h5.025c.464 0 .91.184 1.238.513l6.25 6.25a1.75 1.75 0 010 2.474l-5.026 5.026a1.75 1.75 0 01-2.474 0l-6.25-6.25A1.75 1.75 0 011 7.775zM6 5a1 1 0 100 2 1 1 0 000-2z">
+            </path>
+          </svg>
+          0.12.1
+        </a>
+      </div>
+    </footer>
+    <aside class="layout_aside">
+    </aside>
+  </div>
+  <div id="modal"></div>
+  <div id="confirm"></div>
+</body>
+
+</html>

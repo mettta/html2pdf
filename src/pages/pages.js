@@ -400,10 +400,29 @@ export default class Pages {
 
     const currentElementBottom = this._node.getBottomWithMargin(currentElement, this._root);
 
+    // * When _parseNodes() enters a parent, it snapshots the parent’s bottom (`parentBottom`)
+    // * and hands that value to the children. The last child compares against this boundary.
+    // * If the parent later gets sliced, inheritance will be lost.
+    // * But if the parent is not split, and its last child is split,
+    // * the DOM will mutate and the parent's parameters will change,
+    // * even though the parent itself remains intact.
+    // * Re-measure so descendants work with live coordinates.
+    let resolvedParentBottom = parentBottom;
+    if (parent && parentBottom !== undefined) {
+      const liveParentBottom = this._node.getBottomWithMargin(parent, this._root);
+      if (liveParentBottom !== undefined) {
+        resolvedParentBottom = liveParentBottom;
+      }
+    }
+
+    parentBottom = resolvedParentBottom;
+
     // * We want to keep the passed 'parentBottom' value so that we can pass it
     // * on to the next step in the loop if necessary, even if we have to change
     // * this in the current step to handle edge cases.
-    const baseBlockBottom = parentBottom || currentElementBottom;
+    // * nullish coalescing keeps legitimate 0 offsets, yet still falls back
+    // * to the element itself when the parent is missing or stale.
+    const baseBlockBottom = (parentBottom ?? currentElementBottom);
     let currentParentBottom = parentBottom;
 
     // * If there is a parentBottom - we are dealing with the last child of the last child
@@ -427,8 +446,8 @@ export default class Pages {
     // Tail exists only if the space between the current element’s bottom and its parent’s bottom
     // exceeds a full page (i.e., the tail of wrappers below the current element is longer than a page).
     // Using `top` here misclassifies long elements as a tail; rely on `currentElementBottom` instead.
-    const _isTailLongerThanPage = parentBottom && ((parentBottom - currentElementBottom) >= this._referenceHeight);
-    if (parentBottom && _isTailLongerThanPage) {
+    const _isTailLongerThanPage = parentBottom !== undefined && ((parentBottom - currentElementBottom) >= this._referenceHeight);
+    if (_isTailLongerThanPage) {
       // ** if parentBottom ---> current is LAST
       // ** if parentBottom > (currentElementTop + this._referenceHeight) ---> we have a “tail” of the lower bounds of the parent tags,
       // * and there are obviously set margins or paddings that take up space.
@@ -468,7 +487,7 @@ export default class Pages {
         if (_el === parent) {
           _parents.push({
             element: parent,
-            bottom: parentBottom
+            bottom: parentBottom // already refreshed above, so tail compares against live position
           });
         } else {
           throw new Error("parent not found in the ancestor chain");
@@ -536,7 +555,13 @@ export default class Pages {
     // * Case after the next element has been registered
     // * and we are looking at it again
     // * (e.g. it is the height of the entire next page and falls under inspection).
-    const currentBlockBottom = currentParentBottom || currentElementBottom;
+
+    //! currentParentBottom is refreshed right before, so descendants see live parent boundaries.
+    //! Using ?? avoids treating 0 as falsy, unlike the previous || variant.
+    // const currentBlockBottom = currentParentBottom || currentElementBottom;
+    const currentBlockBottom = currentParentBottom ?? currentElementBottom;
+
+    this._debug._parseNode && console.log('[_parseNode]', {currentBlockBottom, currentParentBottom, currentElementBottom});
     if (
       // * already registered:
       this.pages.at(-1).pageStart === currentElement
