@@ -274,8 +274,10 @@ ${SELECTOR.printForcedPageBreak} {
   }
 
   ${SELECTOR.contentFlow} {
+  /*
     -webkit-mask-image: none !important;
             mask-image: none !important;
+  */
   }
 
   ${SELECTOR.printIgnore} {

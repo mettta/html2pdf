@@ -1,4 +1,4 @@
-import addCSSMask from './mask.js';
+import { addInlineCSSMask, generateCSSMask } from './mask.js';
 import * as Logging from './utils/logging.js';
 
 export default class Preview {
@@ -102,12 +102,36 @@ export default class Preview {
       'Paper size calculation params do not match'
     );
 
-    addCSSMask({
-      targetElement: this._contentFlow,
-      maskStep: _maskStep,
+    // addInlineCSSMask({
+    //   targetElement: this._contentFlow,
+    //   maskStep: _maskStep,
+    //   maskWindow: _bodyHeight,
+    //   maskFirstShift: _printBodyMaskWindowFirstShift,
+    // });
+
+    const previewContentFlowMask = generateCSSMask({
+      maskFirstShift: _printTopMargin + _headerHeight,
+      maskStep: _printPaperHeight + _virtualPagesGap,
       maskWindow: _bodyHeight,
-      maskFirstShift: _printBodyMaskWindowFirstShift,
-    })
+    });
+
+    const printContentFlowMask = generateCSSMask({
+      maskFirstShift: _headerHeight,
+      maskStep: _printPaperHeight - _printTopMargin - _printBottomMargin,
+      maskWindow: _bodyHeight,
+    });
+
+    const maskCSS = `
+    ${this._selector.contentFlow} {
+      ${previewContentFlowMask}
+    }
+    @media print{
+      ${this._selector.contentFlow} {
+        ${printContentFlowMask}
+      }
+    }`;
+
+    this._node.insertStyle(maskCSS, 'mask');
   }
 
   _makeRootVisible() {
