@@ -1,6 +1,8 @@
+import base64
+import os
+
 from selenium.webdriver.common.by import By
 from seleniumbase import BaseCase
-import os
 
 # Elements should appear in the DOM on success:
 # only once
@@ -70,6 +72,31 @@ class Helper:
     def do_open_and_assert_title(self, file: str, title: str) -> None:
         self.do_open(file)
         self.test_case.assert_title(title)
+
+    def do_print_page_to_pdf(self, path_to_output_pdf: str) -> None:
+        """
+        Uses Chrome DevTools Protocol to save the current page as PDF.
+        """
+
+        driver = self.test_case.driver
+
+        # Ensure your driver is Chrome
+        if "chrome" not in driver.capabilities["browserName"].lower():
+            raise RuntimeError("PDF printing only works in Chrome")
+
+        # Send command to Chrome
+        result = driver.execute_cdp_cmd("Page.printToPDF", {
+            "printBackground": True,  # Include background graphics
+            "landscape": False,  # Portrait mode
+            "paperWidth": 8.27,  # A4 width in inches
+            "paperHeight": 11.69,  # A4 height in inches
+        })
+
+        # Save PDF
+        pdf_data = base64.b64decode(result["data"])
+        with open(path_to_output_pdf, "wb") as f:
+            f.write(pdf_data)
+        print(f"PDF saved to {path_to_output_pdf}")
 
     def open_case_num(self, base_folder: str, n: int, prefix: str = "case", ext: str = "html") -> None:
         """Open a numbered HTML test case from base_folder.
