@@ -68,6 +68,19 @@ ${SELECTOR.root} {
   padding-bottom: calc(2 * ${this.config.virtualPagesGap});
 }
 
+${SELECTOR.contentFlow} {
+  display: block;
+}
+
+${SELECTOR.paperFlow} {
+  display: block;
+  position: absolute;
+  width: 100%;
+  z-index: -1;
+  /* affect only screen */
+  padding-bottom: 100px;
+}
+
 ${SELECTOR.contentFlowStart},
 ${SELECTOR.contentFlowEnd},
 ${SELECTOR.pageDivider} {
@@ -152,19 +165,6 @@ ${SELECTOR.headerContent} ${SELECTOR.pageNumberRoot} {
 
 ${SELECTOR.footerContent} ${SELECTOR.pageNumberRoot} {
   bottom: 0;
-}
-
-${SELECTOR.paperFlow} {
-  display: block;
-  position: absolute;
-  width: 100%;
-  z-index: -1;
-  /* affect only screen */
-  padding-bottom: 100px;
-}
-
-${SELECTOR.contentFlow} {
-  display: block;
 }
 
 ${SELECTOR.runningSafety} {
