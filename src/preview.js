@@ -94,40 +94,29 @@ export default class Preview {
     // including in the header and footer area.
     // This is to hide in these areas the borders and backgrounds of the wrappers
     // within which the page separator is placed.
-    const _printBodyMaskWindowFirstShift = _printTopMargin + _headerHeight;
-    const _maskStep = _printPaperHeight + _virtualPagesGap;
+    const _previewMaskFirstShift = _printTopMargin + _headerHeight;
+    const _previewMaskStep = _printPaperHeight + _virtualPagesGap;
+
+    // * Disable mask in print mode:
+    // * Blink duplicates text in PDF when applying soft masks (mask-image)
+    // const _printMaskFirstShift = _headerHeight;
+    // const _printMaskStep = _printPaperHeight - _printTopMargin - _printBottomMargin;
 
     this.strictAssert(
       (_printPaperHeight === _bodyHeight + _headerHeight + _printTopMargin + _footerHeight + _printBottomMargin),
       'Paper size calculation params do not match'
     );
 
-    // addInlineCSSMask({
-    //   targetElement: this._contentFlow,
-    //   maskStep: _maskStep,
-    //   maskWindow: _bodyHeight,
-    //   maskFirstShift: _printBodyMaskWindowFirstShift,
-    // });
-
-    const previewContentFlowMask = generateCSSMask({
-      maskFirstShift: _printTopMargin + _headerHeight,
-      maskStep: _printPaperHeight + _virtualPagesGap,
-      maskWindow: _bodyHeight,
-    });
-
-    const printContentFlowMask = generateCSSMask({
-      maskFirstShift: _headerHeight,
-      maskStep: _printPaperHeight - _printTopMargin - _printBottomMargin,
+    const previewContentFlowMaskCSS = generateCSSMask({
+      maskFirstShift: _previewMaskFirstShift,
+      maskStep: _previewMaskStep,
       maskWindow: _bodyHeight,
     });
 
     const maskCSS = `
-    ${this._selector.contentFlow} {
-      ${previewContentFlowMask}
-    }
-    @media print{
+    @media screen {
       ${this._selector.contentFlow} {
-        ${printContentFlowMask}
+        ${previewContentFlowMaskCSS}
       }
     }`;
 

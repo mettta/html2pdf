@@ -271,7 +271,9 @@ ${SELECTOR.printForcedPageBreak} {
   }
 
   ${SELECTOR.root}::after {
-    /* Safety placeholder for the bottom margin of the paper */
+    /* Safety placeholder for the bottom margin of the paper.
+       Remove if the margins at the bottom of the page are replaced with padding.
+     */
     --paper-color: ${this.config.paperColor};
     content: '';
     position: fixed;
@@ -285,13 +287,6 @@ ${SELECTOR.printForcedPageBreak} {
 
   ${SELECTOR.paperFlow} {
     padding-bottom: 0;
-  }
-
-  ${SELECTOR.contentFlow} {
-  /*
-    -webkit-mask-image: none !important;
-            mask-image: none !important;
-  */
   }
 
   ${SELECTOR.printIgnore} {
