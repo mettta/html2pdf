@@ -42,6 +42,7 @@ export default class Preview {
     this._root = layout.root;
     this._contentFlow = layout.contentFlow;
     this._paperFlow = layout.paperFlow;
+    this._overlayFlow = layout.overlayFlow;
     this._paper = paper;
 
     this._hasFrontPage = !!layout.frontpageTemplate;

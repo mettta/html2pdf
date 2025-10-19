@@ -81,6 +81,16 @@ ${SELECTOR.paperFlow} {
   padding-bottom: 100px;
 }
 
+${SELECTOR.overlayFlow} {
+  display: block;
+  position: absolute;
+  width: 100%;
+  z-index: 2;
+  /* affect only screen */
+  padding-bottom: 200px;
+  background: rgba(0, 255, 0, 0.3);
+}
+
 ${SELECTOR.contentFlowStart},
 ${SELECTOR.contentFlowEnd},
 ${SELECTOR.pageDivider} {

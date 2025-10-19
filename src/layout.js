@@ -19,6 +19,7 @@ export default class Layout {
     this.root;
     this.paperFlow;
     this.contentFlow;
+    this.overlayFlow;
     this.frontpageTemplate;
     this.headerTemplate;
     this.footerTemplate;
@@ -57,6 +58,7 @@ export default class Layout {
       && this._DOM.getParentNode(this.root) === this._initialRoot
       && this._DOM.getElementOffsetParent(this.paperFlow) === this.root
       && this._DOM.getElementOffsetParent(this.contentFlow) === this.root
+      && this._DOM.getElementOffsetParent(this.overlayFlow) === this.root
     ) {
       // * success!
       this.success = true;
@@ -96,6 +98,7 @@ export default class Layout {
     this._createRoot();
     this._createPaperFlow();
     this._createContentFlow();
+    this._createOverlayFlow();
 
     // console.time("moveContent");
     this._DOM.moveContent(this._initialRoot, this.contentFlow);
@@ -103,7 +106,7 @@ export default class Layout {
 
     // * Put new layout elements into DOM.
     this._DOM.insertAtEnd(this._initialRoot, this.root);
-    this._DOM.insertAtEnd(this.root, this.paperFlow, this.contentFlow);
+    this._DOM.insertAtEnd(this.root, this.paperFlow, this.overlayFlow, this.contentFlow);
 
     this._insertContentFlowStartAndEnd(this.contentFlow);
 
@@ -150,6 +153,13 @@ export default class Layout {
 
     this.paperFlow = paperFlow;
     return paperFlow;
+  }
+
+  _createOverlayFlow() {
+    const overlayFlow = this._node.create(this._selector.overlayFlow);
+
+    this.overlayFlow = overlayFlow;
+    return overlayFlow;
   }
 
   _createContentFlow() {

@@ -35,6 +35,7 @@ const SELECTOR = {
   root: 'html2pdf-root',
   paperFlow: 'html2pdf-paper-flow',
   contentFlow: 'html2pdf-content-flow',
+  overlayFlow: 'html2pdf-overlay-flow',
 
   // * virtual parts of paper, only for preview
   virtualPaper: 'html2pdf-virtual-paper',
