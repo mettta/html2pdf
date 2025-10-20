@@ -2,6 +2,12 @@ const SELECTOR = {
   // * root, is taken from DOM
   init: '[html2pdf]',
 
+  // * Layout
+  root: 'html2pdf-root',
+  paperFlow: 'html2pdf-paper-flow',
+  contentFlow: 'html2pdf-content-flow',
+  overlayFlow: 'html2pdf-overlay-flow',
+
   // pageDivider is used to determine which page an object is on,
   // and contains elements that separate the pages in the content flow.
   // *** service page separator:
@@ -19,9 +25,9 @@ const SELECTOR = {
 
   // * TEMPLATES
   // *** are taken from DOM:
-  footerTemplate: '[html2pdf-footer]',
-  headerTemplate: '[html2pdf-header]',
   frontpageTemplate: '[html2pdf-frontpage]',
+  headerTemplate: '[html2pdf-header]',
+  footerTemplate: '[html2pdf-footer]',
   // *** elements with content from templates:
   frontpageElement: 'html2pdf-frontpage',
   frontpageContent: 'html2pdf-frontpage-content',
@@ -32,24 +38,18 @@ const SELECTOR = {
   pageNumberCurrent: '[html2pdf-page-number-current]',
   pageNumberTotal: '[html2pdf-page-number-total]',
 
-  // * Layout
-  root: 'html2pdf-root',
-  paperFlow: 'html2pdf-paper-flow',
-  contentFlow: 'html2pdf-content-flow',
-  overlayFlow: 'html2pdf-overlay-flow',
+  // * printed parts of page
+  pageBodySpacer: 'html2pdf-page-body-spacer',
+  pageHeader: 'html2pdf-page-header',
+  pageFooter: 'html2pdf-page-footer',
+  printPageBreak: 'html2pdf-print-page-break',
+  runningSafety: 'html2pdf-print-running',
 
   // * virtual parts of paper, only for preview
   virtualPaper: 'html2pdf-virtual-paper',
   virtualPaperTopMargin: 'html2pdf-virtual-paper-margin-top',
   virtualPaperBottomMargin: 'html2pdf-virtual-paper-margin-bottom',
   virtualPaperGap: 'html2pdf-virtual-paper-gap',
-
-  // * printed parts of paper
-  paperBody: 'html2pdf-paper-body',
-  paperHeader: 'html2pdf-paper-header',
-  paperFooter: 'html2pdf-paper-footer',
-  runningSafety: 'html2pdf-print-running',
-  printPageBreak: 'html2pdf-print-page-break',
 
   // * Print attributes
   // * (are set on existing elements without affecting their appearance)

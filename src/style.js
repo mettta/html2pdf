@@ -121,8 +121,8 @@ ${SELECTOR.virtualPaper}::before {
   z-index: -1;
 }
 
-${SELECTOR.paperFooter},
-${SELECTOR.paperHeader} {
+${SELECTOR.pageFooter},
+${SELECTOR.pageHeader} {
   display: block;
   position: relative;
 }
@@ -197,7 +197,7 @@ ${SELECTOR.virtualPaperGap} {
   padding-top: ${this.config.virtualPagesGap};
 }
 
-${SELECTOR.paperBody} {
+${SELECTOR.pageBodySpacer} {
   display: block;
 }
 
@@ -320,7 +320,7 @@ ${SELECTOR.printForcedPageBreak} {
     height: auto;
   }
 
-  ${SELECTOR.paperBody} {
+  ${SELECTOR.pageBodySpacer} {
     break-inside: avoid;
   }
 
@@ -384,11 +384,11 @@ ${SELECTOR.virtualPaperGap} {
   background: #ff000020;
 }
 
-${SELECTOR.paperFooter},
-${SELECTOR.paperHeader} {
+${SELECTOR.pageFooter},
+${SELECTOR.pageHeader} {
   background: #fa96ff20;
 }
-${SELECTOR.paperBody} {
+${SELECTOR.pageBodySpacer} {
   background: #ffee0020;
 }
 ${SELECTOR.runningSafety} {

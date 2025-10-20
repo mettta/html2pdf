@@ -35,7 +35,7 @@ export default class Preview {
     // selectors used for the mask
     this._virtualPaper = selector.virtualPaper;
     this._virtualPaperTopMargin = selector.virtualPaperTopMargin;
-    this._paperBody = selector.paperBody;
+    this._pageBodySpacer = selector.pageBodySpacer;
 
     // data
     this._pages = pages;
@@ -72,24 +72,24 @@ export default class Preview {
     const _footerMargin = parseInt(this._config.footerMargin);
 
     // * Public Paper params:
-    // const _paperBodyWidth = this._paper.bodyWidth; // = 100% for now
-    const _paperHeaderHeight = this._paper.headerHeight;
-    const _paperFooterHeight = this._paper.footerHeight;
-    const _paperBodyHeight = this._paper.bodyHeight;
+    // const _pageBodySpacerWidth = this._paper.bodyWidth; // = 100% for now
+    const _pageHeaderHeight = this._paper.headerHeight;
+    const _pageFooterHeight = this._paper.footerHeight;
+    const _pageBodySpacerHeight = this._paper.bodyHeight;
 
     // To preserve glyph bleed and visual spillover in header/footer areas,
     // we factor in the template-defined _headerMargin and _footerMargin.
     // These values are only used if the corresponding HTML template is present
-    // (i.e., _paperHeaderHeight already includes _headerMargin, and likewise for footer).
+    // (i.e., _pageHeaderHeight already includes _headerMargin, and likewise for footer).
     // We subtract half of each margin from the header/footer space,
     // and add it to the maskWindow to avoid clipping glyph tails or decorative outlines.
-    const _topMargin = _paperHeaderHeight ? Math.ceil(_headerMargin / 2) : 0;
-    const _bottomMargin = _paperFooterHeight ? Math.ceil(_footerMargin / 2) : 0;
+    const _topMargin = _pageHeaderHeight ? Math.ceil(_headerMargin / 2) : 0;
+    const _bottomMargin = _pageFooterHeight ? Math.ceil(_footerMargin / 2) : 0;
 
     // * Refined Paper params:
-    const _headerHeight = _paperHeaderHeight - _topMargin;
-    const _footerHeight = _paperFooterHeight - _bottomMargin;
-    const _bodyHeight = _paperBodyHeight + _topMargin + _bottomMargin;
+    const _headerHeight = _pageHeaderHeight - _topMargin;
+    const _footerHeight = _pageFooterHeight - _bottomMargin;
+    const _bodyHeight = _pageBodySpacerHeight + _topMargin + _bottomMargin;
 
     // We mask elements that extend beyond the body,
     // including in the header and footer area.

@@ -21,9 +21,9 @@ export default class Paper {
     this._footerTemplate = layout.footerTemplate;
 
     // selectors
-    this._paperBodySelector = selector?.paperBody || '.paperBody';
-    this._paperHeaderSelector = selector?.paperHeader || '.paperHeader';
-    this._paperFooterSelector = selector?.paperFooter || '.paperFooter';
+    this._pageBodySpacerSelector = selector?.pageBodySpacer || '.pageBodySpacer';
+    this._pageHeaderSelector = selector?.pageHeader || '.pageHeader';
+    this._pageFooterSelector = selector?.pageFooter || '.pageFooter';
     this._headerContentSelector = selector?.headerContent || '.headerContent';
     this._footerContentSelector = selector?.footerContent || '.footerContent';
     this._frontpageElementSelector = selector?.frontpageElement || '.frontpageElement';
@@ -51,9 +51,9 @@ export default class Paper {
   }
 
   create({ pageNumber, pageCount }) {
-    const body = this._createPaperBody(this.bodyHeight);
-    const header = this._createPaperHeader(this._headerTemplate);
-    const footer = this._createPaperFooter(this._footerTemplate);
+    const body = this._createPageBodySpacer(this.bodyHeight);
+    const header = this._createPageHeader(this._headerTemplate);
+    const footer = this._createPageFooter(this._footerTemplate);
 
     return this._createPaper({
       header,
@@ -122,9 +122,9 @@ export default class Paper {
     return _node;
   }
 
-  _createPaperBody(height, content) {
-    const _node = this._node.create(this._paperBodySelector);
-    // Lock the height of the paperBody for the content area.
+  _createPageBodySpacer(height, content) {
+    const _node = this._node.create(this._pageBodySpacerSelector);
+    // Lock the height of the pageBodySpacer for the content area.
     // This affects the correct printing of the paper layer.
     this._DOM.setStyles(_node, { height: height + 'px' });
     // To create a frontpage, we can pass content here.
@@ -132,8 +132,8 @@ export default class Paper {
     return _node;
   }
 
-  _createPaperHeader(template) {
-    const _node = this._node.create(this._paperHeaderSelector);
+  _createPageHeader(template) {
+    const _node = this._node.create(this._pageHeaderSelector);
 
     if (template) {
       const content = this._node.create(this._headerContentSelector);
@@ -143,8 +143,8 @@ export default class Paper {
     return _node;
   }
 
-  _createPaperFooter(template) {
-    const _node = this._node.create(this._paperFooterSelector);
+  _createPageFooter(template) {
+    const _node = this._node.create(this._pageFooterSelector);
 
     if (template) {
       const content = this._node.create(this._footerContentSelector);
@@ -170,10 +170,10 @@ export default class Paper {
   _calculatePaperParams() {
 
     // CREATE TEST PAPER ELEMENTS
-    const bodyElement = this._createPaperBody();
+    const bodyElement = this._createPageBodySpacer();
     const frontpageElement = this._createFrontpageContent(this._frontpageTemplate);
-    const headerElement = this._createPaperHeader(this._headerTemplate);
-    const footerElement = this._createPaperFooter(this._footerTemplate);
+    const headerElement = this._createPageHeader(this._headerTemplate);
+    const footerElement = this._createPageFooter(this._footerTemplate);
 
     const testPaper = this._createPaper({
       header: headerElement,

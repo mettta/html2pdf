@@ -14,14 +14,14 @@ _paper_flow_ = '//html2pdf-paper-flow'
 # in number of printed pages
 _page_start_ = _content_flow_ + '//html2pdf-page'
 _paper_ = _paper_flow_ + '/html2pdf-virtual-paper'
-_paper_body_ = _paper_ + '/html2pdf-paper-body'
-_paper_header_ = _paper_ + '/html2pdf-paper-header'
-_paper_footer_ = _paper_ + '/html2pdf-paper-footer'
+_paper_body_ = _paper_ + '/html2pdf-page-body-spacer'
+_paper_header_ = _paper_ + '/html2pdf-page-header'
+_paper_footer_ = _paper_ + '/html2pdf-page-footer'
 
 # Elements with content, empty ones don't appear
-_frontpage_content_ = _paper_flow_ + '//html2pdf-frontpage'
-_header_content_ = _paper_flow_ + '//html2pdf-header'
-_footer_content_ = _paper_flow_ + '//html2pdf-footer'
+# _frontpage_content_ = _paper_flow_ + '//html2pdf-frontpage'
+# _header_content_ = _paper_flow_ + '//html2pdf-header'
+# _footer_content_ = _paper_flow_ + '//html2pdf-footer'
 
 # --- Local file URL helpers ---------------------------------------------------
 
