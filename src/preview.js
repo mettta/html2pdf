@@ -146,14 +146,14 @@ export default class Preview {
       });
       // Create a paper with the added frontpage template
       firstPage = this._paper.createFrontpage({
-        currentPage: 1,
-        totalPages: this._pages.length
+        pageNumber: 1,
+        pageCount: this._pages.length
       });
     } else {
       // Create a blank paper
       firstPage = this._paper.create({
-        currentPage: 1,
-        totalPages: this._pages.length
+        pageNumber: 1,
+        pageCount: this._pages.length
       });
     }
 
@@ -168,8 +168,8 @@ export default class Preview {
     for (let index = 1; index < this._pages.length; index++) {
 
       const paper = this._paper.create({
-        currentPage: index + 1,
-        totalPages: this._pages.length
+        pageNumber: index + 1,
+        pageCount: this._pages.length
       });
       const paperSeparator = this._createVirtualPaperGap();
 

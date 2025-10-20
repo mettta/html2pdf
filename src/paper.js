@@ -49,7 +49,7 @@ export default class Paper {
     this._calculatePaperParams();
   }
 
-  create({ currentPage, totalPages }) {
+  create({ pageNumber, pageCount }) {
     const body = this._createPaperBody(this.bodyHeight);
     const header = this._createPaperHeader(this._headerTemplate);
     const footer = this._createPaperFooter(this._footerTemplate);
@@ -58,12 +58,12 @@ export default class Paper {
       header,
       body,
       footer,
-      currentPage,
-      totalPages,
+      pageNumber,
+      pageCount,
     });
   }
 
-  createFrontpage({ currentPage, totalPages }) {
+  createFrontpage({ pageNumber, pageCount }) {
 
     const frontpage = this._createFrontpageContent(this._frontpageTemplate, this._frontpageFactor);
     const body = this._createPaperBody(this.bodyHeight, frontpage);
@@ -74,8 +74,8 @@ export default class Paper {
       header,
       body,
       footer,
-      currentPage,
-      totalPages,
+      pageNumber,
+      pageCount,
     });
   }
 
@@ -93,8 +93,8 @@ export default class Paper {
     header,
     body,
     footer,
-    currentPage,
-    totalPages,
+    pageNumber,
+    pageCount,
   }) {
 
     const paper = this._node.create(this._virtualPaperSelector);
@@ -108,9 +108,9 @@ export default class Paper {
       this.createVirtualBottomMargin(),
     );
 
-    if (currentPage && totalPages) {
-      this._setPageNumber(header, currentPage, totalPages);
-      this._setPageNumber(footer, currentPage, totalPages);
+    if (pageNumber && pageCount) {
+      this._setPageNumber(header, pageNumber, pageCount);
+      this._setPageNumber(footer, pageNumber, pageCount);
     }
 
     return paper;
