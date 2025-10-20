@@ -26,8 +26,8 @@ export default class Paper {
     this._paperFooterSelector = selector?.paperFooter || '.paperFooter';
     this._headerContentSelector = selector?.headerContent || '.headerContent';
     this._footerContentSelector = selector?.footerContent || '.footerContent';
+    this._frontpageElementSelector = selector?.frontpageElement || '.frontpageElement';
     this._frontpageContentSelector = selector?.frontpageContent || '.frontpageContent';
-    this._frontpageContentInnerSelector = selector?.frontpageContentInner || '.frontpageContentInner';
 
     this._virtualPaperSelector = selector?.virtualPaper || '.virtualPaper';
     this._virtualPaperTopMarginSelector = selector?.virtualPaperTopMargin || '.virtualPaperTopMargin';
@@ -70,7 +70,7 @@ export default class Paper {
       return
     }
 
-    const frontpageElement = this._node.create(this._frontpageContentSelector);
+    const frontpageElement = this._node.create(this._frontpageElementSelector);
     const frontpageContent = this._createFrontpageContent(this._frontpageTemplate, this._frontpageFactor);
     this._DOM.setStyles(frontpageElement, { height: this.bodyHeight + 'px' });
     this._DOM.insertAtStart(frontpageElement, frontpageContent);
@@ -115,7 +115,7 @@ export default class Paper {
   }
 
   _createFrontpageContent(template, factor) {
-    const _node = this._node.create(this._frontpageContentInnerSelector);
+    const _node = this._node.create(this._frontpageContentSelector);
     template && this._DOM.setInnerHTML(_node, template);
     factor && this._DOM.setStyles(_node, { transform: `scale(${factor})` });
 

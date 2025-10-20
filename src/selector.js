@@ -23,8 +23,8 @@ const SELECTOR = {
   headerTemplate: '[html2pdf-header]',
   frontpageTemplate: '[html2pdf-frontpage]',
   // *** elements with content from templates:
-  frontpageContent: 'html2pdf-frontpage',
-  frontpageContentInner: 'html2pdf-frontpage-inner',
+  frontpageElement: 'html2pdf-frontpage',
+  frontpageContent: 'html2pdf-frontpage-content',
   headerContent: 'html2pdf-header',
   footerContent: 'html2pdf-footer',
   // *** page numbers:

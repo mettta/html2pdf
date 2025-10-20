@@ -201,11 +201,11 @@ ${SELECTOR.paperBody} {
   display: block;
 }
 
-${SELECTOR.frontpageContent} {
+${SELECTOR.frontpageElement} {
   display: block;
 }
 
-${SELECTOR.frontpageContentInner} {
+${SELECTOR.frontpageContent} {
   display: block;
   transform-origin: top center;
   padding: .1px;
@@ -395,7 +395,7 @@ ${SELECTOR.runningSafety} {
   background: #f200ff;
   outline: 0.1px dashed #f200ff88;
 }
-${SELECTOR.frontpageContent} {
+${SELECTOR.frontpageElement} {
   background: #00fcff20;
 }
 
