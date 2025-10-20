@@ -27,6 +27,7 @@ export default class Paper {
     this._headerContentSelector = selector?.headerContent || '.headerContent';
     this._footerContentSelector = selector?.footerContent || '.footerContent';
     this._frontpageContentSelector = selector?.frontpageContent || '.frontpageContent';
+    this._frontpageContentInnerSelector = selector?.frontpageContentInner || '.frontpageContentInner';
 
     this._virtualPaperSelector = selector?.virtualPaper || '.virtualPaper';
     this._virtualPaperTopMarginSelector = selector?.virtualPaperTopMargin || '.virtualPaperTopMargin';
@@ -63,20 +64,17 @@ export default class Paper {
     });
   }
 
-  createFrontpage({ pageNumber, pageCount }) {
+  createFrontpage() {
+    if (!this._frontpageTemplate) {
+      this._debug && console.warn('[paper • createFrontpage()] called without a template');
+      return
+    }
 
-    const frontpage = this._createFrontpageContent(this._frontpageTemplate, this._frontpageFactor);
-    const body = this._createPaperBody(this.bodyHeight, frontpage);
-    const header = this._createPaperHeader(this._headerTemplate);
-    const footer = this._createPaperFooter(this._footerTemplate);
-
-    return this._createPaper({
-      header,
-      body,
-      footer,
-      pageNumber,
-      pageCount,
-    });
+    const frontpageElement = this._node.create(this._frontpageContentSelector);
+    const frontpageContent = this._createFrontpageContent(this._frontpageTemplate, this._frontpageFactor);
+    this._DOM.setStyles(frontpageElement, { height: this.bodyHeight + 'px' });
+    this._DOM.insertAtStart(frontpageElement, frontpageContent);
+    return frontpageElement;
   }
 
   createVirtualTopMargin() {
@@ -117,7 +115,7 @@ export default class Paper {
   }
 
   _createFrontpageContent(template, factor) {
-    const _node = this._node.create(this._frontpageContentSelector);
+    const _node = this._node.create(this._frontpageContentInnerSelector);
     template && this._DOM.setInnerHTML(_node, template);
     factor && this._DOM.setStyles(_node, { transform: `scale(${factor})` });
 

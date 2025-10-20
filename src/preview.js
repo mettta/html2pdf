@@ -50,8 +50,8 @@ export default class Preview {
   }
 
   create() {
-    this._processFirstPage();
-    this._processOtherPages();
+    this._processFrontPage();
+    this._processPages();
     (this._config.mask === true || this._config.mask === 'true') && this._addMask();
     this._makeRootVisible();
   }
@@ -128,50 +128,28 @@ export default class Preview {
     this._DOM.setStyles(this._root, {'visibility': 'visible'});
   }
 
-  _processFirstPage() {
-    // LET'S MAKE A FIRST PAGE.
-    let firstPage;
-
+  _processFrontPage() {
+    // IF FRONTPAGE,
     if (this._hasFrontPage) {
-      // IF FRONTPAGE,
-
-      // insert Frontpage Spacer into Content Flow,
-      // get a reference to the inserted element,
-      const frontpage = this._insertFrontpageSpacer(this._contentFlow, this._paper.bodyHeight);
-
+      // insert Frontpage into Content Flow,
+      const frontpage = this._paper.createFrontpage();
+      this._DOM.insertAtStart(this._contentFlow, frontpage);
       // register the added Frontpage Spacer in pages array,
       // thereby increasing the number of pages by 1.
       this._pages.unshift({ // todo unshift performance?
         pageStart: frontpage
       });
-      // Create a paper with the added frontpage template
-      firstPage = this._paper.createFrontpage({
-        pageNumber: 1,
-        pageCount: this._pages.length
-      });
-    } else {
-      // Create a blank paper
-      firstPage = this._paper.create({
-        pageNumber: 1,
-        pageCount: this._pages.length
-      });
     }
-
-    // insert first page without pre-separator
-    this._insertIntoPaperFlow(firstPage)
-    // ADD ONLY HEADER into Content Flow before the first page.
-    this._insertIntoContentFlow(0);
   }
 
-  _processOtherPages() {
-    // And now add all the remaining pages, except for the first one.
-    for (let index = 1; index < this._pages.length; index++) {
+  _processPages() {
+    for (let index = 0; index < this._pages.length; index++) {
 
       const paper = this._paper.create({
         pageNumber: index + 1,
         pageCount: this._pages.length
       });
-      const paperSeparator = this._createVirtualPaperGap();
+      const paperSeparator = index ? this._createVirtualPaperGap() : undefined;
 
       // insert with pre-separator
       this._insertIntoPaperFlow(paper, paperSeparator)

@@ -203,6 +203,10 @@ ${SELECTOR.paperBody} {
 
 ${SELECTOR.frontpageContent} {
   display: block;
+}
+
+${SELECTOR.frontpageContentInner} {
+  display: block;
   transform-origin: top center;
   padding: .1px;
   height: 100%;

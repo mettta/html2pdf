@@ -24,6 +24,7 @@ const SELECTOR = {
   frontpageTemplate: '[html2pdf-frontpage]',
   // *** elements with content from templates:
   frontpageContent: 'html2pdf-frontpage',
+  frontpageContentInner: 'html2pdf-frontpage-inner',
   headerContent: 'html2pdf-header',
   footerContent: 'html2pdf-footer',
   // *** page numbers:
