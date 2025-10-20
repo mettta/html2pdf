@@ -51,17 +51,32 @@ export default class Paper {
   }
 
   create({ pageNumber, pageCount }) {
+    const pageElements = this.composePageElements({ pageNumber, pageCount });
+    return this.createPaper(pageElements);
+  }
+
+  composePageElements({ pageNumber, pageCount }) {
+    const fragment = this._DOM.createDocumentFragment();
+
     const body = this._createPageBodySpacer(this.bodyHeight);
     const header = this._createPageHeader(this._headerTemplate);
     const footer = this._createPageFooter(this._footerTemplate);
 
-    return this._createPaper({
+    this._DOM.insertAtEnd(
+      fragment,
+      this.createVirtualTopMargin(),
       header,
       body,
       footer,
-      pageNumber,
-      pageCount,
-    });
+      this.createVirtualBottomMargin(),
+    );
+
+    if (pageNumber && pageCount) {
+      this._setPageNumber(header, pageNumber, pageCount);
+      this._setPageNumber(footer, pageNumber, pageCount);
+    }
+
+    return fragment;
   }
 
   createFrontpage() {
@@ -80,36 +95,21 @@ export default class Paper {
   createVirtualTopMargin() {
     return this._node.create(this._virtualPaperTopMarginSelector);
   }
+
   createVirtualBottomMargin() {
     return this._node.create(this._virtualPaperBottomMarginSelector);
   }
 
-  // TODO make createPaper() dependent on templates and parameters:
-  // Don't create parts of the page here?
-
-  _createPaper({
-    header,
-    body,
-    footer,
-    pageNumber,
-    pageCount,
-  }) {
+  createPaper(pageElements) {
 
     const paper = this._node.create(this._virtualPaperSelector);
 
-    this._DOM.insertAtEnd(
+    pageElements && this._DOM.insertAtEnd(
       paper,
       this.createVirtualTopMargin(),
-      header,
-      body,
-      footer,
+      pageElements,
       this.createVirtualBottomMargin(),
     );
-
-    if (pageNumber && pageCount) {
-      this._setPageNumber(header, pageNumber, pageCount);
-      this._setPageNumber(footer, pageNumber, pageCount);
-    }
 
     return paper;
   }
@@ -171,15 +171,19 @@ export default class Paper {
 
     // CREATE TEST PAPER ELEMENTS
     const bodyElement = this._createPageBodySpacer();
-    const frontpageElement = this._createFrontpageContent(this._frontpageTemplate);
     const headerElement = this._createPageHeader(this._headerTemplate);
     const footerElement = this._createPageFooter(this._footerTemplate);
 
-    const testPaper = this._createPaper({
-      header: headerElement,
-      body: bodyElement,
-      footer: footerElement,
-    });
+    const testPaper = this._node.create(this._virtualPaperSelector);
+
+    this._DOM.insertAtEnd(
+      testPaper,
+      this.createVirtualTopMargin(),
+      headerElement,
+      bodyElement,
+      footerElement,
+      this.createVirtualBottomMargin(),
+    );
 
     // CREATE TEMP CONTAINER
     const workbench = this._node.create('#workbench')
@@ -201,6 +205,7 @@ export default class Paper {
     const bodyWidth = this._DOM.getElementOffsetWidth(bodyElement);
 
     // add frontpage text
+    const frontpageElement = this._createFrontpageContent(this._frontpageTemplate);
     this._DOM.insertAtStart(bodyElement, frontpageElement);
     // get height for the frontpage content
     const filledBodyHeight = this._DOM.getElementOffsetHeight(bodyElement);
