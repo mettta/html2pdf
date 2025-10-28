@@ -39,6 +39,7 @@ const SELECTOR = {
   pageNumberTotal: '[html2pdf-page-number-total]',
 
   // * printed parts of page
+  pageChrome: 'html2pdf-page-chrome',
   pageBodySpacer: 'html2pdf-page-body-spacer',
   pageHeader: 'html2pdf-page-header',
   pageFooter: 'html2pdf-page-footer',

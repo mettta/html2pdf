@@ -21,6 +21,7 @@ export default class Paper {
     this._footerTemplate = layout.footerTemplate;
 
     // selectors
+    this._pageChromeSelector = selector?.pageChrome || '.pageChrome';
     this._pageBodySpacerSelector = selector?.pageBodySpacer || '.pageBodySpacer';
     this._pageHeaderSelector = selector?.pageHeader || '.pageHeader';
     this._pageFooterSelector = selector?.pageFooter || '.pageFooter';
@@ -50,12 +51,18 @@ export default class Paper {
     this._calculatePaperParams();
   }
 
-  create({ pageNumber, pageCount }) {
-    const pageElements = this.composePageElements({ pageNumber, pageCount });
-    return this.createPaper(pageElements);
+  createPageChrome({ pageNumber, pageCount }) {
+    const wrapper = this._node.create(this._pageChromeSelector);
+    const pageElements = this._composePageElements({ pageNumber, pageCount });
+    this._DOM.insertAtEnd(
+      wrapper,
+      pageElements
+    );
+
+    return wrapper;
   }
 
-  composePageElements({ pageNumber, pageCount }) {
+  _composePageElements({ pageNumber, pageCount }) {
     const fragment = this._DOM.createDocumentFragment();
 
     const body = this._createPageBodySpacer(this.bodyHeight);
@@ -100,7 +107,7 @@ export default class Paper {
     return this._node.create(this._virtualPaperBottomMarginSelector);
   }
 
-  createPaper(pageElements) {
+  createVirtualPaper(pageElements) {
 
     const paper = this._node.create(this._virtualPaperSelector);
 

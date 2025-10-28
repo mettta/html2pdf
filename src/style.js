@@ -87,8 +87,7 @@ ${SELECTOR.overlayFlow} {
   width: 100%;
   z-index: 2;
   /* affect only screen */
-  padding-bottom: 200px;
-  background: rgba(0, 255, 0, 0.3);
+  padding-bottom: 100px;
 }
 
 ${SELECTOR.contentFlowStart},
@@ -119,6 +118,10 @@ ${SELECTOR.virtualPaper}::before {
   background-color: #fff;
   box-shadow: rgba(0, 0, 0, 0.1) 2px 2px 12px 0px;
   z-index: -1;
+}
+
+${SELECTOR.pageChrome} {
+  display: block;
 }
 
 ${SELECTOR.pageFooter},
@@ -199,6 +202,7 @@ ${SELECTOR.virtualPaperGap} {
 
 ${SELECTOR.pageBodySpacer} {
   display: block;
+  pointer-events: none;
 }
 
 ${SELECTOR.frontpageElement} {
@@ -299,6 +303,7 @@ ${SELECTOR.printForcedPageBreak} {
     height: ${this.config.printBottomMargin};
   }
 
+  ${SELECTOR.overlayFlow},
   ${SELECTOR.paperFlow} {
     padding-bottom: 0;
   }
@@ -308,18 +313,15 @@ ${SELECTOR.printForcedPageBreak} {
   }
 
   ${SELECTOR.printHide},
-  ${SELECTOR.virtualPaper}::before,
+  ${SELECTOR.paperFlow},
   ${SELECTOR.virtualPaperTopMargin},
   ${SELECTOR.virtualPaperBottomMargin},
   ${SELECTOR.virtualPaperGap} {
     display: none;
   }
 
-  ${SELECTOR.virtualPaper} {
-    break-inside: avoid;
-    height: auto;
-  }
-
+  ${SELECTOR.pageChrome},
+  ${SELECTOR.frontpageElement},
   ${SELECTOR.pageBodySpacer} {
     break-inside: avoid;
   }
@@ -378,6 +380,10 @@ ${SELECTOR.contentFlow} {
     rgba(222, 222, 222, .2) 10px,
     rgba(222, 222, 222, .2) 20px
   );
+}
+
+${SELECTOR.overlayFlow} {
+  background: rgba(0, 255, 0, 0.1);
 }
 
 ${SELECTOR.virtualPaperGap} {
