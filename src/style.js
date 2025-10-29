@@ -79,6 +79,7 @@ ${SELECTOR.paperFlow} {
   z-index: -1;
   /* affect only screen */
   padding-bottom: 100px;
+  pointer-events: none;
 }
 
 ${SELECTOR.overlayFlow} {
@@ -88,6 +89,7 @@ ${SELECTOR.overlayFlow} {
   z-index: 2;
   /* affect only screen */
   padding-bottom: 100px;
+  pointer-events: none;
 }
 
 ${SELECTOR.contentFlowStart},
@@ -122,12 +124,14 @@ ${SELECTOR.virtualPaper}::before {
 
 ${SELECTOR.pageChrome} {
   display: block;
+  pointer-events: none;
 }
 
 ${SELECTOR.pageFooter},
 ${SELECTOR.pageHeader} {
   display: block;
   position: relative;
+  pointer-events: auto;
 }
 
 ${SELECTOR.headerContent},
