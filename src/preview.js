@@ -119,6 +119,23 @@ export default class Preview {
       ${this._selector.contentFlow} {
         ${previewContentFlowMaskCSS}
       }
+    }
+    @media print {
+      ${this._selector.root}::after {
+        /* Safety placeholder for the bottom margin of the paper.
+          Remove if the margins at the bottom of the page are replaced with padding.
+          Placed under the footer.
+        */
+        --paper-color: ${this._config.paperColor};
+        background: var(--paper-color, white);
+        content: '';
+        position: fixed;
+        pointer-events: none;
+        z-index: 11;
+        inset: 0;
+        top: unset;
+        height: ${_printBottomMargin + _pageFooterHeight}px;
+      }
     }`;
 
     this._node.insertStyle(maskCSS, 'mask');

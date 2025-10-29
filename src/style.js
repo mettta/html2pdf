@@ -85,7 +85,7 @@ ${SELECTOR.overlayFlow} {
   display: block;
   position: absolute;
   width: 100%;
-  z-index: 2;
+  z-index: 2147483647;
   /* affect only screen */
   padding-bottom: 100px;
   pointer-events: none;
@@ -280,21 +280,6 @@ ${SELECTOR.printForcedPageBreak} {
   ${SELECTOR.root} {
     /* to prevent a blank last page */
     padding: 0;
-  }
-
-  ${SELECTOR.root}::after {
-    /* Safety placeholder for the bottom margin of the paper.
-       Remove if the margins at the bottom of the page are replaced with padding.
-     */
-    --paper-color: ${this.config.paperColor};
-    background: var(--paper-color, white);
-    content: '';
-    position: fixed;
-    pointer-events: none;
-    z-index: 2147483647;
-    inset: 0;
-    top: unset;
-    height: ${this.config.printBottomMargin};
   }
 
   ${SELECTOR.overlayFlow},
