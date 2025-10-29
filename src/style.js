@@ -304,7 +304,7 @@ ${SELECTOR.printForcedPageBreak} {
   }
 
   ${SELECTOR.printIgnore} {
-    display: contents;
+    display: contents !important;
   }
 
   ${SELECTOR.printHide},
@@ -312,7 +312,7 @@ ${SELECTOR.printForcedPageBreak} {
   ${SELECTOR.virtualPaperTopMargin},
   ${SELECTOR.virtualPaperBottomMargin},
   ${SELECTOR.virtualPaperGap} {
-    display: none;
+    display: none !important;
   }
 
   ${SELECTOR.pageChrome},
