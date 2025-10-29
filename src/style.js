@@ -50,7 +50,8 @@ export default class Style {
 
 ${SELECTOR.root} {
   /* reset user styles */
-  display: block;
+  /* protection against unpredictability of margins */
+  display: flow-root;
 
   /* for proper printable flow positioning */
   position: relative;
@@ -63,8 +64,6 @@ ${SELECTOR.root} {
   width: calc(${this.config.printWidth} - ${this.config.printLeftMargin} - ${this.config.printRightMargin});
   font-size: ${this.config.printFontSize};
 
-  /* protection against unpredictability of margins */
-  padding-top: .1px;
   padding-bottom: calc(2 * ${this.config.virtualPagesGap});
 }
 
@@ -267,7 +266,7 @@ ${SELECTOR.complexTextBlock} ${SELECTOR.complexTextBlock} {
 }
 
 ${SELECTOR.printPageBreak} {
-  display: block;
+  display: flow-root;
 }
 
 ${SELECTOR.printForcedPageBreak} {
@@ -323,7 +322,6 @@ ${SELECTOR.printForcedPageBreak} {
 
   ${SELECTOR.printPageBreak} {
     break-after: page;
-    /* padding: .1px; */
     overflow: auto;
   }
 
