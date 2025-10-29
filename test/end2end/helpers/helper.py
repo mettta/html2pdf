@@ -11,17 +11,19 @@ _content_flow_ = '//html2pdf-content-flow'
 _content_flow_start_ = '//html2pdf-content-flow-start'
 _content_flow_end_ = '//html2pdf-content-flow-end'
 _paper_flow_ = '//html2pdf-paper-flow'
+_overlay_flow_ = '//html2pdf-overlay-flow'
 # in number of printed pages
 _page_start_ = _content_flow_ + '//html2pdf-page'
 _paper_ = _paper_flow_ + '/html2pdf-virtual-paper'
-_paper_body_ = _paper_ + '/html2pdf-page-body-spacer'
-_paper_header_ = _paper_ + '/html2pdf-page-header'
-_paper_footer_ = _paper_ + '/html2pdf-page-footer'
+_page_chrome_ = _overlay_flow_ + '/html2pdf-page-chrome'
+_page_body_ = _page_chrome_ + '/html2pdf-page-body-spacer'
+_page_header_ = _page_chrome_ + '/html2pdf-page-header'
+_page_footer_ = _page_chrome_ + '/html2pdf-page-footer'
 
 # Elements with content, empty ones don't appear
-# _frontpage_content_ = _paper_flow_ + '//html2pdf-frontpage'
-# _header_content_ = _paper_flow_ + '//html2pdf-header'
-# _footer_content_ = _paper_flow_ + '//html2pdf-footer'
+# _frontpage_content_ = _content_flow_ + '//html2pdf-frontpage'
+# _header_content_ = _overlay_flow_ + '//html2pdf-header'
+# _footer_content_ = _overlay_flow_ + '//html2pdf-footer'
 
 # --- Local file URL helpers ---------------------------------------------------
 
@@ -124,9 +126,12 @@ class Helper:
 
         self.test_case.assert_element_present(_paper_flow_, by=By.XPATH)
         self.test_case.assert_element_present(_paper_, by=By.XPATH)
-        self.test_case.assert_element_present(_paper_body_, by=By.XPATH)
-        self.test_case.assert_element_present(_paper_header_, by=By.XPATH)
-        self.test_case.assert_element_present(_paper_footer_, by=By.XPATH)
+
+        self.test_case.assert_element_present(_overlay_flow_, by=By.XPATH)
+        self.test_case.assert_element_present(_page_chrome_, by=By.XPATH)
+        self.test_case.assert_element_present(_page_body_, by=By.XPATH)
+        self.test_case.assert_element_present(_page_header_, by=By.XPATH)
+        self.test_case.assert_element_present(_page_footer_, by=By.XPATH)
 
     def assert_html2pdf_success(self) -> None:
         self.test_case.assert_attribute(_root_, 'success')
