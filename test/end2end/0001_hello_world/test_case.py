@@ -1,5 +1,7 @@
 import os
+from pathlib import Path
 
+from pypdf import PdfReader
 from seleniumbase import BaseCase
 
 from test.end2end.helpers.helper import Helper
@@ -19,3 +21,12 @@ class Test(BaseCase):
         self.helper.do_open_and_assert(index_html_file_url, "Hello world!")
         self.helper.assert_html2pdf_elements()
         self.helper.assert_html2pdf_success()
+
+        Path("output").mkdir(parents=True, exist_ok=True)
+        self.helper.do_print_page_to_pdf("output/index.pdf")
+
+        reader = PdfReader("output/index.pdf")
+        assert len(reader.pages) == 1
+
+        page0_text = reader.pages[0].extract_text()
+        assert page0_text == "Hello world!", page0_text

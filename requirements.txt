@@ -3,3 +3,5 @@ invoke
 # End-to-end tests
 seleniumbase
 chromedriver-py
+
+pypdf

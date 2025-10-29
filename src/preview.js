@@ -35,13 +35,14 @@ export default class Preview {
     // selectors used for the mask
     this._virtualPaper = selector.virtualPaper;
     this._virtualPaperTopMargin = selector.virtualPaperTopMargin;
-    this._paperBody = selector.paperBody;
+    this._pageBodySpacer = selector.pageBodySpacer;
 
     // data
     this._pages = pages;
     this._root = layout.root;
     this._contentFlow = layout.contentFlow;
     this._paperFlow = layout.paperFlow;
+    this._overlayFlow = layout.overlayFlow;
     this._paper = paper;
 
     this._hasFrontPage = !!layout.frontpageTemplate;
@@ -49,8 +50,8 @@ export default class Preview {
   }
 
   create() {
-    this._processFirstPage();
-    this._processOtherPages();
+    this._processFrontPage();
+    this._processPages();
     (this._config.mask === true || this._config.mask === 'true') && this._addMask();
     this._makeRootVisible();
   }
@@ -71,63 +72,69 @@ export default class Preview {
     const _footerMargin = parseInt(this._config.footerMargin);
 
     // * Public Paper params:
-    // const _paperBodyWidth = this._paper.bodyWidth; // = 100% for now
-    const _paperHeaderHeight = this._paper.headerHeight;
-    const _paperFooterHeight = this._paper.footerHeight;
-    const _paperBodyHeight = this._paper.bodyHeight;
+    // const _pageBodySpacerWidth = this._paper.bodyWidth; // = 100% for now
+    const _pageHeaderHeight = this._paper.headerHeight;
+    const _pageFooterHeight = this._paper.footerHeight;
+    const _pageBodySpacerHeight = this._paper.bodyHeight;
 
     // To preserve glyph bleed and visual spillover in header/footer areas,
     // we factor in the template-defined _headerMargin and _footerMargin.
     // These values are only used if the corresponding HTML template is present
-    // (i.e., _paperHeaderHeight already includes _headerMargin, and likewise for footer).
+    // (i.e., _pageHeaderHeight already includes _headerMargin, and likewise for footer).
     // We subtract half of each margin from the header/footer space,
     // and add it to the maskWindow to avoid clipping glyph tails or decorative outlines.
-    const _topMargin = _paperHeaderHeight ? Math.ceil(_headerMargin / 2) : 0;
-    const _bottomMargin = _paperFooterHeight ? Math.ceil(_footerMargin / 2) : 0;
+    const _topMargin = _pageHeaderHeight ? Math.ceil(_headerMargin / 2) : 0;
+    const _bottomMargin = _pageFooterHeight ? Math.ceil(_footerMargin / 2) : 0;
 
     // * Refined Paper params:
-    const _headerHeight = _paperHeaderHeight - _topMargin;
-    const _footerHeight = _paperFooterHeight - _bottomMargin;
-    const _bodyHeight = _paperBodyHeight + _topMargin + _bottomMargin;
+    const _headerHeight = _pageHeaderHeight - _topMargin;
+    const _footerHeight = _pageFooterHeight - _bottomMargin;
+    const _bodyHeight = _pageBodySpacerHeight + _topMargin + _bottomMargin;
 
     // We mask elements that extend beyond the body,
     // including in the header and footer area.
     // This is to hide in these areas the borders and backgrounds of the wrappers
     // within which the page separator is placed.
-    const _printBodyMaskWindowFirstShift = _printTopMargin + _headerHeight;
-    const _maskStep = _printPaperHeight + _virtualPagesGap;
+    const _previewMaskFirstShift = _printTopMargin + _headerHeight;
+    const _previewMaskStep = _printPaperHeight + _virtualPagesGap;
+
+    // * Disable mask in print mode:
+    // * Blink duplicates text in PDF when applying soft masks (mask-image)
+    // const _printMaskFirstShift = _headerHeight;
+    // const _printMaskStep = _printPaperHeight - _printTopMargin - _printBottomMargin;
 
     this.strictAssert(
       (_printPaperHeight === _bodyHeight + _headerHeight + _printTopMargin + _footerHeight + _printBottomMargin),
       'Paper size calculation params do not match'
     );
 
-    // addInlineCSSMask({
-    //   targetElement: this._contentFlow,
-    //   maskStep: _maskStep,
-    //   maskWindow: _bodyHeight,
-    //   maskFirstShift: _printBodyMaskWindowFirstShift,
-    // });
-
-    const previewContentFlowMask = generateCSSMask({
-      maskFirstShift: _printTopMargin + _headerHeight,
-      maskStep: _printPaperHeight + _virtualPagesGap,
-      maskWindow: _bodyHeight,
-    });
-
-    const printContentFlowMask = generateCSSMask({
-      maskFirstShift: _headerHeight,
-      maskStep: _printPaperHeight - _printTopMargin - _printBottomMargin,
+    const previewContentFlowMaskCSS = generateCSSMask({
+      maskFirstShift: _previewMaskFirstShift,
+      maskStep: _previewMaskStep,
       maskWindow: _bodyHeight,
     });
 
     const maskCSS = `
-    ${this._selector.contentFlow} {
-      ${previewContentFlowMask}
-    }
-    @media print{
+    @media screen {
       ${this._selector.contentFlow} {
-        ${printContentFlowMask}
+        ${previewContentFlowMaskCSS}
+      }
+    }
+    @media print {
+      ${this._selector.root}::after {
+        /* Safety placeholder for the bottom margin of the paper.
+          Remove if the margins at the bottom of the page are replaced with padding.
+          Placed under the footer.
+        */
+        --paper-color: ${this._config.paperColor};
+        background: var(--paper-color, white);
+        content: '';
+        position: fixed;
+        pointer-events: none;
+        z-index: 11;
+        inset: 0;
+        top: unset;
+        height: ${_printBottomMargin + _pageFooterHeight}px;
       }
     }`;
 
@@ -138,85 +145,82 @@ export default class Preview {
     this._DOM.setStyles(this._root, {'visibility': 'visible'});
   }
 
-  _processFirstPage() {
-    // LET'S MAKE A FIRST PAGE.
-    let firstPage;
-
+  _processFrontPage() {
+    // IF FRONTPAGE,
     if (this._hasFrontPage) {
-      // IF FRONTPAGE,
-
-      // insert Frontpage Spacer into Content Flow,
-      // get a reference to the inserted element,
-      const frontpage = this._insertFrontpageSpacer(this._contentFlow, this._paper.bodyHeight);
-
+      // insert Frontpage into Content Flow,
+      const frontpage = this._paper.createFrontpage();
+      this._DOM.insertAtStart(this._contentFlow, frontpage);
       // register the added Frontpage Spacer in pages array,
       // thereby increasing the number of pages by 1.
       this._pages.unshift({ // todo unshift performance?
         pageStart: frontpage
       });
-      // Create a paper with the added frontpage template
-      firstPage = this._paper.createFrontpage({
-        currentPage: 1,
-        totalPages: this._pages.length
-      });
-    } else {
-      // Create a blank paper
-      firstPage = this._paper.create({
-        currentPage: 1,
-        totalPages: this._pages.length
-      });
-    }
-
-    // insert first page without pre-separator
-    this._insertIntoPaperFlow(firstPage)
-    // ADD ONLY HEADER into Content Flow before the first page.
-    this._insertIntoContentFlow(0);
-  }
-
-  _processOtherPages() {
-    // And now add all the remaining pages, except for the first one.
-    for (let index = 1; index < this._pages.length; index++) {
-
-      const paper = this._paper.create({
-        currentPage: index + 1,
-        totalPages: this._pages.length
-      });
-      const paperSeparator = this._createVirtualPaperGap();
-
-      // insert with pre-separator
-      this._insertIntoPaperFlow(paper, paperSeparator)
-
-      // ADD FOOTER and HEADER into Content Flow (as page break)
-      this._insertIntoContentFlow(index, paperSeparator);
     }
   }
 
-  _insertIntoPaperFlow(paper, separator) {
+  _processPages() {
+    for (let index = 0; index < this._pages.length; index++) {
+
+      // insert paper and get separator for balancing
+      const paperSeparator = this._insertIntoPaperFlow(index);
+
+      // insert page and get separator for balancing
+      const pageSeparator = this._insertIntoOverlayFlow(index);
+
+      // ADD FOOTER and HEADER spacers into Content Flow (as page break)
+      // and balance footer
+      this._insertIntoContentFlow(index, pageSeparator, paperSeparator);
+    }
+  }
+
+  _insertIntoPaperFlow(index) {
     // ADD VIRTUAL PAGE into Paper Flow,
     // with corresponding page number and pre-filled or blank,
     // with or without pre-separator.
+    const paper = this._paper.createVirtualPaper();
+    const paperSeparator = index ? this._createVirtualPaperGap() : undefined;
     this._insertPaper(
       this._paperFlow,
       paper,
-      separator,
+      paperSeparator,
     );
+    return paperSeparator
   }
 
-  _insertIntoContentFlow(pageIndex, separator) {
+  _insertIntoOverlayFlow(index) {
+    // ADD VIRTUAL PAGE into Paper Flow,
+    // with corresponding page number and pre-filled or blank,
+    // with or without pre-separator.
+    const page = this._paper.createPageChrome({
+      pageNumber: index + 1,
+      pageCount: this._pages.length
+    });
+    const pageSeparator = index ? this._createVirtualPaperGap() : undefined;
+    this._insertPaper(
+      this._overlayFlow,
+      page,
+      pageSeparator,
+    );
+    return pageSeparator
+  }
+
+  _insertIntoContentFlow(pageIndex, pageSeparator, paperSeparator) {
     const element = this._pages[pageIndex].pageStart;
     // ADD FOOTER and HEADER into Content Flow (as page break),
     // ADD ONLY HEADER into Content Flow before the first page.
 
     this._preventPageOverflow(pageIndex);
 
-    const pageDivider = this._createPageBreaker(pageIndex, separator);
+    const isSeparator = (paperSeparator && pageSeparator) ? true : false;
+    const pageDivider = this._createPageBreaker(pageIndex, isSeparator);
     // This wrapper pageDivider must be inserted into the DOM immediately,
     // because in the process of creating and inserting the footer into the DOM,
     // balancing is going on, and the parent of the spacer
     // must already be in the DOM.
     this._DOM.insertBefore(element, pageDivider);
 
-    separator && this._insertFooterSpacer(pageDivider, this._paper.footerHeight, separator);
+    isSeparator && this._insertFooterSpacer(pageDivider, this._paper.footerHeight, pageSeparator, paperSeparator);
     this._insertHeaderSpacer(pageDivider, this._paper.headerHeight);
     this._updatePageStartElementAttrValue(element, pageIndex);
   }
@@ -239,7 +243,7 @@ export default class Preview {
     }
   }
 
-  _createPageBreaker(pageIndex, separator) {
+  _createPageBreaker(pageIndex, isSeparator) {
     // PageBreaker isolates all inserted elements
     // to create a new formatting context,
     // and also used to determine which page an object is on.
@@ -258,7 +262,7 @@ export default class Preview {
     // * because of firefox, we added 1pixel of padding for runningSafety in style.js,
     // * and are now subtracting it to compensate.
     // FIXME -1
-    (separator && this._paper.footerHeight) && this._DOM.setStyles(pageDivider, { marginTop: this._paper.footerHeight - 1 + 'px' });
+    (isSeparator && this._paper.footerHeight) && this._DOM.setStyles(pageDivider, { marginTop: this._paper.footerHeight - 1 + 'px' });
     this._paper.headerHeight && this._DOM.setStyles(pageDivider, { paddingBottom: this._paper.headerHeight - 1 + 'px' });
 
     return pageDivider;
@@ -334,7 +338,7 @@ export default class Preview {
     this._DOM.insertAtEnd(target, headerSpacer)
   }
 
-  _insertFooterSpacer(target, footerHeight, paperSeparator) {
+  _insertFooterSpacer(target, footerHeight, pageSeparator, paperSeparator) {
 
     const footerSpacer = this._DOM.createDocumentFragment();
 
@@ -364,15 +368,23 @@ export default class Preview {
     // Put into DOM inside the target, in its upper part
     this._DOM.insertAtStart(target, footerSpacer);
 
-    this._balanceFooter(balancingFooter, contentSeparator, paperSeparator);
+    this._balanceFooter(balancingFooter, contentSeparator, pageSeparator, paperSeparator);
   }
 
-  _balanceFooter(balancingFooter, contentSeparator, paperSeparator) {
+  _balanceFooter(balancingFooter, contentSeparator, pageSeparator, paperSeparator) {
     // * Must be run after all members have been added to the DOM.
     // Determine what inaccuracy there is visually in the break simulation position,
     // focusing on the difference between the position of the paired elements
     // in Paper Flow and Content Flow, and compensate for it.
-    const balancer = this._node.getTop(paperSeparator, this._root) - this._node.getTop(contentSeparator, this._root);
+
+    const pageSeparatorTop = this._node.getTop(pageSeparator, this._root);
+    const paperSeparatorTop = this._node.getTop(paperSeparator, this._root);
+    const contentSeparatorTop = this._node.getTop(contentSeparator, this._root);
+
+    this.strictAssert(paperSeparatorTop == pageSeparatorTop, `balancers in paper layers are misaligned`, {balancingFooter, contentSeparator, pageSeparator, paperSeparator,});
+
+    const balancer = pageSeparatorTop - contentSeparatorTop;
+    this.log({balancingFooter, contentSeparatorTop, paperSeparatorTop, pageSeparatorTop});
 
     this._DOM.setStyles(balancingFooter, { 'margin-bottom': balancer + 'px' });
 

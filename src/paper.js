@@ -21,11 +21,13 @@ export default class Paper {
     this._footerTemplate = layout.footerTemplate;
 
     // selectors
-    this._paperBodySelector = selector?.paperBody || '.paperBody';
-    this._paperHeaderSelector = selector?.paperHeader || '.paperHeader';
-    this._paperFooterSelector = selector?.paperFooter || '.paperFooter';
+    this._pageChromeSelector = selector?.pageChrome || '.pageChrome';
+    this._pageBodySpacerSelector = selector?.pageBodySpacer || '.pageBodySpacer';
+    this._pageHeaderSelector = selector?.pageHeader || '.pageHeader';
+    this._pageFooterSelector = selector?.pageFooter || '.pageFooter';
     this._headerContentSelector = selector?.headerContent || '.headerContent';
     this._footerContentSelector = selector?.footerContent || '.footerContent';
+    this._frontpageElementSelector = selector?.frontpageElement || '.frontpageElement';
     this._frontpageContentSelector = selector?.frontpageContent || '.frontpageContent';
 
     this._virtualPaperSelector = selector?.virtualPaper || '.virtualPaper';
@@ -49,58 +51,26 @@ export default class Paper {
     this._calculatePaperParams();
   }
 
-  create({ currentPage, totalPages }) {
-    const body = this._createPaperBody(this.bodyHeight);
-    const header = this._createPaperHeader(this._headerTemplate);
-    const footer = this._createPaperFooter(this._footerTemplate);
+  createPageChrome({ pageNumber, pageCount }) {
+    const wrapper = this._node.create(this._pageChromeSelector);
+    const pageElements = this._composePageElements({ pageNumber, pageCount });
+    this._DOM.insertAtEnd(
+      wrapper,
+      pageElements
+    );
 
-    return this._createPaper({
-      header,
-      body,
-      footer,
-      currentPage,
-      totalPages,
-    });
+    return wrapper;
   }
 
-  createFrontpage({ currentPage, totalPages }) {
+  _composePageElements({ pageNumber, pageCount }) {
+    const fragment = this._DOM.createDocumentFragment();
 
-    const frontpage = this._createFrontpageContent(this._frontpageTemplate, this._frontpageFactor);
-    const body = this._createPaperBody(this.bodyHeight, frontpage);
-    const header = this._createPaperHeader(this._headerTemplate);
-    const footer = this._createPaperFooter(this._footerTemplate);
-
-    return this._createPaper({
-      header,
-      body,
-      footer,
-      currentPage,
-      totalPages,
-    });
-  }
-
-  createVirtualTopMargin() {
-    return this._node.create(this._virtualPaperTopMarginSelector);
-  }
-  createVirtualBottomMargin() {
-    return this._node.create(this._virtualPaperBottomMarginSelector);
-  }
-
-  // TODO make createPaper() dependent on templates and parameters:
-  // Don't create parts of the page here?
-
-  _createPaper({
-    header,
-    body,
-    footer,
-    currentPage,
-    totalPages,
-  }) {
-
-    const paper = this._node.create(this._virtualPaperSelector);
+    const body = this._createPageBodySpacer(this.bodyHeight);
+    const header = this._createPageHeader(this._headerTemplate);
+    const footer = this._createPageFooter(this._footerTemplate);
 
     this._DOM.insertAtEnd(
-      paper,
+      fragment,
       this.createVirtualTopMargin(),
       header,
       body,
@@ -108,10 +78,65 @@ export default class Paper {
       this.createVirtualBottomMargin(),
     );
 
-    if (currentPage && totalPages) {
-      this._setPageNumber(header, currentPage, totalPages);
-      this._setPageNumber(footer, currentPage, totalPages);
+    if (pageNumber && pageCount) {
+      this._setPageNumber(header, pageNumber, pageCount);
+      this._setPageNumber(footer, pageNumber, pageCount);
     }
+
+    return fragment;
+  }
+
+  createFrontpage() {
+    if (!this._frontpageTemplate) {
+      this._debug && console.warn('[paper • createFrontpage()] called without a template');
+      return
+    }
+
+    const frontpageElement = this._node.create(this._frontpageElementSelector);
+    this._DOM.setStyles(frontpageElement, {
+      'height': this.bodyHeight + 'px',
+      // ✴️ inline-block is used to prevent incorrect page breaks in print:
+      // For oversized front pages, the overflowing frontpageContent is scaled down,
+      // while frontpageElement has a fixed height that should fit on one page.
+      // When frontpageElement is display:block, browsers calculate fragmentation
+      // from the child’s unscaled layout height (before transforms),
+      // which can cause unwanted page breaks.
+      // Setting display:inline-block makes the wrapper an atomic inline-level box
+      // (CSS Display §2.4, CSS Fragmentation §3.1),
+      // so it isn’t fragmented inside, and the scaled child prints as one unit.
+      'display': 'inline-block',
+      'width': '100%',
+      'vertical-align': 'top',
+    });
+    const frontpageContent = this._createFrontpageContent(this._frontpageTemplate, this._frontpageFactor);
+    this._DOM.setStyles(frontpageContent, {
+      // ✴️ flow-root → isolates layout (prevents margin collapse / contains floats)
+      'display': 'flow-root',
+      'transform-origin': 'top center',
+      'height': '100%',
+    });
+    this._DOM.insertAtStart(frontpageElement, frontpageContent);
+    return frontpageElement;
+  }
+
+  createVirtualTopMargin() {
+    return this._node.create(this._virtualPaperTopMarginSelector);
+  }
+
+  createVirtualBottomMargin() {
+    return this._node.create(this._virtualPaperBottomMarginSelector);
+  }
+
+  createVirtualPaper(pageElements) {
+
+    const paper = this._node.create(this._virtualPaperSelector);
+
+    pageElements && this._DOM.insertAtEnd(
+      paper,
+      this.createVirtualTopMargin(),
+      pageElements,
+      this.createVirtualBottomMargin(),
+    );
 
     return paper;
   }
@@ -124,9 +149,9 @@ export default class Paper {
     return _node;
   }
 
-  _createPaperBody(height, content) {
-    const _node = this._node.create(this._paperBodySelector);
-    // Lock the height of the paperBody for the content area.
+  _createPageBodySpacer(height, content) {
+    const _node = this._node.create(this._pageBodySpacerSelector);
+    // Lock the height of the pageBodySpacer for the content area.
     // This affects the correct printing of the paper layer.
     this._DOM.setStyles(_node, { height: height + 'px' });
     // To create a frontpage, we can pass content here.
@@ -134,8 +159,8 @@ export default class Paper {
     return _node;
   }
 
-  _createPaperHeader(template) {
-    const _node = this._node.create(this._paperHeaderSelector);
+  _createPageHeader(template) {
+    const _node = this._node.create(this._pageHeaderSelector);
 
     if (template) {
       const content = this._node.create(this._headerContentSelector);
@@ -145,8 +170,8 @@ export default class Paper {
     return _node;
   }
 
-  _createPaperFooter(template) {
-    const _node = this._node.create(this._paperFooterSelector);
+  _createPageFooter(template) {
+    const _node = this._node.create(this._pageFooterSelector);
 
     if (template) {
       const content = this._node.create(this._footerContentSelector);
@@ -172,16 +197,20 @@ export default class Paper {
   _calculatePaperParams() {
 
     // CREATE TEST PAPER ELEMENTS
-    const bodyElement = this._createPaperBody();
-    const frontpageElement = this._createFrontpageContent(this._frontpageTemplate);
-    const headerElement = this._createPaperHeader(this._headerTemplate);
-    const footerElement = this._createPaperFooter(this._footerTemplate);
+    const bodyElement = this._createPageBodySpacer();
+    const headerElement = this._createPageHeader(this._headerTemplate);
+    const footerElement = this._createPageFooter(this._footerTemplate);
 
-    const testPaper = this._createPaper({
-      header: headerElement,
-      body: bodyElement,
-      footer: footerElement,
-    });
+    const testPaper = this._node.create(this._virtualPaperSelector);
+
+    this._DOM.insertAtEnd(
+      testPaper,
+      this.createVirtualTopMargin(),
+      headerElement,
+      bodyElement,
+      footerElement,
+      this.createVirtualBottomMargin(),
+    );
 
     // CREATE TEMP CONTAINER
     const workbench = this._node.create('#workbench')
@@ -203,6 +232,7 @@ export default class Paper {
     const bodyWidth = this._DOM.getElementOffsetWidth(bodyElement);
 
     // add frontpage text
+    const frontpageElement = this._createFrontpageContent(this._frontpageTemplate);
     this._DOM.insertAtStart(bodyElement, frontpageElement);
     // get height for the frontpage content
     const filledBodyHeight = this._DOM.getElementOffsetHeight(bodyElement);
