@@ -132,6 +132,8 @@ ${SELECTOR.pageHeader} {
   display: block;
   position: relative;
   pointer-events: auto;
+  --paper-color: ${this.config.paperColor};
+  background: var(--paper-color, white);
 }
 
 ${SELECTOR.headerContent},
@@ -286,11 +288,11 @@ ${SELECTOR.printForcedPageBreak} {
        Remove if the margins at the bottom of the page are replaced with padding.
      */
     --paper-color: ${this.config.paperColor};
+    background: var(--paper-color, white);
     content: '';
     position: fixed;
     pointer-events: none;
     z-index: 2147483647;
-    background: var(--paper-color, white);
     inset: 0;
     top: unset;
     height: ${this.config.printBottomMargin};
