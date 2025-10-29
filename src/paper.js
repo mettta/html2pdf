@@ -93,8 +93,28 @@ export default class Paper {
     }
 
     const frontpageElement = this._node.create(this._frontpageElementSelector);
+    this._DOM.setStyles(frontpageElement, {
+      'height': this.bodyHeight + 'px',
+      // ✴️ inline-block is used to prevent incorrect page breaks in print:
+      // For oversized front pages, the overflowing frontpageContent is scaled down,
+      // while frontpageElement has a fixed height that should fit on one page.
+      // When frontpageElement is display:block, browsers calculate fragmentation
+      // from the child’s unscaled layout height (before transforms),
+      // which can cause unwanted page breaks.
+      // Setting display:inline-block makes the wrapper an atomic inline-level box
+      // (CSS Display §2.4, CSS Fragmentation §3.1),
+      // so it isn’t fragmented inside, and the scaled child prints as one unit.
+      'display': 'inline-block',
+      'width': '100%',
+      'vertical-align': 'top',
+    });
     const frontpageContent = this._createFrontpageContent(this._frontpageTemplate, this._frontpageFactor);
-    this._DOM.setStyles(frontpageElement, { height: this.bodyHeight + 'px' });
+    this._DOM.setStyles(frontpageContent, {
+      // ✴️ flow-root → isolates layout (prevents margin collapse / contains floats)
+      'display': 'flow-root',
+      'transform-origin': 'top center',
+      'height': '100%',
+    });
     this._DOM.insertAtStart(frontpageElement, frontpageContent);
     return frontpageElement;
   }

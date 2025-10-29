@@ -205,17 +205,6 @@ ${SELECTOR.pageBodySpacer} {
   pointer-events: none;
 }
 
-${SELECTOR.frontpageElement} {
-  display: block;
-}
-
-${SELECTOR.frontpageContent} {
-  display: block;
-  transform-origin: top center;
-  padding: .1px;
-  height: 100%;
-}
-
 .null {
   display: inline;
   padding: 0;
