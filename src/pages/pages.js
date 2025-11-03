@@ -386,8 +386,8 @@ export default class Pages {
       refreshPageBottom();
     };
 
-    const currentElementBottom = this._node.getBottomWithMargin(currentElement, this._root);
-    const arrayParentBottomEdge = arrayBottomParent ? this._node.getBottomWithMargin(arrayBottomParent, this._root) : undefined;
+    const currentElementBottom = this._node.getBottom(currentElement, this._root);
+    const arrayParentBottomEdge = arrayBottomParent ? this._node.getBottom(arrayBottomParent, this._root) : undefined;
 
     // * We want to keep the passed 'arrayParentBottomEdge' value so that we can pass it
     // * on to the next step in the loop if necessary, even if we have to change
@@ -450,7 +450,7 @@ export default class Pages {
         while (_el && _el !== arrayBottomParent) {
           _parents.push({
             element: _el,
-            bottom: this._node.getBottomWithMargin(_el, this._root)
+            bottom: this._node.getBottom(_el, this._root)
           });
           _el = _el.parentElement;
         }
