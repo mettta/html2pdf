@@ -53,7 +53,7 @@ export default class Pre {
 
     // Prepare node parameters
 
-    const toNum = v => (isNaN(parseFloat(v)) ? 0 : parseFloat(v)); // TODO: make helper
+    const toNum = v => (isNaN(parseFloat(v)) ? 0 : Math.ceil(parseFloat(v))); // TODO: make helper
     const nodeMarginTop = toNum(_nodeComputedStyle.marginTop);
     const nodeMarginBottom = toNum(_nodeComputedStyle.marginBottom);
     const nodePaddingTop = toNum(_nodeComputedStyle.paddingTop);
@@ -146,8 +146,9 @@ export default class Pre {
       // There is extra space at the cut lines for a border.
       // Make a decorative border and cut off the original one.
       const serviceCutLineBorder = 0;
-      const topCutLineAmend = - borderTopWidth - marginTop + serviceCutLineBorder;
-      const bottomCutLineAmend = - borderBottomWidth - marginBottom + serviceCutLineBorder;
+      // *** Resetting margins for cut parts => we don't need them here
+      const topCutLineAmend = serviceCutLineBorder + nodeBorderTopWidth; //  + nodeMarginTop + nodeBorderTopWidth
+      const bottomCutLineAmend = serviceCutLineBorder + nodeBorderBottomWidth; //  + nodeMarginBottom + nodeBorderBottomWidth
 
       // ** Prepare parameters for splitters calculation.
 
@@ -162,7 +163,7 @@ export default class Pre {
       // * - the top border is considered ONCE for firstPartSpace;
       // * - the bottom border is considered in bottomCutLineAmend.
       // * That is why we ignore preWrapperHeight here.
-      let firstPartSpace = pageBottom - nodeTop - preWrapperHeight + bottomCutLineAmend; // - preWrapperHeight
+      let firstPartSpace = pageBottom - nodeTop - bottomCutLineAmend - preWrapperHeight;
       // TODO: firstPartSpace and firstPartSpaceForSPlitting should be different.
       //! For firstPartSpace we need all margins & preWrapperHeight.
       //! For firstPartSpaceForSPlitting we only need selected amendments.
@@ -171,7 +172,7 @@ export default class Pre {
       // * For fullPageSpace,
       // * subtracting preWrapperHeight will leave space for content lines.
       // * However, we reset the cut lines (margins and borders).
-      const fullPageSpace = fullPageHeight - preWrapperHeight + topCutLineAmend;
+      const fullPageSpace = fullPageHeight - preWrapperHeight - topCutLineAmend;
 
       // TODO: more accurate calculations for spaces are needed
       // --node---
