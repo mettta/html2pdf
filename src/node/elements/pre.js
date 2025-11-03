@@ -52,20 +52,28 @@ export default class Pre {
     this._debug._ && console.log(...consoleMark, 'node', node, {pageBottom,fullPageHeight});
 
     // Prepare node parameters
+
+    const toNum = v => (isNaN(parseFloat(v)) ? 0 : parseFloat(v)); // TODO: make helper
+    const marginTop = toNum(_nodeComputedStyle.marginTop);
+    const marginBottom = toNum(_nodeComputedStyle.marginBottom);
+    const paddingTop = toNum(_nodeComputedStyle.paddingTop);
+    const paddingBottom = toNum(_nodeComputedStyle.paddingBottom);
+    const borderTopWidth = toNum(_nodeComputedStyle.borderTopWidth);
+    const borderBottomWidth = toNum(_nodeComputedStyle.borderBottomWidth);
+    const lineHeight = toNum(_nodeComputedStyle.lineHeight);
     const nodeTop = this._node.getTop(node, root);
     const nodeHeight = this._DOM.getElementOffsetHeight(node);
-    const nodeLineHeight = this._node.getLineHeight(node);
     // * preWrapper:
     // * Margins are not considered here, since
     // * the upper margin is considered for the first part,
     // * both margins are zeroed for the middle parts,
     // * and the lower margin will be considered in further calculations.
-    const preWrapperHeight = this._node.getEmptyNodeHeightByProbe(node, '', false);
+    const preWrapperHeight = paddingTop + paddingBottom + borderTopWidth + borderBottomWidth; // + lineHeight;
 
     // * Let's check the probable number of rows in the simplest case,
     // * as if the element had the style.whiteSpace=='pre'
     // * and the line would occupy exactly one line.
-    const minNodeHeight = preWrapperHeight + nodeLineHeight * this._minPreBreakableLines;
+    const minNodeHeight = preWrapperHeight + lineHeight * this._minPreBreakableLines;
     if (nodeHeight < minNodeHeight) {
       this._debug._ && console.log('%c END _splitPreNode (small node)', CONSOLE_CSS_END_LABEL);
       return []
@@ -134,18 +142,9 @@ export default class Pre {
 
       // * calculate parts
 
-      // TODO: make helper
-      const toNum = v => (isNaN(parseFloat(v)) ? 0 : parseFloat(v));
-
       // todo: #CutLineAmend
       // There is extra space at the cut lines for a border.
       // Make a decorative border and cut off the original one.
-      const borderTopWidth = toNum(_nodeComputedStyle.borderTopWidth);
-      const borderBottomWidth = toNum(_nodeComputedStyle.borderBottomWidth);
-      const marginTop = toNum(_nodeComputedStyle.marginTop);
-      const marginBottom = toNum(_nodeComputedStyle.marginBottom);
-      const paddingTop = toNum(_nodeComputedStyle.paddingTop);
-      const paddingBottom = toNum(_nodeComputedStyle.paddingBottom);
       const serviceCutLineBorder = 0;
       const topCutLineAmend = - borderTopWidth - marginTop + serviceCutLineBorder;
       const bottomCutLineAmend = - borderBottomWidth - marginBottom + serviceCutLineBorder;
