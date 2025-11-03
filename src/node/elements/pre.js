@@ -54,13 +54,13 @@ export default class Pre {
     // Prepare node parameters
 
     const toNum = v => (isNaN(parseFloat(v)) ? 0 : parseFloat(v)); // TODO: make helper
-    const marginTop = toNum(_nodeComputedStyle.marginTop);
-    const marginBottom = toNum(_nodeComputedStyle.marginBottom);
-    const paddingTop = toNum(_nodeComputedStyle.paddingTop);
-    const paddingBottom = toNum(_nodeComputedStyle.paddingBottom);
-    const borderTopWidth = toNum(_nodeComputedStyle.borderTopWidth);
-    const borderBottomWidth = toNum(_nodeComputedStyle.borderBottomWidth);
-    const lineHeight = toNum(_nodeComputedStyle.lineHeight);
+    const nodeMarginTop = toNum(_nodeComputedStyle.marginTop);
+    const nodeMarginBottom = toNum(_nodeComputedStyle.marginBottom);
+    const nodePaddingTop = toNum(_nodeComputedStyle.paddingTop);
+    const nodePaddingBottom = toNum(_nodeComputedStyle.paddingBottom);
+    const nodeBorderTopWidth = toNum(_nodeComputedStyle.borderTopWidth);
+    const nodeBorderBottomWidth = toNum(_nodeComputedStyle.borderBottomWidth);
+    const nodeLineHeight = toNum(_nodeComputedStyle.lineHeight);
     const nodeTop = this._node.getTop(node, root);
     const nodeHeight = this._DOM.getElementOffsetHeight(node);
     // * preWrapper:
@@ -68,12 +68,12 @@ export default class Pre {
     // * the upper margin is considered for the first part,
     // * both margins are zeroed for the middle parts,
     // * and the lower margin will be considered in further calculations.
-    const preWrapperHeight = paddingTop + paddingBottom + borderTopWidth + borderBottomWidth; // + lineHeight;
+    const preWrapperHeight = nodePaddingTop + nodePaddingBottom + nodeBorderTopWidth + nodeBorderBottomWidth; // + nodeLineHeight;
 
     // * Let's check the probable number of rows in the simplest case,
     // * as if the element had the style.whiteSpace=='pre'
     // * and the line would occupy exactly one line.
-    const minNodeHeight = preWrapperHeight + lineHeight * this._minPreBreakableLines;
+    const minNodeHeight = preWrapperHeight + nodeLineHeight * this._minPreBreakableLines;
     if (nodeHeight < minNodeHeight) {
       this._debug._ && console.log('%c END _splitPreNode (small node)', CONSOLE_CSS_END_LABEL);
       return []
