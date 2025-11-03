@@ -17,7 +17,11 @@ index3_html_file_url = (
 index4_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "index4.html")
 )
+index5_html_file_url = (
+    "file:///" + os.path.join(path_to_this_test_file_folder, "index5.html")
+)
 
+admonitionTitle = '//*[@data-testid="admonitionTitle"]'
 test_element1 = '//*[@data-testid="testPointParent1"]'
 point_inside_p2 = '//*[@data-testid="point-inside-p2"]'
 parent2 = '//*[@data-testid="parent-2"]'
@@ -79,6 +83,22 @@ class Test(BaseCase):
         self.helper.assert_element_starts_page(parent3, 2)
         self.helper.assert_element_on_the_page(p1, 3, True)
         self.helper.assert_element_starts_page(p1, 3)
+        self.helper.assert_element_on_the_page(p2, 3, True)
+        # 1-st break by neutral service element (in tail at the end):
+        self.helper.assert_element_starts_page('//html2pdf-neutral', 5, 1)
+        self.helper.assert_element_on_the_page(p9last, 6, True)
+        self.helper.assert_element_on_the_page(p10, 6, True)
+
+    def test_005(self):
+        helper = Helper(self)
+        helper.do_open(index5_html_file_url)
+
+        self.helper.assert_document_has_pages(9, True)
+        self.helper.assert_element_on_the_page(parent2, 1, True)
+        self.helper.assert_element_on_the_page(parent3, 2, True)
+        self.helper.assert_element_starts_page(parent3, 2)
+        self.helper.assert_element_starts_page(admonitionTitle, 3)
+        self.helper.assert_element_on_the_page(p1, 3, True)
         self.helper.assert_element_on_the_page(p2, 3, True)
         # 1-st break by neutral service element (in tail at the end):
         self.helper.assert_element_starts_page('//html2pdf-neutral', 5, 1)

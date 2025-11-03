@@ -301,39 +301,32 @@ export default class Pages {
   }
 
   _parseNodes({
-    array,
     previous,
     next,
-    parent,
-    parentBottom,
+    array,
+    arrayTopParent,
+    arrayBottomParent,
   }) {
-    this._debug._parseNodes && console.log('🔵 _parseNodes', {array, parent});
+    this._debug._parseNodes && console.log('🔵 _parseNodes', {array, arrayTopParent, arrayBottomParent});
 
     for (let i = 0; i < array.length; i++) {
       const currentElement = array[i];
       const isFirstChild = i === 0;
       const isLastChild = i === array.length - 1;
-      const lastChildParentBottom = isLastChild ? parentBottom : undefined;
-      const usesParentContext = Boolean(parent) && (isFirstChild || Boolean(lastChildParentBottom));
+
       // * First and last children inherit the parent as the page anchor when possible
-      const tracedParent = usesParentContext ? parent : currentElement;
-      const parentForNode = usesParentContext ? parent : undefined;
-      // * tracedParent is what the next recursion level will treat as its parent.
+      // *** Here we throw from above or reset for non-edge ones.
+      const _topParent = isFirstChild ? arrayTopParent : undefined;
+      const _bottomParent = (isLastChild && arrayBottomParent) ? arrayBottomParent : undefined;
+
       this._parseNode({
         previousElement: array[i - 1] || previous,
         currentElement,
         nextElement: array[i + 1] || next,
         isFirstChild,
         isLastChild,
-        parent: parentForNode, // provided only for boundary children where the wrapper matters
-        tracedParent,
-        // *** If the parent item has a bottom margin, we must consider it
-        // *** when deciding on the last child.
-        // *** Otherwise, this margin may be lost
-        // *** and not counted in the calculation of the next page height,
-        // *** causing blank unaccounted pages.
-        // *** So, for the last child:
-        parentBottom: lastChildParentBottom,
+        arrayTopParent: _topParent, // provided only for boundary children where the wrapper matters
+        arrayBottomParent: _bottomParent, // provided only for boundary children where the wrapper matters
       });
     }
   }
@@ -345,12 +338,8 @@ export default class Pages {
     previousElement,
     currentElement,
     nextElement,
-    parent,
-    // parent is provided only for first/last children so boundary logic can inspect the wrapper
-    // tracedParent may override it when propagating the context to descendants
-    tracedParent,
-    // *** for the last child:
-    parentBottom,
+    arrayTopParent,
+    arrayBottomParent,
   }) {
     const consoleMark = ['%c[_parseNode]\n', 'color:white;',]
 
@@ -368,9 +357,8 @@ export default class Pages {
         nextElement,
         isFirstChild,
         isLastChild,
-        parent,
-        tracedParent,
-        parentBottom,
+        arrayTopParent,
+        arrayBottomParent,
       }
       );
 
@@ -398,37 +386,20 @@ export default class Pages {
       refreshPageBottom();
     };
 
-    const currentElementBottom = this._node.getBottomWithMargin(currentElement, this._root);
+    const currentElementBottom = this._node.getBottom(currentElement, this._root);
+    const arrayParentBottomEdge = arrayBottomParent ? this._node.getBottom(arrayBottomParent, this._root) : undefined;
 
-    // * When _parseNodes() enters a parent, it snapshots the parent’s bottom (`parentBottom`)
-    // * and hands that value to the children. The last child compares against this boundary.
-    // * If the parent later gets sliced, inheritance will be lost.
-    // * But if the parent is not split, and its last child is split,
-    // * the DOM will mutate and the parent's parameters will change,
-    // * even though the parent itself remains intact.
-    // * Re-measure so descendants work with live coordinates.
-    let resolvedParentBottom = parentBottom;
-    if (parent && parentBottom !== undefined) {
-      const liveParentBottom = this._node.getBottomWithMargin(parent, this._root);
-      if (liveParentBottom !== undefined) {
-        resolvedParentBottom = liveParentBottom;
-      }
-    }
-
-    parentBottom = resolvedParentBottom;
-
-    // * We want to keep the passed 'parentBottom' value so that we can pass it
+    // * We want to keep the passed 'arrayParentBottomEdge' value so that we can pass it
     // * on to the next step in the loop if necessary, even if we have to change
     // * this in the current step to handle edge cases.
     // * nullish coalescing keeps legitimate 0 offsets, yet still falls back
     // * to the element itself when the parent is missing or stale.
-    const baseBlockBottom = (parentBottom ?? currentElementBottom);
-    let currentParentBottom = parentBottom;
+    let currentParentBottomEdge = arrayParentBottomEdge;
 
-    // * If there is a parentBottom - we are dealing with the last child of the last child
+    // * If there is a arrayParentBottomEdge - we are dealing with the last child of the last child
     // * (have after the current element the lower edges of one or more of its parents).
     // * Consider the case of extreme design:
-    // * if the custom design shifts parentBottom down a lot because of padding or margins or similar.
+    // * if the custom design shifts arrayParentBottomEdge down a lot because of padding or margins or similar.
     // * Then let's check where the bottom edge of the current element is.
     // * If currentElementBottom is lower than “start of new page” (currentElementBottom > newPageBottom) -
     // * this case is handled further, with an attempt to split the current element.
@@ -446,22 +417,22 @@ export default class Pages {
     // Tail exists only if the space between the current element’s bottom and its parent’s bottom
     // exceeds a full page (i.e., the tail of wrappers below the current element is longer than a page).
     // Using `top` here misclassifies long elements as a tail; rely on `currentElementBottom` instead.
-    const _isTailLongerThanPage = parentBottom !== undefined && ((parentBottom - currentElementBottom) >= this._referenceHeight);
+    const _isTailLongerThanPage = arrayParentBottomEdge !== undefined && ((arrayParentBottomEdge - currentElementBottom) >= this._referenceHeight);
     if (_isTailLongerThanPage) {
-      // ** if parentBottom ---> current is LAST
-      // ** if parentBottom > (currentElementTop + this._referenceHeight) ---> we have a “tail” of the lower bounds of the parent tags,
+      // ** if arrayParentBottomEdge ---> current is LAST
+      // ** if arrayParentBottomEdge > (currentElementTop + this._referenceHeight) ---> we have a “tail” of the lower bounds of the parent tags,
       // * and there are obviously set margins or paddings that take up space.
       // * And now the only case where we can insert a page break between these boundaries
       // * (register a break after an element without having the next one).
       // * To do this, we will have to insert a service element after the desired parent element
       // * and assign the service element as the “start of the page”.
 
-      currentParentBottom = undefined;
+      currentParentBottomEdge = undefined;
 
       this._debug._parseNode && console.log(
         '🪁 Tail: We got a tail from the lower shells of the last child. Giving up our “last child” rule here and will try to insert a page break at the end of some parent. ',
-        {parentBottom, currentParentBottom,  currentElementBottom, newPageBottom,},
-        {currentElement, parent},
+        {arrayParentBottomEdge, currentParentBottomEdge,  currentElementBottom, newPageBottom,},
+        {currentElement, arrayBottomParent},
       );
 
       if (currentElementBottom <= newPageBottom) {
@@ -476,21 +447,21 @@ export default class Pages {
 
         this._debug._parseNode && console.log('🪁 Tail: currentElement', currentElement);
 
-        while (_el && _el !== parent) {
+        while (_el && _el !== arrayBottomParent) {
           _parents.push({
             element: _el,
-            bottom: this._node.getBottomWithMargin(_el, this._root)
+            bottom: this._node.getBottom(_el, this._root)
           });
           _el = _el.parentElement;
         }
 
-        if (_el === parent) {
+        if (_el === arrayBottomParent) {
           _parents.push({
-            element: parent,
-            bottom: parentBottom // already refreshed above, so tail compares against live position
+            element: arrayBottomParent,
+            bottom: arrayParentBottomEdge,
           });
         } else {
-          throw new Error("parent not found in the ancestor chain");
+          throw new Error('"bottom" parent not found in the ancestor chain');
         }
 
         this._debug._parseNode && console.log('🪁 Tail: _parents', _parents);
@@ -523,10 +494,10 @@ export default class Pages {
             // check if here is more then 1 split
             // this._node.getTopForPageStartCandidate(pageStart, this._root) + this._referenceHeight
 
-            this._debug._parseNode && console.log(_currentPageBottom, justUpdatedPageBottom, parentBottom);
+            this._debug._parseNode && console.log(_currentPageBottom, justUpdatedPageBottom, arrayParentBottomEdge);
 
-            if (parentBottom > justUpdatedPageBottom) {
-              this._debug._ && console.log('🧧 • parentBottom > justUpdatedPageBottom');
+            if (arrayParentBottomEdge > justUpdatedPageBottom) {
+              this._debug._ && console.log('🧧 • arrayParentBottomEdge > justUpdatedPageBottom');
               _currentPageBottom = justUpdatedPageBottom;
               this._debug._parseNode && console.log('new _currentPageBottom', _currentPageBottom);
               // and go to next index
@@ -556,12 +527,10 @@ export default class Pages {
     // * and we are looking at it again
     // * (e.g. it is the height of the entire next page and falls under inspection).
 
-    //! currentParentBottom is refreshed right before, so descendants see live parent boundaries.
-    //! Using ?? avoids treating 0 as falsy, unlike the previous || variant.
-    // const currentBlockBottom = currentParentBottom || currentElementBottom;
-    const currentBlockBottom = currentParentBottom ?? currentElementBottom;
+    //! currentParentBottomEdge is refreshed right before, so descendants see live parent boundaries.
+    const currentBlockBottom = currentParentBottomEdge ?? currentElementBottom;
 
-    this._debug._parseNode && console.log('[_parseNode]', {currentBlockBottom, currentParentBottom, currentElementBottom});
+    this._debug._parseNode && console.log('[_parseNode]', {currentBlockBottom, currentParentBottomEdge, currentElementBottom});
     if (
       // * already registered:
       this.pages.at(-1).pageStart === currentElement
@@ -585,18 +554,18 @@ export default class Pages {
     // ** So let's add a height condition: (currentElementBottom - currentElementTop)
 
     if ((currentElementTop >= newPageBottom) && (currentElementBottom - currentElementTop)) {
-      const canUseParentTop = isFirstChild && Boolean(parent);
-      const parentTop = canUseParentTop ? this._node.getTopForPageStartCandidate(parent, this._root) : undefined;
+      const canUseParentTop = isFirstChild && Boolean(arrayTopParent);
+      const parentTop = canUseParentTop ? this._node.getTopForPageStartCandidate(arrayTopParent, this._root) : undefined;
       const beginningTail = Boolean(parentTop) && (currentElementTop - parentTop >= this._referenceHeight);
 
       if (beginningTail) {
-        // The parent wrapper already spans more than a page above the current element.
-        // Keep the element as the page-start anchor without climbing to the parent: the
+        // The top parent wrapper already spans more than a page above the current element.
+        // Keep the element as the page-start anchor without climbing to the arrayTopParent: the
         // tail will be handled by downstream logic once the element fits on the new page.
         this._debug._parseNode && console.log(
           '🪁 beginning Tail',
-          {parentTop, currentParentBottom, currentElementTop, newPageBottom,},
-          {currentElement, parent},
+          {parentTop, currentParentBottomEdge, currentElementTop, newPageBottom,},
+          {currentElement, arrayTopParent},
         );
       } else {
         // * No beginningTail:
@@ -750,24 +719,26 @@ export default class Pages {
           : mediaElement;
 
         const currentImageTop = this._node.getTop(currentImage, this._root);
-        const parentTopForImage = (isFirstChild && parent)
-          ? this._node.getTop(parent, this._root)
+        const parentTopForImage = (isFirstChild && arrayTopParent)
+          ? this._node.getTop(arrayTopParent, this._root)
           : undefined;
 
         // * subtract the extra empty space under an inline <img> caused by baseline alignment,
         // * from the space available for the image.
-        const imgGapBelow = this._node.estimateInlineImgGapBelow(parent);
+
+        console.log('🔸🔸🔸🔸🔸🔸🔸🔸🔸🔸🔸🔸 !!!!', arrayTopParent, currentImage, currentElement)
+        const imgGapBelow = this._node.estimateInlineImgGapBelow(arrayTopParent);
 
         // include the wrapper's top margin only for the first child; otherwise
         // measure from the current image top.
         //! let availableImageNodeSpace = newPageBottom - (parentTopForImage ?? currentImageTop);
         let availableImageNodeSpace = newPageBottom - currentImageTop - imgGapBelow;
-        // if parentBottom: the node is last,
+        // if arrayParentBottomEdge: the node is last,
         // so let's subtract the probable margins at the bottom of the node,
         // which take away the available space for image-node placement:
         availableImageNodeSpace -= (
-           parentBottom
-            ? (parentBottom - this._node.getBottom(currentImage, this._root))
+           arrayParentBottomEdge
+            ? (arrayParentBottomEdge - this._node.getBottom(currentImage, this._root))
             : 0
         );
         // if parent: the node is first,
@@ -786,9 +757,9 @@ export default class Pages {
           '🖼️🖼️🖼️🖼️🖼️🖼️\n',
           `H-space: ${availableImageNodeSpace}, image Height: ${currentImageHeight}, image Width: ${currentImageWidth}`,
           currentElement,
-          '\n parent', parent,
-          'parentBottom', parentBottom,
-          'currentParentBottom', currentParentBottom,
+          '\n arrayTopParent', arrayTopParent,
+          'arrayParentBottomEdge', arrayParentBottomEdge,
+          'currentParentBottomEdge', currentParentBottomEdge,
         );
 
         // TODO !!! page width overflow for SVG
@@ -937,8 +908,8 @@ export default class Pages {
       //// in the remaining space on the page,
 
       this._debug._parseNode && console.log(
-        'currentParentBottom || currentElementBottom',
-        {currentParentBottom, currentElementBottom},
+        'currentParentBottomEdge || currentElementBottom',
+        {currentParentBottomEdge, currentElementBottom},
         'currentBlockBottom > newPageBottom', currentBlockBottom, '>', newPageBottom
       );
 
@@ -965,25 +936,24 @@ export default class Pages {
 
       // * Parse children:
       if (childrenNumber) {
+        // * Process children if exist
+
+        // * Pass from the top level or set current as parent if at the top level there was a reset
+        const _arrayTopParent = arrayTopParent ? arrayTopParent : currentElement;
+        const _arrayBottomParent = arrayBottomParent ? arrayBottomParent : currentElement;
+
         // * In a fully split node, or in a node that has received the 'slough' attribute,
         // * children replace it.
-        // * So we don't take into account the last child bottom margins (parentBottom).
+        // * So we don't take into account the last child bottom margins (arrayParentBottomEdge).
         const isFullySPlittedParent = this._node.isFullySPlitted(currentElement) || this._node.isSlough(currentElement);
-        // * Process children if exist:
 
-        this._debug._parseNode && console.log({isFullySPlittedParent, parent, tracedParent,})
+        this._debug._parseNode && console.log({isFullySPlittedParent, arrayTopParent,})
         this._parseNodes({
           array: children,
           previous: previousElement,
           next: nextElement,
-          // * Pass tracedParent downstream so children inherit the updated anchor
-          // * unless the current node became fully split (then the context resets).
-          parent: isFullySPlittedParent ? undefined : tracedParent,
-          // * baseBlockBottom keeps the bottom boundary we must preserve when descending into children:
-          // * last-child nodes reuse their parent’s bottom margin, otherwise we fall back
-          // * to the element’s own bottom. If the parent gets fully split, the boundary resets
-          // * so the children recompute theirs.
-          parentBottom: isFullySPlittedParent ? undefined : baseBlockBottom,
+          arrayTopParent: isFullySPlittedParent ? undefined : _arrayTopParent,
+          arrayBottomParent: isFullySPlittedParent ? undefined : _arrayBottomParent,
         });
         this._node.markProcessed(currentElement, `getSplitChildren and _parseNodes`);
       } else {
