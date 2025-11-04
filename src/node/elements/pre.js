@@ -52,15 +52,23 @@ export default class Pre {
     this._debug._ && console.log(...consoleMark, 'node', node, {pageBottom,fullPageHeight});
 
     // Prepare node parameters
+
+    const toNum = v => (isNaN(parseFloat(v)) ? 0 : Math.ceil(parseFloat(v))); // TODO: make helper
+    const nodeMarginTop = toNum(_nodeComputedStyle.marginTop);
+    const nodeMarginBottom = toNum(_nodeComputedStyle.marginBottom);
+    const nodePaddingTop = toNum(_nodeComputedStyle.paddingTop);
+    const nodePaddingBottom = toNum(_nodeComputedStyle.paddingBottom);
+    const nodeBorderTopWidth = toNum(_nodeComputedStyle.borderTopWidth);
+    const nodeBorderBottomWidth = toNum(_nodeComputedStyle.borderBottomWidth);
+    const nodeLineHeight = toNum(_nodeComputedStyle.lineHeight);
     const nodeTop = this._node.getTop(node, root);
     const nodeHeight = this._DOM.getElementOffsetHeight(node);
-    const nodeLineHeight = this._node.getLineHeight(node);
     // * preWrapper:
     // * Margins are not considered here, since
     // * the upper margin is considered for the first part,
     // * both margins are zeroed for the middle parts,
     // * and the lower margin will be considered in further calculations.
-    const preWrapperHeight = this._node.getEmptyNodeHeightByProbe(node, '', false);
+    const preWrapperHeight = nodePaddingTop + nodePaddingBottom + nodeBorderTopWidth + nodeBorderBottomWidth; // + nodeLineHeight;
 
     // * Let's check the probable number of rows in the simplest case,
     // * as if the element had the style.whiteSpace=='pre'
@@ -134,21 +142,13 @@ export default class Pre {
 
       // * calculate parts
 
-      // TODO: make helper
-      const toNum = v => (isNaN(parseFloat(v)) ? 0 : parseFloat(v));
-
       // todo: #CutLineAmend
       // There is extra space at the cut lines for a border.
       // Make a decorative border and cut off the original one.
-      const borderTopWidth = toNum(_nodeComputedStyle.borderTopWidth);
-      const borderBottomWidth = toNum(_nodeComputedStyle.borderBottomWidth);
-      const marginTop = toNum(_nodeComputedStyle.marginTop);
-      const marginBottom = toNum(_nodeComputedStyle.marginBottom);
-      const paddingTop = toNum(_nodeComputedStyle.paddingTop);
-      const paddingBottom = toNum(_nodeComputedStyle.paddingBottom);
       const serviceCutLineBorder = 0;
-      const topCutLineAmend = - borderTopWidth - marginTop + serviceCutLineBorder;
-      const bottomCutLineAmend = - borderBottomWidth - marginBottom + serviceCutLineBorder;
+      // *** Resetting margins for cut parts => we don't need them here
+      const topCutLineAmend = serviceCutLineBorder + nodeBorderTopWidth; //  + nodeMarginTop + nodeBorderTopWidth
+      const bottomCutLineAmend = serviceCutLineBorder + nodeBorderBottomWidth; //  + nodeMarginBottom + nodeBorderBottomWidth
 
       // ** Prepare parameters for splitters calculation.
 
@@ -163,7 +163,7 @@ export default class Pre {
       // * - the top border is considered ONCE for firstPartSpace;
       // * - the bottom border is considered in bottomCutLineAmend.
       // * That is why we ignore preWrapperHeight here.
-      let firstPartSpace = pageBottom - nodeTop - preWrapperHeight + bottomCutLineAmend; // - preWrapperHeight
+      let firstPartSpace = pageBottom - nodeTop - bottomCutLineAmend - preWrapperHeight;
       // TODO: firstPartSpace and firstPartSpaceForSPlitting should be different.
       //! For firstPartSpace we need all margins & preWrapperHeight.
       //! For firstPartSpaceForSPlitting we only need selected amendments.
@@ -172,7 +172,7 @@ export default class Pre {
       // * For fullPageSpace,
       // * subtracting preWrapperHeight will leave space for content lines.
       // * However, we reset the cut lines (margins and borders).
-      const fullPageSpace = fullPageHeight - preWrapperHeight + topCutLineAmend;
+      const fullPageSpace = fullPageHeight - preWrapperHeight - topCutLineAmend;
 
       // TODO: more accurate calculations for spaces are needed
       // --node---
