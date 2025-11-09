@@ -5,6 +5,7 @@ from seleniumbase import BaseCase
 from test.end2end.helpers.helper import Helper
 
 path_to_this_test_file_folder = os.path.dirname(os.path.abspath(__file__))
+
 case1_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "case1.html")
 )
@@ -37,6 +38,9 @@ case13_html_file_url = (
 )
 case14_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "case14.html")
+)
+case20_html_file_url = (
+    "file:///" + os.path.join(path_to_this_test_file_folder, "case20.html")
 )
 
 
@@ -259,3 +263,10 @@ class Test(BaseCase):
         # 3
         self.helper.assert_element_on_the_page('//*[@data-testid="R26"]', 3)
         self.helper.assert_element_on_the_page('//*[@data-testid="R39"]', 3)
+
+    def test_20(self):
+        # 2 pages.
+        self.helper.do_open(case20_html_file_url)
+        self.helper.assert_document_has_pages(2)
+        # Element with text '(table continued)' is on the 2nd page:
+        self.helper.assert_text_on_the_page('(table continued)', 2)

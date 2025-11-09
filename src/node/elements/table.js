@@ -203,25 +203,36 @@ export default class Table {
     // * For each split point: create a new <table> element with its own structure.
     // * Repeated structural elements (colgroup, caption, thead) are cloned.
     // * tbody is newly built from rows between startId and endId (excluding endId).
+    // * Each builder may return multiple DOM nodes, so accumulate them in order.
     // * The original table will contain rows from the last split point to the end,
     // * and will be inserted separately below.
-    const splits = splitStartRowIndexes.map((endId, index, array) => {
+    const splits = splitStartRowIndexes.reduce((newElements, endId, index, array) => {
 
       // * For the first table part, start from 0 (the first row of the table).
       // * For all subsequent parts, start from the previous split index.
       const startId = index > 0 ? array[index - 1] : 0;
 
-      // * Create and insert a new table part that will contain rows from startId up to endId (excluding endId).
-      const tableSliceWrapper = this._createAndInsertTableSlice({
+      // * Create and insert:
+      // * - a new table part that will contain rows from startId up to endId (excluding endId);
+      // * - signPosts (top and/or bottom).
+      // * signPosts can be null, tableSlice can't:
+      // * [ ?forcedPageBreak, ?topSignPost, tableSlice, ?bottomSignPost ]
+      const sliceChildren = this._createAndInsertTableSlice({
         startId: startId,
         endId: endId,
         table: this._currentTable,
         tableEntries: this._currentTableEntries,
       });
 
-      // * Return new table part to register in splits array.
-      return tableSliceWrapper;
-    });
+      if (Array.isArray(sliceChildren)) {
+        newElements.push(...sliceChildren);
+      } else if (sliceChildren) {
+        newElements.push(sliceChildren);
+      }
+
+      // * Return new elements (table part and signPosts) to register in splits array.
+      return newElements;
+    }, []);
 
     // * Use the rest of the original table to create the last slice.
     const finalStartRowIndex = splitStartRowIndexes.length
@@ -239,7 +250,7 @@ export default class Table {
 
     this.logGroupEnd(`_splitCurrentTable`);
 
-    return [...splits, lastPart]
+    return [...splits, ...lastPart]
   }
 
   _evaluateAndResolveRow(rowIndex, splitStartRowIndexes) {
@@ -829,7 +840,11 @@ export default class Table {
 
   _createAndInsertTableSlice({ startId, endId, table, tableEntries }) {
     // 🤖 Clone structural pieces and attach a tbody fragment representing rows [startId, endId) as a standalone printable chunk.
-    const part = TableAdapter.createAndInsertTableSlice(this, { startId, endId, table, tableEntries });
+    const sliceBundle = this._normalizeSliceAdapterPayload(
+      TableAdapter.createAndInsertTableSlice(this, { startId, endId, table, tableEntries }),
+      { startId, endId, type: 'slice' }
+    );
+    const sliceChildren = sliceBundle.nodes;
     const rows = Array.isArray(this._currentTableDistributedRows)
       ? this._currentTableDistributedRows.slice(startId, endId).map((row, offset) => ({
         rowIndex: startId + offset,
@@ -837,16 +852,27 @@ export default class Table {
         cells: Array.from(this._DOM.getChildren(row) || []),
       }))
       : [];
-    this._recordTablePart(part, { startId, endId, type: 'slice', rows });
-    return part;
+    if (sliceChildren.length) {
+      const partMeta = {
+        ...(sliceBundle.meta || {}),
+        signpostTop: sliceBundle.signposts?.top ?? null,
+        signpostBottom: sliceBundle.signposts?.bottom ?? null,
+      };
+      this._recordTablePart(sliceBundle.mainPart, { startId, endId, type: 'slice', rows, meta: partMeta });
+    }
+    return sliceChildren;
   }
 
   _createAndInsertTableFinalSlice({ table, startId = 0 }) {
     // 🤖 Prepare the last table part that retains TFOOT and rows from the final checkpoint onward.
-    const part = TableAdapter.createAndInsertTableFinalSlice(this, { table });
     const totalRows = Array.isArray(this._currentTableDistributedRows)
       ? this._currentTableDistributedRows.length
       : 0;
+    const sliceBundle = this._normalizeSliceAdapterPayload(
+      TableAdapter.createAndInsertTableFinalSlice(this, { table }),
+      { startId, endId: totalRows, type: 'final' }
+    );
+    const part = sliceBundle.mainPart;
     const rows = Array.isArray(this._currentTableDistributedRows)
       ? this._currentTableDistributedRows.slice(startId).map((row, offset) => ({
         rowIndex: startId + offset,
@@ -854,8 +880,62 @@ export default class Table {
         cells: Array.from(this._DOM.getChildren(row) || []),
       }))
       : [];
-    this._recordTablePart(part, { startId, endId: totalRows, type: 'final', rows });
-    return part;
+    const partMeta = {
+      ...(sliceBundle.meta || {}),
+      signpostTop: sliceBundle.signposts?.top ?? null,
+      signpostBottom: sliceBundle.signposts?.bottom ?? null,
+    };
+    this._recordTablePart(part, { startId, endId: totalRows, type: 'final', rows, meta: partMeta });
+    return sliceBundle.nodes;
+  }
+
+  _normalizeSliceAdapterPayload(rawResult, { startId = null, endId = null, type = 'slice' } = {}) {
+    // 🤖 Adapter contract helper:
+    // 🤖 Input: DOM node, array of nodes, or { nodes, mainPart, signposts, meta } bundle from TableAdapter.
+    // 🤖 Output: normalized bundle { nodes[], mainPart, signposts, meta } ready for telemetry + DOM reducers.
+    const contextLabel = `[table.slice:${type}] rows [${startId ?? 'null'}:${endId ?? 'null'}]`;
+    this.strictAssert(rawResult, `${contextLabel} builder returned no result`);
+
+    const isElement = node => node && typeof node === 'object' && node.nodeType === 1;
+    let sliceBundle = null;
+    if (Array.isArray(rawResult)) {
+      sliceBundle = { nodes: rawResult };
+    } else if (isElement(rawResult)) {
+      sliceBundle = { nodes: [rawResult], mainPart: rawResult };
+    } else if (typeof rawResult === 'object') {
+      sliceBundle = rawResult;
+    } else {
+      this.strictAssert(false, `${contextLabel} unsupported builder payload: ${rawResult}`);
+    }
+
+    let nodes = Array.isArray(sliceBundle.nodes) ? [...sliceBundle.nodes] : [];
+    if (!nodes.length && isElement(sliceBundle.mainPart)) {
+      nodes = [sliceBundle.mainPart];
+    }
+    this.strictAssert(nodes.length > 0, `${contextLabel} builder produced empty nodes array`);
+
+    const validNodes = [];
+    nodes.forEach((node, index) => {
+      if (!node) {
+        console.warn(`${contextLabel} dropped empty node at index ${index}`);
+        return;
+      }
+      validNodes.push(node);
+    });
+    this.strictAssert(validNodes.length > 0, `${contextLabel} builder produced only empty nodes`);
+
+    const mainPart = sliceBundle.mainPart ?? validNodes[0];
+    this.strictAssert(isElement(mainPart), `${contextLabel} missing main part element`);
+
+    return {
+      nodes: validNodes,
+      mainPart,
+      signposts: {
+        top: sliceBundle.signposts?.top ?? null,
+        bottom: sliceBundle.signposts?.bottom ?? null,
+      },
+      meta: sliceBundle.meta,
+    };
   }
 
   _recordTablePart(part, meta = {}) {
