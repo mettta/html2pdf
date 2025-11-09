@@ -26,7 +26,7 @@ const _isDebug = debugFor('children');
  * @this {Node}
  */
 export function getPreparedChildren(element) {
-  _isDebug(this) && console.groupCollapsed(`getPreparedChildren of`, element);
+  _isDebug(this) && console.groupCollapsed(`🚸 getPreparedChildren of`, element);
   let children = [];
 
   // Check children:
@@ -107,7 +107,7 @@ export function getPreparedChildren(element) {
 
   }
 
-  _isDebug(this) && console.groupEnd(`getPreparedChildren`);
+  _isDebug(this) && console.groupEnd(`🚸 getPreparedChildren of`);
   _isDebug(this) && console.info('🚸 getPreparedChildren:', children);
   return children;
 }
