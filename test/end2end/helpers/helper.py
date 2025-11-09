@@ -208,15 +208,27 @@ class Helper:
         assert attr_value == expected, f"Expected html2pdf-page-start='{expected}', got '{attr_value}'"
 
     def assert_element_on_the_page(self, element_xpath, page_number, report: bool = False) -> None:
-        # Check that the Test object is shifted to the specific page.
-        # That is, it is lower than the top of the specific page.
         element = self.test_case.find_element(
             f'{_content_flow_}{element_xpath}',
             by=By.XPATH,
         )
+        self._assert_element_position_on_page(element, page_number, report=report)
+
+    def assert_text_on_the_page(self, text: str, page_number: int, report: bool = False) -> None:
+        element = self.test_case.find_element(
+            f"{_content_flow_}//*[contains(., {self._xpath_literal(text)})]",
+            by=By.XPATH,
+        )
+        self._assert_element_position_on_page(element, page_number, report=report)
+
+    def _assert_element_position_on_page(self, element, page_number: int, report: bool = False) -> None:
+        # Check that the object is shifted to the specific page.
+        # That is, it is lower than the top of the specific page.
         element_y = element.location["y"]
+
         # pages
         pages = self._get_amount_of_virtual_pages()
+
         # page_anchor
         if page_number == 1:
             page_anchor = self.test_case.find_element(
@@ -229,6 +241,7 @@ class Helper:
                 by=By.XPATH,
             )
         page_y = page_anchor.location["y"]
+
         # next_page_anchor
         if page_number < pages:
             next_page_anchor = self.test_case.find_element(
@@ -254,6 +267,22 @@ class Helper:
                 print('-> page_y: ', page_y)
                 print('-> element_y: ', element_y)
             assert cond1
+
+    def _xpath_literal(self, text: str) -> str:
+        if "'" not in text:
+            return f"'{text}'"
+        if '"' not in text:
+            return f'"{text}"'
+        parts = text.split("'")
+        quoted_parts = []
+        for i, part in enumerate(parts):
+            if part:
+                quoted_parts.append(f"'{part}'")
+            else:
+                quoted_parts.append("''")
+            if i < len(parts) - 1:
+                quoted_parts.append('"\'"')
+        return f"concat({', '.join(quoted_parts)})"
 
     # Element direct children
 
