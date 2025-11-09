@@ -314,6 +314,7 @@ export default class Paragraph {
 
   _breakWrappedTextNodeIntoLines(splittedItem) {
     splittedItem.classList.add('🔠_breakItIntoLines');
+    splittedItem.classList.add('🚫_must_be_removed');
 
     const {
       wordArray,

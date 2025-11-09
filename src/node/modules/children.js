@@ -26,7 +26,7 @@ const _isDebug = debugFor('children');
  * @this {Node}
  */
 export function getPreparedChildren(element) {
-  _isDebug(this) && console.groupCollapsed(`getPreparedChildren of`, element);
+  _isDebug(this) && console.group(`🚸 getPreparedChildren of`, element); // Collapsed
   let children = [];
 
   // Check children:
@@ -53,6 +53,8 @@ export function getPreparedChildren(element) {
     return [];
   } else {
 
+    // * Studying children
+    _isDebug(this) && console.groupCollapsed(`⚗️🚸 distill children`);
     children = [...this._DOM.getChildNodes(element)]
       .reduce(
         (acc, item) => {
@@ -96,18 +98,44 @@ export function getPreparedChildren(element) {
           _isDebug(this) && console.info('%c🚸 (getPreparedChildren) IGNORE whitespace / comment ...', 'color:red', [item]);
           return acc;
 
-        }, [])
+        }, []);
+    _isDebug(this) && console.groupEnd(`⚗️🚸 distill children`);
 
-    if (_isVerticalFlowDisrupted.call(this, children)) {
+    _isDebug(this) && console.info('🚸 distilled children', children);
+
+    // *️⃣ Additional check on already filtered children
+
+    const isMixedInline = _isVerticalFlowDisrupted.call(this, children);
+    // const isSingleInline = (children.length == 1)
+    //                      && !this.isSyntheticTextWrapper(children[0])
+    //                      && this.isInline(children[0]);
+    const isParentInlineWrapper = this.isInline(element);
+
+    if (isMixedInline) {
+      // * Case: mixed set with inline elements
       // * If the vertical flow is disturbed and the elements are side by side:
-      // *** bundle and return complexTextBlock
-      _isDebug(this) && console.info('🚸 (getPreparedChildren) isVerticalFlowDisrupted in children of', [element]);
-      children = _collectAndBundleInlineElements.call(this, children);
-    }
+      // * bundle and return complexTextBlock(s)
+      _isDebug(this) && console.info('🚸 isVerticalFlowDisrupted in children of element', [element]);
 
+      // children = _collectAndBundleInlineElements.call(this, children);
+      if (isParentInlineWrapper) {
+        // * Case: promote standalone inline wrapper as ComplexTextBlock.
+        // * Inline wrapper contains a detected subset of inline elements
+        // * but isn’t recognized as part of any inline set
+        // * (e.g., a long <tt> string outside of a paragraph or among block elements).
+        // * We cannot wrap its content in a ComplexTextBlock and split that block,
+        // * as this would break the inline wrapping styles.
+        // * Instead, we must send this element itself to the `this.isComplexTextBlock` branch.
+        // * That is, start the inline set not inside it, but including it.
+        _isDebug(this) && console.info('🎒🚸 parent element is inline wrapper', [element]);
+        children = [ _wrapInComplexTextBlock.call(this, element) ];
+      } else {
+        children = _collectAndBundleInlineElements.call(this, children);
+      }
+    }
   }
 
-  _isDebug(this) && console.groupEnd(`getPreparedChildren`);
+  _isDebug(this) && console.groupEnd(`🚸 getPreparedChildren of`);
   _isDebug(this) && console.info('🚸 getPreparedChildren:', children);
   return children;
 }
@@ -339,8 +367,7 @@ export function getLastChildrenChain(node) {
  *        Block elements interrupt grouping and are added as-is.
  *
  * EXPECTED_RESULTS: Returns a new array of elements where inline runs are grouped.
- */
-/**
+ *
  * @this {Node}
  */
 function _collectAndBundleInlineElements(children) {
@@ -352,8 +379,7 @@ function _collectAndBundleInlineElements(children) {
     if (this.isInline(child)) {
       if (!complexTextBlock) {
         // the first inline child
-        complexTextBlock = this.createComplexTextBlock();
-        this._DOM.wrap(child, complexTextBlock);
+        complexTextBlock = _wrapInComplexTextBlock.call(this, child);
         newChildren.push(complexTextBlock);
       }
       // not the first inline child
@@ -367,6 +393,17 @@ function _collectAndBundleInlineElements(children) {
   })
 
   return newChildren
+}
+
+/**
+ * Wrap element into a single complexTextBlock container.
+ *
+ * @this {Node}
+ */
+function _wrapInComplexTextBlock(element) {
+  const complexTextBlock = this.createComplexTextBlock();
+  this._DOM.wrap(element, complexTextBlock);
+  return complexTextBlock
 }
 
 function _stripZeroHeightFlexChildren(children) {
@@ -417,34 +454,4 @@ function _hasRenderableChild(node) {
     child = child.nextSibling;
   }
   return false;
-}
-
-// ???
-/**
-* @this {Node}
-*/
-function _processInlineChildren(children) {
-
-  let complexTextBlock = null;
-  const newChildren = [];
-
-  children.forEach(child => {
-    if (this.isInline(child)) {
-      if (!complexTextBlock) {
-        // the first inline child
-        complexTextBlock = this.createComplexTextBlock();
-        this._DOM.wrap(child, complexTextBlock);
-        newChildren.push(complexTextBlock);
-      }
-      // not the first inline child
-      this._DOM.insertAtEnd(complexTextBlock, child)
-    } else {
-      // A block child is encountered,
-      // so interrupt the collection of elements in the complexTextBlock:
-      complexTextBlock = null;
-      newChildren.push(child);
-    }
-  })
-
-  return newChildren
 }
