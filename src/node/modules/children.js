@@ -418,33 +418,3 @@ function _hasRenderableChild(node) {
   }
   return false;
 }
-
-// ???
-/**
-* @this {Node}
-*/
-function _processInlineChildren(children) {
-
-  let complexTextBlock = null;
-  const newChildren = [];
-
-  children.forEach(child => {
-    if (this.isInline(child)) {
-      if (!complexTextBlock) {
-        // the first inline child
-        complexTextBlock = this.createComplexTextBlock();
-        this._DOM.wrap(child, complexTextBlock);
-        newChildren.push(complexTextBlock);
-      }
-      // not the first inline child
-      this._DOM.insertAtEnd(complexTextBlock, child)
-    } else {
-      // A block child is encountered,
-      // so interrupt the collection of elements in the complexTextBlock:
-      complexTextBlock = null;
-      newChildren.push(child);
-    }
-  })
-
-  return newChildren
-}
