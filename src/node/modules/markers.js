@@ -160,8 +160,10 @@ export function markSliceCutsInRows(rows) {
 
     if (rowExceptFirst) {
       // * normalize top cut
-      rowWrapper && console.log('[markSliceCutsInRows] rowWrapper ⊥', rowWrapper);
-      rowWrapper && this.markTopCut(rowWrapper);
+      if (rowWrapper) {
+        _isDebug(this) && console.log('[markSliceCutsInRows] rowWrapper ⊥', rowWrapper);
+        this.markTopCut(rowWrapper);
+      }
       cellWrappers.forEach(cell => {
         _isDebug(this) && console.log('[markSliceCutsInRows] cell 🖍️ ⊥', cell);
         this.markTopCut(cell);
@@ -170,8 +172,10 @@ export function markSliceCutsInRows(rows) {
 
     if (rowExceptLast) {
       // * normalize bottom cut
-      rowWrapper && console.log('[markSliceCutsInRows] rowWrapper ⊤', rowWrapper);
-      rowWrapper && this.markBottomCut(rowWrapper);
+      if (rowWrapper) {
+        _isDebug(this) && console.log('[markSliceCutsInRows] rowWrapper ⊤', rowWrapper);
+        this.markBottomCut(rowWrapper);
+      }
       cellWrappers.forEach(cell => {
         _isDebug(this) && console.log('[markSliceCutsInRows] cell 🖍️ ⊤', cell);
         this.markBottomCut(cell);
