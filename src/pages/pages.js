@@ -723,15 +723,11 @@ export default class Pages {
           ? this._node.getTop(arrayTopParent, this._root)
           : undefined;
 
-        // * subtract the extra empty space under an inline <img> caused by baseline alignment,
-        // * from the space available for the image.
-
-        console.log('🔸🔸🔸🔸🔸🔸🔸🔸🔸🔸🔸🔸 !!!!', arrayTopParent, currentImage, currentElement)
-        const imgGapBelow = this._node.estimateInlineImgGapBelow(arrayTopParent);
+        const _imageParent = arrayTopParent || this._DOM.getParentNode(currentImage);
+        const imgGapBelow = this._node.estimateInlineImgGapBelow(_imageParent);
 
         // include the wrapper's top margin only for the first child; otherwise
         // measure from the current image top.
-        //! let availableImageNodeSpace = newPageBottom - (parentTopForImage ?? currentImageTop);
         let availableImageNodeSpace = newPageBottom - currentImageTop - imgGapBelow;
         // if arrayParentBottomEdge: the node is last,
         // so let's subtract the probable margins at the bottom of the node,
@@ -754,12 +750,21 @@ export default class Pages {
         const currentImageWidth = this._DOM.getElementOffsetWidth(currentImage);
 
         this._debug._parseNode && console.log(
-          '🖼️🖼️🖼️🖼️🖼️🖼️\n',
-          `H-space: ${availableImageNodeSpace}, image Height: ${currentImageHeight}, image Width: ${currentImageWidth}`,
-          currentElement,
-          '\n arrayTopParent', arrayTopParent,
-          'arrayParentBottomEdge', arrayParentBottomEdge,
-          'currentParentBottomEdge', currentParentBottomEdge,
+          '🖼️🖼️🖼️🖼️🖼️🖼️ (if mediaElement)', mediaElement,
+          {
+            _imageParent,
+            arrayTopParent,
+            arrayParentBottomEdge,
+            availableImageNodeSpace,
+            currentParentBottomEdge,
+            currentElement,
+            currentImage,
+            currentImageHeight,
+            currentImageWidth,
+            isSvgMedia,
+            imgGapBelow,
+            parentTopForImage,
+          }
         );
 
         // TODO !!! page width overflow for SVG
