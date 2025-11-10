@@ -55,6 +55,26 @@ const debugConfig = {
   tableLike: {
     _: false,
   },
+  // * `TEST` group
+  testSignals: {
+    forcedModeLog: false, // * keep always false
+  },
 };
 
+// * Clones the debug matrix but forces every flag to true for global troubleshooting.
+function enableAllDebugFlags(configSection) {
+  const result = Array.isArray(configSection) ? [] : {};
+
+  Object.entries(configSection).forEach(([key, value]) => {
+    if (value && typeof value === 'object') {
+      result[key] = enableAllDebugFlags(value);
+    } else {
+      result[key] = true;
+    }
+  });
+
+  return result;
+}
+
+export { enableAllDebugFlags };
 export default debugConfig;

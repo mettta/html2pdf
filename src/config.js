@@ -13,6 +13,7 @@ export default function createConfig(params) {
     // * in order to display messages in the browser console,
     // * this option can be set to true:
     debugMode: false,
+    forcedDebugMode: false,
     // ** The preloader is only debugged when enabled via user configuration.
 
     // * Assert messages are enabled in the user settings by the parameter

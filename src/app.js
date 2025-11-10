@@ -1,6 +1,4 @@
 
-import config from './config.js';
-import debugConfig from './debugConfig.js';
 import SELECTOR from './selector.js';
 import DocumentObjectModel from './DOM.js';
 import Layout from './layout.js';
@@ -12,13 +10,16 @@ import Toc from './toc.js';
 import Validator from './validator.js';
 import Preloader from './preloader.js';
 import Preprocess from './preprocess/index.js';
+import isTruthy from './utils/isTruthy.js';
+import buildAppConfig from './appConfig.js';
 
 const CONSOLE_CSS_LABEL = `color:Gray;border:1px solid;`
 
 export default class App {
   constructor(params) {
     this.params = params;
-    this.debugMode = params.debugMode;
+    this.forcedDebugMode = isTruthy(params.forcedDebugMode);
+    this.debugMode = isTruthy(params.debugMode) || this.forcedDebugMode;
     this.preloader = params.preloader;
     this.selector = SELECTOR;
     this.config;
@@ -57,15 +58,16 @@ export default class App {
     // ** Merging the user configuration (config) with the debugging settings (debugConfig).
     // ** This allows centralized management of logging and other debugging options,
     // ** passing them through the config object to all required classes.
-    this.config = {
-      ...config(this.params), // ** Main application configuration
-      debugConfig             // ** Debugging configuration (e.g., logging)
-    };
+    this.config = buildAppConfig(this.params);
     this.debugMode && console.groupEnd();
     this.debugMode && console.info('⚙️ Current config with debugConfig:', this.config);
     this.debugMode && console.timeEnd("⏱️ Config time");
 
-    this.config.consoleAssert && console.info('🧧 Assertions enabled.');
+    // * `this.config.debugConfig.testSignals.forcedModeLog` is FALSE by default,
+    // * and enables by forced debug mode.
+    this.config.debugConfig.testSignals.forcedModeLog && console.info('[HTML2PDF4DOC] 🛠️ Forced debug mode is active.');
+    // * `consoleAssert` enables in user config OR by forced debug mode.
+    this.config.consoleAssert && console.info('[HTML2PDF4DOC] 🧧 Assertions enabled.');
 
     // * prepare helpers
 
