@@ -707,6 +707,14 @@ export default class Pages {
       const mediaElement = this._node.resolveReplacedElement(currentElement, { prefer: 'first' });
 
       if (mediaElement) {
+        // * CASE: a node is (or wraps) a single replaced element (IMG/SVG/OBJECT/…).
+        // *** Trigger: currentElement cannot be split further, resolveReplacedElement unwraps it
+        // *.  to one media box.
+        // *** Goal: treat the media as an atomic block that we may keep, scale to remaining space,
+        // *.  or move to next page.
+        // *** Difference from the common branch: no child splitting; instead we measure
+        // *   the actual bitmap/SVG box and compensate for inline baseline gap so the page cut
+        // *   happens exactly at the visual bottom of the media.
 
         // TODO needs testing
 
@@ -723,6 +731,15 @@ export default class Pages {
           ? this._node.getTop(arrayTopParent, this._root)
           : undefined;
 
+        // * CASE: inline media near the page cut.
+        // * Paragraph wrappers (even block-level ones) still lay out inline descendants in a line box.
+        // * The line descender + half-leading pushes the wrapper’s visual bottom a few px below the image.
+        // * When we don’t subtract that baseline gap, we overestimate the space left on the page and
+        // * let the next block start before the page actually ends. We therefore sample the inline
+        // * formatting parent (prefer arrayTopParent for first children, otherwise fall back to the DOM parent),
+        // * ask it for the gap estimate, and shrink the available space accordingly.
+        // * display:contents parents still provide inherited line-height/fonts via getComputedStyle,
+        // * so the estimate stays valid even when they don’t create boxes.
         const _imageParent = arrayTopParent || this._DOM.getParentNode(currentImage);
         const imgGapBelow = this._node.estimateInlineImgGapBelow(_imageParent);
 
