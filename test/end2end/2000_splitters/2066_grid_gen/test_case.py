@@ -9,7 +9,7 @@ from test.end2end.helpers.helper import Helper
 # use:
 #     self.helper.open_case(path_to_this_test_file_folder, 1)
 # to get:
-#     case001.html
+#     case_1.html
 # ==== elements ================================================================
 # element_tag = "//element-tag"
 # element_attr = '//*[@data-testid="element-attr"]'
