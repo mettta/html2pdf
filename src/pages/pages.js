@@ -265,7 +265,7 @@ export default class Pages {
 
     // ✴️ skip for already registered page.
     if (this._node.isPageStartElement(pageStart)) {
-      console.warn(
+      this._debug._registerPageStart && console.warn(
         '🚨 [_registerPageStart] pageStart candidate is already PageStartElement, return',
         pageStart);
       return
@@ -378,7 +378,7 @@ export default class Pages {
 
     let newPageBottom = this.pages.at(-1).pageBottom;
     const refreshPageBottom = () => {
-      // * registerPageStart may refine the anchor and append a new page while we
+      // * registerAsPageStart may refine the anchor and append a new page while we
       // * remain inside this _parseNode call. Refresh the cached bottom so later
       // * checks use the coordinates of the newly started page.
       if (newPageBottom !== this.pages.at(-1).pageBottom) {
@@ -386,7 +386,22 @@ export default class Pages {
       }
       newPageBottom = this.pages.at(-1).pageBottom;
     };
-    const registerPageStart = (element, improveResult = false) => {
+
+    const registerAsPageStart = ({
+      element,
+      improveResult = false,
+      type = 'current',
+      description = ''
+    }) => {
+      if (type === 'next' && this._node.isContentFlowEnd(element)) {
+        this._debug._parseNode && console.log(`🏁 [registerAsPageStart] reaches the ContentFlowEnd element}. SKIP registering.`);
+        return
+      }
+
+      this._debug._registerPageStart && console.log(
+        `[registerAsPageStart] try as ${type}`, element, description
+      );
+
       this._registerPageStart(element, improveResult);
       refreshPageBottom();
     };
@@ -490,7 +505,7 @@ export default class Pages {
             const _newPageStarter = this._node.createNeutral();
             _newPageStarter.classList.add('service');
             this._DOM.insertAtEnd(_parents[i].element, _newPageStarter);
-            registerPageStart(_newPageStarter); // do not do PageStart improvement
+            registerAsPageStart({ element: _newPageStarter }); // do not do PageStart improvement
             this._debug._parseNode && console.log('_registerPageStart', _newPageStarter);
             this._node.markProcessed(_newPageStarter, 'node is ForcedPageBreak');
 
@@ -591,20 +606,20 @@ export default class Pages {
         const isContentsWrapper = currentDisplay === 'contents';
         if (isInlineWrapper || isContentsWrapper) {
           this._debug._parseNode && console.log('🧅 current in thin wrapper');
-          registerPageStart(currentElement, true);
+          registerAsPageStart({ element: currentElement, improveResult: true });
           this._debug._parseNode && console.log('%c END _parseNode (registered new page start)', CONSOLE_CSS_END_LABEL);
           this._debug._parseNode && console.groupEnd();
           return
         }
       }
 
-      registerPageStart(currentElement, !beginningTail);
+      registerAsPageStart({ element: currentElement, improveResult: !beginningTail });
     }
 
     // FORCED BREAK
     if (this._node.isForcedPageBreak(currentElement)) {
       // TODO I've replaced the 'next' with the 'current' - need to test it out
-      registerPageStart(currentElement);
+      registerAsPageStart({ element: currentElement });
       this._node.markProcessed(currentElement, 'node is ForcedPageBreak');
       this._debug._parseNode && console.log('%c END _parseNode (isForcedPageBreak)', CONSOLE_CSS_END_LABEL);
       this._debug._parseNode && console.groupEnd();
@@ -639,7 +654,7 @@ export default class Pages {
       this._node.findAllForcedPageBreakInside(currentElement).forEach(
         element => {
           this._node.markProcessed(element, 'node is ForcedPageBreak (inside a node that fits)');
-          registerPageStart(element);
+          registerAsPageStart({ element });
         }
       );
       // TODO: это может быть внутри таблицы или другого элемента,
@@ -680,7 +695,7 @@ export default class Pages {
           // ** if currentElement can't be the last element on the page,
           // ** immediately move it to the next page:
           this._node.markProcessed(currentElement, 'it fits & last & _isNoHanging => move it to the next page');
-          registerPageStart(currentElement, true);
+          registerAsPageStart({ element: currentElement, improveResult: true });
 
           this._debug._parseNode && console.log('%c END _parseNode (isNoHanging)', CONSOLE_CSS_END_LABEL);
           this._debug._parseNode && console.groupEnd();
@@ -692,7 +707,7 @@ export default class Pages {
         // * so this element cannot be the first child,
         // * because the previous element surely ends before this one begins,
         // * and so is its previous neighbor, not its parent.
-        !this._node.isContentFlowEnd(nextElement) && registerPageStart(nextElement);
+        registerAsPageStart({ element: nextElement, type: 'next' });
         this._node.markProcessed(currentElement, `fits, its bottom falls exactly on the cut`);
         this._node.markProcessed(nextElement, `starts new page, its top is exactly on the cut`);
         this._debug._parseNode && console.log('%c END _parseNode (currentElement fits, register the next element)', CONSOLE_CSS_END_LABEL);
@@ -799,7 +814,7 @@ export default class Pages {
         if (currentImageHeight < availableImageNodeSpace) {
           // just leave it on the current page
           this._node.markProcessed(currentElement, 'IMG that fits, and next starts on next');
-          !this._node.isContentFlowEnd(nextElement) && registerPageStart(nextElement);
+          registerAsPageStart({ element: nextElement, type: 'next' });
           this._debug._parseNode && console.log('Register next elements; 🖼️🖼️🖼️ IMG fits:', currentElement);
           this._debug._parseNode && console.log('%c END _parseNode 🖼️ IMG fits', CONSOLE_CSS_END_LABEL);
           this._debug._parseNode && console.groupEnd();
@@ -821,7 +836,7 @@ export default class Pages {
             hspace: this._referenceWidth
           });
           // and leave it on the current page
-          !this._node.isContentFlowEnd(nextElement) && registerPageStart(nextElement);
+          registerAsPageStart({ element: nextElement, type: 'next' });
           this._debug._parseNode && console.log('%c END _parseNode 🖼️ IMG scaled', CONSOLE_CSS_END_LABEL);
           this._debug._parseNode && console.groupEnd();
           return
@@ -833,7 +848,7 @@ export default class Pages {
         // *** if it's the first child
         this._node.markProcessed(currentElement, `IMG starts on next`);
         const pageStartElement = isSvgMedia ? currentImage : mediaElement;
-        registerPageStart(pageStartElement, true);
+        registerAsPageStart({ element: pageStartElement, improveResult: true });
         this._debug._parseNode && console.log('🖼️ register Page Start', currentElement);
         // and avoid page overflow if the picture is too big to fit on the page as a whole
         if (currentImageHeight > fullPageImageNodeSpace) {
@@ -891,7 +906,7 @@ export default class Pages {
             'transform-origin': `top center`,
           });
           // and start a new page with the next element:
-          !this._node.isContentFlowEnd(nextElement) && registerPageStart(nextElement);
+          registerAsPageStart({ element: nextElement, type: 'next' });
           this._node.markProcessed(currentElement, `processed as a image, has been scaled down within 20%, the next one starts a new page`);
           this._node.markProcessed(nextElement, `the previous one was scaled down within 20%, and this one starts a new page.`);
           this._debug._parseNode && console.log('%c END _parseNode (has height & scale)', CONSOLE_CSS_END_LABEL);
@@ -916,7 +931,7 @@ export default class Pages {
         this._debug._parseNode && console.log(
           '🥁 _registerPageStart', currentElement
         );
-        registerPageStart(currentElement, true);
+        registerAsPageStart({ element: currentElement, improveResult: true });
         this._node.markProcessed(currentElement, `processed as a image, starts new page`);
         this._debug._parseNode && console.log('%c END _parseNode (has height & put on next page)', CONSOLE_CSS_END_LABEL);
         this._debug._parseNode && console.groupEnd();
@@ -942,7 +957,7 @@ export default class Pages {
 
       // TODO TEST ME: #fewLines
       if (this._DOM.getElementOffsetHeight(currentElement) < this._minimumBreakableHeight) {
-        registerPageStart(currentElement, true);
+        registerAsPageStart({ element: currentElement, improveResult: true });
         this._node.markProcessed(currentElement, `starts new page, #fewLines`);
         this._debug._parseNode && console.log('%c END _parseNode #fewLines', CONSOLE_CSS_END_LABEL);
         this._debug._parseNode && console.groupEnd();
@@ -993,7 +1008,7 @@ export default class Pages {
           '_registerPageStart (from _parseNode): \n',
           currentElement
         );
-        registerPageStart(currentElement, true);
+        registerAsPageStart({ element: currentElement, improveResult: true });
         this._node.markProcessed(currentElement, `doesn't fit, has no children, register it or parents`);
       }
     }
