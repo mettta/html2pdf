@@ -204,9 +204,13 @@ export default class Table {
     // * Repeated structural elements (colgroup, caption, thead) are cloned.
     // * tbody is newly built from rows between startId and endId (excluding endId).
     // * Each builder may return multiple DOM nodes, so accumulate them in order.
-    // * The original table will contain rows from the last split point to the end,
-    // * and will be inserted separately below.
     const splits = splitStartRowIndexes.reduce((newElements, endId, index, array) => {
+
+    // * ✴️ The original table must be equal to the 1️⃣ first slice
+    // *    (to preserve a possible reference to the original element
+    // *    if the table was registered as the “top of page” upstream).
+    // *    and will contain rows from the beginning to the first split point (excluding startId).
+
 
       // * For the first table part, start from 0 (the first row of the table).
       // * For all subsequent parts, start from the previous split index.
