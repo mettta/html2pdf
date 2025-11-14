@@ -692,7 +692,7 @@ export default class Pages {
         // * so this element cannot be the first child,
         // * because the previous element surely ends before this one begins,
         // * and so is its previous neighbor, not its parent.
-        registerPageStart(nextElement);
+        !this._node.isContentFlowEnd(nextElement) && registerPageStart(nextElement);
         this._node.markProcessed(currentElement, `fits, its bottom falls exactly on the cut`);
         this._node.markProcessed(nextElement, `starts new page, its top is exactly on the cut`);
         this._debug._parseNode && console.log('%c END _parseNode (currentElement fits, register the next element)', CONSOLE_CSS_END_LABEL);
@@ -891,7 +891,7 @@ export default class Pages {
             'transform-origin': `top center`,
           });
           // and start a new page with the next element:
-          registerPageStart(nextElement);
+          !this._node.isContentFlowEnd(nextElement) && registerPageStart(nextElement);
           this._node.markProcessed(currentElement, `processed as a image, has been scaled down within 20%, the next one starts a new page`);
           this._node.markProcessed(nextElement, `the previous one was scaled down within 20%, and this one starts a new page.`);
           this._debug._parseNode && console.log('%c END _parseNode (has height & scale)', CONSOLE_CSS_END_LABEL);
