@@ -204,13 +204,13 @@ export default class Table {
     // * Repeated structural elements (colgroup, caption, thead) are cloned.
     // * tbody is newly built from rows between startId and endId (excluding endId).
     // * Each builder may return multiple DOM nodes, so accumulate them in order.
-    const splits = splitStartRowIndexes.reduce((newElements, endId, index, array) => {
 
     // * ✴️ The original table must be equal to the 1️⃣ first slice
     // *    (to preserve a possible reference to the original element
     // *    if the table was registered as the “top of page” upstream).
     // *    and will contain rows from the beginning to the first split point (excluding startId).
 
+    const midTableSlices = splitStartRowIndexes.reduce((newElements, endId, index, array) => {
 
       // * For the first table part, start from 0 (the first row of the table).
       // * For all subsequent parts, start from the previous split index.
@@ -234,7 +234,7 @@ export default class Table {
         newElements.push(sliceChildren);
       }
 
-      // * Return new elements (table part and signPosts) to register in splits array.
+      // * Return new elements (table part and signPosts) to register in midTableSlices array.
       return newElements;
     }, []);
 
@@ -246,15 +246,15 @@ export default class Table {
 
     // * Insert the original table as the last part.
     // * It contains all rows from the last split point to the end.
-    const lastPart = this._createAndInsertTableFinalSlice({ table: this._currentTable, startId: finalStartRowIndex });
+    const lastTableSlice = this._createAndInsertTableFinalSlice({ table: this._currentTable, startId: finalStartRowIndex });
 
-    this._debug._ && console.log('splits', splits);
-    this._debug._ && console.log('lastPart', lastPart)
+    this._debug._ && console.log('midTableSlices', midTableSlices);
+    this._debug._ && console.log('lastTableSlice', lastTableSlice)
     this._debug._ && console.log('[table.split] recordedParts', this._currentTableRecordedParts?.parts); // also exposed via table.__html2pdfRecordedParts
 
     this.logGroupEnd(`_splitCurrentTable`);
 
-    return [...splits, ...lastPart]
+    return [...midTableSlices, ...lastTableSlice]
   }
 
   _evaluateAndResolveRow(rowIndex, splitStartRowIndexes) {
