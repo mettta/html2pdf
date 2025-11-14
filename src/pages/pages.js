@@ -264,7 +264,12 @@ export default class Pages {
     );
 
     // ✴️ skip for already registered page.
-    if (this._node.isPageStartElement(pageStart)) return;
+    if (this._node.isPageStartElement(pageStart)) {
+      console.warn(
+        '🚨 [_registerPageStart] pageStart candidate is already PageStartElement, return',
+        pageStart);
+      return
+    };
 
     if (improveResult) {
       pageStart = this._node.findBetterPageStart(
