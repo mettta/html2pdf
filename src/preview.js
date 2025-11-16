@@ -231,10 +231,12 @@ export default class Preview {
     const currentPageFirstElement = this._pages[pageIndex].pageStart;
     const previousPageLastElement = this._pages[pageIndex].prevPageEnd;
     if (previousPageLastElement) {
-      this._node.markPageEndElement(previousPageLastElement, pageIndex - 1);
+      // * Page numbers start at 1, but pageIndex is 0-based.
+      // * For prevPageEnd, use pageIndex (== 'page num - 1') directly to avoid off-by-one.
+      this._node.markPageEndElement(previousPageLastElement, pageIndex);
       this._DOM.setStyles(previousPageLastElement, {'margin-bottom': ['0', 'important']});
     } else {
-      this._debug._ && console.warn(pageIndex > 0, `[preview] There is no page end element before ${pageIndex}. Perhaps it's a 'beginningTail'.`, )
+      (pageIndex > 0) && this._debug._ && console.warn(`[preview] There is no page end element before ${pageIndex}. Perhaps it's a 'beginningTail'.`, )
     }
     if (currentPageFirstElement) {
       this._DOM.setStyles(currentPageFirstElement, {'margin-top': ['0', 'important']});
@@ -384,7 +386,7 @@ export default class Preview {
     this.strictAssert(paperSeparatorTop == pageSeparatorTop, `balancers in paper layers are misaligned`, {balancingFooter, contentSeparator, pageSeparator, paperSeparator,});
 
     const balancer = pageSeparatorTop - contentSeparatorTop;
-    this.log({balancingFooter, contentSeparatorTop, paperSeparatorTop, pageSeparatorTop});
+    this._debug._ && console.log({balancingFooter, contentSeparatorTop, paperSeparatorTop, pageSeparatorTop});
 
     this._DOM.setStyles(balancingFooter, { 'margin-bottom': balancer + 'px' });
 
