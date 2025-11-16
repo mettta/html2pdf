@@ -149,6 +149,7 @@ export function createSignpost(text, height) {
     height: height + 'px',
   });
   text && this._DOM.setInnerHTML(prefix, text);
+  this.setFlagNoBreak(prefix);
   return prefix
 }
 
