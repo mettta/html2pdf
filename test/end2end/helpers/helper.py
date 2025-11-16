@@ -167,7 +167,12 @@ class Helper:
         )
         return len(all_pages)
 
-    def assert_document_has_pages(self, count: int, report: bool = False) -> None:
+    def assert_document_has_pages(
+        self,
+        count: int,
+        *,
+        report: bool = False
+    ) -> None:
         paper = self._get_amount_of_virtual_paper()
         pages = self._get_amount_of_virtual_pages()
         if report:
@@ -207,21 +212,53 @@ class Helper:
         expected = str(page_number)
         assert attr_value == expected, f"Expected html2pdf-page-start='{expected}', got '{attr_value}'"
 
-    def assert_element_on_the_page(self, element_xpath, page_number, report: bool = False) -> None:
+    def assert_element_on_the_page(
+        self,
+        element_xpath,
+        page_number,
+        element_order: int = 1,
+        *,
+        report: bool = False,
+    ) -> None:
         element = self.test_case.find_element(
-            f'{_content_flow_}{element_xpath}',
+            f'({_content_flow_}{element_xpath})[{element_order}]',
             by=By.XPATH,
         )
         self._assert_element_position_on_page(element, page_number, report=report)
 
-    def assert_text_on_the_page(self, text: str, page_number: int, report: bool = False) -> None:
+    def assert_text_on_the_page(
+        self,
+        text: str,
+        page_number: int,
+        *,
+        element_order: int = 1,
+        report: bool = False
+    ) -> None:
         element = self.test_case.find_element(
-            f"{_content_flow_}//*[contains(., {self._xpath_literal(text)})]",
+            f"({_content_flow_}//*[contains(., {self._xpath_literal(text)})])[{element_order}]",
             by=By.XPATH,
         )
         self._assert_element_position_on_page(element, page_number, report=report)
 
-    def _assert_element_position_on_page(self, element, page_number: int, report: bool = False) -> None:
+    def assert_elements_order(self, element1_xpath, element2_xpath) -> None:
+        element1 = self.test_case.find_element(
+            f'{_content_flow_}{element1_xpath}',
+            by=By.XPATH,
+        )
+        element1_y = element1.location["y"]
+        element2 = self.test_case.find_element(
+            f'{_content_flow_}{element2_xpath}',
+            by=By.XPATH,
+        )
+        element2_y = element2.location["y"]
+        assert element1_y < element2_y
+
+    def _assert_element_position_on_page(
+        self,
+        element,
+        page_number: int,
+        report: bool = False
+    ) -> None:
         # Check that the object is shifted to the specific page.
         # That is, it is lower than the top of the specific page.
         element_y = element.location["y"]
