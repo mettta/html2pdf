@@ -1,5 +1,6 @@
 import base64
 import os
+from typing import List, Dict
 
 from selenium.webdriver.common.by import By
 from seleniumbase import BaseCase
@@ -62,13 +63,41 @@ class Helper:
         assert isinstance(test_case, BaseCase)
         self.test_case: BaseCase = test_case
 
-    def do_open(self, file: str) -> None:
+    def do_open(self, file: str, verify_logs: bool = False) -> None:
         self.test_case.open(file)
         self.test_case.assert_no_404_errors()
-        self.test_case.assert_no_js_errors()
 
-    def do_open_and_assert(self, file: str, text: str) -> None:
-        self.do_open(file)
+        #
+        # Verify that the logs only contain the expected messages and nothing else.
+        #
+        if verify_logs:
+            logs = self.get_all_console_logs()
+            info_logs = []
+            error_logs = []
+            for log_ in logs:
+                if log_["level"] in ("INFO", "DEBUG"):
+                    info_logs.append(log_)
+                elif log_["level"] != "WARNING":
+                    error_logs.append(log_)
+
+            if len(info_logs) != 4 or len(error_logs) > 0:
+                print("Unexpected logs:")
+                for line_idx_, line_ in enumerate(logs):
+                    print(f"L{line_idx_} => {line_}")
+                assert False
+
+            assert "[HTML2PDF4DOC] Version:" in logs[0]["message"]
+            assert "[HTML2PDF4DOC] Config:" in logs[1]["message"]
+            # Between these stable and expected log lines, some warning lines
+            # can appear, for example the typical:
+            # "The printable area is currently unspecified..." warning.
+            assert "[HTML2PDF4DOC] Page count:" in logs[-2]["message"]
+            assert "[HTML2PDF4DOC] Total time:" in logs[-1]["message"]
+        else:
+            self.test_case.assert_no_js_errors()
+
+    def do_open_and_assert(self, file: str, text: str, verify_logs: bool = False) -> None:
+        self.do_open(file, verify_logs=verify_logs)
         self.test_case.assert_text(text)
 
     def do_open_and_assert_title(self, file: str, title: str) -> None:
@@ -135,6 +164,35 @@ class Helper:
 
     def assert_html2pdf_success(self) -> None:
         self.test_case.assert_attribute(_root_, 'success')
+
+    #
+    # Console logs
+    #
+    def get_all_console_logs(self) -> List[Dict[str, str]]:
+        """
+        Get all console logs collected by the browser until now.
+
+        It is important that pytest is run with --log-cdp flag (see tasks.py).
+
+        IMPORTANT: The behavior of get_log() is DESTRUCTIVE! If it is called
+        again, the returned array will always be empty. This method must only
+        be called by tests that do not call assert_no_js_errors() because it also
+        calls get_log() under the hood and that clears all the logs.
+
+        EXAMPLE: A typical object returned by get_log looks like this:
+        [
+            {
+                'level': 'INFO',
+                'message': 'file:///.../bundle.js 6:28130 "[HTML2PDF4DOC] Version:" "0.2.3"',
+                'source': 'console-api',
+                'timestamp': 1763338530327
+            },
+            ...
+        ]
+        """
+
+        logs = self.test_case.driver.get_log("browser")
+        return logs
 
     # Pages & Paper
 
