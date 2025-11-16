@@ -110,6 +110,7 @@ export default class Table {
   // ===== Preparation =====
 
   _prepareCurrentTableForSplitting() {
+    // * Prepare table
     this._lockCurrentTableWidths();
     this._collectCurrentTableEntries();
     this._updateCurrentTableDistributedRows();
@@ -131,22 +132,42 @@ export default class Table {
 
   // ===== Split Flow =====
 
+  /**
+   * Core pagination loop for the current table instance.
+   *
+   * #original-as-first strategy for table slicing
+   *
+   * Prepares table state and metrics, walks distributed rows to register page
+   * breaks, and then builds table slices so each chunk fits the available
+   * viewport.
+   *
+   * High-level flow:
+   *   1) Prepare table state and metrics.
+   *   2) Walk distributed rows and register page-start positions.
+   *   3) Build table parts based on split indexes, preserving the original
+   *      table as the first slice.
+   *
+   * Slice construction:
+   *   The original table is kept as the **first slice** to preserve any
+   *   upstream reference (e.g., when registered as the top-of-page element).
+   *   All subsequent slices are **newly created clones**. The first slice
+   *   spans rows from the beginning of the table up to the first split point;
+   *   intermediate slices cover their respective row ranges; and the final
+   *   slice uses `Infinity` as `endId` (“until the end”).
+   *
+   *   For each split point, a new `<table>` element is created. Structural
+   *   elements (`colgroup`, `caption`, `thead`) are cloned, while the `tbody`
+   *   is freshly built from rows between `startId` and `endId` (excluding
+   *   `endId`). Because builders may return multiple DOM nodes, all produced
+   *   nodes are accumulated in order.
+   *
+   * Resulting structure for each slice:
+   *   [ ?forcedPageBreak, ?topSignPost, tableSlice, ?bottomSignPost ].
+   */
   _splitCurrentTable() {
-    // 🤖 Walk the distributed rows, register page breaks, and rebuild table slices so each chunk fits the available viewport.
     // TODO test more complex tables
 
-
-    //  * Core pagination loop for the current table instance.
-    //  * Prepares metrics, walks distributed rows to register page starts, builds parts.
-
-    // High-level flow:
-    // 1) Prepare table state and metrics
-    // 2) Walk rows to register page starts
-    // 3) Build parts by split indexes and append the original as the last part
-
-    // * Prepare table.
     this._prepareCurrentTableForSplitting();
-    // * Start with a short first part or immediately from the full height of the page.
     this._setCurrentTableFirstSplitBottom();
 
     // TODO(table): colSpan/rowSpan are not supported yet; guard later in split path
@@ -156,12 +177,54 @@ export default class Table {
       '\n•', this._currentTableFullPartContentHeight, '(full part height)',
       {
         table: this._currentTable,
-        rows: this._currentTableDistributedRows,
+        rows: [...this._currentTableDistributedRows],
+        rowCount: this._currentTableDistributedRows.length,
         entries: this._currentTableEntries,
         root: this._currentRoot,
       },
     );
 
+    const splitStartRowIndexes = this._resolveCurrentTableDistributedRowsInPlace();
+    this._debug._ && console.log('📊 updated table rows',
+      {
+        rows_new: [...this._currentTableDistributedRows],
+        rowCount_new: this._currentTableDistributedRows.length,
+        splitStartRowIndexes
+      }
+    );
+
+    if (!splitStartRowIndexes.length) {
+      this.logGroupEnd(`[_splitCurrentTable]: there are no splits (!splitStartRowIndexes.length)`);
+      return []
+    }
+
+    let tableSlices = this._createTableSlices({
+      splitPoints: splitStartRowIndexes,
+      table: this._currentTable,
+      tableEntries: this._currentTableEntries,
+    });
+
+    this._applyCutMarkers([this._currentTable, ...tableSlices]);
+
+    if (this._signpostHeight) {
+      tableSlices = this._extendTableSlices(tableSlices);
+    }
+
+
+    // * Use the rest of the original table to create the last slice.
+    // For telemetry: final part start mirrors slice boundaries even if the builder does not need it
+
+    this._DOM.insertAfter(this._currentTable, ...tableSlices);
+
+    this._debug._ && console.log('tableSlices', tableSlices);
+    this._debug._ && console.log('[table.split] recordedParts', this._currentTableRecordedParts?.parts); // also exposed via table.__html2pdfRecordedParts
+
+    this.logGroupEnd(`[_splitCurrentTable]`);
+
+    return [this._currentTable, ...tableSlices]
+  }
+
+  _resolveCurrentTableDistributedRowsInPlace() { // ** this._current-TableDistributedRows may be mutated.
     // * Collect row indexes where new table parts should start after splitting.
     let splitStartRowIndexes = [];
 
@@ -170,11 +233,6 @@ export default class Table {
       // * _evaluateAndResolveRow() may roll back index to re-check newly inserted rows after splitting.
       index = this._evaluateAndResolveRow(index, splitStartRowIndexes);
     };
-
-    this._debug._ && console.log(
-      '\n splitStartRowIndexes', splitStartRowIndexes,
-      '\n Distributed Rows', [...this._currentTableDistributedRows]
-    );
 
     this.strictAssert(
       // 🚨 No 0 indexes. First split cannot start from 0.
@@ -192,69 +250,7 @@ export default class Table {
       'Last split index should not equal rows.length, or the original table will be empty.'
     );
 
-    if (!splitStartRowIndexes.length) {
-      this.logGroupEnd(`_splitCurrentTable !splitStartRowIndexes.length`);
-      return []
-    }
-
-    // ! this._currentTableDistributedRows модифицировано
-
-    // * Iterate over splitStartRowIndexes.
-    // * For each split point: create a new <table> element with its own structure.
-    // * Repeated structural elements (colgroup, caption, thead) are cloned.
-    // * tbody is newly built from rows between startId and endId (excluding endId).
-    // * Each builder may return multiple DOM nodes, so accumulate them in order.
-
-    // * ✴️ The original table must be equal to the 1️⃣ first slice
-    // *    (to preserve a possible reference to the original element
-    // *    if the table was registered as the “top of page” upstream).
-    // *    and will contain rows from the beginning to the first split point (excluding startId).
-
-    const midTableSlices = splitStartRowIndexes.reduce((newElements, endId, index, array) => {
-
-      // * For the first table part, start from 0 (the first row of the table).
-      // * For all subsequent parts, start from the previous split index.
-      const startId = index > 0 ? array[index - 1] : 0;
-
-      // * Create and insert:
-      // * - a new table part that will contain rows from startId up to endId (excluding endId);
-      // * - signPosts (top and/or bottom).
-      // * signPosts can be null, tableSlice can't:
-      // * [ ?forcedPageBreak, ?topSignPost, tableSlice, ?bottomSignPost ]
-      const sliceChildren = this._createAndInsertTableSlice({
-        startId: startId,
-        endId: endId,
-        table: this._currentTable,
-        tableEntries: this._currentTableEntries,
-      });
-
-      if (Array.isArray(sliceChildren)) {
-        newElements.push(...sliceChildren);
-      } else if (sliceChildren) {
-        newElements.push(sliceChildren);
-      }
-
-      // * Return new elements (table part and signPosts) to register in midTableSlices array.
-      return newElements;
-    }, []);
-
-    // * Use the rest of the original table to create the last slice.
-    const finalStartRowIndex = splitStartRowIndexes.length
-      ? splitStartRowIndexes[splitStartRowIndexes.length - 1]
-      : 0;
-    // For telemetry: final part start mirrors slice boundaries even if the builder does not need it
-
-    // * Insert the original table as the last part.
-    // * It contains all rows from the last split point to the end.
-    const lastTableSlice = this._createAndInsertTableFinalSlice({ table: this._currentTable, startId: finalStartRowIndex });
-
-    this._debug._ && console.log('midTableSlices', midTableSlices);
-    this._debug._ && console.log('lastTableSlice', lastTableSlice)
-    this._debug._ && console.log('[table.split] recordedParts', this._currentTableRecordedParts?.parts); // also exposed via table.__html2pdfRecordedParts
-
-    this.logGroupEnd(`_splitCurrentTable`);
-
-    return [...midTableSlices, ...lastTableSlice]
+    return splitStartRowIndexes;
   }
 
   _evaluateAndResolveRow(rowIndex, splitStartRowIndexes) {
@@ -267,7 +263,7 @@ export default class Table {
     // * Keep the original parameters for logging.
     const origRowIndex = rowIndex;
     const origRowCount = this._currentTableDistributedRows.length;
-    this._debug._ && console.group(`🔲 %c Check the Row # ${origRowIndex} (from ${origRowCount})`, '',);
+    this._debug._ && console.groupCollapsed(`🔲 %c Check the Row # ${origRowIndex} (from ${origRowCount})`, '',);
 
     // Stage 1 — capture geometry snapshot relative to the current split window.
     const evaluation = this._node.paginationBuildRowEvaluationContext({
@@ -626,6 +622,7 @@ export default class Table {
   // ===== Split Geometry =====
 
   _setCurrentTableFirstSplitBottom() {
+    // * Start with a short first part or immediately from the full height of the page.
     if (this._node.getTop(this._currentTableDistributedRows[0], this._currentTable) > this._currentTableSplitBottom) {
       // * SPECIAL CASE: SHORT FIRST PART:
       // * If the beginning of the first line is immediately on the second page
@@ -824,6 +821,88 @@ export default class Table {
   // ===== Builders =====
   // 👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪👪
 
+  // *️⃣ Create a non-first table slice.
+  _createTableSlice({ startId, endId, table, tableEntries }) {
+    this._debug._ && console.group(`[CREATE Table Slice] range: [${startId}, ${endId})`);
+
+    // * endId can be Infinity
+    // * startId > 0 (The first part is the original table with the first part, which has at least 1 row)
+    this.strictAssert(Number.isInteger(startId) && (Number.isInteger(endId) || endId === Infinity),
+    `[createTableSlice] invalid bounds: startId=${startId}, endId=${endId}`);
+    const rowsLen = (tableEntries && tableEntries.rows) ? tableEntries.rows.length : 0;
+    this.strictAssert(rowsLen >= 0, `createTableSlice: invalid rows length: ${rowsLen}`);
+    this.strictAssert(startId > 0 && endId > 0 && startId < endId,
+      `[createTableSlice] out-of-range slice [${startId}, ${endId}) for rowsLen=${rowsLen}`);
+
+    const partEntries = tableEntries.rows.slice(startId, endId);
+
+    const _tableWrapper = this._DOM.cloneNodeWrapper(table);
+    // * The clone should be always cleared;
+    // * the possible page start mark remains on the first chunk.
+    this._node.unmarkPageStartElement(_tableWrapper);
+    // TODO make the same ☝️ with other split nodes
+
+    const tableSlice = this._node.createTable({
+      wrapper: _tableWrapper,
+      colgroup: this._DOM.cloneNode(tableEntries.colgroup),
+      caption: this._DOM.cloneNode(tableEntries.caption),
+      thead: this._DOM.cloneNode(tableEntries.thead),
+      tfoot: endId === Infinity ? this._DOM.cloneNode(tableEntries.tfoot) : null,
+      tbody: partEntries,
+    });
+
+    this.logGroupEnd('[CREATE Table Slice]');
+    return tableSlice
+  }
+
+  _createTableSlices({ splitPoints, table, tableEntries }) {
+    return splitPoints.map((startId, index, array) => {
+      return this._createTableSlice({
+        startId,
+        endId: (index === array.length - 1) ? (Infinity) : array[index + 1],
+        table,
+        tableEntries,
+      });
+    });
+  }
+
+  _extendTableSlices(slices) {
+    // * Add continuation labels (this._signpostHeight > 0).
+    return slices.reduce((acc, slice, index, array) => {
+      const isFirst = index === 0;
+      const isLast = index === array.length - 1;
+
+      // * Add a caption for the bottom cut of the very first part
+      // * (it does not belong to this array, and its elements will be inserted
+      // * after the first part—the original table).
+      isFirst && acc.push(this._createBottomSignpost());
+
+      // * At the top cut point (has every slice made through a clone),
+      // * we insert a forced page break to prevent topSignpost
+      // * from going over to the previous page if the previews table part are short due to the content.
+      acc.push(this._node.createForcedPageBreak());
+      acc.push(this._createTopSignpost());
+      acc.push(slice);
+      !isLast && acc.push(this._createBottomSignpost());
+
+      return acc;
+    }, []);
+  }
+
+  _applyCutMarkers(slices) {
+    // * Apply top and bottom cut markers.
+    slices.forEach((slice, index, array) => {
+      if (index > 0) {
+        // * all except the first
+        this._node.markTopCut(slice);
+      }
+      if (index < array.length - 1) {
+        // * all except the last
+        this._node.markBottomCut(slice);
+      }
+    });
+  }
+
   _createTopSignpost() {
     // 🤖 Build the continuation label shown above intermediate table parts.
     // TODO(config): move signpost text/height to external config
@@ -842,6 +921,9 @@ export default class Table {
     this._DOM.insertInsteadOf(row, ...newRows);
   }
 
+  // FIXME by src/node/elements/table.adapter.js
+
+  // FIXME update (table.adapter)
   _createAndInsertTableSlice({ startId, endId, table, tableEntries }) {
     // 🤖 Clone structural pieces and attach a tbody fragment representing rows [startId, endId) as a standalone printable chunk.
     const sliceBundle = this._normalizeSliceAdapterPayload(
@@ -867,6 +949,7 @@ export default class Table {
     return sliceChildren;
   }
 
+  // FIXME drop obsolete (table.adapter)
   _createAndInsertTableFinalSlice({ table, startId = 0 }) {
     // 🤖 Prepare the last table part that retains TFOOT and rows from the final checkpoint onward.
     const totalRows = Array.isArray(this._currentTableDistributedRows)
@@ -893,6 +976,7 @@ export default class Table {
     return sliceBundle.nodes;
   }
 
+  // FIXME used in table.adapter _createAndInsertTableSlice
   _normalizeSliceAdapterPayload(rawResult, { startId = null, endId = null, type = 'slice' } = {}) {
     // 🤖 Adapter contract helper:
     // 🤖 Input: DOM node, array of nodes, or { nodes, mainPart, signposts, meta } bundle from TableAdapter.
@@ -942,6 +1026,7 @@ export default class Table {
     };
   }
 
+  // FIXME used in table.adapter _createAndInsertTableSlice
   _recordTablePart(part, meta = {}) {
     // 🤖 Store telemetry about generated table chunks so DevTools and diagnostics can inspect slice composition.
     const entries = this._currentTableRecordedParts;
