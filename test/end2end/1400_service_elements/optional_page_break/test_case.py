@@ -35,27 +35,27 @@ class Test(BaseCase):
         helper = Helper(self)
         helper.do_open(index_html_file_url)
 
-        self.helper.assert_document_has_pages(7, True)
+        self.helper.assert_document_has_pages(7, report=True)
         # first "before" is the first in content flow
         # so it shouldn't trigger and create a blank page
-        self.helper.assert_element_on_the_page(test_element11, 1, True)
+        self.helper.assert_element_on_the_page(test_element11, 1, report=True)
 
         # counter "after" and "before" create only 1 page break
-        self.helper.assert_element_on_the_page(test_element12, 1, True)
-        self.helper.assert_element_on_the_page(test_element21, 2, True)
-        self.helper.assert_element_on_the_page(test_element22, 2, True)
-        self.helper.assert_element_on_the_page(test_element30, 3, True)
-        self.helper.assert_element_on_the_page(test_element41, 4, True)
-        self.helper.assert_element_on_the_page(test_element42, 4, True)
-        self.helper.assert_element_on_the_page(test_element50, 5, True)
+        self.helper.assert_element_on_the_page(test_element12, 1, report=True)
+        self.helper.assert_element_on_the_page(test_element21, 2, report=True)
+        self.helper.assert_element_on_the_page(test_element22, 2, report=True)
+        self.helper.assert_element_on_the_page(test_element30, 3, report=True)
+        self.helper.assert_element_on_the_page(test_element41, 4, report=True)
+        self.helper.assert_element_on_the_page(test_element42, 4, report=True)
+        self.helper.assert_element_on_the_page(test_element50, 5, report=True)
 
         # "forced" always creates a new page
-        self.helper.assert_element_on_the_page(test_element60, 6, True)
-        self.helper.assert_element_on_the_page(test_element71, 7, True)
+        self.helper.assert_element_on_the_page(test_element60, 6, report=True)
+        self.helper.assert_element_on_the_page(test_element71, 7, report=True)
 
         # last "after" is the last in content flow,
         # so it shouldn't trigger and create a blank page
-        self.helper.assert_element_on_the_page(test_element72, 7, True)
+        self.helper.assert_element_on_the_page(test_element72, 7, report=True)
 
     def test_002(self):
         helper = Helper(self)
@@ -63,4 +63,4 @@ class Test(BaseCase):
         # Before the page start trigger, there is an invisible element that
         # should not prevent climbing up the “first children” and assigning
         # the outermost wrapper as the best candidate for page break.
-        self.helper.assert_document_has_pages(1, True)
+        self.helper.assert_document_has_pages(1, report=True)

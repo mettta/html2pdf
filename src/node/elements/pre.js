@@ -89,6 +89,18 @@ export default class Pre {
       // ! if _children.length > 1
       // TODO check if there are NODES except text nodes
       // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
       this._debug._ && console.log('%c END _splitPreNode TODO!', CONSOLE_CSS_END_LABEL);
       return []
     } else { // * if _children.length == 1
@@ -236,11 +248,10 @@ export default class Pre {
       for (let index = 0; index < linesFromNode.length; index++) {
         const current = linesFromNode[index];
         const currentBottom = this._node.getBottom(current, node);
-        this._debug._ && console.log(index, currentBottom);
 
         // TODO move to DOM
         if (currentBottom > floater) {
-          this._debug._ && console.log(`start a new page: ${currentBottom} > ${floater}`, current)
+          this._debug._ && console.log(`start a new page: currentBottom (${currentBottom}) > floater(${floater})`, current)
           // * start a new part at [index]
           index && splitters.push(index);
           // ? start a new page
@@ -266,32 +277,37 @@ export default class Pre {
       // * If there are parts here, and the node will be split, continue.
       // * Render new parts.
 
-      // * The last part end is registered automatically.
-      splitters.push(null);
+      // * We leave the original PRE with part of the lines up to the first splitter (not including it).
       this._debug._ && console.log(
         ...consoleMark,
         'splitters', splitters
       );
 
-      const newPreElementsArray = splitters.map((id, index, splitters) => {
-        // Avoid trying to break this node: createWithFlagNoBreak()
-        // We can't wrap in createWithFlagNoBreak()
-        // because PRE may have margins and that will affect the height of the wrapper.
-        // So we will give the PRE itself this property.
-        const part = this._DOM.cloneNodeWrapper(node);
-        this._node.setFlagNoBreak(part);
 
-        // id = the beginning of the next part
-        const start = splitters[index - 1] || 0;
-        const end = id || splitters[splitters.length];
-
-        this._DOM.insertAtEnd(part, ...linesFromNode.slice(start, end));
-
+      /**
+       * #original-as-first strategy for PRE slicing
+       *
+       * The original `<pre>` node stays in the DOM as the first slice:
+       * it keeps every line from the beginning up to (but not including)
+       * the first split point so existing references still point to a
+       * live element. Each subsequent slice is built via `createSliceWrapper()`,
+       * fed with the line range `[splitPoint, nextSplitPoint)`, and the last
+       * slice uses `Infinity` as `end` to cover “until the end”. All new wrappers
+       * are appended after the original and marked with `markSliceCuts()` so that
+       * pagination helpers can reason about their boundaries.
+       */
+      const newPreElementsArray = splitters.map((splitPoint, index, splitters) => {
+        const part = this._node.createSliceWrapper(node);
+        const start = splitPoint;
+        const end = (index === splitters.length - 1) ? (Infinity) : splitters[index + 1];
+        const partEntries = linesFromNode.slice(start, end);
+        this._DOM.insertAtEnd(part, ...partEntries);
         return part;
       });
 
-      // * Mark nodes as parts
-      this._node.markSliceCuts(newPreElementsArray);
+
+      // * Mark node cut edges
+      this._node.markSliceCuts([node, ...newPreElementsArray]);
 
       this._debug._ && console.log(
         ...consoleMark,
@@ -299,14 +315,8 @@ export default class Pre {
         newPreElementsArray
       );
 
-      //// this._DOM.insertInsteadOf(node, ...newPreElementsArray);
-      // * We need to keep the original node,
-      // * we may need it as a parent in this._parseNode().
-      this._DOM.replaceNodeContentsWith(node, ...newPreElementsArray);
-      // * We "open" the slough node, but leave it.
-      this._DOM.setStyles(node, { display: 'contents' });
-      this._DOM.setAttribute(node, '[slough-node]', '');
-      this._DOM.removeAllClasses(node);
+      // * We need to keep the original node.
+      this._DOM.insertAfter(node, ...newPreElementsArray);
 
       this._debug._ && console.log('%c END _splitPreNode', CONSOLE_CSS_END_LABEL);
       this._debug._ && console.groupEnd();

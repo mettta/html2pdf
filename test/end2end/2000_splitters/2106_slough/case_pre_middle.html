@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+  <script
+    defer
+    data-console-assert="true"
+    data-debug-mode="true"
+    data-markup-debug-mode="true"
+    data-print-height='300px'
+    data-print-width='600px'
+    data-print-left-margin= '50px'
+    data-print-right-margin= '50px'
+    data-print-top-margin= '50px'
+    data-print-bottom-margin= '50px'
+    data-print-font-size='16px'
+    src="../../../../dist/bundle.js"></script>
+
+    <!-- styles for test element -->
+    <style>
+      .line-red {
+        height: 10px
+      }
+
+      .line-green {
+        height: 10px
+      }
+
+      .line-blue {
+        height: 10px
+      }
+
+      .table-testing {
+        font-family: Arial, Helvetica, sans-serif;
+        width: 100%;
+        margin: 10px 0;
+
+        border-collapse: collapse;
+
+        font-size: 9px;
+        line-height: 10px;
+      }
+    </style>
+    <!-- line-height = 1 (10) -->
+    <!-- 1 step to shift by 1 line is 20 pixels -->
+</head>
+
+<!--
+  The node being sliced, which subsequently becomes a “slough”
+  or “one of the parts of the new array of children,”
+  must be checked before cloning to see if it has just been registered as a new page.
+  If so, it must be cleared of service marks before cloning.
+  Otherwise, the cloned children will receive false registration marks
+  and everything will break.
+-->
+
+<body>
+  <!-- fires by filler height:184++  -->
+  <!-- 200 - top margin -->
+  <div filler style="height:200px"></div>
+  <pre>
+    the 01 line of code
+    the 02 line of code
+    the 03 line of code
+    the 04 line of code
+    the 05 line of code
+    the 06 line of code
+    the 07 line of code
+    the 08 line of code
+    the 09 line of code
+    the 10 line of code
+    the 11 line of code
+    the 12 line of code
+    the 13 line of code
+    the 14 line of code
+    the 15 line of code
+    the 16 line of code
+    the 17 line of code
+    the 18 line of code
+    the 19 line of code
+  </pre>
+  <p>The last element</p>
+</body>
+
+</html>

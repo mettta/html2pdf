@@ -89,9 +89,9 @@ export default merge(common, {
     }),
     new HtmlWebpackPlugin({
       appMountId: 'app',
-      filename: 'test_.html',
-      template: './examples/strictdoc/test_.html',
-      title: '📍 test',
+      filename: 'loc.html',
+      template: './examples/strictdoc/loc.html',
+      title: '💢 Localized',
       inject: false,
     }),
 

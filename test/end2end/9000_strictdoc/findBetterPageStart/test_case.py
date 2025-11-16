@@ -39,10 +39,10 @@ class Test(BaseCase):
         self.helper.do_open(case1_html_file_url)
         # 2 or 3 pages were produced on Firefox or Chrome.
         # To assert on the page number we simplified the markup.
-        self.helper.assert_document_has_pages(2, True)
+        self.helper.assert_document_has_pages(2, report=True)
 
         # 1. Check that the specific admonition title has the no-hanging flag
-        self.helper.assert_element_on_the_page(admonitionTitle, 2, True)
+        self.helper.assert_element_on_the_page(admonitionTitle, 2, report=True)
         self.helper.assert_element_has_attribute(admonitionTitle, 'html2pdf-flag-no-hanging')
 
         # 2. Check that the right parent node that contains 'admonition title' starts page "2"

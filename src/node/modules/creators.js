@@ -149,6 +149,7 @@ export function createSignpost(text, height) {
     height: height + 'px',
   });
   text && this._DOM.setInnerHTML(prefix, text);
+  this.setFlagNoBreak(prefix);
   return prefix
 }
 
@@ -172,4 +173,16 @@ export function createTable({
   this._DOM.insertAtEnd(table, tableBody);
   tfoot && this._DOM.insertAtEnd(table, tfoot);
   return table;
+}
+
+/**
+ * @this {Node}
+ */
+export function createSliceWrapper(node) {
+  const wrapper = this._DOM.cloneNodeWrapper(node);
+  // * The clone should be always cleared;
+  // * the possible page start mark remains on the first chunk.
+  this.unmarkPageStartElement(wrapper);
+  this.setFlagNoBreak(wrapper);
+  return wrapper
 }

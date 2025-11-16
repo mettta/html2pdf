@@ -24,8 +24,8 @@ class Test(BaseCase):
     def test_01(self):
         self.helper.do_open(index_html_file_url)
 
-        self.helper.assert_document_has_pages(5, True)
-        self.helper.assert_element_on_the_page(test_element2, 2, True)
-        self.helper.assert_element_on_the_page(test_element3, 3, True)
-        self.helper.assert_element_on_the_page(test_element4, 4, True)
-        self.helper.assert_element_on_the_page(test_element5, 5, True)
+        self.helper.assert_document_has_pages(5, report=True)
+        self.helper.assert_element_on_the_page(test_element2, 2, report=True)
+        self.helper.assert_element_on_the_page(test_element3, 3, report=True)
+        self.helper.assert_element_on_the_page(test_element4, 4, report=True)
+        self.helper.assert_element_on_the_page(test_element5, 5, report=True)

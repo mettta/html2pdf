@@ -6,7 +6,7 @@
   <meta name="keywords" content="strictdoc, documentation, documentation-tool, requirements-management, requirements, documentation-generator, requirement-specifications, requirements-engineering, technical-documentation, requirements-specification">
   <meta name="description" content="strictdoc. Software for technical documentation and requirements management.">
   <!-- <link rel="shortcut icon" href="http://127.0.0.1:5111/assets/favicon.ico" type="image/x-icon"> -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🟠</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💢</text></svg>">
 
   <title>TEST - PDF</title>
 
@@ -244,11 +244,12 @@
     data-preloader='true'
     data-preloader-target='main.layout_main .main'
     data-preloader-background='#F2F5F9'
-    data-no-hanging-selectors='sdoc-section-title sdoc-requirement-title sdoc-node-title sdoc-requirement-field-label'
     data-forced-page-break-selectors=''
-    data-page-break-before-selectors='H2'
-    data-page-break-after-selectors='.pdf-toc .free_text'
-    data-no-break-selectors='sdoc-meta'
+
+    data-page-break-after-selectors=".pdf-toc .free_text"
+    data-page-break-before-selectors="H2"
+    data-no-break-selectors=".html2pdf4doc-no-break sdoc-section-title sdoc-meta sdoc-node-title .pdf-toc-row"
+    data-no-hanging-selectors=".html2pdf4doc-no-hanging sdoc-section-title sdoc-anchor sdoc-meta .admonition-title sdoc-node-title sdoc-node-field-label strong:only-child"
     src="bundle.js"></script>
 
 </head>
@@ -355,7 +356,13 @@
       <div class="main">
         <div class="content" html2pdf>
 
-          <div filler style="height:400px"></div>
+<!--
+  666 - 667...682
+  PRE 'starts' 2nd page (an too long).
+  PRE is split, and we have two parts — but the page is registered before the original shell.
+  -->
+
+          <div filler style="height:682px"></div>
 
           <!-- HTML2PDF: TEST CONTENT GOES HERE -->
           <!-- ******************************** -->
@@ -377,302 +384,163 @@
 
 
 
+<sdoc-node-content node-view="narrative" data-level="" show-node-type-name="TEXT" data-testid="requirement-style-narrative">
+  
+  
+  
+  
+  
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<sdoc-node data-editable_node="on" data-controller="anchor_controller" node-role="requirement" node-view="table"
-  show-node-type-name="REQUIREMENT" data-included-document="False" data-testid="node-requirement">
-  <sdoc-node-content node-view="table" data-level="2.1" data-status="active" show-node-type-name="REQUIREMENT"
-    data-testid="requirement-style-table">
-    <sdoc-node-title data-level="2.1">
-      <sdoc-field data-controller="copy_to_clipboard">
-        <sdoc-field-content>
-          <sdoc-autogen>2.1.&nbsp;Documents (CRUD)</sdoc-autogen>
-        </sdoc-field-content>
-        <sdoc-field-service>
-          <div class="copy_to_clipboard">
-            <div class="copy_to_clipboard-cover">
-              <div title="Click to copy" class="copy_to_clipboard-button action_button">
-                <span style="display: contents;" class="copy_to_clipboard-copy_icon">
-                  <svg class="svg_icon" width="16px" height="16px" viewBox="0 0 16 16">
-                    <path
-                      d="M8,2 L12,2 C13,2 14,3 14,4 L14,8 C14,9 13,10 12,10 L8,10 C7,10 6,9 6,8 L6,4 C6,3 7,2 8,2 Z">
-                    </path>
-                    <path d="M10,12 C10,13 9,14 8,14 L4,14 C3,14 2,13 2,12 L2,8 C2,7 3,6 4,6"></path>
-                  </svg>
-                </span>
-                <span style="display: none;" class="copy_to_clipboard-done_icon">
-                  <svg class="svg_icon" width="16px" height="16px" viewBox="0 0 16 16">
-                    <path d="M2.5,8.5 C2.5,8.5 3.5,9.5 6,12 C11,7 13.5,4.5 13.5,4.5"></path>
-                  </svg>
-                </span>
-              </div>
-            </div>
-          </div>
-
-        </sdoc-field-service>
-      </sdoc-field>
-    </sdoc-node-title>
+  
+    <sdoc-scope class="node_fields_group-secondary html2pdf4doc-no-hanging">
+      
     <sdoc-node-field-label>MID:</sdoc-node-field-label>
     <sdoc-node-field data-field-type="singleline" data-field-label="MID">
-      <sdoc-field data-controller="copy_to_clipboard">
-        <sdoc-field-content>
-          <sdoc-autogen>72d0dd23dedd4907b4a8924debe7343b</sdoc-autogen>
-        </sdoc-field-content>
-        <sdoc-field-service>
-          <div class="copy_to_clipboard">
-            <div class="copy_to_clipboard-cover">
-              <div title="Click to copy" class="copy_to_clipboard-button action_button">
-                <span style="display: contents;" class="copy_to_clipboard-copy_icon">
-                  <svg class="svg_icon" width="16px" height="16px" viewBox="0 0 16 16">
-                    <path
-                      d="M8,2 L12,2 C13,2 14,3 14,4 L14,8 C14,9 13,10 12,10 L8,10 C7,10 6,9 6,8 L6,4 C6,3 7,2 8,2 Z">
-                    </path>
-                    <path d="M10,12 C10,13 9,14 8,14 L4,14 C3,14 2,13 2,12 L2,8 C2,7 3,6 4,6"></path>
-                  </svg>
-                </span>
-                <span style="display: none;" class="copy_to_clipboard-done_icon">
-                  <svg class="svg_icon" width="16px" height="16px" viewBox="0 0 16 16">
-                    <path d="M2.5,8.5 C2.5,8.5 3.5,9.5 6,12 C11,7 13.5,4.5 13.5,4.5"></path>
-                  </svg>
-                </span>
-              </div>
-            </div>
-          </div>
-        </sdoc-field-service>
-      </sdoc-field></sdoc-node-field>
-    <sdoc-node-field-label>UID:</sdoc-node-field-label>
-    <sdoc-node-field data-field-type="singleline" data-field-label="UID">
-      <sdoc-field data-controller="copy_to_clipboard">
-        <sdoc-field-content>
-          <sdoc-autogen>SDOC-SSS-3</sdoc-autogen>
-        </sdoc-field-content>
-        <sdoc-field-service>
-          <div class="copy_to_clipboard">
-            <div class="copy_to_clipboard-cover">
-              <div title="Click to copy" class="copy_to_clipboard-button action_button">
-                <span style="display: contents;" class="copy_to_clipboard-copy_icon">
-                  <svg class="svg_icon" width="16px" height="16px" viewBox="0 0 16 16">
-                    <path
-                      d="M8,2 L12,2 C13,2 14,3 14,4 L14,8 C14,9 13,10 12,10 L8,10 C7,10 6,9 6,8 L6,4 C6,3 7,2 8,2 Z">
-                    </path>
-                    <path d="M10,12 C10,13 9,14 8,14 L4,14 C3,14 2,13 2,12 L2,8 C2,7 3,6 4,6"></path>
-                  </svg>
-                </span>
-                <span style="display: none;" class="copy_to_clipboard-done_icon">
-                  <svg class="svg_icon" width="16px" height="16px" viewBox="0 0 16 16">
-                    <path d="M2.5,8.5 C2.5,8.5 3.5,9.5 6,12 C11,7 13.5,4.5 13.5,4.5"></path>
-                  </svg>
-                </span>
-              </div>
-            </div>
-          </div>
 
-        </sdoc-field-service>
-      </sdoc-field></sdoc-node-field>
-
-    <sdoc-node-field-label>STATUS:</sdoc-node-field-label>
-    <sdoc-node-field data-field-type="singleline" data-field-label="STATUS">
-
-      <sdoc-field data-controller="copy_to_clipboard">
-        <sdoc-field-content>
-          <sdoc-autogen>Active</sdoc-autogen>
-        </sdoc-field-content>
-        <sdoc-field-service>
-
-          <div class="copy_to_clipboard">
-            <div class="copy_to_clipboard-cover">
-              <div title="Click to copy" class="copy_to_clipboard-button action_button">
-                <span style="display: contents;" class="copy_to_clipboard-copy_icon">
-                  <svg class="svg_icon" width="16px" height="16px" viewBox="0 0 16 16">
-                    <path
-                      d="M8,2 L12,2 C13,2 14,3 14,4 L14,8 C14,9 13,10 12,10 L8,10 C7,10 6,9 6,8 L6,4 C6,3 7,2 8,2 Z">
-                    </path>
-                    <path d="M10,12 C10,13 9,14 8,14 L4,14 C3,14 2,13 2,12 L2,8 C2,7 3,6 4,6"></path>
-                  </svg>
-                </span>
-                <span style="display: none;" class="copy_to_clipboard-done_icon">
-                  <svg class="svg_icon" width="16px" height="16px" viewBox="0 0 16 16">
-                    <path d="M2.5,8.5 C2.5,8.5 3.5,9.5 6,12 C11,7 13.5,4.5 13.5,4.5"></path>
-                  </svg>
-                </span>
-              </div>
-            </div>
-          </div>
-        </sdoc-field-service>
-      </sdoc-field></sdoc-node-field>
+<sdoc-autogen>a437c871dc3d46dba80460d5c8c22cf6</sdoc-autogen></sdoc-node-field>
+  
+      
+      
+    </sdoc-scope>
+    
+    <sdoc-scope class="node_fields_group-primary">
+      
     <sdoc-node-field-label>STATEMENT:</sdoc-node-field-label>
     <sdoc-node-field data-field-label="statement">
-      <sdoc-field data-controller="copy_to_clipboard">
-        <sdoc-field-content>
-          <sdoc-autogen>
-            <div class="document">
-              <p>The Requirements Tool shall provide the CRUD operations for document management:</p>
-              <ul class="simple">
-                <li>Create document</li>
-                <li>Read document</li>
-                <li>Update document</li>
-                <li>Delete document.</li>
-              </ul>
-            </div>
-          </sdoc-autogen>
-        </sdoc-field-content>
-        <sdoc-field-service>
-          <div class="copy_to_clipboard">
-            <div class="copy_to_clipboard-cover">
-              <div title="Click to copy" class="copy_to_clipboard-button action_button">
-                <span style="display: contents;" class="copy_to_clipboard-copy_icon">
-                  <svg class="svg_icon" width="16px" height="16px" viewBox="0 0 16 16">
-                    <path
-                      d="M8,2 L12,2 C13,2 14,3 14,4 L14,8 C14,9 13,10 12,10 L8,10 C7,10 6,9 6,8 L6,4 C6,3 7,2 8,2 Z">
-                    </path>
-                    <path d="M10,12 C10,13 9,14 8,14 L4,14 C3,14 2,13 2,12 L2,8 C2,7 3,6 4,6"></path>
-                  </svg>
-                </span>
-                <span style="display: none;" class="copy_to_clipboard-done_icon">
-                  <svg class="svg_icon" width="16px" height="16px" viewBox="0 0 16 16">
-                    <path d="M2.5,8.5 C2.5,8.5 3.5,9.5 6,12 C11,7 13.5,4.5 13.5,4.5"></path>
-                  </svg>
-                </span>
-              </div>
-            </div>
-          </div>
-        </sdoc-field-service>
-      </sdoc-field></sdoc-node-field>
-    <sdoc-node-field-label>RATIONALE:</sdoc-node-field-label>
-    <sdoc-node-field data-field-label="rationale">
 
-      <sdoc-field data-controller="copy_to_clipboard">
-        <sdoc-field-content>
-          <sdoc-autogen>
-            <div class="document">
-              <p>
-                The CRUD operations are essential operations of document management. They are at the core of a
-                documentation management tool.
-                The CRUD operations are essential operations of document management. They are at the core of a
-                documentation management tool.
-                The CRUD operations are essential operations of document management. They are at the core of a
-                documentation management tool.
-                The CRUD operations are essential operations of document management. They are at the core of a
-                documentation management tool.
-                The CRUD operations are essential operations of document management. They are at the core of a
-                documentation management tool.
-                The CRUD operations are essential operations of document management. They are at the core of a
-                documentation management tool.
-                The CRUD operations are essential operations of document management. They are at the core of a
-                documentation management tool.
-                The CRUD operations are essential operations of document management. They are at the core of a
-                documentation management tool.
-                The CRUD operations are essential operations of document management. They are at the core of a
-                documentation management tool.
-                The CRUD operations are essential operations of document management. They are at the core of a
-                documentation management tool.
-                The CRUD operations are essential operations of document management. They are at the core of a
-                documentation management tool.
-                The CRUD operations are essential operations of document management. They are at the core of a
-                documentation management tool.
-                The CRUD operations are essential operations of document management. They are at the core of a
-                documentation management tool.
-                The CRUD operations are essential operations of document management. They are at the core of a
-                documentation management tool.
+<sdoc-autogen><div class="document">
+<p>The supported field types are: ...</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <strong>field type</strong> also influences how the field is presented in the web editor UI. A <tt class="docutils literal">SingleChoice</tt> field enables an auto-completion function, which is useful in cases where the same values are entered repeatedly (such as requirement owners, test case types, or status fields).</p>
+</div>
+<p>Example:</p>
+<!-- <table>
+  <tr class="tr1">
+    <td>
+      <div class="html2pdf4doc-no-break filler" style="height: 900px;">FIRST</div>
+    </td>
+  </tr>
+  <tr class="tr2">
+    <td>
+      <div class="html2pdf4doc-no-break filler" style="height: 900px;">
+        MID MID MID MID MID
+      </div>
+    </td>
+  </tr>
+  <tr class="tr3">
+    <td>
+      <div class="html2pdf4doc-no-break filler" style="height: 900px;">LAST</div>
+    </td>
+  </tr>
+</table> -->
+<pre class="code text literal-block">
+[DOCUMENT]
+TITLE: How to declare a grammar with different field types
 
-              </p>
-            </div>
-          </sdoc-autogen>
-        </sdoc-field-content>
-        <sdoc-field-service>
-          <div class="copy_to_clipboard">
-            <div class="copy_to_clipboard-cover">
-              <div title="Click to copy" class="copy_to_clipboard-button action_button">
-                <span style="display: contents;" class="copy_to_clipboard-copy_icon">
-                  <svg class="svg_icon" width="16px" height="16px" viewBox="0 0 16 16">
-                    <path
-                      d="M8,2 L12,2 C13,2 14,3 14,4 L14,8 C14,9 13,10 12,10 L8,10 C7,10 6,9 6,8 L6,4 C6,3 7,2 8,2 Z">
-                    </path>
-                    <path d="M10,12 C10,13 9,14 8,14 L4,14 C3,14 2,13 2,12 L2,8 C2,7 3,6 4,6"></path>
-                  </svg>
-                </span>
-                <span style="display: none;" class="copy_to_clipboard-done_icon">
-                  <svg class="svg_icon" width="16px" height="16px" viewBox="0 0 16 16">
-                    <path d="M2.5,8.5 C2.5,8.5 3.5,9.5 6,12 C11,7 13.5,4.5 13.5,4.5"></path>
-                  </svg>
-                </span>
-              </div>
-            </div>
-          </div>
-        </sdoc-field-service>
-      </sdoc-field></sdoc-node-field>
-    <sdoc-node-field-label>RELATIONS (Child):</sdoc-node-field-label>
-    <sdoc-node-field data-field-label="child relations">
-      <ul class="requirement__link">
-        <li>
-          <a data-turbo="false" class="requirement__link-child"
-            href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements.html#SDOC-SRS-135">
-            <span class="requirement__child-uid">SDOC-SRS-135</span>
-            Free text
-          </a>
-        </li>
-        <li>
-          <a data-turbo="false" class="requirement__link-child"
-            href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements.html#SDOC-SRS-107">
-            <span class="requirement__child-uid">SDOC-SRS-107</span>
-            Create document
-          </a>
-        </li>
-        <li>
-          <a data-turbo="false" class="requirement__link-child"
-            href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements.html#SDOC-SRS-108">
-            <span class="requirement__child-uid">SDOC-SRS-108</span>
-            Delete document
-          </a>
-        </li>
-        <li>
-          <a data-turbo="false" class="requirement__link-child"
-            href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements.html#SDOC-SRS-54">
-            <span class="requirement__child-uid">SDOC-SRS-54</span>
-            Read document
+[GRAMMAR]
+ELEMENTS:
+- TAG: TEXT
+  FIELDS:
+  - TITLE: UID
+    TYPE: String
+    REQUIRED: False
+  - TITLE: STATEMENT
+    TYPE: String
+    REQUIRED: True
+- TAG: REQUIREMENT
+  FIELDS:
+  - TITLE: UID
+    TYPE: String
+    REQUIRED: True
+  - TITLE: ASIL
+    TYPE: SingleChoice(A, B, C, D)
+    REQUIRED: True
+  - TITLE: VERIFICATION
+    TYPE: MultipleChoice(Review, Analysis, Inspection, Test)
+    REQUIRED: True
+  - TITLE: UNIT
+    TYPE: Tag
+    REQUIRED: True
+  - TITLE: TITLE
+    TYPE: String
+    REQUIRED: True
+  - TITLE: STATEMENT
+    TYPE: String
+    REQUIRED: True
+  - TITLE: COMMENT
+    TYPE: String
+    REQUIRED: True
+    REQUIRED: True
+  RELATIONS:
+  - Type: Parent
+  - Type: File
 
-          </a>
-        </li>
-        <li>
-          <a data-turbo="false" class="requirement__link-child"
-            href="../../strictdoc/docs/strictdoc_21_L2_StrictDoc_Requirements.html#SDOC-SRS-106">
-            <span class="requirement__child-uid">SDOC-SRS-106</span>
-            Update document
+[TEXT]
+STATEMENT: &gt;&gt;&gt;
+This document is an example of a simple SDoc custom grammar.
+&lt;&lt;&lt;
 
-          </a>
-        </li>
-      </ul>
-    </sdoc-node-field>
-  </sdoc-node-content>
-</sdoc-node>
+[REQUIREMENT]
+UID: ABC-123
+ASIL: A
+VERIFICATION: Review, Test
+UNIT: OBC, RTU
+TITLE: Function B
+STATEMENT: System A shall do B.
+COMMENT: Test comment.
+RELATIONS:
+- TYPE: Parent
+  VALUE: REQ-001
+- TYPE: File
+  VALUE: /full/path/file.py
+</pre>
+</div>
+</sdoc-autogen></sdoc-node-field>
+      
+      
+
+
+
+      
+
+
+
+  
+    </sdoc-scope>
+    
+  
+
+</sdoc-node-content>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -36,28 +36,28 @@ class Test(BaseCase):
 
     def test_01(self):
         self.helper.do_open(case1_html_file_url)
-        self.helper.assert_document_has_pages(1, True)
+        self.helper.assert_document_has_pages(1, report=True)
 
     def test_02(self):
         # exactly
         self.helper.do_open(case2_html_file_url)
-        self.helper.assert_document_has_pages(1, True)
+        self.helper.assert_document_has_pages(1, report=True)
 
     def test_03(self):
         self.helper.do_open(case3_html_file_url)
-        self.helper.assert_document_has_pages(2, True)
+        self.helper.assert_document_has_pages(2, report=True)
 
     def test_04(self):
         self.helper.do_open(case4_html_file_url)
-        self.helper.assert_document_has_pages(2, True)
+        self.helper.assert_document_has_pages(2, report=True)
 
     def test_05(self):
         self.helper.do_open(case5_html_file_url)
-        self.helper.assert_document_has_pages(2, True)
+        self.helper.assert_document_has_pages(2, report=True)
 
     def test_06(self):
         # long inline image in inline .document
         self.helper.do_open(case6_html_file_url)
-        self.helper.assert_document_has_pages(3, True)
+        self.helper.assert_document_has_pages(3, report=True)
         self.helper.assert_element_on_the_page(w1, 2)
         self.helper.assert_element_on_the_page(w2, 3)

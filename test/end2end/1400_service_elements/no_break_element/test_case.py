@@ -20,5 +20,5 @@ class Test(BaseCase):
 
     def test_01(self):
         self.helper.do_open(index_html_file_url)
-        self.helper.assert_document_has_pages(2, True)
-        self.helper.assert_element_on_the_page(test_element, 2, True)
+        self.helper.assert_document_has_pages(2, report=True)
+        self.helper.assert_element_on_the_page(test_element, 2, report=True)
