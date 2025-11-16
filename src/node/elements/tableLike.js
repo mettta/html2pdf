@@ -122,10 +122,7 @@ export default class TableLike {
       // We can't wrap in createWithFlagNoBreak()
       // because PRE may have margins and that will affect the height of the wrapper.
       // So we will give the PRE itself this property.
-      const part = this._DOM.cloneNodeWrapper(node);
-      this._node.setFlagNoBreak(part);
-      // TODO make the same with other split nodes
-      this._node.unmarkPageStartElement(part);
+      const part = this._node.createSliceWrapper(node);
 
       // id = the beginning of the next part
       const start = splitters[index - 1] || 0;

@@ -174,3 +174,15 @@ export function createTable({
   tfoot && this._DOM.insertAtEnd(table, tfoot);
   return table;
 }
+
+/**
+ * @this {Node}
+ */
+export function createSliceWrapper(node) {
+  const wrapper = this._DOM.cloneNodeWrapper(node);
+  // * The clone should be always cleared;
+  // * the possible page start mark remains on the first chunk.
+  this.unmarkPageStartElement(wrapper);
+  this.setFlagNoBreak(wrapper);
+  return wrapper
+}

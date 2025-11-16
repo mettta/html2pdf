@@ -89,6 +89,18 @@ export default class Pre {
       // ! if _children.length > 1
       // TODO check if there are NODES except text nodes
       // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
+      // ! TODO
       this._debug._ && console.log('%c END _splitPreNode TODO!', CONSOLE_CSS_END_LABEL);
       return []
     } else { // * if _children.length == 1
@@ -236,11 +248,10 @@ export default class Pre {
       for (let index = 0; index < linesFromNode.length; index++) {
         const current = linesFromNode[index];
         const currentBottom = this._node.getBottom(current, node);
-        this._debug._ && console.log(index, currentBottom);
 
         // TODO move to DOM
         if (currentBottom > floater) {
-          this._debug._ && console.log(`start a new page: ${currentBottom} > ${floater}`, current)
+          this._debug._ && console.log(`start a new page: currentBottom (${currentBottom}) > floater(${floater})`, current)
           // * start a new part at [index]
           index && splitters.push(index);
           // ? start a new page
@@ -278,8 +289,7 @@ export default class Pre {
         // We can't wrap in createWithFlagNoBreak()
         // because PRE may have margins and that will affect the height of the wrapper.
         // So we will give the PRE itself this property.
-        const part = this._DOM.cloneNodeWrapper(node);
-        this._node.setFlagNoBreak(part);
+        const part = this._node.createSliceWrapper(node);
 
         // id = the beginning of the next part
         const start = splitters[index - 1] || 0;

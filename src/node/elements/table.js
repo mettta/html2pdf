@@ -836,11 +836,7 @@ export default class Table {
 
     const partEntries = tableEntries.rows.slice(startId, endId);
 
-    const _tableWrapper = this._DOM.cloneNodeWrapper(table);
-    // * The clone should be always cleared;
-    // * the possible page start mark remains on the first chunk.
-    this._node.unmarkPageStartElement(_tableWrapper);
-    // TODO make the same ☝️ with other split nodes
+    const _tableWrapper = this._node.createSliceWrapper(table);
 
     const tableSlice = this._node.createTable({
       wrapper: _tableWrapper,
