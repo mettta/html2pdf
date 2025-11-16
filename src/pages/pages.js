@@ -291,7 +291,7 @@ export default class Pages {
     let pageStart = element;
 
     if (improveResult) {
-      console.log('improveResult')
+      this._debug._registerPageStart && console.log('[_registerPageStart] improve result:')
       pageStart = this._node.findBetterPageStart(
         pageStart,
         this.pages.at(-1)?.pageStart,
@@ -300,7 +300,6 @@ export default class Pages {
     }
 
     if (!this._DOM.getElementOffsetParent(pageStart)) {
-      console.log('improveResult')
       this._debug._registerPageStart && console.warn(
         '🚨 pageStart has no offsetParent. Check the caller.',
         pageStart,

@@ -321,7 +321,7 @@ export default class Pre {
       this._debug._ && console.log('%c END _splitPreNode', CONSOLE_CSS_END_LABEL);
       this._debug._ && console.groupEnd();
 
-      return newPreElementsArray;
+      return [node, ...newPreElementsArray];
 
     } // END OF * if _children.length == 1
 
