@@ -204,7 +204,7 @@ export default class Table {
       tableEntries: this._currentTableEntries,
     });
 
-    this._applyCutMarkers([this._currentTable, ...tableSlices]);
+    this._node.markSliceCuts([this._currentTable, ...tableSlices]);
 
     if (this._signpostHeight) {
       tableSlices = this._extendTableSlices(tableSlices);
@@ -883,20 +883,6 @@ export default class Table {
 
       return acc;
     }, []);
-  }
-
-  _applyCutMarkers(slices) {
-    // * Apply top and bottom cut markers.
-    slices.forEach((slice, index, array) => {
-      if (index > 0) {
-        // * all except the first
-        this._node.markTopCut(slice);
-      }
-      if (index < array.length - 1) {
-        // * all except the last
-        this._node.markBottomCut(slice);
-      }
-    });
   }
 
   _createTopSignpost() {
