@@ -140,14 +140,14 @@ class Helper:
 
     def get_print_area_height(self) -> int:
         paper_body = self.test_case.find_element(
-            f'{_paper_body_}',
+            f'{_page_body_}',
             by=By.XPATH,
         )
         return paper_body.size['height']
 
     def get_print_area_width(self) -> int:
         paper_body = self.test_case.find_elements(
-            f'{_paper_body_}',
+            f'{_page_body_}',
             by=By.XPATH,
             limit=1
         )
