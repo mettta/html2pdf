@@ -99,3 +99,10 @@ class Test(BaseCase):
         helper.do_open(case9_html_file_url)
         self.helper.assert_document_has_pages(2)
         self.helper.assert_element_on_the_page(pre1, 1)
+
+    def test_010(self):
+        helper = Helper(self)
+        self.helper.open_case(path_to_this_test_file_folder, '010')
+        self.helper.assert_document_has_pages(3)
+        self.helper.assert_element_on_the_page("//pre", 2, 1)
+        self.helper.assert_element_on_the_page("//pre", 3, 2)
