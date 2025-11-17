@@ -212,6 +212,15 @@ class Helper:
         expected = str(page_number)
         assert attr_value == expected, f"Expected html2pdf-page-start='{expected}', got '{attr_value}'"
 
+    def assert_element_ends_page(self, element_xpath: str, page_number: int, element_order: int = 1) -> None:
+        attr_value = self.test_case.get_attribute(
+            f'({_content_flow_}{element_xpath})[{element_order}]',
+            'html2pdf-page-end',
+            by=By.XPATH
+        )
+        expected = str(page_number)
+        assert attr_value == expected, f"Expected html2pdf-page-end='{expected}', got '{attr_value}'"
+
     def assert_element_on_the_page(
         self,
         element_xpath,
