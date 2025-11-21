@@ -261,11 +261,8 @@ export default class Preview {
     // (instead of internal elements - header and footer, whose margins are lost
     // in cases like inline formatting of one of the parents).
 
-    // * because of firefox, we added 1pixel of padding for runningSafety in style.js,
-    // * and are now subtracting it to compensate.
-    // FIXME -1
-    (isSeparator && this._paper.footerHeight) && this._DOM.setStyles(pageDivider, { marginTop: this._paper.footerHeight - 1 + 'px' });
-    this._paper.headerHeight && this._DOM.setStyles(pageDivider, { paddingBottom: this._paper.headerHeight - 1 + 'px' });
+    (isSeparator && this._paper.footerHeight) && this._DOM.setStyles(pageDivider, { marginTop: this._paper.footerHeight + 'px' });
+    this._paper.headerHeight && this._DOM.setStyles(pageDivider, { paddingBottom: this._paper.headerHeight + 'px' });
 
     return pageDivider;
   }
