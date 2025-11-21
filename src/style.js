@@ -131,8 +131,24 @@ ${SELECTOR.pageHeader} {
   display: block;
   position: relative;
   pointer-events: auto;
+}
+
+${SELECTOR.pageFooter}::before,
+${SELECTOR.pageHeader}::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   --paper-color: ${this.config.paperColor};
   background: var(--paper-color, white);
+}
+
+${SELECTOR.pageFooter}::before {
+  top: 2px; /* safe space for the last element's border */
+}
+
+${SELECTOR.pageHeader}::before {
+  bottom: 2px; /* safe space for the first element's border */
 }
 
 ${SELECTOR.headerContent},
