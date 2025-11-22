@@ -127,11 +127,17 @@ def test_end2end(
     elif headed:
         head_mode_argument = "--headed"
 
+    # The option --log-cdp enables console logs by setting:
+    # ("goog:loggingPrefs", {"performance": "ALL", "browser": "ALL"})
+    # This is needed for driver.get_log("browser") to work.
+    # See our helper get_all_console_logs().
+
     test_command = f"""
         pytest
             --failed-first
             --capture=no
             --reuse-session
+            --log-cdp
             {parallelize_argument}
             {focus_argument}
             {exit_first_argument}
