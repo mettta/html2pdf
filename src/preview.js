@@ -220,7 +220,13 @@ export default class Preview {
     // must already be in the DOM.
     this._DOM.insertBefore(element, pageDivider);
 
-    isSeparator && this._insertFooterSpacer(pageDivider, this._paper.footerHeight, pageSeparator, paperSeparator);
+    isSeparator && this._insertFooterSpacer({
+      target: pageDivider,
+      footerHeight: this._paper.footerHeight,
+      pageSeparator,
+      paperSeparator,
+      pageIndex,
+    });
     this._insertHeaderSpacer(pageDivider, this._paper.headerHeight);
     this._updatePageStartElementAttrValue(element, pageIndex);
   }
@@ -337,7 +343,13 @@ export default class Preview {
     this._DOM.insertAtEnd(target, headerSpacer)
   }
 
-  _insertFooterSpacer(target, footerHeight, pageSeparator, paperSeparator) {
+  _insertFooterSpacer({
+    target,
+    footerHeight,
+    pageSeparator,
+    paperSeparator,
+    pageIndex,
+  }) {
 
     const footerSpacer = this._DOM.createDocumentFragment();
 
@@ -367,10 +379,16 @@ export default class Preview {
     // Put into DOM inside the target, in its upper part
     this._DOM.insertAtStart(target, footerSpacer);
 
-    this._balanceFooter(balancingFooter, contentSeparator, pageSeparator, paperSeparator);
+    this._balanceFooter({ balancingFooter, contentSeparator, pageSeparator, paperSeparator, pageIndex });
   }
 
-  _balanceFooter(balancingFooter, contentSeparator, pageSeparator, paperSeparator) {
+  _balanceFooter({
+    balancingFooter,
+    contentSeparator,
+    pageSeparator,
+    paperSeparator,
+    pageIndex,
+  }) {
     // * Must be run after all members have been added to the DOM.
     // Determine what inaccuracy there is visually in the break simulation position,
     // focusing on the difference between the position of the paired elements
@@ -380,7 +398,7 @@ export default class Preview {
     const paperSeparatorTop = this._node.getTop(paperSeparator, this._root);
     const contentSeparatorTop = this._node.getTop(contentSeparator, this._root);
 
-    this.strictAssert(paperSeparatorTop == pageSeparatorTop, `balancers in paper layers are misaligned`, {balancingFooter, contentSeparator, pageSeparator, paperSeparator,});
+    this.strictAssert(paperSeparatorTop == pageSeparatorTop, `balancers in paper layers are misaligned`, {pageIndex, balancingFooter, contentSeparator, pageSeparator, paperSeparator,});
 
     const balancer = pageSeparatorTop - contentSeparatorTop;
     this._debug._ && console.log({balancingFooter, contentSeparatorTop, paperSeparatorTop, pageSeparatorTop});
@@ -388,7 +406,7 @@ export default class Preview {
     this._DOM.setStyles(balancingFooter, { 'margin-bottom': balancer + 'px' });
 
     // TODO check if negative on large documents
-    this.strictAssert(balancer >= 0, `balancer is negative: ${balancer} < 0`, contentSeparator);
+    this.strictAssert(balancer >= 0, `[pages: ${pageIndex}-${pageIndex + 1}] balancer is negative: ${balancer} < 0`, contentSeparator);
   }
 
 }
