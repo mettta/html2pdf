@@ -60,8 +60,8 @@ export default function createConfig(params) {
     // misk
     paperColor: 'white',
     // print A4 default
-    printWidth: '210mm', // todo <170
-    printHeight: '297mm', // todo ~400
+    paperWidth: '210mm', // todo <170
+    paperHeight: '297mm', // todo ~400
     // html template
     headerMargin: '16px',
     footerMargin: '16px',
@@ -73,18 +73,18 @@ export default function createConfig(params) {
   }
 
   const A4 = {
-    printWidth: '210mm', // todo <170
-    printHeight: '297mm', // todo ~400
+    paperWidth: '210mm', // todo <170
+    paperHeight: '297mm', // todo ~400
   }
 
   const A5 = {
-    printWidth: '148.5mm', // todo <170
-    printHeight: '210mm', // todo ~400
+    paperWidth: '148.5mm', // todo <170
+    paperHeight: '210mm', // todo ~400
   }
 
   // * Can be specified by a shorthand entry,
   // * and then can be partially or completely overridden
-  // * by specifying printWidth and printHeight.
+  // * by specifying paperWidth and paperHeight.
   // TODO
   // ? landscape | portrait
   switch (params.printPaperSize) {
@@ -128,8 +128,8 @@ export default function createConfig(params) {
     printTopMargin: config.printTopMargin,
     printBottomMargin: config.printBottomMargin,
     printFontSize: config.printFontSize,
-    printWidth: config.printWidth,
-    printHeight: config.printHeight,
+    paperWidth: config.paperWidth,
+    paperHeight: config.paperHeight,
     headerMargin: config.headerMargin,
     footerMargin: config.footerMargin,
     virtualPagesGap: config.virtualPagesGap,
@@ -167,6 +167,31 @@ export default function createConfig(params) {
   config.debugMode && console.info('Config with converted units:', config);
 
   return config;
+}
+
+// * Temporary helper to remap deprecated dimension keys.
+// * Can be removed once legacy config options are fully dropped.
+export function normalizeLegacyConfigParams(rawParams = {}) {
+  const normalized = { ...rawParams };
+
+  [
+    ['printWidth', 'paperWidth'],
+    ['printHeight', 'paperHeight'],
+  ].forEach(([deprecatedKey, nextKey]) => {
+    if (Object.prototype.hasOwnProperty.call(normalized, deprecatedKey)) {
+      console.warn(
+        `[HTML2PDF4DOC] Config option "${deprecatedKey}" is deprecated. Use "${nextKey}" instead.`
+      );
+
+      if (!Object.prototype.hasOwnProperty.call(normalized, nextKey)) {
+        normalized[nextKey] = normalized[deprecatedKey];
+      }
+
+      delete normalized[deprecatedKey];
+    }
+  });
+
+  return normalized;
 }
 
 /**

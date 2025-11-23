@@ -65,7 +65,7 @@ export default class Preview {
 
     // * Config params:
     const _virtualPagesGap = parseInt(this._config.virtualPagesGap);
-    const _printPaperHeight = parseInt(this._config.printHeight);
+    const _printPaperHeight = parseInt(this._config.paperHeight);
     const _printTopMargin = parseInt(this._config.printTopMargin);
     const _printBottomMargin = parseInt(this._config.printBottomMargin);
     const _headerMargin = parseInt(this._config.headerMargin);

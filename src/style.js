@@ -7,64 +7,85 @@ export default class Style {
 
     // TODO put SELECTOR here (use config for templates ID)
 
+
+    // * parameters from the config were converted to pixels:
+    this._printWidth = parseFloat(this.config.paperWidth);
+    this._printLeft = parseFloat(this.config.printLeftMargin);
+    this._printRight = parseFloat(this.config.printRightMargin);
+    this._printContentWidth = `${this._printWidth - this._printLeft - this._printRight}px`;
+
+    // * virtual param for preview
+    this._flowPreviewPaddingBottom = '100px';
+
+    // * safe space for the first / last element's border:
+    this._chromeBorderSafeSpace = '2px';
+
+    // * establish a new block formatting context (BFC) so neighboring margins
+    // * can't collapse into the element
+    this._ensureBFC = `display: flow-root`;
+
+    // *****
     this.charWidth = '10px'; // TODO get from calculations
   }
 
   create() {
+    // TODO config {value, unit}
+
+    return this._pageRule()
+         + this._layoutStyles().screen
+         + this._layoutStyles().print
+         + this._chromeStyles().screen
+         + this._chromeStyles().print
+         + this._serviceElementsStyle().screen
+         + this._serviceElementsStyle().print
+         + this._cutEdgeStyle()
+         + (this.config.debugMode ? this._testScreenOnlyStyle() : '');
+  }
+
+  _pageRule() {
     // Make sure that the print margins (set for @page)
     // are NO LARGER than the corresponding indents
     // used for the the printable area,
     // to avoid overfilling the printable area and the mismatch
     // between preview and the flow processed by paged media.
-    // Here it is reduced by 1 pixel for safety:
+    // * When creating the config, they are reduced by up to 1 pixel for safety
+    // * reasons, rounded down during conversion.
 
-    // TODO config {value, unit}
+    // * 2 values: width then height
+    const _size = `${this.config.paperWidth} ${this.config.paperHeight}`;
 
-    return this._baseStyle() + this._testStyle();
-  }
+    // * In this way we allow content to be theoretically printed on the bottom margin.
+    // * And we leave it up to the printer to decide whether to print there or not.
+    // * And in this way we avoid extra blank pages when some pixel
+    // * of the invisible lower margin does not "fit" in the area to be printed.
+    const _marginBottom = 0; // *** instead of this.config.printBottomMargin
 
-  // ***   @page {
-  // ***     ...
-  // ***     /* margin-bottom: calc(${this.config.printBottomMargin} - 2px); */
-  // ***     margin-bottom: 0;
-  // ***    }
-  // In this way we allow content to be theoretically printed on the bottom margin.
-  // And we leave it up to the printer to decide whether to print there or not.
-  // And in this way we avoid extra blank pages when some pixel
-  // of the invisible lower margin does not "fit" in the area to be printed.
-
-  _baseStyle() {
-    return `
-
-@page {
+    return `@page {
   size: A4;
-  /* 2 values: width then height */
-  size: ${this.config.printWidth} ${this.config.printHeight};
-
+  size: ${_size};
   margin-left: ${this.config.printLeftMargin};
   margin-right: ${this.config.printRightMargin};
   margin-top: ${this.config.printTopMargin};
-  /* margin-bottom: ${this.config.printBottomMargin}; */
-  margin-bottom: 0; /* hack */
-}
+  margin-bottom: ${_marginBottom};
+}`;
+  }
 
+  _layoutStyles() {
+
+    const _rootDisplay = 'flow-root'; // * protection against unpredictability of margins
+    const _rootPosition = 'relative'; // * for proper printable flow positioning
+    const _rootZIndex = '1'; // * to compensate for possible BG in the parent node
+
+    const screen = `
 ${SELECTOR.root} {
-  /* reset user styles */
-  /* protection against unpredictability of margins */
-  display: flow-root;
-
-  /* for proper printable flow positioning */
-  position: relative;
-
-  /* to compensate for possible BG in the parent node */
-  z-index: 1;
-
-  /* set print styles: affects previews */
+  --paper-color: ${this.config.paperColor};
+  display: ${_rootDisplay};
+  position: ${_rootPosition};
+  z-index: ${_rootZIndex};
+  width: ${this._printContentWidth};
   margin: 0 auto;
-  width: calc(${this.config.printWidth} - ${this.config.printLeftMargin} - ${this.config.printRightMargin});
   font-size: ${this.config.printFontSize};
-
-  padding-bottom: calc(2 * ${this.config.virtualPagesGap});
+  padding-bottom: ${this._flowPreviewPaddingBottom};
 }
 
 ${SELECTOR.contentFlow} {
@@ -76,8 +97,7 @@ ${SELECTOR.paperFlow} {
   position: absolute;
   width: 100%;
   z-index: -1;
-  /* affect only screen */
-  padding-bottom: 100px;
+  padding-bottom: ${this._flowPreviewPaddingBottom};
   pointer-events: none;
 }
 
@@ -86,17 +106,8 @@ ${SELECTOR.overlayFlow} {
   position: absolute;
   width: 100%;
   z-index: 2147483647;
-  /* affect only screen */
-  padding-bottom: 100px;
+  padding-bottom: ${this._flowPreviewPaddingBottom};
   pointer-events: none;
-}
-
-${SELECTOR.contentFlowStart},
-${SELECTOR.contentFlowEnd},
-${SELECTOR.pageDivider} {
-  display: block;
-  /* to avoid the effect of margins of neighboring elements on the positioning of this marker: */
-  overflow: auto;
 }
 
 ${SELECTOR.virtualPaper} {
@@ -105,23 +116,28 @@ ${SELECTOR.virtualPaper} {
   grid-template-rows: minmax(min-content, max-content) minmax(min-content, max-content) 1fr minmax(min-content, max-content) minmax(min-content, max-content);
   place-items: stretch stretch;
   place-content: stretch stretch;
-  width: calc(${this.config.printWidth} - ${this.config.printLeftMargin} - ${this.config.printRightMargin});
-  height: ${this.config.printHeight};
+  width: ${this._printContentWidth};
+  height: ${this.config.paperHeight};
   font-size: ${this.config.printFontSize};
 }
 
 ${SELECTOR.virtualPaper}::before {
   position: absolute;
   content: '';
-  width: ${this.config.printWidth};
-  height: ${this.config.printHeight};
+  width: ${this.config.paperWidth};
+  height: ${this.config.paperHeight};
   left: -${this.config.printLeftMargin};
-  background-color: #fff;
+  background: var(--paper-color, white);
   box-shadow: rgba(0, 0, 0, 0.1) 2px 2px 12px 0px;
   z-index: -1;
 }
 
 ${SELECTOR.pageChrome} {
+  display: block;
+  pointer-events: none;
+}
+
+${SELECTOR.pageBodySpacer} {
   display: block;
   pointer-events: none;
 }
@@ -139,71 +155,15 @@ ${SELECTOR.pageHeader}::before {
   position: absolute;
   inset: 0;
   z-index: -1;
-  --paper-color: ${this.config.paperColor};
   background: var(--paper-color, white);
 }
 
 ${SELECTOR.pageFooter}::before {
-  top: 2px; /* safe space for the last element's border */
+  top: ${this._chromeBorderSafeSpace};
 }
 
 ${SELECTOR.pageHeader}::before {
-  bottom: 2px; /* safe space for the first element's border */
-}
-
-${SELECTOR.headerContent},
-${SELECTOR.footerContent} {
-  display: block;
-  font-size: small;
-}
-
-${SELECTOR.headerContent} p,
-${SELECTOR.footerContent} p {
-  margin: 0;
-}
-
-${SELECTOR.headerContent} {
-  padding-bottom: ${this.config.headerMargin};
-  /* padding-top: 1px; */
-  /* Page numbers: */
-  padding-top: 10px;
-}
-
-${SELECTOR.footerContent} {
-  padding-top: ${this.config.footerMargin};
-  /* padding-bottom: 1px; */
-  /* Page numbers: */
-  min-height: 32px;
-}
-
-${SELECTOR.tocPageNumber} {
-  min-width: 3ch;
-  display: flex;
-  justify-content: flex-end;
-  align-items: baseline;
-}
-
-${SELECTOR.pageNumberRoot} {
-  display: flex;
-  column-gap: 2px;
-  position: absolute;
-  /* left: 100%; */
-  right: 0;
-  text-align: right;
-  line-height: 1;
-}
-
-${SELECTOR.headerContent} ${SELECTOR.pageNumberRoot} {
-  top: 0;
-}
-
-${SELECTOR.footerContent} ${SELECTOR.pageNumberRoot} {
-  bottom: 0;
-}
-
-${SELECTOR.runningSafety} {
-  display: block;
-  overflow: auto;
+  bottom: ${this._chromeBorderSafeSpace};
 }
 
 ${SELECTOR.virtualPaperTopMargin} {
@@ -221,11 +181,137 @@ ${SELECTOR.virtualPaperGap} {
   padding-top: ${this.config.virtualPagesGap};
 }
 
-${SELECTOR.pageBodySpacer} {
+${SELECTOR.contentFlowStart},
+${SELECTOR.contentFlowEnd},
+${SELECTOR.pageDivider},
+${SELECTOR.runningSafety} {
+  ${this._ensureBFC};
+}
+    `;
+
+    const print = `
+@media print {
+
+  ${SELECTOR.root},
+  ${SELECTOR.overlayFlow},
+  ${SELECTOR.paperFlow} {
+    padding: 0;
+  }
+
+  ${SELECTOR.paperFlow},
+  ${SELECTOR.printHide} {
+    display: none !important;
+  }
+
+  ${SELECTOR.printIgnore} {
+    display: contents !important;
+  }
+
+  ${SELECTOR.virtualPaperTopMargin},
+  ${SELECTOR.virtualPaperBottomMargin},
+  ${SELECTOR.virtualPaperGap} {
+    display: none !important;
+  }
+
+  ${SELECTOR.pageChrome},
+  ${SELECTOR.frontpageElement},
+  ${SELECTOR.pageBodySpacer} {
+    break-inside: avoid;
+  }
+}
+    `;
+
+    return { screen, print }
+  }
+
+  _chromeStyles() {
+    const screen = `
+${SELECTOR.headerContent},
+${SELECTOR.footerContent} {
   display: block;
-  pointer-events: none;
+  font-size: small;
 }
 
+${SELECTOR.headerContent} p,
+${SELECTOR.footerContent} p {
+  margin: 0;
+}
+
+${SELECTOR.headerContent} {
+  padding-bottom: ${this.config.headerMargin};
+  padding-top: 10px; /* for page numbers */
+}
+
+${SELECTOR.footerContent} {
+  padding-top: ${this.config.footerMargin};
+  min-height: 32px; /* for page numbers */
+}
+
+${SELECTOR.tocPageNumber} {
+  min-width: 3ch;
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+}
+
+${SELECTOR.pageNumberRoot} {
+  display: flex;
+  column-gap: 2px;
+  position: absolute;
+  right: 0;
+  text-align: right;
+  line-height: 1;
+}
+
+${SELECTOR.headerContent} ${SELECTOR.pageNumberRoot} {
+  top: 0;
+}
+
+${SELECTOR.footerContent} ${SELECTOR.pageNumberRoot} {
+  bottom: 0;
+}
+    `;
+
+    const print = ``;
+
+    return { screen, print }
+  }
+
+  _cutEdgeStyle() {
+    return `
+${SELECTOR.topCutPart} {
+  margin-top: 0 !important;
+}
+${SELECTOR.bottomCutPart} {
+  margin-bottom: 0 !important;
+}
+${SELECTOR.cleanTopCut} {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: none !important;
+}
+${SELECTOR.cleanBottomCut} {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  border-bottom: none !important;
+}
+    `;
+  }
+
+  _serviceElementsStyle() {
+
+
+    // * - Firefox and inconsistent values of offset top for inline element
+    // * - Visually, the string fits, but the inline baseline gap below the string
+    // *   causes a compensator + assertions.
+    // *   'display: inline-block' removes spaces between parts of the string,
+    const _makeInlineBlock = 'display: inline-block';
+    // *   but it should leave the text inline in media print,
+    // *   and inside text group.
+    const _keepInline = 'display: inline';
+
+
+    const screen = `
 .null {
   display: inline;
   padding: 0;
@@ -260,18 +346,11 @@ ${SELECTOR.textGroup} {
 }
 
 ${SELECTOR.textLine} {
-  /*
-    - Firefox and inconsistent values of offset top for inline element
-    - Visually, the string fits, but the inline baseline gap below the string
-      causes a compensator + assertions.
-      'display: inline-block' removes spaces between parts of the string,
-      but it should leave the text inline in media print.
-  */
-  display: inline-block;
+  ${_makeInlineBlock};
 }
 
 ${SELECTOR.textGroup} ${SELECTOR.textLine} {
-  display: inline;
+  ${_keepInline};
 }
 
 ${SELECTOR.complexTextBlock} {
@@ -279,11 +358,11 @@ ${SELECTOR.complexTextBlock} {
 }
 
 ${SELECTOR.complexTextBlock} ${SELECTOR.complexTextBlock} {
-  display: inline;
+  ${_keepInline};
 }
 
 ${SELECTOR.printPageBreak} {
-  display: flow-root;
+  ${this._ensureBFC};
 }
 
 ${SELECTOR.printForcedPageBreak} {
@@ -292,90 +371,27 @@ ${SELECTOR.printForcedPageBreak} {
   height: 0;
   overflow: hidden;
 }
+    `;
 
+    const print = `
 @media print {
-  ${SELECTOR.root} {
-    /* to prevent a blank last page */
-    padding: 0;
-  }
-
-  ${SELECTOR.overlayFlow},
-  ${SELECTOR.paperFlow} {
-    padding-bottom: 0;
-  }
-
-  ${SELECTOR.printIgnore} {
-    display: contents !important;
-  }
-
-  ${SELECTOR.printHide},
-  ${SELECTOR.paperFlow},
-  ${SELECTOR.virtualPaperTopMargin},
-  ${SELECTOR.virtualPaperBottomMargin},
-  ${SELECTOR.virtualPaperGap} {
-    display: none !important;
-  }
-
-  ${SELECTOR.pageChrome},
-  ${SELECTOR.frontpageElement},
-  ${SELECTOR.pageBodySpacer} {
-    break-inside: avoid;
-  }
 
   ${SELECTOR.printPageBreak} {
     break-after: page;
-    overflow: auto;
-  }
-
-  ${SELECTOR.printForcedPageBreak} {
-    /* JUST MANUAL! */
-    /* break-after: page; */
-  }
-
-  ${SELECTOR.flagNoBreak} {
-    /*
-    TODO: temporary commented!
-    When splitting blocks, printPageBreak falls INTO this element,
-    and in Firefox it causes a blank page.
-    FIX the split of complex blocks and check in Firefox.
-    */
-    /* break-inside: avoid-page; */
   }
 
   ${SELECTOR.textLine} {
-    /*
-      - Visually, the string fits, but the inline baseline gap below the string
-        causes a compensator + assertions.
-      - should leave the text inline after processing.
-    */
-    display: inline;
+    ${_keepInline};
   }
-}
-
-/* arrangement */
-${SELECTOR.topCutPart} {
-  margin-top: 0 !important;
-}
-${SELECTOR.bottomCutPart} {
-  margin-bottom: 0 !important;
-}
-${SELECTOR.cleanTopCut} {
-  margin-top: 0 !important;
-  padding-top: 0 !important;
-  border-top: none !important;
-}
-${SELECTOR.cleanBottomCut} {
-  margin-bottom: 0 !important;
-  padding-bottom: 0 !important;
-  border-bottom: none !important;
 }
     `;
+
+    return { screen, print }
   }
 
-  _testStyle() {
-    return this.config.debugMode ?
-    `
-/* FOR TEST */
+  _testScreenOnlyStyle() {
+    return `
+/* DEBUG PREVIEW */
 @media screen {
 
   ${SELECTOR.contentFlow} {
@@ -430,6 +446,6 @@ ${SELECTOR.cleanBottomCut} {
     background: #0000ff08;
   }
 }
-    ` : '';
+    `;
   }
 }
