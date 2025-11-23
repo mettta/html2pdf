@@ -7,7 +7,7 @@ export default class Preloader {
   constructor(customConfig) {
     this._debugMode = customConfig.debugMode; // Only enabled via user configuration
     this._preloader;
-    this._preloaderTarget = document.querySelector(customConfig.preloaderTarget) || document.body;
+    this._preloaderTarget = this._resolveTarget(customConfig) || document.body;
     this._preloaderBackground = customConfig.preloaderBackground || 'white';
   }
 
@@ -82,5 +82,10 @@ export default class Preloader {
     }
     */
   `;
+  }
+
+  _resolveTarget(customConfig) {
+    const targetSelector = (customConfig.preloaderTarget || '').trim();
+    return (targetSelector && document.querySelector(targetSelector));
   }
 }
