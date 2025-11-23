@@ -16,5 +16,10 @@ class Test(BaseCase):
         self.helper = Helper(self)
 
     def test_01(self):
-        self.helper.do_open(case01_html_file_url)
+        self.helper.open_case(path_to_this_test_file_folder, '001')
+        # data-preloader-target='' solved by _resolveTarget(customConfig)
         self.helper.assert_document_has_pages(1)
+
+        # TODO check config option names and warnings from fallback:
+        # [HTML2PDF4DOC] Config option "printWidth" is deprecated. Use "paperWidth" instead.
+        # [HTML2PDF4DOC] Config option "printHeight" is deprecated. Use "paperHeight" instead.
