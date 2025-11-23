@@ -259,14 +259,15 @@ ${SELECTOR.textGroup} {
   display: block;
 }
 
-/*${SELECTOR.split} ${SELECTOR.textGroup} {
-  display: inline;
-}*/
-
-${SELECTOR.complexTextBlock} > ${SELECTOR.textLine} {
-  /* Firefox and inconsistent values of offset top for inline element */
+${SELECTOR.textLine} {
+  /*
+    - Firefox and inconsistent values of offset top for inline element
+    - Visually, the string fits, but the inline baseline gap below the string
+      causes a compensator + assertions.
+      'display: inline-block' removes spaces between parts of the string,
+      but it should leave the text inline in media print.
+  */
   display: inline-block;
-  // TODO: it removes spaces between parts of the string, it should leave the text inline after processing.
 }
 
 ${SELECTOR.textGroup} ${SELECTOR.textLine} {
@@ -339,6 +340,15 @@ ${SELECTOR.printForcedPageBreak} {
     FIX the split of complex blocks and check in Firefox.
     */
     /* break-inside: avoid-page; */
+  }
+
+  ${SELECTOR.textLine} {
+    /*
+      - Visually, the string fits, but the inline baseline gap below the string
+        causes a compensator + assertions.
+      - should leave the text inline after processing.
+    */
+    display: inline;
   }
 }
 
