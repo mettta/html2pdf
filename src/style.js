@@ -9,7 +9,7 @@ export default class Style {
 
 
     // * parameters from the config were converted to pixels:
-    this._printWidth = parseFloat(this.config.printWidth);
+    this._printWidth = parseFloat(this.config.paperWidth);
     this._printLeft = parseFloat(this.config.printLeftMargin);
     this._printRight = parseFloat(this.config.printRightMargin);
     this._printContentWidth = `${this._printWidth - this._printLeft - this._printRight}px`;
@@ -52,7 +52,7 @@ export default class Style {
     // * reasons, rounded down during conversion.
 
     // * 2 values: width then height
-    const _size = `${this.config.printWidth} ${this.config.printHeight}`;
+    const _size = `${this.config.paperWidth} ${this.config.paperHeight}`;
 
     // * In this way we allow content to be theoretically printed on the bottom margin.
     // * And we leave it up to the printer to decide whether to print there or not.
@@ -117,15 +117,15 @@ ${SELECTOR.virtualPaper} {
   place-items: stretch stretch;
   place-content: stretch stretch;
   width: ${this._printContentWidth};
-  height: ${this.config.printHeight};
+  height: ${this.config.paperHeight};
   font-size: ${this.config.printFontSize};
 }
 
 ${SELECTOR.virtualPaper}::before {
   position: absolute;
   content: '';
-  width: ${this.config.printWidth};
-  height: ${this.config.printHeight};
+  width: ${this.config.paperWidth};
+  height: ${this.config.paperHeight};
   left: -${this.config.printLeftMargin};
   background: var(--paper-color, white);
   box-shadow: rgba(0, 0, 0, 0.1) 2px 2px 12px 0px;
