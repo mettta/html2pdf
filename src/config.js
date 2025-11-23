@@ -169,6 +169,31 @@ export default function createConfig(params) {
   return config;
 }
 
+// * Temporary helper to remap deprecated dimension keys.
+// * Can be removed once legacy config options are fully dropped.
+export function normalizeLegacyConfigParams(rawParams = {}) {
+  const normalized = { ...rawParams };
+
+  [
+    ['printWidth', 'paperWidth'],
+    ['printHeight', 'paperHeight'],
+  ].forEach(([deprecatedKey, nextKey]) => {
+    if (Object.prototype.hasOwnProperty.call(normalized, deprecatedKey)) {
+      console.warn(
+        `[HTML2PDF4DOC] Config option "${deprecatedKey}" is deprecated. Use "${nextKey}" instead.`
+      );
+
+      if (!Object.prototype.hasOwnProperty.call(normalized, nextKey)) {
+        normalized[nextKey] = normalized[deprecatedKey];
+      }
+
+      delete normalized[deprecatedKey];
+    }
+  });
+
+  return normalized;
+}
+
 /**
  * Returns a copy of the object where string values
  * that clearly represent boolean values ("true", "false", "1", "0", "")

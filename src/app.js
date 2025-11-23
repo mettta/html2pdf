@@ -12,12 +12,13 @@ import Preloader from './preloader.js';
 import Preprocess from './preprocess/index.js';
 import isTruthy from './utils/isTruthy.js';
 import buildAppConfig from './appConfig.js';
+import { normalizeLegacyConfigParams } from './config.js';
 
 const CONSOLE_CSS_LABEL = `color:Gray;border:1px solid;`
 
 export default class App {
   constructor(params) {
-    this.params = params;
+    this.params = normalizeLegacyConfigParams(params);
     this.forcedDebugMode = isTruthy(params.forcedDebugMode);
     this.debugMode = isTruthy(params.debugMode) || this.forcedDebugMode;
     this.preloader = params.preloader;
