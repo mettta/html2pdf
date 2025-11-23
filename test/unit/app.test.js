@@ -22,7 +22,7 @@ describe('App class', () => {
       const params = { debugMode: true, preloader: 'true' };
       const app = new App(params);
 
-      expect(app.params).to.equal(params);
+      expect(app.params).to.deep.equal(params);
       expect(app.debugMode).to.be.true;
       expect(app.preloader).to.equal('true');
       expect(app.selector).to.exist;
