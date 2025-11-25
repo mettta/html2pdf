@@ -74,7 +74,7 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
 
   // * Y-threshold: nothing above (smaller than) this coordinate can be returned;
   // * limited to the element from which the last registered page starts:
-  const topLimit = this.getTop(lastPageStart, root);
+  const topLimit = lastPageStart ? this.getTop(lastPageStart, root) : 0;
 
   _isDebug(this) && console.log(
     "Start calculations:",
