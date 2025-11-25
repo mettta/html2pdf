@@ -35,13 +35,14 @@ export function getNormalizedTop(element, root, rootComputedStyle) {
 }
 
 /**
- * Returns offsetBottom (with margins) of element relative to root, normalized by root's padding-top.
+ * Returns offsetBottom (with margins) of element relative to root,normalized by root's padding-top.
  *
  * In layouts like TD, the available height is usually precomputed excluding padding-top.
  * But element.offsetTop starts after padding-top — leading to double-counting it.
  *
  * This function compensates by subtracting padding-top, so positioning aligns
  * with the precomputed height budget.
+ *
  * @this {Node}
  */
 export function getNormalizedBottomWithMargin(element, root, rootComputedStyle) {
@@ -51,9 +52,30 @@ export function getNormalizedBottomWithMargin(element, root, rootComputedStyle) 
 }
 
 /**
+ * Measures `element`’s vertical offset relative to `root` by walking the native
+ * `offsetParent` chain:
+ * - `element` must be contained in `root`; otherwise the traversal aborts.
+ * - Both arguments must be HTMLElements with standard offset behavior.
+ * - The algorithm accumulates `offsetTop` while recursing through `offsetParent`
+ *   until it hits either `root` itself or the first shared `offsetParent`.
+ * - When the shared parent is `document.body`, the result is still computed but
+ *   a warning is emitted (missing positioned ancestors).
+ * - Encountering a node without `offsetParent` (hidden/fixed/detached) logs the
+ *   traversal stack and returns `undefined`.
+ *
+ * Returned value = (sum of `element` offsets) − (root’s offset relative to the
+ * shared ancestor), matching the semantics of `offsetTop` but scoped to `root`.
+ *
+ * ***
+ * Note on “bad” nodes:
+ * `offsetParent` becomes `null` if the element is hidden (`display:none`),
+ * detached, fixed-positioned, or otherwise outside the normal layout.
+ * Such nodes break the offset chain;
+ * either skip them or fix their DOM state before calling this function.
+ *
  * @this {Node}
  */
-export function getTop(element, root = null, topAcc = 0) {
+export function getTop(element, root = null, topAcc = 0, paramSnapshot = null, traversalStack = [], rootContext = null) {
   if (!element) {
     _isDebug(this) && console.warn(
       'element must be provided, but was received:', element,
@@ -62,28 +84,56 @@ export function getTop(element, root = null, topAcc = 0) {
     return
   }
 
-  // the offset case
+  if (!(element instanceof HTMLElement)) {
+    this.strictAssert(0, '[getTop] element must be HTMLElement, but was received:', element, '\nThe function returned:', undefined);
+    return
+  }
+
   if (root === null) {
     return this._DOM.getElementOffsetTop(element)
   }
 
-  if (!root) {
-    _isDebug(this) && console.warn(
-      'root must be provided, but was received:', root,
-      '\nThe function returned:', undefined
-    );
-    return
+  if (!(root instanceof HTMLElement)) {
+    this.strictAssert(0, '[getTop] root must be HTMLElement, but was received:', root, '\nThe function returned:', undefined);
+    return;
   }
 
+  paramSnapshot = paramSnapshot || { element, root };
+
+  // On the very first call ensure the target element belongs to the provided root;
+  // otherwise we can't build a meaningful offset chain between them.
+  if (topAcc === 0 && !root.contains(element)) {
+    this.strictAssert(0, '[getTop] the provided root does not contain the element.',
+      { element, root, paramSnapshot },
+      '\nThe function returned:', undefined);
+    return;
+  }
+
+  // Cache shared data about the root we are measuring against:
+  // 1) which offsetParent acts as the common reference frame
+  // 2) how far the root itself is from that reference frame.
+  rootContext = rootContext || _initRootContext.call(this, root, paramSnapshot);
+  if (!rootContext) {
+    _isDebug(this) && console.warn(
+      'Root has no a usable offset reference; nothing else to measure against. \nThe function returned:', undefined,
+      { element, paramSnapshot, offsetParent, traversal: nextTraversalStack }
+    );
+    return;
+  }
+
+  // If during recursion we bubbled up to the requested root, we have accumulated
+  // the full distance and can exit immediately.
+  if (element === root) {
+    return topAcc;
+  }
+
+  const nextTraversalStack = [...traversalStack, element];
   const offsetParent = this._DOM.getElementOffsetParent(element);
 
-  // TODO element == document.body
   if (!offsetParent) {
     _isDebug(this) && console.warn(
-      'Element has no offset parent.',
-      '\n element:', [element],
-      '\n offsetParent:', offsetParent,
-      '\n The function returned:', undefined
+      'Element has no offset parent; offset chain is broken. \nThe function returned:', undefined,
+      { element, paramSnapshot, offsetParent, traversal: nextTraversalStack }
     );
     return
   }
@@ -92,9 +142,50 @@ export function getTop(element, root = null, topAcc = 0) {
 
   if (offsetParent === root) {
     return (currTop + topAcc);
-  } else {
-    return this.getTop(offsetParent, root, topAcc + currTop);
   }
+
+  // If we have reached the same offsetParent the root uses,
+  // compare the distance of the element to the distance of the root.
+  if (offsetParent === rootContext.sharedOffsetParent) {
+    if (rootContext.sharedOffsetParentIsBody && !rootContext.warnedAboutBody) {
+      rootContext.warnedAboutBody = true;
+      _isDebug(this) && console.warn(
+        'getTop(): reached document.body while measuring offsets. Layout likely lacks positioned ancestors.',
+        { element, root, paramSnapshot }
+      );
+    }
+    return (currTop + topAcc) - rootContext.rootOffsetFromSharedParent;
+  }
+
+  return this.getTop(offsetParent, root, topAcc + currTop, paramSnapshot, nextTraversalStack, rootContext);
+}
+
+function _initRootContext(root, paramSnapshot) {
+  const sharedOffsetParent = this._DOM.getElementOffsetParent(root);
+
+  if (!sharedOffsetParent) {
+    _isDebug(this) && console.warn(
+      '[getTop*]: root has no offset parent; cannot build relative offsets.',
+      { root, paramSnapshot }
+    );
+    return null;
+  }
+
+  const rootOffsetFromSharedParent = this._DOM.getElementOffsetTop(root);
+  if (typeof rootOffsetFromSharedParent !== 'number') {
+    _isDebug(this) && console.warn(
+      '[getTop*]: root offsetTop is not a number.',
+      { root, sharedOffsetParent, paramSnapshot }
+    );
+    return null;
+  }
+
+  return {
+    sharedOffsetParent,
+    rootOffsetFromSharedParent,
+    sharedOffsetParentIsBody: sharedOffsetParent === root.ownerDocument?.body,
+    warnedAboutBody: false
+  };
 }
 
 /**
