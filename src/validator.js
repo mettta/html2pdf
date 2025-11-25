@@ -26,7 +26,7 @@ export default class Validator {
     const pageGapSelector = `${this._selector.contentFlow} ${this._selector.virtualPaperGap}`;
     const paperGapElements = [...this._DOM.getAllElements(paperGapSelector)];
     const pageGapElements = [...this._DOM.getAllElements(pageGapSelector)];
-    const paperGaps = paperGapElements.map(paperGap => this._node.getTop(paperGap));
+    const paperGaps = paperGapElements.map(paperGap => this._node.getTop(paperGap, this._root));
     const pageGaps = pageGapElements.map(pageGap => this._node.getTop(pageGap, this._root));
 
     const brokenDividers = paperGaps.reduce((accumulator, currentValue, index) => {
