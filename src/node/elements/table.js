@@ -1,6 +1,5 @@
 import * as Logging from '../../utils/logging.js';
 import * as Paginator from './structuredElementPaginator.js';
-import * as TableAdapter from './table.adapter.js';
 import * as PartsRecorder from '../modules/parts.recorder.js';
 
 // TODO(table): Unsupported features planned later
@@ -830,7 +829,7 @@ export default class Table {
     this.strictAssert(Number.isInteger(startId) && (Number.isInteger(endId) || endId === Infinity),
     `[createTableSlice] invalid bounds: startId=${startId}, endId=${endId}`);
     const rowsLen = (tableEntries && tableEntries.rows) ? tableEntries.rows.length : 0;
-    this.strictAssert(rowsLen >= 0, `createTableSlice: invalid rows length: ${rowsLen}`);
+    this.strictAssert(rowsLen >= 0, `[createTableSlice]: invalid rows length: ${rowsLen}`);
     this.strictAssert(startId > 0 && endId > 0 && startId < endId,
       `[createTableSlice] out-of-range slice [${startId}, ${endId}) for rowsLen=${rowsLen}`);
 
@@ -901,136 +900,6 @@ export default class Table {
     // 🤖 Swap the original TR with generated slices, tagging the source row for debug visibility.
     this._debug._ && this._DOM.setAttribute(row, '.🚫_must_be_removed');
     this._DOM.insertInsteadOf(row, ...newRows);
-  }
-
-  // FIXME by src/node/elements/table.adapter.js
-
-  // FIXME update (table.adapter)
-  _createAndInsertTableSlice({ startId, endId, table, tableEntries }) {
-    // 🤖 Clone structural pieces and attach a tbody fragment representing rows [startId, endId) as a standalone printable chunk.
-    const sliceBundle = this._normalizeSliceAdapterPayload(
-      TableAdapter.createAndInsertTableSlice(this, { startId, endId, table, tableEntries }),
-      { startId, endId, type: 'slice' }
-    );
-    const sliceChildren = sliceBundle.nodes;
-    const rows = Array.isArray(this._currentTableDistributedRows)
-      ? this._currentTableDistributedRows.slice(startId, endId).map((row, offset) => ({
-        rowIndex: startId + offset,
-        row,
-        cells: Array.from(this._DOM.getChildren(row) || []),
-      }))
-      : [];
-    if (sliceChildren.length) {
-      const partMeta = {
-        ...(sliceBundle.meta || {}),
-        signpostTop: sliceBundle.signposts?.top ?? null,
-        signpostBottom: sliceBundle.signposts?.bottom ?? null,
-      };
-      this._recordTablePart(sliceBundle.mainPart, { startId, endId, type: 'slice', rows, meta: partMeta });
-    }
-    return sliceChildren;
-  }
-
-  // FIXME drop obsolete (table.adapter)
-  _createAndInsertTableFinalSlice({ table, startId = 0 }) {
-    // 🤖 Prepare the last table part that retains TFOOT and rows from the final checkpoint onward.
-    const totalRows = Array.isArray(this._currentTableDistributedRows)
-      ? this._currentTableDistributedRows.length
-      : 0;
-    const sliceBundle = this._normalizeSliceAdapterPayload(
-      TableAdapter.createAndInsertTableFinalSlice(this, { table }),
-      { startId, endId: totalRows, type: 'final' }
-    );
-    const part = sliceBundle.mainPart;
-    const rows = Array.isArray(this._currentTableDistributedRows)
-      ? this._currentTableDistributedRows.slice(startId).map((row, offset) => ({
-        rowIndex: startId + offset,
-        row,
-        cells: Array.from(this._DOM.getChildren(row) || []),
-      }))
-      : [];
-    const partMeta = {
-      ...(sliceBundle.meta || {}),
-      signpostTop: sliceBundle.signposts?.top ?? null,
-      signpostBottom: sliceBundle.signposts?.bottom ?? null,
-    };
-    this._recordTablePart(part, { startId, endId: totalRows, type: 'final', rows, meta: partMeta });
-    return sliceBundle.nodes;
-  }
-
-  // FIXME used in table.adapter _createAndInsertTableSlice
-  _normalizeSliceAdapterPayload(rawResult, { startId = null, endId = null, type = 'slice' } = {}) {
-    // 🤖 Adapter contract helper:
-    // 🤖 Input: DOM node, array of nodes, or { nodes, mainPart, signposts, meta } bundle from TableAdapter.
-    // 🤖 Output: normalized bundle { nodes[], mainPart, signposts, meta } ready for telemetry + DOM reducers.
-    const contextLabel = `[table.slice:${type}] rows [${startId ?? 'null'}:${endId ?? 'null'}]`;
-    this.strictAssert(rawResult, `${contextLabel} builder returned no result`);
-
-    const isElement = node => node && typeof node === 'object' && node.nodeType === 1;
-    let sliceBundle = null;
-    if (Array.isArray(rawResult)) {
-      sliceBundle = { nodes: rawResult };
-    } else if (isElement(rawResult)) {
-      sliceBundle = { nodes: [rawResult], mainPart: rawResult };
-    } else if (typeof rawResult === 'object') {
-      sliceBundle = rawResult;
-    } else {
-      this.strictAssert(false, `${contextLabel} unsupported builder payload: ${rawResult}`);
-    }
-
-    let nodes = Array.isArray(sliceBundle.nodes) ? [...sliceBundle.nodes] : [];
-    if (!nodes.length && isElement(sliceBundle.mainPart)) {
-      nodes = [sliceBundle.mainPart];
-    }
-    this.strictAssert(nodes.length > 0, `${contextLabel} builder produced empty nodes array`);
-
-    const validNodes = [];
-    nodes.forEach((node, index) => {
-      if (!node) {
-        console.warn(`${contextLabel} dropped empty node at index ${index}`);
-        return;
-      }
-      validNodes.push(node);
-    });
-    this.strictAssert(validNodes.length > 0, `${contextLabel} builder produced only empty nodes`);
-
-    const mainPart = sliceBundle.mainPart ?? validNodes[0];
-    this.strictAssert(isElement(mainPart), `${contextLabel} missing main part element`);
-
-    return {
-      nodes: validNodes,
-      mainPart,
-      signposts: {
-        top: sliceBundle.signposts?.top ?? null,
-        bottom: sliceBundle.signposts?.bottom ?? null,
-      },
-      meta: sliceBundle.meta,
-    };
-  }
-
-  // FIXME used in table.adapter _createAndInsertTableSlice
-  _recordTablePart(part, meta = {}) {
-    // 🤖 Store telemetry about generated table chunks so DevTools and diagnostics can inspect slice composition.
-    const entries = this._currentTableRecordedParts;
-    if (!entries || !part) {
-      return null;
-    }
-    const {
-      startId = null,
-      endId = null,
-      type = 'unknown',
-      rows = [],
-      meta: extraMeta,
-    } = meta || {};
-    return PartsRecorder.recordPart({
-      entries,
-      part,
-      startIndex: startId,
-      endIndex: endId,
-      type,
-      rows,
-      meta: extraMeta,
-    });
   }
 
 }
