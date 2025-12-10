@@ -504,6 +504,15 @@ export function getTableEntries(node) {
  * Measure effective Node content height via a temporary neutral probe appended to the Node.
  * The probe's normalized top (relative to Node padding issues) equals the content height because
  * it's placed after all flow content. The probe is removed immediately.
+ *
+ * Caveat: in grid/table cells the measured height can be misleading.
+ * When the row is stretched by neighboring content, the probe lands at a
+ * position dictated by the row layout, not by this cell’s own content flow.
+ * That means `getNormalizedTop(probe, cell)` may return the stretched row
+ * height minus padding, even if the cell’s actual content is much shorter.
+ * Use this only when you need “what the layout engine made this box contain”;
+ * if you need the cell’s intrinsic content height, measure padding/border
+ * separately and cap the content measurement accordingly.
  */
 export function getContentHeightByProbe(container, containerComputedStyle) {
   const containerStyle = containerComputedStyle ? containerComputedStyle : this._DOM.getComputedStyle(container);
