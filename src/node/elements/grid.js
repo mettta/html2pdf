@@ -346,6 +346,7 @@ export default class Grid {
           pageBottom: this._currentGridSplitBottom,
           fullPageHeight: this._currentGridFullPartHeight,
           debug: this._debug,
+          resolveRowBounds: (row) => this._getRowBounds(row, this._currentGridNode),
           registerPageStartCallback: ({ targetIndex, reason }) => this._registerPageStartAt(targetIndex, splitStartRowIndexes, reason),
           scaleProblematicSliceCallback: (slice, targetHeight) => this._scaleGridCellsToHeight(slice, targetHeight),
           applyFullPageScalingCallback: ({ row: slice, needsScalingInFullPage: needsScaling, fullPageHeight }) => {
@@ -408,8 +409,7 @@ export default class Grid {
       return null;
     }
     const cellStyles = Array.isArray(row) ? new Array(row.length) : null;
-    const rowTop = this._getRowTop(row, gridNode, cellStyles);
-    const rowBottom = this._getRowBottom(row, gridNode, cellStyles);
+    const { top: rowTop, bottom: rowBottom } = this._getRowBounds(row, gridNode);
     const nextRow = rows[rowIndex + 1];
     const nextMarker = nextRow ? this._getRowTop(nextRow, gridNode) : rowBottom;
     const delta = nextMarker - splitBottom;
@@ -431,7 +431,7 @@ export default class Grid {
 
   _composeGridOverflowHelpers() {
     const registerPageStartCallback = this._registerPageStartAt.bind(this);
-    const scaleCellsToHeightCallback = this._scaleGridCellsToHeight.bind(this);
+    // const scaleCellsToHeightCallback = this._scaleGridCellsToHeight.bind(this);
     const debugLogger = this._debug && this._debug._
       ? (message, payload) => console.log(message, payload)
       : undefined;
@@ -920,53 +920,17 @@ export default class Grid {
     });
   }
 
-  _getRowTop(row, gridNode, cellStyles = null) {
-    if (Array.isArray(row)) {
-      let minTop = Infinity;
-      row.forEach(cell => {
-        const candidate = this._node.getTop(cell, gridNode);
-        if (Number.isFinite(candidate)) {
-          minTop = Math.min(minTop, candidate);
-        }
-      });
-      return minTop === Infinity ? 0 : minTop;
-    }
-    if (row) {
-      return this._node.getTop(row, gridNode) || 0;
-    }
-    return 0;
+  _getRowBounds(row, gridNode, want = 'both') {
+    // Delegate to shared helper so grid/table share one implementation.
+    return this._node.resolveRowBoundsGeneric(row, gridNode, want);
   }
 
-  _getRowBottom(row, gridNode, cellStyles = null) {
-    if (Array.isArray(row)) {
-      let maxBottom = -Infinity;
-      row.forEach((cell, index) => {
-        const baseBottom = this._node.getBottom(cell, gridNode);
-        let style = null;
-        if (cellStyles) {
-          style = cellStyles[index];
-          if (!style && cell) {
-            style = this._getComputedStyleCached(cell);
-            cellStyles[index] = style;
-          }
-        } else if (cell) {
-          style = this._getComputedStyleCached(cell);
-        }
-        const marginBottom = style ? parseFloat(style.marginBottom) || 0 : 0;
-        const candidate = baseBottom + marginBottom;
-        if (Number.isFinite(candidate)) {
-          maxBottom = Math.max(maxBottom, candidate);
-        }
-      });
-      return maxBottom === -Infinity ? 0 : maxBottom;
-    }
-    if (row) {
-      const baseBottom = this._node.getBottom(row, gridNode) || 0;
-      const style = this._getComputedStyleCached(row);
-      const marginBottom = parseFloat(style?.marginBottom) || 0;
-      return baseBottom + marginBottom;
-    }
-    return 0;
+  _getRowTop(row, gridNode) {
+    return this._getRowBounds(row, gridNode, 'top').top;
+  }
+
+  _getRowBottom(row, gridNode) {
+    return this._getRowBounds(row, gridNode, 'bottom').bottom;
   }
 
   _scanGridLayout(_node, nodeComputedStyle) {

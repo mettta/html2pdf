@@ -532,3 +532,95 @@ export function getContentHeightByProbe(container, containerComputedStyle) {
   this._DOM.removeNode(probe);
   return h;
 }
+
+/**
+ * @this {Node}
+ *
+ * 🤖 Generic bounds resolver: works for a single HTMLElement or an array of HTMLElements.
+ * Set want = 'top' or 'bottom' to short-circuit when only one bound is needed.
+ *
+ * Inputs:
+ *  - row: HTMLElement, or an array of HTMLElements (grid row as cells).
+ *  - root: HTMLElement against which offsets are measured.
+ *  - want: 'top' | 'bottom' | 'both' (default 'both').
+ *
+ * Returns:
+ *  - { top: number, bottom: number } when measurement succeeds.
+ *  - { top: undefined, bottom: undefined } and a strictAssert when no valid measurements are found or payload is unexpected.
+ */
+export function resolveRowBoundsGeneric(row, root, want = 'both') {
+  const needTop = want !== 'bottom';
+  const needBottom = want !== 'top';
+
+  if (row instanceof HTMLElement) {
+    const top = needTop ? this.getTop(row, root) : undefined;
+    const bottom = needBottom ? this.getBottom(row, root) : undefined;
+
+    if (needTop && !Number.isFinite(top)) {
+      this.strictAssert(false, '[resolveRowBoundsGeneric] failed to measure top for HTMLElement', { row, root, want });
+      return { top: undefined, bottom: undefined };
+    }
+    if (needBottom && !Number.isFinite(bottom)) {
+      this.strictAssert(false, '[resolveRowBoundsGeneric] failed to measure bottom for HTMLElement', { row, root, want });
+      return { top: undefined, bottom: undefined };
+    }
+
+    if (want === 'top') {
+      return { top, bottom: top };
+    }
+    if (want === 'bottom') {
+      return { top: bottom, bottom };
+    }
+    return { top, bottom };
+  }
+
+  if (Array.isArray(row)) {
+    let minTop = needTop ? Infinity : undefined;
+    let maxBottom = needBottom ? -Infinity : undefined;
+    let foundTop = false;
+    let foundBottom = false;
+    row.forEach((cell) => {
+      if (!(cell instanceof HTMLElement)) return;
+      if (needTop) {
+        const top = this.getTop(cell, root);
+        if (Number.isFinite(top)) {
+          minTop = Math.min(minTop, top);
+          foundTop = true;
+        }
+      }
+      if (needBottom) {
+        const bottom = this.getBottom(cell, root);
+        if (Number.isFinite(bottom)) {
+          maxBottom = Math.max(maxBottom, bottom);
+          foundBottom = true;
+        }
+      }
+    });
+    if (want === 'top') {
+      if (!foundTop) {
+        this.strictAssert(false, '[resolveRowBoundsGeneric] no valid top found in row array', { row, root, want });
+        return { top: undefined, bottom: undefined };
+      }
+      return { top: minTop, bottom: minTop };
+    }
+    if (want === 'bottom') {
+      if (!foundBottom) {
+        this.strictAssert(false, '[resolveRowBoundsGeneric] no valid bottom found in row array', { row, root, want });
+        return { top: undefined, bottom: undefined };
+      }
+      return { top: maxBottom, bottom: maxBottom };
+    }
+    if (needTop && !foundTop) {
+      this.strictAssert(false, '[resolveRowBoundsGeneric] no valid top found in row array', { row, root, want });
+      return { top: undefined, bottom: undefined };
+    }
+    if (needBottom && !foundBottom) {
+      this.strictAssert(false, '[resolveRowBoundsGeneric] no valid bottom found in row array', { row, root, want });
+      return { top: undefined, bottom: undefined };
+    }
+    return { top: minTop, bottom: maxBottom };
+  }
+
+  this.strictAssert(false, '[resolveRowBoundsGeneric] unexpected row payload', { row, root, want });
+  return { top: undefined, bottom: undefined };
+}
