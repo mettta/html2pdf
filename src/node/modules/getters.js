@@ -78,7 +78,7 @@ export function getNormalizedBottomWithMargin(element, root, rootComputedStyle) 
 export function getTop(element, root = null, topAcc = 0, paramSnapshot = null, traversalStack = [], rootContext = null) {
   if (!element) {
     _isDebug(this) && console.warn(
-      'element must be provided, but was received:', element,
+      '[getTop] element must be provided, but was received:', element,
       '\nThe function returned:', undefined
     );
     return
@@ -194,7 +194,7 @@ function _initRootContext(root, paramSnapshot) {
 export function getBottom(element, root = null) {
   if (!element) {
     _isDebug(this) && console.warn(
-      'element must be provided, but was received:', element,
+      '[getBottom] element must be provided, but was received:', element,
       '\nThe function returned:', undefined
     );
     return
