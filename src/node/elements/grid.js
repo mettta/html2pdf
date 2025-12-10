@@ -912,28 +912,9 @@ export default class Grid {
       // 🤖 margins treated as shell contribution so leftover height stays accurate
       const margin = Math.max(0, marginTop) + Math.max(0, marginBottom);
 
-      const cellHeight = this._DOM.getElementOffsetHeight(cell) || 0;
-      let contentHeight = 0;
-      if (typeof this._node.getContentHeightByProbe === 'function') {
-        try {
-          const measured = this._node.getContentHeightByProbe(cell, style);
-          if (Number.isFinite(measured) && measured >= 0) {
-            contentHeight = measured;
-          }
-        } catch (err) {
-          // Fallback handled below.
-        }
-      }
-
-      if (!(contentHeight > 0) || contentHeight > cellHeight) {
-        contentHeight = Math.max(0, cellHeight - paddingBorder);
-      }
-
-      let shell = cellHeight - contentHeight;
-      if (!Number.isFinite(shell)) {
-        shell = paddingBorder;
-      }
-      shell = Math.max(shell, paddingBorder);
+      // Avoid probe-based content measurements in grids: stretched rows make probes misleading.
+      // Shell here is strictly padding+border, with margins added separately.
+      const shell = Math.max(0, paddingBorder);
       // 🤖 Align with Table: ensure shell always covers padding/border + margin so slicing budgets remain conservative.
       return Math.max(0, shell + margin);
     });
