@@ -379,6 +379,7 @@ export function paginationHandleRowSlicesPlacement({
   pageBottom,
   fullPageHeight,
   debug,
+  resolveRowBounds, // for GRID only
   registerPageStartCallback,
   scaleProblematicSliceCallback,
   applyFullPageScalingCallback,
@@ -396,8 +397,11 @@ export function paginationHandleRowSlicesPlacement({
     return rowIndex - 1;
   }
 
-  const firstSliceTop = this.getTop(firstSlice, table);
-  const firstSliceBottom = this.getBottom(firstSlice, table);
+  // * Table row is HTML element.
+  // * Grid row is array of cells; compute bounds via provided resolver or generic helper.
+  const fallbackResolveRowBounds = (row) => this.resolveRowBoundsGeneric(row, table); // for TABLE
+  const resolveBounds = typeof resolveRowBounds === 'function' ? resolveRowBounds : fallbackResolveRowBounds;
+  const { top: firstSliceTop, bottom: firstSliceBottom } = resolveBounds(firstSlice);
 
   // * Decide whether the first slice can remain in the current tail window or must escalate to a full-page window.
   const placement = this.evaluateRowSplitPlacement({

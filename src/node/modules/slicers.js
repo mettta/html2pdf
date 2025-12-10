@@ -46,7 +46,6 @@ export function getSplitPoints({
       element,
       points.at(-1),
       rootNode,
-      rootNode
     );
 
     // * If we try to register the first element as a new page: `point === children[0]`,

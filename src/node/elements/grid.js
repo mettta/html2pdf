@@ -1,6 +1,5 @@
 import * as Logging from '../../utils/logging.js';
 import * as Paginator from './structuredElementPaginator.js';
-import * as GridAdapter from './grid.adapter.js';
 import * as PartsRecorder from '../modules/parts.recorder.js';
 import { createLoopGuard } from '../../utils/loopGuard.js';
 
@@ -346,6 +345,7 @@ export default class Grid {
           pageBottom: this._currentGridSplitBottom,
           fullPageHeight: this._currentGridFullPartHeight,
           debug: this._debug,
+          resolveRowBounds: (row) => this._getRowBounds(row, this._currentGridNode),
           registerPageStartCallback: ({ targetIndex, reason }) => this._registerPageStartAt(targetIndex, splitStartRowIndexes, reason),
           scaleProblematicSliceCallback: (slice, targetHeight) => this._scaleGridCellsToHeight(slice, targetHeight),
           applyFullPageScalingCallback: ({ row: slice, needsScalingInFullPage: needsScaling, fullPageHeight }) => {
@@ -408,8 +408,7 @@ export default class Grid {
       return null;
     }
     const cellStyles = Array.isArray(row) ? new Array(row.length) : null;
-    const rowTop = this._getRowTop(row, gridNode, cellStyles);
-    const rowBottom = this._getRowBottom(row, gridNode, cellStyles);
+    const { top: rowTop, bottom: rowBottom } = this._getRowBounds(row, gridNode);
     const nextRow = rows[rowIndex + 1];
     const nextMarker = nextRow ? this._getRowTop(nextRow, gridNode) : rowBottom;
     const delta = nextMarker - splitBottom;
@@ -431,7 +430,7 @@ export default class Grid {
 
   _composeGridOverflowHelpers() {
     const registerPageStartCallback = this._registerPageStartAt.bind(this);
-    const scaleCellsToHeightCallback = this._scaleGridCellsToHeight.bind(this);
+    // const scaleCellsToHeightCallback = this._scaleGridCellsToHeight.bind(this);
     const debugLogger = this._debug && this._debug._
       ? (message, payload) => console.log(message, payload)
       : undefined;
@@ -709,20 +708,82 @@ export default class Grid {
   }
 
   _createAndInsertGridSlice({ startId, endId, node, entries }) {
-    return GridAdapter.createAndInsertGridSlice(this, { startId, endId, node, entries });
+    // We do not wrap with createWithFlagNoBreak to avoid CSS breakage; clone wrapper instead.
+    const part = this._DOM.cloneNodeWrapper(node);
+    this._node.copyNodeWidth(part, node);
+    this._node.setFlagNoBreak(part);
+
+    if (startId) {
+      // * normalize top cut for table slices
+      // ? may affect the table design
+      // todo: include in user config
+      this._node.markTopCut(part);
+    }
+    // * normalize bottom cut for table slices
+    this._node.markBottomCut(part);
+
+
+    node.before(part);
+
+    const currentRows = entries?.currentRows || fallbackCurrentRows || [];
+    // currentRows arrive via the shared entries container; fallback keeps older callers working.
+
+    // Allow the DOM module to tell us what counts as an element.
+    // Grid adapters sit between plain HTMLElements and wrappers returned by getPreparedChildren,
+    // and test/SSR environments may not expose global HTMLElement reliably.
+    const isElementNodeFn = (this && this._DOM && typeof this._DOM.isElementNode === 'function')
+      ? this._DOM.isElementNode.bind(this._DOM)
+      : null;
+
+    const partEntries = currentRows
+      .slice(startId, endId)
+      .flat()
+      .map(candidate => {
+        if (!candidate) return null;
+        if (isElementNodeFn && isElementNodeFn(candidate)) {
+          return candidate;
+        }
+        if (typeof HTMLElement !== 'undefined' && candidate instanceof HTMLElement) {
+          return candidate;
+        }
+        const element = candidate.element;
+        if (element) {
+          if (isElementNodeFn && isElementNodeFn(element)) {
+            return element;
+          }
+          if (typeof HTMLElement !== 'undefined' && element instanceof HTMLElement) {
+            return element;
+          }
+        }
+        // Returning null lets .filter(Boolean) drop non-element placeholders quietly;
+        // getPreparedChildren may emit helper descriptors that are not renderable nodes.
+        return null;
+      })
+      .filter(Boolean);
+
+    this._DOM.insertAtEnd(part, ...partEntries);
+    return part;
   }
 
   _createAndInsertGridFinalSlice({ node, entries, startId }) {
-    const part = GridAdapter.createAndInsertGridFinalSlice(this, { node, entries });
+    const finalPart = node;
+
+    // * Final slice is the original node (flagged no-break) left in place.
+    // * normalize top cut for table slices
+    // ? may affect the table design
+    // todo: include in user config
+    this._node.markTopCut(finalPart);
+    this._node.setFlagNoBreak(finalPart);
+
     const currentRows = entries?.currentRows || this._currentGridRows || [];
     const telemetryRows = this._collectGridTelemetryRows(currentRows, startId);
-    this._recordGridPart(part, {
+    this._recordGridPart(finalPart, {
       startId,
       endId: currentRows.length,
       type: 'final',
       rows: telemetryRows,
     });
-    return part;
+    return finalPart;
   }
 
   // TODO(grid/table): evaluate moving telemetry collection into a shared helper (see docs/_Grid_Table_Refactor_Roadmap.md).
@@ -912,80 +973,25 @@ export default class Grid {
       // 🤖 margins treated as shell contribution so leftover height stays accurate
       const margin = Math.max(0, marginTop) + Math.max(0, marginBottom);
 
-      const cellHeight = this._DOM.getElementOffsetHeight(cell) || 0;
-      let contentHeight = 0;
-      if (typeof this._node.getContentHeightByProbe === 'function') {
-        try {
-          const measured = this._node.getContentHeightByProbe(cell, style);
-          if (Number.isFinite(measured) && measured >= 0) {
-            contentHeight = measured;
-          }
-        } catch (err) {
-          // Fallback handled below.
-        }
-      }
-
-      if (!(contentHeight > 0) || contentHeight > cellHeight) {
-        contentHeight = Math.max(0, cellHeight - paddingBorder);
-      }
-
-      let shell = cellHeight - contentHeight;
-      if (!Number.isFinite(shell)) {
-        shell = paddingBorder;
-      }
-      shell = Math.max(shell, paddingBorder);
+      // Avoid probe-based content measurements in grids: stretched rows make probes misleading.
+      // Shell here is strictly padding+border, with margins added separately.
+      const shell = Math.max(0, paddingBorder);
       // 🤖 Align with Table: ensure shell always covers padding/border + margin so slicing budgets remain conservative.
       return Math.max(0, shell + margin);
     });
   }
 
-  _getRowTop(row, gridNode, cellStyles = null) {
-    if (Array.isArray(row)) {
-      let minTop = Infinity;
-      row.forEach(cell => {
-        const candidate = this._node.getTop(cell, gridNode);
-        if (Number.isFinite(candidate)) {
-          minTop = Math.min(minTop, candidate);
-        }
-      });
-      return minTop === Infinity ? 0 : minTop;
-    }
-    if (row) {
-      return this._node.getTop(row, gridNode) || 0;
-    }
-    return 0;
+  _getRowBounds(row, gridNode, want = 'both') {
+    // Delegate to shared helper so grid/table share one implementation.
+    return this._node.resolveRowBoundsGeneric(row, gridNode, want);
   }
 
-  _getRowBottom(row, gridNode, cellStyles = null) {
-    if (Array.isArray(row)) {
-      let maxBottom = -Infinity;
-      row.forEach((cell, index) => {
-        const baseBottom = this._node.getBottom(cell, gridNode);
-        let style = null;
-        if (cellStyles) {
-          style = cellStyles[index];
-          if (!style && cell) {
-            style = this._getComputedStyleCached(cell);
-            cellStyles[index] = style;
-          }
-        } else if (cell) {
-          style = this._getComputedStyleCached(cell);
-        }
-        const marginBottom = style ? parseFloat(style.marginBottom) || 0 : 0;
-        const candidate = baseBottom + marginBottom;
-        if (Number.isFinite(candidate)) {
-          maxBottom = Math.max(maxBottom, candidate);
-        }
-      });
-      return maxBottom === -Infinity ? 0 : maxBottom;
-    }
-    if (row) {
-      const baseBottom = this._node.getBottom(row, gridNode) || 0;
-      const style = this._getComputedStyleCached(row);
-      const marginBottom = parseFloat(style?.marginBottom) || 0;
-      return baseBottom + marginBottom;
-    }
-    return 0;
+  _getRowTop(row, gridNode) {
+    return this._getRowBounds(row, gridNode, 'top').top;
+  }
+
+  _getRowBottom(row, gridNode) {
+    return this._getRowBounds(row, gridNode, 'bottom').bottom;
   }
 
   _scanGridLayout(_node, nodeComputedStyle) {
