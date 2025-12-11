@@ -307,14 +307,13 @@ export function isTableNode(element, style) {
   if (!(element instanceof HTMLElement)) {
     return
   }
-  const computedStyle = style || this._DOM.getComputedStyle(element);
+  //! const computedStyle = style || this._DOM.getComputedStyle(element);
   //*** STRICTDOC specific
   //*** add scroll for wide tables */
   //* issue#1370 https://css-tricks.com/preventing-a-grid-blowout/ */
   // so table can has 'block' and 'nowrap'.
   return this._DOM.getElementTagName(element) === 'TABLE'
-    || // ! &&
-    ['table'].includes(computedStyle.display);
+    //!  || ['table', 'inline-table'].includes(computedStyle.display)
 }
 
 /**
