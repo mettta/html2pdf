@@ -34,7 +34,7 @@ export default class Table {
     this._resetCurrent();
   }
 
-  split(_table, _pageBottom, _fullPageHeight, _root) {
+  split(_table, _pageBottom, _fullPageHeight, _root, computedStyle) {
     // * Paginate a <table> into print-sized parts.
     // * - Clones caption/thead/colgroup into each non-final part; keeps tfoot only in the final part.
     // * - Adds continuation signposts above/below parts per configuration.
