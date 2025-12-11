@@ -248,10 +248,56 @@ export function isTableLikeNode(element, style) {
     return
   }
   const computedStyle = style || this._DOM.getComputedStyle(element);
-  return this._DOM.getElementTagName(element) !== 'TABLE'
-    && [
-      'table'
-    ].includes(computedStyle.display);
+  const display = computedStyle.display;
+
+  // 1) Table formatting root without the TABLE tag (e.g. div { display:table/inline-table })
+  if (
+    this._DOM.getElementTagName(element) !== 'TABLE'
+    && ['table', 'inline-table'].includes(display)
+  ) {
+    return true;
+  }
+
+  // 2) Pseudo-table rows/groups outside of <table>: node itself is row-like.
+  const isRowDisplay = (d) => d === 'table-row';
+  const isRowGroupDisplay = (d) => (
+    d === 'table-row-group'
+    || d === 'table-header-group'
+    || d === 'table-footer-group'
+  );
+  const isCellDisplay = (d) => d === 'table-cell';
+
+  // table-row: consider table-like if it has at least one table-cell child.
+  if (isRowDisplay(display)) {
+    const children = this._DOM.getChildren(element);
+    for (const cell of children) {
+      if (!(cell instanceof HTMLElement)) continue;
+      if (isCellDisplay(this._DOM.getComputedStyle(cell).display)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // table-row-group/header/footer: consider table-like if it contains a row with at least one cell.
+  if (isRowGroupDisplay(display)) {
+    const rows = this._DOM.getChildren(element);
+    for (const maybeRow of rows) {
+      if (!(maybeRow instanceof HTMLElement)) continue;
+      const maybeRowDisplay = this._DOM.getComputedStyle(maybeRow).display;
+      if (!isRowDisplay(maybeRowDisplay)) continue;
+      const cells = this._DOM.getChildren(maybeRow);
+      for (const cell of cells) {
+        if (!(cell instanceof HTMLElement)) continue;
+        if (isCellDisplay(this._DOM.getComputedStyle(cell).display)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  return false;
 }
 
 /**
