@@ -113,6 +113,7 @@ export default class Paragraph {
 
         // * If BR is encountered, we start a new empty line:
         if(this._DOM.getElementTagName(currentElement) === 'BR' ) {
+          if (!result.length) result.push([]);
           result.at(-1).push(currentElement);
           result.push([]); // => will be: result.at(-1).length === 0;
           this._debug._ && console.log('br; push:', currentElement);
