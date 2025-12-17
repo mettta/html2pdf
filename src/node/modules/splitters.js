@@ -4,6 +4,8 @@ import { debugFor } from '../utils/debugFor.js';
 const _isDebug = debugFor('splitters');
 
 /**
+ * Split the text node into lines by \n,
+ * leaving the character \n at the end of the resulting string.
  * @this {Node}
  */
 export function splitTextByLinesGreedy(string) {
