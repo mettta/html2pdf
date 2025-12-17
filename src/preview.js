@@ -412,7 +412,11 @@ export default class Preview {
 
     this._DOM.setStyles(balancingFooter, { 'margin-bottom': balancer + 'px' });
 
-    if (balancer < 0) {
+    // * Compensate accumulated rounding errors caused by integer DOM offsets
+    // * (offset* properties truncate sub-pixel values, leading to a 1px jump)
+    const roundingCompensationPx = 1; // px
+    if (balancer < - roundingCompensationPx) {
+      // * treat as negative, beyond rounding noise
       this._debug._ && console.warn(`[pages: ${pageIndex}-${pageIndex + 1}] balancer is negative: ${balancer} < 0. Submitted to the Validator.`, contentSeparator);
       this._accumulatedAssertions[pageIndex] = {
         balancer,
