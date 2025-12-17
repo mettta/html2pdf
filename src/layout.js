@@ -12,7 +12,6 @@ export default class Layout {
     // init result flag
     this.success = false;
 
-    this._assert = config.consoleAssert ? true : false;
     Object.assign(this, Logging);
 
     // * public
