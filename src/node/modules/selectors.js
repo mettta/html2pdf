@@ -371,7 +371,7 @@ export function isFlexRow(element, style) {
 /**
  * @this {Node}
  */
-export function isFullySPlitted(element, style) {
+export function isSliced(element, style) {
   const computedStyle = style || this._DOM.getComputedStyle(element);
   return (
     this.isTableNode(element, computedStyle) ||

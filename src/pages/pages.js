@@ -1016,15 +1016,15 @@ export default class Pages {
         // * In a fully split node, or in a node that has received the 'slough' attribute,
         // * children replace it.
         // * So we don't take into account the last child bottom margins (arrayParentBottomEdge).
-        const isFullySPlittedParent = this._node.isFullySPlitted(currentElement) || this._node.isSlough(currentElement);
+        const isSlicedParent = this._node.isSliced(currentElement) || this._node.isSlough(currentElement);
 
-        this._debug._parseNode && console.log({isFullySPlittedParent, arrayTopParent,})
+        this._debug._parseNode && console.log({isSlicedParent, arrayTopParent,})
         this._parseNodes({
           array: children,
           previous: previousElement,
           next: nextElement,
-          arrayTopParent: isFullySPlittedParent ? undefined : _arrayTopParent,
-          arrayBottomParent: isFullySPlittedParent ? undefined : _arrayBottomParent,
+          arrayTopParent: isSlicedParent ? undefined : _arrayTopParent,
+          arrayBottomParent: isSlicedParent ? undefined : _arrayBottomParent,
         });
         this._node.markProcessed(currentElement, `getSplitChildren and _parseNodes`);
       } else {
