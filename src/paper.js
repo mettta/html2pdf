@@ -53,6 +53,7 @@ export default class Paper {
 
   createPageChrome({ pageNumber, pageCount }) {
     const wrapper = this._node.create(this._pageChromeSelector);
+    this._node.markPageNumber(wrapper, pageNumber);
     const pageElements = this._composePageElements({ pageNumber, pageCount });
     this._DOM.insertAtEnd(
       wrapper,
@@ -66,6 +67,7 @@ export default class Paper {
     const fragment = this._DOM.createDocumentFragment();
 
     const body = this._createPageBodySpacer(this.bodyHeight);
+    this._node.markPageNumber(body, pageNumber);
     const header = this._createPageHeader(this._headerTemplate);
     const footer = this._createPageFooter(this._footerTemplate);
 

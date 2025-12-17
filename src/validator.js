@@ -46,21 +46,12 @@ export default class Validator {
     const pageEndMarkerSelector = `${this._selector.contentFlow} ${this._selector.pageEndMarker}`;
     const bodySpacerSelector = `${this._selector.pageChrome} ${this._selector.pageBodySpacer}`;
 
-    // * elements
+
+    const pagesWithOverflow = {};
+
+    // * Separators/balancers.
     const paperGapElements = [...this._DOM.getAllElements(paperGapSelector)];
     const pageGapElements = [...this._DOM.getAllElements(pageGapSelector)];
-    const bodySpacerElements = [...this._DOM.getAllElements(bodySpacerSelector)];
-    const contentFlowEndElement = this._DOM.getElement(contentFlowEndSelector);
-    const rawPageEndElements = this._DOM.getAllElements(pageEndMarkerSelector);
-    const sortedPageEndElements = Array.from(rawPageEndElements).sort((a, b) => {
-      const numA = parseInt(a.getAttribute('html2pdf-page-end'), 10) || 0;
-      const numB = parseInt(b.getAttribute('html2pdf-page-end'), 10) || 0;
-      return numA - numB;
-    });
-    const pageEndElements = [...sortedPageEndElements, contentFlowEndElement];
-
-    // * CHECK
-
     this._assertElementsCount(
       this._pageCount - 1, // * last page has no gap
       {
@@ -68,17 +59,6 @@ export default class Validator {
         pageGapElements,
       }
     );
-
-    this._assertElementsCount(
-      this._pageCount,
-      {
-        bodySpacerElements,
-        pageEndElements,
-      }
-    );
-
-    const pagesWithOverflow = {};
-
     const paperGapTops = paperGapElements.map(paperGap => this._node.getTop(paperGap, this._root));
     const pageGapTops = pageGapElements.map(pageGap => this._node.getTop(pageGap, this._root));
     for (let index = 0; index < paperGapTops.length; index += 1) {
@@ -92,16 +72,36 @@ export default class Validator {
       }
     }
 
-    const bodyBottoms = bodySpacerElements.map(body => this._node.getBottom(body, this._root));
-    const pageEndBottoms = pageEndElements.map(el => this._node.getBottom(el, this._root));
+    // * Page ends and page bodies/
+    // * - there can be different numbers for bodySpacerElements / pageEndElements,
+    // * because the end of the page is not always possible for beginners' tails
+    const _bodySpacersByPageNum = [];
+    const bodySpacerElements = [...this._DOM.getAllElements(bodySpacerSelector)];
+    for (const el of bodySpacerElements) {
+      const page = parseInt(this._DOM.getAttribute(el, this._selector.pageMarker), 10);
+      this.strictAssert(!Number.isNaN(page), 'bodySpacer has no valid page marker', el);
+      // continue;
+      _bodySpacersByPageNum[page] = el;
+    }
+    const _pageEndByPage = [];
+    const rawPageEndElements = this._DOM.getAllElements(pageEndMarkerSelector);
+    for (const el of rawPageEndElements) {
+      const page = parseInt(this._DOM.getAttribute(el, this._selector.pageEndMarker), 10);
+      this.strictAssert(!Number.isNaN(page), 'pageEnd has no valid page end marker', el);
+      // continue;
+      _pageEndByPage[page] = el;
+    }
+
+    const bodyBottoms = _bodySpacersByPageNum.map(body => body ? this._node.getBottom(body, this._root) : undefined);
+    const pageEndBottoms = _pageEndByPage.map(el => el ? this._node.getBottom(el, this._root) : undefined);
     for (let index = 0; index < bodyBottoms.length; index += 1) {
       const bodyBottom = bodyBottoms[index];
       const pageEndBottom = pageEndBottoms[index];
       if (bodyBottom < pageEndBottom) {
         const problemPageNumber = index + 1;
         (pagesWithOverflow[problemPageNumber] ??= {}).pageNumber = problemPageNumber;
-        (pagesWithOverflow[problemPageNumber] ??= {}).overflowingPageEnd = pageEndElements[index];
-        (pagesWithOverflow[problemPageNumber] ??= {}).overflowingPage = bodySpacerElements[index];
+        (pagesWithOverflow[problemPageNumber] ??= {}).overflowingPageEnd = _pageEndByPage[index];
+        (pagesWithOverflow[problemPageNumber] ??= {}).overflowingPage = _bodySpacersByPageNum[index];
       }
     }
 

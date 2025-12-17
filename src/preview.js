@@ -158,8 +158,8 @@ export default class Preview {
       // register the added Frontpage in pages array,
       // thereby increasing the number of pages by 1.
       this._pages.unshift({ // todo unshift performance?
-        prevPageEnd: null,
-        pageStart: frontpage
+        pageStart: frontpage,
+        pageEnd: frontpage,
       });
       // set Frontpage as previews Page End for page 1:
       this._pages[1].prevPageEnd = frontpage;
@@ -235,26 +235,30 @@ export default class Preview {
       pageIndex,
     });
     this._insertHeaderSpacer(pageDivider, this._paper.headerHeight);
-    this._updatePageStartElementAttrValue(element, pageIndex);
+    this._updatePageNumberElementAttrValue(pageIndex);
   }
 
   _preventPageOverflow(pageIndex) {
     // * Reset margins on both sides of the page break to prevent overflow.
     // * This styles should not be applied before the preview is generated.
     const currentPageFirstElement = this._pages[pageIndex].pageStart;
-    const previousPageLastElement = this._pages[pageIndex].prevPageEnd;
-    if (previousPageLastElement) {
-      // * Page numbers start at 1, but pageIndex is 0-based.
-      // * For prevPageEnd, use pageIndex (== 'page num - 1') directly to avoid off-by-one.
-      this._node.markPageEndElement(previousPageLastElement, pageIndex);
-      this._DOM.setStyles(previousPageLastElement, {'margin-bottom': ['0', 'important']});
-    } else {
-      (pageIndex > 0) && this._debug._ && console.warn(`[preview] There is no page end element before ${pageIndex}. Perhaps it's a 'beginningTail'.`, )
-    }
+    const previousPageLastElement = this._pages[pageIndex].toResetBottom || this._pages[pageIndex].pageEnd;
+
+    // * Page numbers start at 1, but pageIndex is 0-based.
+    // * For prevPageEnd, use pageIndex (== 'page num - 1') directly to avoid off-by-one.
+    // const previousPageLastElement = this._pages[pageIndex].prevPageEnd;
+
     if (currentPageFirstElement) {
       this._DOM.setStyles(currentPageFirstElement, {'margin-top': ['0', 'important']});
     } else {
       this.strictAssert(0, '[preview] [_preventPageOverflow] current page First Element do not pass! page:', pageIndex)
+    }
+
+    if (previousPageLastElement) {
+      // this._node.markPageEndElement(previousPageLastElement, pageIndex + 'test');
+      this._DOM.setStyles(previousPageLastElement, {'margin-bottom': ['0', 'important']});
+    } else {
+      (pageIndex > 0) && this._debug._ && console.warn(`[preview] There is no page end element before ${pageIndex}. Perhaps it's a 'beginningTail'.`, )
     }
   }
 
@@ -280,10 +284,12 @@ export default class Preview {
     return pageDivider;
   }
 
-  _updatePageStartElementAttrValue(element, pageIndex) {
-    //  frontpage on page 1 forces page numbers to be refreshed
-    // this._debug._ && console.log(`${pageIndex + 1}`, element, )
-    this._hasFrontPage && this._node.markPageStartElement(element, `${pageIndex + 1}`);
+  _updatePageNumberElementAttrValue(pageIndex) {
+    // * The frontpage will move the previously set `pageStart` markers forward by 1.
+    // * If there is no frontpage, `pageStart` markers do not need to be updated.
+    // * `pageEnd` markers are set for the first time.
+    this._hasFrontPage && this._node.markPageStartElement(this._pages[pageIndex].pageStart, `${pageIndex + 1}`);
+    this._node.markPageEndElement(this._pages[pageIndex].pageEnd, `${pageIndex + 1}`);
   }
 
   _insertPaper(paperFlow, paper, separator) {
@@ -405,7 +411,10 @@ export default class Preview {
     const paperSeparatorTop = this._node.getTop(paperSeparator, this._root);
     const contentSeparatorTop = this._node.getTop(contentSeparator, this._root);
 
-    this.strictAssert(paperSeparatorTop == pageSeparatorTop, `balancers in paper layers are misaligned`, {pageIndex, balancingFooter, contentSeparator, pageSeparator, paperSeparator,});
+    this.strictAssert(paperSeparatorTop == pageSeparatorTop, `balancers in paper layers are misaligned`, {
+      pageIndex, balancingFooter, contentSeparator, pageSeparator, paperSeparator,
+      paperSeparatorTop, pageSeparatorTop,
+    });
 
     const balancer = pageSeparatorTop - contentSeparatorTop;
     this._debug._ && console.log({balancingFooter, contentSeparatorTop, paperSeparatorTop, pageSeparatorTop});
