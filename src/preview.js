@@ -154,11 +154,15 @@ export default class Preview {
       // insert Frontpage into Content Flow,
       const frontpage = this._paper.createFrontpage();
       this._DOM.insertAtStart(this._contentFlow, frontpage);
-      // register the added Frontpage Spacer in pages array,
+      // move the zero page to the index 1:
+      // register the added Frontpage in pages array,
       // thereby increasing the number of pages by 1.
       this._pages.unshift({ // todo unshift performance?
+        prevPageEnd: null,
         pageStart: frontpage
       });
+      // set Frontpage as previews Page End for page 1:
+      this._pages[1].prevPageEnd = frontpage;
     }
   }
 
