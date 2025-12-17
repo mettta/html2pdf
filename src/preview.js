@@ -21,6 +21,8 @@ export default class Preview {
     this._debug = config.debugMode ? { ...config.debugConfig.preview } : {};
     this._assert = config.consoleAssert ? true : false;
     Object.assign(this, Logging);
+    // * asserts:
+    this._accumulatedAssertions = {};
 
     this._DOM = DOM;
     this._selector = selector;
@@ -54,6 +56,7 @@ export default class Preview {
     this._processPages();
     (this._config.mask === true || this._config.mask === 'true') && this._addMask();
     this._makeRootVisible();
+    return this._accumulatedAssertions;
   }
 
   _addMask() {
@@ -405,8 +408,14 @@ export default class Preview {
 
     this._DOM.setStyles(balancingFooter, { 'margin-bottom': balancer + 'px' });
 
-    // TODO check if negative on large documents
-    this.strictAssert(balancer >= 0, `[pages: ${pageIndex}-${pageIndex + 1}] balancer is negative: ${balancer} < 0`, contentSeparator);
+    if (balancer < 0) {
+      this._debug._ && console.warn(`[pages: ${pageIndex}-${pageIndex + 1}] balancer is negative: ${balancer} < 0. Submitted to the Validator.`, contentSeparator);
+      this._accumulatedAssertions[pageIndex] = {
+        balancer,
+        contentSeparator,
+        pageNumber: pageIndex,
+      };
+    }
   }
 
 }

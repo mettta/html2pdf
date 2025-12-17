@@ -162,7 +162,7 @@ export default class App {
 
     this.debugMode && console.time("⏱️ Preview time");
     this.debugMode && console.groupCollapsed('%c Preview ', CONSOLE_CSS_LABEL);
-    new Preview({
+    const previewValidations = new Preview({
       config: this.config,
       DOM: DOM,
       selector: this.selector,
@@ -195,6 +195,8 @@ export default class App {
       selector: this.selector,
       node: node,
       layout: layout,
+      pages: pages,
+      previewValidations,
     }).init();
     this.debugMode && console.timeEnd("⏱️ Validator time");
 
