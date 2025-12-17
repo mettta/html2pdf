@@ -374,7 +374,6 @@ export function isFlexRow(element, style) {
 export function isFullySPlitted(element, style) {
   const computedStyle = style || this._DOM.getComputedStyle(element);
   return (
-    this.isPRE(element, computedStyle) ||
     this.isTableNode(element, computedStyle) ||
     this.isTableLikeNode(element, computedStyle) ||
     this.isGridAutoFlowRow(element, computedStyle) // todo

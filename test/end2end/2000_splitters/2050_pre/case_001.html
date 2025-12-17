@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+
+  <script
+    defer
+    data-console-assert="true"
+    data-debug-mode="true"
+    data-markup-debug-mode="true"
+    data-print-height='600px'
+    data-print-width='600px'
+    data-print-left-margin= '50px'
+    data-print-right-margin= '50px'
+    data-print-top-margin= '50px'
+    data-print-bottom-margin= '50px'
+    data-print-font-size='16px'
+    data-console-assert="true"
+
+    data-forced-page-break-selectors=''
+    data-page-break-after-selectors=''
+    data-page-break-before-selectors=''
+
+    data-no-break-selectors='.html2pdf4doc-no-break'
+    data-no-hanging-selectors='.html2pdf4doc-no-hanging'
+    src="../../../../dist/bundle.js"></script>
+</head>
+<style>
+  .pre {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    line-height: 2;
+    margin: 20px 0;
+    padding: 20px 10px;
+    border: 2px solid #ccc;
+    background-color: aliceblue;
+  }
+
+</style>
+
+<body>
+  <div data-testid="pusher" filler="red" style="height:0px"></div>
+
+  <pre class="pre">
+# Simple code example to test rendering inside PRE:
+# - indentation and tabs
+# - special characters
+# - Unicode / emoji
+# - long lines and wrapping
+
+def fib(n: int) -> list[int]:
+    a, b = 0, 1
+    result = []
+    for _ in range(n):
+        result.append(a)
+        a, b = b, a + b
+    return result
+
+
+def main() -> None:
+    text = 'Special chars: tag & "quotes" \'single\' \\ backslash\n'
+    text += "Unicode: Hello world — € ✓ 😄\n"
+    text += "Staircase:\n"
+    for i in range(5):
+        text += f"{' ' * (i * 2)}- level {i}\n"
+
+    print("Fibonacci(10):", fib(10))
+    print("---")
+    print(text)
+    print("---")
+    print("Long line:", "0123456789" * 8)
+</pre>
+
+  <!-- <div data-testid="closer" filler="blue" style="height:10px"></div> -->
+</body>
+
+</html>
