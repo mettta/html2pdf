@@ -1,3 +1,5 @@
+import * as Logging from '../../utils/logging.js';
+
 const CONSOLE_CSS_END_LABEL = `background:#999;color:#FFF;padding: 0 4px;`;
 
 export default class Pre {
@@ -9,6 +11,8 @@ export default class Pre {
   }) {
     // * From config:
     this._debug = config.debugMode ? { ...config.debugConfig.pre } : {};
+    this._assert = config.consoleAssert ? true : false;
+    Object.assign(this, Logging);
     // * Private
     this._DOM = DOM;
     this._selector = selector;
@@ -30,8 +34,143 @@ export default class Pre {
 
   }
 
+  _normalizeLinesInPlace(lines) {
+    // * Strings array normalization.
+    // ** Get the first this._minPreFirstBlockLines elements
+    // ** and concatenate them into a string
+    const startString = lines.splice(0, this._minPreFirstBlockLines).join('');
+    // ** Get the first this._minPreLastBlockLines elements
+    // ** and concatenate them into a string
+    const endString = lines.splice(-this._minPreLastBlockLines).join('');
+    // ** Insert new rows into the array lines
+    lines.unshift(startString);
+    lines.push(endString);
+  }
 
+  _analyzeChildren(children) {
+    const has = {
+      // br,
+      // text,
+      // wrappedText,
+      // node,
+      // other,
+    };
+    const childrenTypes = [...children].map(child => {
+      const type = this._DOM.getNodeType(child);
+
+      if (type === Node.TEXT_NODE) {
+        has.text = true;
+        return 'text';
+      };
+
+      if (type === Node.ELEMENT_NODE) {
+        if (this._DOM.getElementTagName(child) === 'BR') {
+          has.br = true;
+          return 'br';
+        };
+        if (this._node.isWrappedTextNode(child)) {
+          has.wrappedText = true;
+          return 'wrappedText';
+        };
+        has.node = true;
+        return 'node';
+      }
+      has.other = true;
+      return 'other';
+    });
+
+    return {
+      has: has,
+      items: childrenTypes
+    };
+  }
+
+  /**
+   * Expected to be dealing with unprocessed PRE child nodes.
+   * This means that we do not expect to see service wrappers there (like wrappedText).
+   * We may also encounter unfiltered comments.
+   */
   split(
+    node,
+    nodeComputedStyle,
+  ) {
+    // * ['pre', 'pre-wrap', 'pre-line', 'break-spaces']
+
+    // const _nodeComputedStyle = nodeComputedStyle
+    //   ? nodeComputedStyle
+    //   : this._DOM.getComputedStyle(node);
+
+    this._debug._ && console.group('%c 🔲 PRE [split]', 'background:orange', {node});
+
+    const _children = this._DOM.getChildNodes(node); // * elements, text nodes, comments, etc.
+    this._debug._ && console.log('_children:', _children.length, _children);
+
+    if (_children.length == 0) {
+      // ??? empty tag => not breakable
+      this._debug._ && console.log('%c END _splitPreNode (not breakable)', CONSOLE_CSS_END_LABEL);
+      return []
+    }
+
+    let _lines = [];
+
+    const _childrenTypes = this._analyzeChildren(_children);
+    this._debug._ && console.log('_childrenTypes:', _childrenTypes.items.length, _childrenTypes);
+
+    this.strictAssert(!_childrenTypes.has.wrappedText, 'Expected to be dealing with unprocessed PRE child nodes, but have wrappedText!', _childrenTypes);
+    this.strictAssert(!(_childrenTypes.has.text && _childrenTypes.has.wrappedText), 'PRE children has text and wrappedText simultaneously', _childrenTypes);
+
+    if (_childrenTypes.has.br) {
+      // todo: not implemented
+      this._debug._ && console.warn('PRE children has BR');
+    }
+
+    if (_childrenTypes.has.node) {
+      const text =  this._DOM.getInnerHTML(node);
+      const lines = this._node.splitTextByLinesGreedy(text);
+      _lines.push(...lines);
+    } else {
+      // * a TEXT node and has only `\n` as a line breaker.
+      for (const child of _children) {
+        if (this._DOM.isTextNode(child)) {
+          const text = this._DOM.getNodeValue(child);
+          const lines = this._node.splitTextByLinesGreedy(text);
+          _lines.push(...lines);
+          continue;
+        }
+        if (this._node.isWrappedTextNode(child)) {
+          const text =  this._DOM.getInnerHTML(child);
+          const lines = this._node.splitTextByLinesGreedy(text);
+          _lines.push(...lines);
+          continue;
+        }
+        // if (this._DOM.isElementNode(child)) {}
+      }
+    }
+
+    this._debug._ && console.log('_lines:', _lines);
+
+    if (_lines.length < this._minPreBreakableLines) {
+      this._debug._ && console.log('%c END _splitPreNode few lines', CONSOLE_CSS_END_LABEL);
+      return []
+    }
+
+    this._normalizeLinesInPlace(_lines);
+
+    // * Modifying DOM
+    const linesFromNode = _lines.map(string => {
+      const line = this._node.createWithFlagNoBreak();
+      this._DOM.setInnerHTML(line, string);
+      return line
+    });
+    this._debug._ && console.log('linesFromNode', linesFromNode);
+    this._DOM.replaceNodeContentsWith(node, ...linesFromNode);
+
+    return linesFromNode
+  }
+
+
+  // old slice method, which cuts the node into pieces, currently not in use
+  slice(
     node,
     pageBottom,
     fullPageHeight,
@@ -47,9 +186,8 @@ export default class Pre {
       ? nodeComputedStyle
       : this._DOM.getComputedStyle(node);
 
-    const consoleMark = ['%c_splitPreNode\n', 'color:white',]
-    this._debug._ && console.group('%c_splitPreNode', 'background:cyan');
-    this._debug._ && console.log(...consoleMark, 'node', node, {pageBottom,fullPageHeight});
+    const consoleMark = ['%c_SLICE PreNode\n', 'color:white',]
+    this._debug._ && console.group('%c_✂️ slice PRE', 'background:cyan', {node, pageBottom, fullPageHeight});
 
     // Prepare node parameters
 
@@ -75,15 +213,13 @@ export default class Pre {
     // * and the line would occupy exactly one line.
     const minNodeHeight = preWrapperHeight + nodeLineHeight * this._minPreBreakableLines;
     if (nodeHeight < minNodeHeight) {
-      this._debug._ && console.log('%c END _splitPreNode (small node)', CONSOLE_CSS_END_LABEL);
+      this._debug._ && console.log('%c END ✂️ slice (small node)', CONSOLE_CSS_END_LABEL);
       return []
     }
 
     const _children = this._DOM.getChildNodes(node);
-    this._debug._ && console.log('_children:', _children.length, _children);
     if (_children.length == 0) {
-      // ??? empty tag => not breakable
-      this._debug._ && console.log('%c END _splitPreNode (not breakable)', CONSOLE_CSS_END_LABEL);
+      this._debug._ && console.log('%c END ✂️ slice (not breakable)', CONSOLE_CSS_END_LABEL);
       return []
     } else if (_children.length > 1) {
       // ! if _children.length > 1
@@ -101,7 +237,7 @@ export default class Pre {
       // ! TODO
       // ! TODO
       // ! TODO
-      this._debug._ && console.log('%c END _splitPreNode TODO!', CONSOLE_CSS_END_LABEL);
+      this._debug._ && console.log('%c END ✂️ slice TODO!', CONSOLE_CSS_END_LABEL);
       return []
     } else { // * if _children.length == 1
       // * then it is a TEXT node and has only `\n` as a line breaker
@@ -111,7 +247,7 @@ export default class Pre {
         const currentElementNode = _children[0];
         this._debug._ && console.warn("is Element Node", currentElementNode)
         // FIXME other cases i.e. node and we need recursion
-        this._debug._ && console.log('%c END _splitPreNode ???????', CONSOLE_CSS_END_LABEL);
+        this._debug._ && console.log('%c END ✂️ slice ???????', CONSOLE_CSS_END_LABEL);
         return []
       }
       if (this._node.isWrappedTextNode(_children[0])) {
@@ -128,7 +264,7 @@ export default class Pre {
       const stringsFromNodeText = this._node.splitTextByLinesGreedy(currentNodeText);
 
       if (stringsFromNodeText.length < this._minPreBreakableLines) {
-        this._debug._ && console.log('%c END _splitPreNode few lines', CONSOLE_CSS_END_LABEL);
+        this._debug._ && console.log('%c END ✂️ slice few lines', CONSOLE_CSS_END_LABEL);
         return []
       }
 
@@ -186,40 +322,7 @@ export default class Pre {
       // * However, we reset the cut lines (margins and borders).
       const fullPageSpace = fullPageHeight - preWrapperHeight - topCutLineAmend;
 
-      // TODO: more accurate calculations for spaces are needed
-      // --node---
-      // * topMargin
-      // * topBorder
-      // * topPadding
-      // * C-O-N-T-E-N-T
-      // * bottomPadding
-      // * bottomBorder
-      // * bottomMargin
-      // === parts: ===
-      // --FIRST---
-      // * topMargin
-      // * topBorder
-      // * topPadding
-      // * C-O-N-T-E-N-T (1)
-      // * bottomPadding
-      //// bottomBorder
-      //// bottomMargin
-      // --MIDDLE--
-      //// topMargin
-      //// topBorder
-      // * topPadding
-      // * C-O-N-T-E-N-T (2)
-      // * bottomPadding
-      //// bottomBorder
-      //// bottomMargin
-      // --LAST--
-      //// topMargin
-      //// topBorder
-      // * topPadding
-      // * C-O-N-T-E-N-T (3)
-      // * bottomPadding
-      // * bottomBorder
-      // * bottomMargin
+
 
       this._debug._ && console.log({
         pageBottom,
@@ -269,7 +372,7 @@ export default class Pre {
       if(!splitters.length) {
         // ** if there is no partitioning, we return an empty array
         // ** and the original node will be taken in its entirety.
-        this._debug._ && console.log('%c END _splitPreNode NO SPLIITERS', CONSOLE_CSS_END_LABEL);
+        this._debug._ && console.log('%c END ✂️ slice - NO SPLIITERS', CONSOLE_CSS_END_LABEL);
         return []
       }
 
@@ -318,7 +421,7 @@ export default class Pre {
       // * We need to keep the original node.
       this._DOM.insertAfter(node, ...newPreElementsArray);
 
-      this._debug._ && console.log('%c END _splitPreNode', CONSOLE_CSS_END_LABEL);
+      this._debug._ && console.log('%c END ✂️ slice PRE', CONSOLE_CSS_END_LABEL);
       this._debug._ && console.groupEnd();
 
       return [node, ...newPreElementsArray];

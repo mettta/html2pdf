@@ -59,14 +59,14 @@
   --font-size-xxsm: 11px;
   --code-font-size: .85em;
 
-  --base-font-family: 'Noto Sans', sans-serif;
-  --code-font-family: 'Noto Sans Mono', consolas, monaco, monospace;
+  /* --base-font-family: 'Noto Sans', sans-serif;
+  --code-font-family: 'Noto Sans Mono', consolas, monaco, monospace; */
   /*
     DEV NOTE: To use system fonts,
     uncomment the following two variables, replacing the previous two:
   */
-  /* --base-font-family: ui-sans-serif, system-ui, -apple-system, "system-ui", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif; */
-  /* --code-font-family: monospace; */
+  --base-font-family: ui-sans-serif, system-ui, -apple-system, "system-ui", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --code-font-family: monospace;
 
   --base-gap: calc(var(--base-rhythm)*6);
   --tree-gap: calc(var(--base-rhythm)*4);
