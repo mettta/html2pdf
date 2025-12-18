@@ -34,7 +34,8 @@
   .pre {
     white-space: pre-wrap;
     overflow-wrap: break-word;
-    line-height: 2;
+    font-size: 16px;
+    line-height: 32px;
     margin: 20px 0;
     padding: 20px 10px;
     border: 2px solid #ccc;
@@ -47,7 +48,7 @@
   <div data-testid="pusher" filler="red" style="height:0px"></div>
 
   <pre class="pre">
-# Simple code example to test rendering inside PRE:
+# Simple code example to test rendering PRE:
 # - indentation and tabs
 # - special characters
 # - Unicode / emoji
@@ -71,6 +72,7 @@ def main() -> None:
 
     print("Fibonacci(10):", fib(10))
     print("---")
+    print(text)
     print(text)
     print("---")
     print("Long line:", "0123456789" * 8)
