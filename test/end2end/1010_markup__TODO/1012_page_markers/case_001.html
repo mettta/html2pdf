@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF, end2end" />
+  <meta name="description" content="HTML2PDF end2end test" />
+  <title>Test page</title>
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+
+  <script
+    defer
+    data-console-assert="true"
+    data-debug-mode="true"
+    data-markup-debug-mode="true"
+    data-print-height='300px'
+    data-print-width='600px'
+    data-print-left-margin= '50px'
+    data-print-right-margin= '50px'
+    data-print-top-margin= '50px'
+    data-print-bottom-margin= '50px'
+    data-print-font-size='16px'
+    data-console-assert="true"
+
+    data-forced-page-break-selectors=''
+    data-page-break-after-selectors=''
+    data-page-break-before-selectors='.html2pdf4doc-page-starter'
+
+    data-no-break-selectors='.html2pdf4doc-no-break'
+    data-no-hanging-selectors='.html2pdf4doc-no-hanging'
+    src="../../../../dist/bundle.js"></script>
+</head>
+
+
+<body>
+  <!-- <div data-testid="pusher" filler="red" style="height:296px"></div> -->
+  <div data-testid="element1" class="html2pdf4doc-no-break" filler="blue" style="height: 111px;">Page Starter #1</div>
+  <div data-testid="element2" class="html2pdf4doc-no-break" filler="blue" style="height: 111px;">Page Starter #2</div>
+  <div data-testid="element3" class="html2pdf4doc-no-break" filler="blue" style="height: 111px;">Page Starter #3</div>
+  <!-- <div data-testid="closer" filler="blue" style="height:10px"></div> -->
+
+  <template html2pdf-frontpage>FRONTPAGE</template>
+  <template html2pdf-header><div style="font-size: 9px;">HEADER</div>
+    <div html2pdf-page-number><span html2pdf-page-number-current></span>/<span html2pdf-page-number-total></span></div>
+  </template>
+  <template html2pdf-footer><div style="font-size: 9px;">FOOTER</div>
+    <div html2pdf-page-number><span html2pdf-page-number-current></span>/<span html2pdf-page-number-total></span></div>
+  </template>
+</body>
+
+</html>

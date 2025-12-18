@@ -21,6 +21,8 @@ export default class Preview {
     this._debug = config.debugMode ? { ...config.debugConfig.preview } : {};
     this._assert = config.consoleAssert ? true : false;
     Object.assign(this, Logging);
+    // * asserts:
+    this._accumulatedAssertions = {};
 
     this._DOM = DOM;
     this._selector = selector;
@@ -54,6 +56,7 @@ export default class Preview {
     this._processPages();
     (this._config.mask === true || this._config.mask === 'true') && this._addMask();
     this._makeRootVisible();
+    return this._accumulatedAssertions;
   }
 
   _addMask() {
@@ -151,11 +154,15 @@ export default class Preview {
       // insert Frontpage into Content Flow,
       const frontpage = this._paper.createFrontpage();
       this._DOM.insertAtStart(this._contentFlow, frontpage);
-      // register the added Frontpage Spacer in pages array,
+      // move the zero page to the index 1:
+      // register the added Frontpage in pages array,
       // thereby increasing the number of pages by 1.
       this._pages.unshift({ // todo unshift performance?
-        pageStart: frontpage
+        pageStart: frontpage,
+        pageEnd: frontpage,
       });
+      // set Frontpage as previews Page End for page 1:
+      this._pages[1].prevPageEnd = frontpage;
     }
   }
 
@@ -228,26 +235,30 @@ export default class Preview {
       pageIndex,
     });
     this._insertHeaderSpacer(pageDivider, this._paper.headerHeight);
-    this._updatePageStartElementAttrValue(element, pageIndex);
+    this._updatePageNumberElementAttrValue(pageIndex);
   }
 
   _preventPageOverflow(pageIndex) {
     // * Reset margins on both sides of the page break to prevent overflow.
     // * This styles should not be applied before the preview is generated.
     const currentPageFirstElement = this._pages[pageIndex].pageStart;
-    const previousPageLastElement = this._pages[pageIndex].prevPageEnd;
-    if (previousPageLastElement) {
-      // * Page numbers start at 1, but pageIndex is 0-based.
-      // * For prevPageEnd, use pageIndex (== 'page num - 1') directly to avoid off-by-one.
-      this._node.markPageEndElement(previousPageLastElement, pageIndex);
-      this._DOM.setStyles(previousPageLastElement, {'margin-bottom': ['0', 'important']});
-    } else {
-      (pageIndex > 0) && this._debug._ && console.warn(`[preview] There is no page end element before ${pageIndex}. Perhaps it's a 'beginningTail'.`, )
-    }
+    const previousPageLastElement = this._pages[pageIndex].toResetBottom || this._pages[pageIndex].pageEnd;
+
+    // * Page numbers start at 1, but pageIndex is 0-based.
+    // * For prevPageEnd, use pageIndex (== 'page num - 1') directly to avoid off-by-one.
+    // const previousPageLastElement = this._pages[pageIndex].prevPageEnd;
+
     if (currentPageFirstElement) {
       this._DOM.setStyles(currentPageFirstElement, {'margin-top': ['0', 'important']});
     } else {
       this.strictAssert(0, '[preview] [_preventPageOverflow] current page First Element do not pass! page:', pageIndex)
+    }
+
+    if (previousPageLastElement) {
+      // this._node.markPageEndElement(previousPageLastElement, pageIndex + 'test');
+      this._DOM.setStyles(previousPageLastElement, {'margin-bottom': ['0', 'important']});
+    } else {
+      (pageIndex > 0) && this._debug._ && console.warn(`[preview] There is no page end element before ${pageIndex}. Perhaps it's a 'beginningTail'.`, )
     }
   }
 
@@ -273,10 +284,12 @@ export default class Preview {
     return pageDivider;
   }
 
-  _updatePageStartElementAttrValue(element, pageIndex) {
-    //  frontpage on page 1 forces page numbers to be refreshed
-    // this._debug._ && console.log(`${pageIndex + 1}`, element, )
-    this._hasFrontPage && this._node.markPageStartElement(element, `${pageIndex + 1}`);
+  _updatePageNumberElementAttrValue(pageIndex) {
+    // * The frontpage will move the previously set `pageStart` markers forward by 1.
+    // * If there is no frontpage, `pageStart` markers do not need to be updated.
+    // * `pageEnd` markers are set for the first time.
+    this._hasFrontPage && this._node.markPageStartElement(this._pages[pageIndex].pageStart, `${pageIndex + 1}`);
+    this._node.markPageEndElement(this._pages[pageIndex].pageEnd, `${pageIndex + 1}`);
   }
 
   _insertPaper(paperFlow, paper, separator) {
@@ -398,15 +411,28 @@ export default class Preview {
     const paperSeparatorTop = this._node.getTop(paperSeparator, this._root);
     const contentSeparatorTop = this._node.getTop(contentSeparator, this._root);
 
-    this.strictAssert(paperSeparatorTop == pageSeparatorTop, `balancers in paper layers are misaligned`, {pageIndex, balancingFooter, contentSeparator, pageSeparator, paperSeparator,});
+    this.strictAssert(paperSeparatorTop == pageSeparatorTop, `balancers in paper layers are misaligned`, {
+      pageIndex, balancingFooter, contentSeparator, pageSeparator, paperSeparator,
+      paperSeparatorTop, pageSeparatorTop,
+    });
 
     const balancer = pageSeparatorTop - contentSeparatorTop;
     this._debug._ && console.log({balancingFooter, contentSeparatorTop, paperSeparatorTop, pageSeparatorTop});
 
     this._DOM.setStyles(balancingFooter, { 'margin-bottom': balancer + 'px' });
 
-    // TODO check if negative on large documents
-    this.strictAssert(balancer >= 0, `[pages: ${pageIndex}-${pageIndex + 1}] balancer is negative: ${balancer} < 0`, contentSeparator);
+    // * Compensate accumulated rounding errors caused by integer DOM offsets
+    // * (offset* properties truncate sub-pixel values, leading to a 1px jump)
+    const roundingCompensationPx = 1; // px
+    if (balancer < - roundingCompensationPx) {
+      // * treat as negative, beyond rounding noise
+      this._debug._ && console.warn(`[pages: ${pageIndex}-${pageIndex + 1}] balancer is negative: ${balancer} < 0. Submitted to the Validator.`, contentSeparator);
+      this._accumulatedAssertions[pageIndex] = {
+        balancer,
+        contentSeparator,
+        pageNumber: pageIndex,
+      };
+    }
   }
 
 }

@@ -53,6 +53,7 @@ export default class Paper {
 
   createPageChrome({ pageNumber, pageCount }) {
     const wrapper = this._node.create(this._pageChromeSelector);
+    this._node.markPageNumber(wrapper, pageNumber);
     const pageElements = this._composePageElements({ pageNumber, pageCount });
     this._DOM.insertAtEnd(
       wrapper,
@@ -66,6 +67,7 @@ export default class Paper {
     const fragment = this._DOM.createDocumentFragment();
 
     const body = this._createPageBodySpacer(this.bodyHeight);
+    this._node.markPageNumber(body, pageNumber);
     const header = this._createPageHeader(this._headerTemplate);
     const footer = this._createPageFooter(this._footerTemplate);
 
@@ -225,17 +227,24 @@ export default class Paper {
     this._DOM.insertAtStart(this._DOM.body, workbench);
 
     // get heights for an blank page
+    // * BCR vs offset*
+    // * The footer/header can have a fractional height.
+    // * When using offset* values, fractions are rounded.
+    // * This can cause a 1-pixel mismatch between the actual and calculated height of the body,
+    // * which in turn causes assertions to fail due to a mismatch between the ‘page height / gap position’
+    // * when building paper- and chrome- flows.
+    // * So we use BCR.
     const paperHeight = this._DOM.getElementBCR(testPaper).height;
-    const headerHeight = this._DOM.getElementOffsetHeight(headerElement) || 0;
-    const footerHeight = this._DOM.getElementOffsetHeight(footerElement) || 0;
-    const bodyHeight = this._DOM.getElementOffsetHeight(bodyElement);
-    const bodyWidth = this._DOM.getElementOffsetWidth(bodyElement);
+    const headerHeight = this._DOM.getElementBCR(headerElement).height || 0;
+    const footerHeight = this._DOM.getElementBCR(footerElement).height || 0;
+    const bodyHeight = this._DOM.getElementBCR(bodyElement).height;
+    const bodyWidth = this._DOM.getElementBCR(bodyElement).width;
 
     // add frontpage text
     const frontpageElement = this._createFrontpageContent(this._frontpageTemplate);
     this._DOM.insertAtStart(bodyElement, frontpageElement);
     // get height for the frontpage content
-    const filledBodyHeight = this._DOM.getElementOffsetHeight(bodyElement);
+    const filledBodyHeight = this._DOM.getElementBCR(bodyElement).height;
 
     const frontpageFactor = (filledBodyHeight > bodyHeight)
       ? bodyHeight / filledBodyHeight

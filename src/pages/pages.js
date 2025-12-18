@@ -81,6 +81,9 @@ export default class Pages {
     this._commonLineHeight = this._node.getLineHeight(this._root);
     this._minimumBreakableHeight = this._commonLineHeight * this._minBreakableLines;
 
+    // * ***
+    this._contentFlowEnd;
+    this._contentFlowLastChild;
     // * Public
 
     this.pages = [];
@@ -91,10 +94,26 @@ export default class Pages {
     this._prepareNoHangingElements();
     this._prepareForcedPageBreakElements();
     this._prepareNoBreakElements();
-    this._calculate();
+
+    this._calculatePageStarts();
+    this._resolvePageEnds();
+
     this._debug._ && console.log('%c ✔ Pages.calculate()', CONSOLE_CSS_LABEL_PAGES, this.pages);
 
     return this.pages;
+  }
+
+  _resolvePageEnds() {
+
+    for (let i = 1; i < this.pages.length; i += 1) {
+      const prev = this.pages[i - 1];
+      const curr = this.pages[i];
+      prev.pageEnd = curr.prevPageEnd;
+      // * For the last page, there is no previously marked pageEnd.
+    }
+    // * For the last page:
+    this.pages[this.pages.length - 1].toResetBottom = this._contentFlowLastChild;
+    this.pages[this.pages.length - 1].pageEnd = this._contentFlowEnd;
   }
 
   _removeGarbageElements() {
@@ -217,7 +236,7 @@ export default class Pages {
     );
   }
 
-  _calculate() {
+  _calculatePageStarts() {
 
     this._debug._ && console.groupCollapsed('•• init data ••');
     this._debug._ && console.log(
@@ -250,6 +269,11 @@ export default class Pages {
     // ✳️ continue to analyze contentFlow children
 
     const content = this._node.getPreparedChildren(this._contentFlow);
+    // * Register last visible (!) content flow child to reset bottom margins.
+    // * Very last is <html2pdf-content-flow-end>, so we get the one before them : at(-2).
+    this._contentFlowEnd = content.at(-1);
+    this._contentFlowLastChild = content.at(-2);
+
     this._debug._ && console.groupCollapsed('%c🚸 children(contentFlow)', CONSOLE_CSS_LABEL_PAGES);
     this._debug._ && console.log(content);
     this._debug._ && console.groupEnd('%c🚸 children(contentFlow)', CONSOLE_CSS_LABEL_PAGES);
@@ -1016,15 +1040,15 @@ export default class Pages {
         // * In a fully split node, or in a node that has received the 'slough' attribute,
         // * children replace it.
         // * So we don't take into account the last child bottom margins (arrayParentBottomEdge).
-        const isFullySPlittedParent = this._node.isFullySPlitted(currentElement) || this._node.isSlough(currentElement);
+        const isSlicedParent = this._node.isSliced(currentElement) || this._node.isSlough(currentElement);
 
-        this._debug._parseNode && console.log({isFullySPlittedParent, arrayTopParent,})
+        this._debug._parseNode && console.log({isSlicedParent, arrayTopParent,})
         this._parseNodes({
           array: children,
           previous: previousElement,
           next: nextElement,
-          arrayTopParent: isFullySPlittedParent ? undefined : _arrayTopParent,
-          arrayBottomParent: isFullySPlittedParent ? undefined : _arrayBottomParent,
+          arrayTopParent: isSlicedParent ? undefined : _arrayTopParent,
+          arrayBottomParent: isSlicedParent ? undefined : _arrayBottomParent,
         });
         this._node.markProcessed(currentElement, `getSplitChildren and _parseNodes`);
       } else {

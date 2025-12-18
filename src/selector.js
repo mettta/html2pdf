@@ -15,6 +15,7 @@ const SELECTOR = {
   // *** page-beginning element:
   pageStartMarker: '[html2pdf-page-start]',
   pageEndMarker: '[html2pdf-page-end]',
+  pageMarker: '[html2pdf-page]',
 
   // *** content-flow inner markers:
   contentFlowStart: 'html2pdf-content-flow-start',

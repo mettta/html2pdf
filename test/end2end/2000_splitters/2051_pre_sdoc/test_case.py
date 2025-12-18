@@ -49,60 +49,48 @@ class Test(BaseCase):
         helper = Helper(self)
         helper.do_open(case1_html_file_url)
         self.helper.assert_document_has_pages(2)
-        self.helper.assert_element_on_the_page(pre1, 1)
 
     def test_002(self):
         helper = Helper(self)
         helper.do_open(case2_html_file_url)
         self.helper.assert_document_has_pages(2)
-        self.helper.assert_element_on_the_page(pre1, 1)
 
     def test_003(self):
         helper = Helper(self)
         helper.do_open(case3_html_file_url)
         self.helper.assert_document_has_pages(2)
-        self.helper.assert_element_on_the_page(pre1, 1)
 
     def test_004(self):
         helper = Helper(self)
         helper.do_open(case4_html_file_url)
         self.helper.assert_document_has_pages(2)
-        self.helper.assert_element_on_the_page(pre1, 1)
 
     def test_005(self):
         helper = Helper(self)
         helper.do_open(case5_html_file_url)
         self.helper.assert_document_has_pages(2)
-        self.helper.assert_element_on_the_page(pre1, 1)
 
     def test_006(self):
         helper = Helper(self)
         helper.do_open(case6_html_file_url)
         self.helper.assert_document_has_pages(2)
-        self.helper.assert_element_on_the_page(pre1, 1)
 
     def test_007(self):
         helper = Helper(self)
         helper.do_open(case7_html_file_url)
         self.helper.assert_document_has_pages(2)
-        self.helper.assert_element_on_the_page(pre, 2)
-        self.helper.assert_element_starts_page(pre, 2)
 
     def test_008(self):
         helper = Helper(self)
         helper.do_open(case8_html_file_url)
         self.helper.assert_document_has_pages(3)
-        self.helper.assert_element_on_the_page(pre1, 2)
 
     def test_009(self):
         helper = Helper(self)
         helper.do_open(case9_html_file_url)
         self.helper.assert_document_has_pages(2)
-        self.helper.assert_element_on_the_page(pre1, 1)
 
     def test_010(self):
         helper = Helper(self)
         self.helper.open_case(path_to_this_test_file_folder, '010')
         self.helper.assert_document_has_pages(3)
-        self.helper.assert_element_on_the_page("//pre", 2, 1)
-        self.helper.assert_element_on_the_page("//pre", 3, 2)

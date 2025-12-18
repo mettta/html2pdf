@@ -34,8 +34,8 @@ export function setFlagSlice(element) {
 /**
  * @this {Node}
  */
-export function markPageStartElement(element, page) {
-  this._DOM.setAttribute(element, this._selector.pageStartMarker, page);
+export function markPageStartElement(element, pageNum) {
+  this._DOM.setAttribute(element, this._selector.pageStartMarker, `${pageNum}`);
 }
 
 /**
@@ -49,7 +49,14 @@ export function unmarkPageStartElement(element) {
  * @this {Node}
  */
 export function markPageEndElement(element, pageNum) {
-  this._DOM.setAttribute(element, this._selector.pageEndMarker, pageNum);
+  this._DOM.setAttribute(element, this._selector.pageEndMarker, `${pageNum}`);
+}
+
+/**
+ * @this {Node}
+ */
+export function markPageNumber(element, pageNum) {
+  this._DOM.setAttribute(element, this._selector.pageMarker, `${pageNum}`);
 }
 
 /**

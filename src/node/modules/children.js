@@ -196,9 +196,9 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
   // ? TABLE now has conditions that overlap with PRE (except for the tag name),
   // ? so let's check it first.
   // FIXME the order of checks
-  if (this.isTableLikeNode(node, nodeComputedStyle)) {
-    _isDebug(this) && console.info('💚 TABLE like', node);
-    children = this._tableLike.split(
+  if (this.isTableNode(node, nodeComputedStyle)) {
+    _isDebug(this) && console.info('💚 TABLE', node);
+    children = this._table.split(
       node,
       firstPageBottom,
       fullPageHeight,
@@ -206,13 +206,14 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
       nodeComputedStyle,
     ) || [];
 
-  } else if (this.isTableNode(node, nodeComputedStyle)) {
-    _isDebug(this) && console.info('💚 TABLE', node);
-    children = this._table.split(
+  } else if (this.isTableLikeNode(node, nodeComputedStyle)) {
+    _isDebug(this) && console.info('💚 TABLE like', node);
+    children = this._tableLike.split(
       node,
       firstPageBottom,
       fullPageHeight,
       root,
+      nodeComputedStyle,
     ) || [];
 
   } else if (this.isPRE(node, nodeComputedStyle)) {

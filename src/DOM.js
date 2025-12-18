@@ -146,6 +146,10 @@ export default class DocumentObjectModel {
     return target.getElementById(id);
   }
 
+  getNodeType(element) {
+    return element.nodeType;
+  }
+
   getRightNeighbor(item) {
     return item.nextElementSibling
   }
@@ -158,8 +162,14 @@ export default class DocumentObjectModel {
     return element.parentElement;
   }
 
-  getNodeValue(element) {
-    return element.nodeValue;
+  getNodeValue(textNode) {
+    // * nodeValue is null for elementNode
+    return textNode.nodeValue;
+  }
+
+  getNodeWholeText(textNode) {
+    // * wholeText includes this text node plus adjacent text siblings (nodeValue is just this node).
+    return textNode.wholeText;
   }
 
   getLastElementChild(element) {
