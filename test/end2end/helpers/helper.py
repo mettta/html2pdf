@@ -7,24 +7,24 @@ from seleniumbase import BaseCase
 
 # Elements should appear in the DOM on success:
 # only once
-_root_ = '//html2pdf-root'
-_content_flow_ = '//html2pdf-content-flow'
-_content_flow_start_ = '//html2pdf-content-flow-start'
-_content_flow_end_ = '//html2pdf-content-flow-end'
-_paper_flow_ = '//html2pdf-paper-flow'
-_overlay_flow_ = '//html2pdf-overlay-flow'
+_root_ = '//html2pdf4doc-root'
+_content_flow_ = '//html2pdf4doc-content-flow'
+_content_flow_start_ = '//html2pdf4doc-content-flow-start'
+_content_flow_end_ = '//html2pdf4doc-content-flow-end'
+_paper_flow_ = '//html2pdf4doc-paper-flow'
+_overlay_flow_ = '//html2pdf4doc-overlay-flow'
 # in number of printed pages
-_page_start_ = _content_flow_ + '//html2pdf-page'
-_paper_ = _paper_flow_ + '/html2pdf-virtual-paper'
-_page_chrome_ = _overlay_flow_ + '/html2pdf-page-chrome'
-_page_body_ = _page_chrome_ + '/html2pdf-page-body-spacer'
-_page_header_ = _page_chrome_ + '/html2pdf-page-header'
-_page_footer_ = _page_chrome_ + '/html2pdf-page-footer'
+_page_start_ = _content_flow_ + '//html2pdf4doc-page'
+_paper_ = _paper_flow_ + '/html2pdf4doc-virtual-paper'
+_page_chrome_ = _overlay_flow_ + '/html2pdf4doc-page-chrome'
+_page_body_ = _page_chrome_ + '/html2pdf4doc-page-body-spacer'
+_page_header_ = _page_chrome_ + '/html2pdf4doc-page-header'
+_page_footer_ = _page_chrome_ + '/html2pdf4doc-page-footer'
 
 # Elements with content, empty ones don't appear
-# _frontpage_content_ = _content_flow_ + '//html2pdf-frontpage'
-# _header_content_ = _overlay_flow_ + '//html2pdf-header'
-# _footer_content_ = _overlay_flow_ + '//html2pdf-footer'
+# _frontpage_content_ = _content_flow_ + '//html2pdf4doc-frontpage'
+# _header_content_ = _overlay_flow_ + '//html2pdf4doc-header'
+# _footer_content_ = _overlay_flow_ + '//html2pdf4doc-footer'
 
 # --- Local file URL helpers ---------------------------------------------------
 
@@ -143,9 +143,9 @@ class Helper:
     def open_case(self, base_folder: str, n: str, prefix: str = "case", ext: str = "html") -> None:
         self.do_open(case_url(base_folder, n, prefix, ext))
 
-    # html2pdf elements
+    # html2pdf4doc elements
 
-    def assert_html2pdf_elements(self) -> None:
+    def assert_html2pdf4doc_elements(self) -> None:
         self.test_case.assert_element_present(_root_, by=By.XPATH)
 
         self.test_case.assert_element_present(_content_flow_, by=By.XPATH)
@@ -162,7 +162,7 @@ class Helper:
         self.test_case.assert_element_present(_page_header_, by=By.XPATH)
         self.test_case.assert_element_present(_page_footer_, by=By.XPATH)
 
-    def assert_html2pdf_success(self) -> None:
+    def assert_html2pdf4doc_success(self) -> None:
         self.test_case.assert_attribute(_root_, 'success')
 
     #
@@ -264,20 +264,20 @@ class Helper:
     def assert_element_starts_page(self, element_xpath: str, page_number: int, element_order: int = 1) -> None:
         attr_value = self.test_case.get_attribute(
             f'({_content_flow_}{element_xpath})[{element_order}]',
-            'html2pdf-page-start',
+            'html2pdf4doc-page-start',
             by=By.XPATH
         )
         expected = str(page_number)
-        assert attr_value == expected, f"Expected html2pdf-page-start='{expected}', got '{attr_value}'"
+        assert attr_value == expected, f"Expected html2pdf4doc-page-start='{expected}', got '{attr_value}'"
 
     def assert_element_ends_page(self, element_xpath: str, page_number: int, element_order: int = 1) -> None:
         attr_value = self.test_case.get_attribute(
             f'({_content_flow_}{element_xpath})[{element_order}]',
-            'html2pdf-page-end',
+            'html2pdf4doc-page-end',
             by=By.XPATH
         )
         expected = str(page_number)
-        assert attr_value == expected, f"Expected html2pdf-page-end='{expected}', got '{attr_value}'"
+        assert attr_value == expected, f"Expected html2pdf4doc-page-end='{expected}', got '{attr_value}'"
 
     def assert_element_on_the_page(
         self,
@@ -341,7 +341,7 @@ class Helper:
             )
         else:
             page_anchor = self.test_case.find_element(
-                f'{_page_start_}[@page="{page_number}"]/html2pdf-virtual-paper-gap',
+                f'{_page_start_}[@page="{page_number}"]/html2pdf4doc-virtual-paper-gap',
                 by=By.XPATH,
             )
         page_y = page_anchor.location["y"]
@@ -349,7 +349,7 @@ class Helper:
         # next_page_anchor
         if page_number < pages:
             next_page_anchor = self.test_case.find_element(
-                f'{_page_start_}[@page="{page_number + 1}"]/html2pdf-virtual-paper-gap',
+                f'{_page_start_}[@page="{page_number + 1}"]/html2pdf4doc-virtual-paper-gap',
                 by=By.XPATH,
             )
             next_page_y = next_page_anchor.location["y"]
@@ -447,4 +447,4 @@ class Helper:
         return element.size['height']
 
         # /*[@data-content-flow-end]
-        # /html2pdf-content-flow-end
+        # /html2pdf4doc-content-flow-end

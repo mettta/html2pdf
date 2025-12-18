@@ -1,4 +1,4 @@
-name: "HTML2PDF on macOS"
+name: "HTML2PDF4DOC on macOS"
 
 on:
   pull_request:

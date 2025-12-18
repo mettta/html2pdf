@@ -270,7 +270,7 @@ export default class Pages {
 
     const content = this._node.getPreparedChildren(this._contentFlow);
     // * Register last visible (!) content flow child to reset bottom margins.
-    // * Very last is <html2pdf-content-flow-end>, so we get the one before them : at(-2).
+    // * Very last is <html2pdf4doc-content-flow-end>, so we get the one before them : at(-2).
     this._contentFlowEnd = content.at(-1);
     this._contentFlowLastChild = content.at(-2);
 
@@ -412,7 +412,7 @@ export default class Pages {
       );
 
     // ✴️ THE END of content flow:
-    // if there is no next element, then we are in a case where the 'html2pdf-content-flow-end' element is current.
+    // if there is no next element, then we are in a case where the 'html2pdf4doc-content-flow-end' element is current.
     if (!nextElement) {
       this._node.markProcessed(currentElement, 'content-flow-end');
       this._debug._parseNode && console.log('%c END _parseNode (!nextElement)', CONSOLE_CSS_END_LABEL);

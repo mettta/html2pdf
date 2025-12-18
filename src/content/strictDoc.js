@@ -5,9 +5,9 @@ const text = `
 
 <main class="layout_main">
 
-  <div class="content" html2pdf>
+  <div class="content" html2pdf4doc>
 
-    <template html2pdf-header>
+    <template html2pdf4doc-header>
 
       <header class="pdf-header">
 
@@ -31,7 +31,7 @@ const text = `
 
     </template>
 
-    <template html2pdf-frontpage>
+    <template html2pdf4doc-frontpage>
 
       <div class="frontpage">
         <div class="frontpage__top">
@@ -92,7 +92,7 @@ const text = `
 
     </template>
 
-    <template html2pdf-footer>
+    <template html2pdf4doc-footer>
 
       <footer class="pdf-footer">
         <div class="pdf-footer__copywrite">© 2021 StrictDoc GmbH</div>

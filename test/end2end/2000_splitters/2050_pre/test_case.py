@@ -19,7 +19,7 @@ class Test(BaseCase):
         # There should be no overflow, balancers, the last line is moved to the third page.
         # 3 pages
         self.helper.open_case(path_to_this_test_file_folder, '001')
-        self.helper.assert_html2pdf_success()
+        self.helper.assert_html2pdf4doc_success()
         self.helper.assert_document_has_pages(3)
         # 1 ----------------------------------
         # self.helper.assert_element_on_the_page('//*[@data-testid="pusher"]', 1)
@@ -30,5 +30,5 @@ class Test(BaseCase):
         # There should be no overflow, balancers, the last line is moved to the third page.
         # 2 pages
         self.helper.open_case(path_to_this_test_file_folder, '002')
-        self.helper.assert_html2pdf_success()
+        self.helper.assert_html2pdf4doc_success()
         self.helper.assert_document_has_pages(2)

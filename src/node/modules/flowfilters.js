@@ -4,7 +4,7 @@ import { debugFor } from '../utils/debugFor.js';
 const _isDebug = debugFor('flowfilters');
 
 // Cache marker so each element is evaluated at most once per run.
-const FLOW_SKIP_FLAG = '__html2pdfFlowFilter';
+const FLOW_SKIP_FLAG = '__html2pdf4docFlowFilter';
 
 const SKIP_RULES = [
   {

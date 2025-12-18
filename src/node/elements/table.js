@@ -117,7 +117,7 @@ export default class Table {
     if (this._currentTableEntries) {
       this._currentTableEntries.recordedParts = this._currentTableRecordedParts;
     }
-    this._currentTable.__html2pdfRecordedParts = this._currentTableRecordedParts; // Expose for DevTools and external diagnostics
+    this._currentTable.__html2pdf4docRecordedParts = this._currentTableRecordedParts; // Expose for DevTools and external diagnostics
     // Run structural guards (non-fatal): detect spans/inconsistencies and log.
     // TODO(table): consider early fallback (no split + scaling) on irregular tables.
     this._analyzeCurrentTableStructure();
@@ -216,7 +216,7 @@ export default class Table {
     this._DOM.insertAfter(this._currentTable, ...tableSlices);
 
     this._debug._ && console.log('tableSlices', tableSlices);
-    this._debug._ && console.log('[table.split] recordedParts', this._currentTableRecordedParts?.parts); // also exposed via table.__html2pdfRecordedParts
+    this._debug._ && console.log('[table.split] recordedParts', this._currentTableRecordedParts?.parts); // also exposed via table.__html2pdf4docRecordedParts
 
     this.logGroupEnd(`[_splitCurrentTable]`);
 

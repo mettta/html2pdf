@@ -26,7 +26,7 @@ closer = '//*[@data-testid="closer"]'
 div1 = '//*[@data-testid="div1"]'
 div2 = '//*[@data-testid="div2"]'
 root_element = '//*[@data-testid="root-element"]'
-content_flow_start = '//html2pdf-content-flow-start'
+content_flow_start = '//html2pdf4doc-content-flow-start'
 
 class Test(BaseCase):
     def __init__(self, *args, **kwargs):
@@ -35,7 +35,7 @@ class Test(BaseCase):
 
     def test_001(self):
         self.helper.open_case(path_to_this_test_file_folder, '001')
-        self.helper.assert_html2pdf_success()
+        self.helper.assert_html2pdf4doc_success()
         self.helper.assert_document_has_pages(2)
         # 1 ----------------------------------
         self.helper.assert_element_starts_page(content_flow_start, 1)

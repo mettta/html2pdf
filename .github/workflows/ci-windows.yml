@@ -1,6 +1,6 @@
 # NOTE: In contrast to Linux and macOS, the Windows build machines do not have Chrome installed.
 
-name: "HTML2PDF on Windows"
+name: "HTML2PDF4DOC on Windows"
 
 on:
   pull_request:

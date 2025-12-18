@@ -296,13 +296,13 @@ export default class Paragraph {
   }
 
   _makeWordsFromTextNode(splittingTextNode) {
-    // Split the splittingTextNode into <html2pdf-word>.
+    // Split the splittingTextNode into <html2pdf4doc-word>.
 
     // * array with words:
     const wordArray = this._node.splitTextByWordsGreedy(splittingTextNode);
     this._debug._ && console.log('wordArray', wordArray);
 
-    // * array with words wrapped with the inline tag 'html2pdf-word':
+    // * array with words wrapped with the inline tag 'html2pdf4doc-word':
     const wrappedWordArray = wordArray.map((item, index) => {
       return this._node.createWord(item + WORD_JOINER, index);
     });

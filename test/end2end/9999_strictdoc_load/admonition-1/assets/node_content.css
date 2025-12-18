@@ -155,7 +155,7 @@ sdoc-node-field {
   overflow-wrap: break-word;
 }
 
-[data-viewtype="html2pdf"] sdoc-node-field-label {
+[data-viewtype="html2pdf4doc"] sdoc-node-field-label {
   word-break: normal;
 }
 

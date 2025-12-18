@@ -43,7 +43,7 @@ class Test(BaseCase):
 
         # 1. Check that the specific admonition title has the no-hanging flag
         self.helper.assert_element_on_the_page(admonitionTitle, 2, report=True)
-        self.helper.assert_element_has_attribute(admonitionTitle, 'html2pdf-flag-no-hanging')
+        self.helper.assert_element_has_attribute(admonitionTitle, 'html2pdf4doc-flag-no-hanging')
 
         # 2. Check that the right parent node that contains 'admonition title' starts page "2"
         self.helper.assert_element_starts_page(page2starter, 2)

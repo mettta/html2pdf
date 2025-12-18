@@ -30,7 +30,7 @@
   <script
   defer
     data-preloader='true'
-    data-preloader-target='[html2pdf-preloader]'
+    data-preloader-target='[html2pdf4doc-preloader]'
     data-preloader-background='#F2F5F9'
     data-forced-page-break-selectors='.free_text H2'
     data-page-break-after-selectors='.pdf-toc'
@@ -42,7 +42,7 @@
 
 </head>
 
-<body data-viewtype="html2pdf" data-turbo="false">
+<body data-viewtype="html2pdf4doc" data-turbo="false">
 
 <div class="mars">
   
@@ -265,7 +265,7 @@
       Document</a>
     </li><li>
       <a
-        data-viewtype_link="html2pdf"
+        data-viewtype_link="html2pdf4doc"
         class="viewtype__menu_item"
         title="Go to PDF view"
         href="../01_minimal_document/input-PDF.html">
@@ -280,11 +280,11 @@
   
 
 <div
-  html2pdf-preloader
+  html2pdf4doc-preloader
   class="main"
 >
       <div
-        html2pdf
+        html2pdf4doc
         class="content"
       >
         <div class="pdf-toc" data-testid="pdf-toc-list"><div class="pdf-toc-row" data-nodeid="c165cc52af20417e9199e30a4e17f138">
@@ -295,7 +295,7 @@
           <span dotted class="pdf-toc-cell">
             <a href="#1-REQ-1" data-turbo="false">Dummy high-level requirement #1</a>
           </span>
-          <span class="pdf-toc-cell"><html2pdf-toc-page-number data-id="1-REQ-1">**</html2pdf-toc-page-number></span>
+          <span class="pdf-toc-cell"><html2pdf4doc-toc-page-number data-id="1-REQ-1">**</html2pdf4doc-toc-page-number></span>
 
       </div><div class="pdf-toc-row" data-nodeid="74dddc4c55ac44ae83dc0f73ef8ed2aa">
 
@@ -305,7 +305,7 @@
           <span dotted class="pdf-toc-cell">
             <a href="#2-REQ-2" data-turbo="false">Dummy high-level requirement #2</a>
           </span>
-          <span class="pdf-toc-cell"><html2pdf-toc-page-number data-id="2-REQ-2">**</html2pdf-toc-page-number></span>
+          <span class="pdf-toc-cell"><html2pdf4doc-toc-page-number data-id="2-REQ-2">**</html2pdf4doc-toc-page-number></span>
 
       </div><div class="pdf-toc-row" data-nodeid="fcbce0c486ac4d3189a7aa1dd646399e">
 
@@ -315,7 +315,7 @@
           <span dotted class="pdf-toc-cell">
             <a href="#3-REQ-3" data-turbo="false">Dummy high-level requirement #3</a>
           </span>
-          <span class="pdf-toc-cell"><html2pdf-toc-page-number data-id="3-REQ-3">**</html2pdf-toc-page-number></span>
+          <span class="pdf-toc-cell"><html2pdf4doc-toc-page-number data-id="3-REQ-3">**</html2pdf4doc-toc-page-number></span>
 
       </div>
 </div>
@@ -485,37 +485,37 @@
       </div>
 </div>
 
-<style html2pdf-frontpage-style>
-.html2pdf-frontpage-grid {
+<style html2pdf4doc-frontpage-style>
+.html2pdf4doc-frontpage-grid {
   display: grid;
   height: 100%;
 }
-.html2pdf-frontpage-grid-middle {
+.html2pdf4doc-frontpage-grid-middle {
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
 }
-.html2pdf-frontpage-grid-bottom {
+.html2pdf4doc-frontpage-grid-bottom {
   display: flex;
   justify-content: center;
   align-items: flex-end;
 }
 </style>
-<template html2pdf-frontpage><div class="html2pdf-frontpage-grid">
-  <div class="html2pdf-frontpage-grid-top"></div>
-  <div class="html2pdf-frontpage-grid-middle">
+<template html2pdf4doc-frontpage><div class="html2pdf4doc-frontpage-grid">
+  <div class="html2pdf4doc-frontpage-grid-top"></div>
+  <div class="html2pdf4doc-frontpage-grid-middle">
     <h1 data-testid="document-title">Dummy Software Requirements Specification #1</h1>
   </div>
-  <div class="html2pdf-frontpage-grid-bottom">
+  <div class="html2pdf4doc-frontpage-grid-bottom">
     
   </div>
   </div>
-</template><style html2pdf-header-style>
-html2pdf-header {
+</template><style html2pdf4doc-header-style>
+html2pdf4doc-header {
   padding-top: 0;
 }
-.html2pdf-header {
+.html2pdf4doc-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -526,24 +526,24 @@ html2pdf-header {
   border-bottom: 1px solid rgba(0,0,0,0.25);
   padding-bottom: 8px;
 }
-.html2pdf-header-left {
+.html2pdf4doc-header-left {
   text-align: left;
   flex-shrink: 0;
 }
-.html2pdf-header-right {
+.html2pdf4doc-header-right {
   text-align: right;
   font-weight: bold;
 }
 </style>
-<template html2pdf-header><div class="html2pdf-header">
-    <div class="html2pdf-header-left">Untitled Project</div>
-    <div class="html2pdf-header-right">Dummy Software Requirements Specification #1</div>
+<template html2pdf4doc-header><div class="html2pdf4doc-header">
+    <div class="html2pdf4doc-header-left">Untitled Project</div>
+    <div class="html2pdf4doc-header-right">Dummy Software Requirements Specification #1</div>
   </div>
-</template><style html2pdf-footer-style>
-html2pdf-footer {
+</template><style html2pdf4doc-footer-style>
+html2pdf4doc-footer {
   padding-bottom: 0;
 }
-.html2pdf-footer {
+.html2pdf4doc-footer {
   display: flex;
   justify-content: space-between;
   column-gap: 16px;
@@ -553,25 +553,25 @@ html2pdf-footer {
   border-top: 1px solid rgba(0,0,0,0.25);
   padding-top: 8px;
 }
-.html2pdf-footer-left {
+.html2pdf4doc-footer-left {
   text-align: left;
 }
-.html2pdf-footer-right {
+.html2pdf4doc-footer-right {
   text-align: right;
 }
-.html2pdf-header-page_placeholder {
+.html2pdf4doc-header-page_placeholder {
   width: 54px; /* max for pattern 888/888 */
   flex-shrink: 0;
   text-indent: -10000px;
 }
 </style>
-<template html2pdf-footer><div html2pdf-page-number>
-    <span html2pdf-page-number-current></span>/<span html2pdf-page-number-total></span>
+<template html2pdf4doc-footer><div html2pdf4doc-page-number>
+    <span html2pdf4doc-page-number-current></span>/<span html2pdf4doc-page-number-total></span>
   </div>
-  <div class="html2pdf-footer">
-    <div class="html2pdf-footer-left">2024-01-14</div>
-    <div class="html2pdf-footer-right"></div>
-    <div class="html2pdf-header-page_placeholder"></div>
+  <div class="html2pdf4doc-footer">
+    <div class="html2pdf4doc-footer-left">2024-01-14</div>
+    <div class="html2pdf4doc-footer-right"></div>
+    <div class="html2pdf4doc-header-page_placeholder"></div>
   </div>
 </template>
 

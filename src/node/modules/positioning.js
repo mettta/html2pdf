@@ -42,7 +42,7 @@ export function isLastChildOfLastChild(element, rootElement) {
     // *** if we're at the root, we move to the right
     if (this._DOM.getParentNode(currentElement) === rootElement) {
 
-      // ! in Pages we inserted an element 'html2pdf-content-flow-end'
+      // ! in Pages we inserted an element 'html2pdf4doc-content-flow-end'
       // ! at the end of the content flow.
       // ! Therefore, in the last step of the check, we should not check the last child,
       // ! but the matchings of the nextSibling.
