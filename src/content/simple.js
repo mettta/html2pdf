@@ -1,8 +1,8 @@
 const text = `
 <h3>Test for printing</h3>
-  <div html2pdf>
+  <div html2pdf4doc>
 
-  <template html2pdf-frontpage>
+  <template html2pdf4doc-frontpage>
     <h1>frontpage</h1>
     <h1>frontpage</h1>
     <h1>frontpage</h1>
@@ -28,7 +28,7 @@ const text = `
     <h1>frontpage</h1>
   </template>
 
-  <template html2pdf-header>
+  <template html2pdf4doc-header>
     <div data-page-number-root>
       <span data-page-number-current></span>
       of
@@ -37,7 +37,7 @@ const text = `
     <p>header</p>
   </template>
 
-  <template html2pdf-footer>
+  <template html2pdf4doc-footer>
     <p>footer</p>
   </template>
 

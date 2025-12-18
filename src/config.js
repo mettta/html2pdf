@@ -36,11 +36,11 @@ export default function createConfig(params) {
 
     // * The initialRoot can be overridden in the configuration settings.
     // * The default value is set in App.js.
-    // * The selector '[html2pdf]' is a constant from SELECTOR (selector.js).
+    // * The selector '[html2pdf4doc]' is a constant from SELECTOR (selector.js).
     // * Uncommenting it will have no effect.
     // * This comment is provided for better code navigation.
     // * Left for code navigation purposes.
-    // initialRoot: '[html2pdf]', // TODO: make the config dependent on SELECTOR
+    // initialRoot: '[html2pdf4doc]', // TODO: make the config dependent on SELECTOR
 
     noHangingSelectors: '',
     forcedPageBreakSelectors: '',
@@ -49,7 +49,7 @@ export default function createConfig(params) {
     noBreakSelectors: '',
 
     // toc
-    tocPageNumberSelector: 'html2pdf-toc-page-number', // TODO: make the config dependent on SELECTOR
+    tocPageNumberSelector: 'html2pdf4doc-toc-page-number', // TODO: make the config dependent on SELECTOR
 
     // print
     printLeftMargin: '21mm',

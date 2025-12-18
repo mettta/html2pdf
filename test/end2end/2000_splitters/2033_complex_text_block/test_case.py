@@ -23,13 +23,13 @@ case5_html_file_url = (
 case6_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "case6.html")
 )
-text_line = ("//html2pdf-text-line")
-text_group = ("//html2pdf-text-group")
+text_line = ("//html2pdf4doc-text-line")
+text_group = ("//html2pdf4doc-text-group")
 # 6 lines are divided into 4 groups (2 lines first and last form a group)
-lines_1_2 = '//html2pdf-text-group[@data-child="0"]'
-lines_3 = '//html2pdf-text-group[@data-child="1"]'
+lines_1_2 = '//html2pdf4doc-text-group[@data-child="0"]'
+lines_3 = '//html2pdf4doc-text-group[@data-child="1"]'
 lines_4 = '//span[@data-child="2"]'
-lines_5_6 = '//html2pdf-text-group[@data-child="3"]'
+lines_5_6 = '//html2pdf4doc-text-group[@data-child="3"]'
 
 
 class Test(BaseCase):
@@ -106,5 +106,5 @@ class Test(BaseCase):
         # check that the paragraph wrapper is registered as the beginning of
         # page 2
         self.helper.assert_element_on_the_page(
-            '//div[@data-testid="paragraph"][@html2pdf-page-start="2"]', 2
+            '//div[@data-testid="paragraph"][@html2pdf4doc-page-start="2"]', 2
         )

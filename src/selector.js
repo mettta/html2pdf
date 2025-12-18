@@ -1,89 +1,89 @@
 const SELECTOR = {
   // * root, is taken from DOM
-  init: '[html2pdf]',
+  init: '[html2pdf4doc]',
 
   // * Layout
-  root: 'html2pdf-root',
-  paperFlow: 'html2pdf-paper-flow',
-  contentFlow: 'html2pdf-content-flow',
-  overlayFlow: 'html2pdf-overlay-flow',
+  root: 'html2pdf4doc-root',
+  paperFlow: 'html2pdf4doc-paper-flow',
+  contentFlow: 'html2pdf4doc-content-flow',
+  overlayFlow: 'html2pdf4doc-overlay-flow',
 
   // pageDivider is used to determine which page an object is on,
   // and contains elements that separate the pages in the content flow.
   // *** service page separator:
-  pageDivider: 'html2pdf-page',
+  pageDivider: 'html2pdf4doc-page',
   // *** page-beginning element:
-  pageStartMarker: '[html2pdf-page-start]',
-  pageEndMarker: '[html2pdf-page-end]',
-  pageMarker: '[html2pdf-page]',
+  pageStartMarker: '[html2pdf4doc-page-start]',
+  pageEndMarker: '[html2pdf4doc-page-end]',
+  pageMarker: '[html2pdf4doc-page]',
 
   // *** content-flow inner markers:
-  contentFlowStart: 'html2pdf-content-flow-start',
-  contentFlowEnd: 'html2pdf-content-flow-end',
+  contentFlowStart: 'html2pdf4doc-content-flow-start',
+  contentFlowEnd: 'html2pdf4doc-content-flow-end',
 
   // * STYLE element
-  style: '[html2pdf-style]',
+  style: '[html2pdf4doc-style]',
 
   // * TEMPLATES
   // *** are taken from DOM:
-  frontpageTemplate: '[html2pdf-frontpage]',
-  headerTemplate: '[html2pdf-header]',
-  footerTemplate: '[html2pdf-footer]',
+  frontpageTemplate: '[html2pdf4doc-frontpage]',
+  headerTemplate: '[html2pdf4doc-header]',
+  footerTemplate: '[html2pdf4doc-footer]',
   // *** elements with content from templates:
-  frontpageElement: 'html2pdf-frontpage',
-  frontpageContent: 'html2pdf-frontpage-content',
-  headerContent: 'html2pdf-header',
-  footerContent: 'html2pdf-footer',
+  frontpageElement: 'html2pdf4doc-frontpage',
+  frontpageContent: 'html2pdf4doc-frontpage-content',
+  headerContent: 'html2pdf4doc-header',
+  footerContent: 'html2pdf4doc-footer',
   // *** page numbers:
-  pageNumberRoot: '[html2pdf-page-number]',
-  pageNumberCurrent: '[html2pdf-page-number-current]',
-  pageNumberTotal: '[html2pdf-page-number-total]',
+  pageNumberRoot: '[html2pdf4doc-page-number]',
+  pageNumberCurrent: '[html2pdf4doc-page-number-current]',
+  pageNumberTotal: '[html2pdf4doc-page-number-total]',
 
   // * printed parts of page
-  pageChrome: 'html2pdf-page-chrome',
-  pageBodySpacer: 'html2pdf-page-body-spacer',
-  pageHeader: 'html2pdf-page-header',
-  pageFooter: 'html2pdf-page-footer',
-  printPageBreak: 'html2pdf-print-page-break',
-  runningSafety: 'html2pdf-print-running',
+  pageChrome: 'html2pdf4doc-page-chrome',
+  pageBodySpacer: 'html2pdf4doc-page-body-spacer',
+  pageHeader: 'html2pdf4doc-page-header',
+  pageFooter: 'html2pdf4doc-page-footer',
+  printPageBreak: 'html2pdf4doc-print-page-break',
+  runningSafety: 'html2pdf4doc-print-running',
 
   // * virtual parts of paper, only for preview
-  virtualPaper: 'html2pdf-virtual-paper',
-  virtualPaperTopMargin: 'html2pdf-virtual-paper-margin-top',
-  virtualPaperBottomMargin: 'html2pdf-virtual-paper-margin-bottom',
-  virtualPaperGap: 'html2pdf-virtual-paper-gap',
+  virtualPaper: 'html2pdf4doc-virtual-paper',
+  virtualPaperTopMargin: 'html2pdf4doc-virtual-paper-margin-top',
+  virtualPaperBottomMargin: 'html2pdf4doc-virtual-paper-margin-bottom',
+  virtualPaperGap: 'html2pdf4doc-virtual-paper-gap',
 
   // * Print attributes
   // * (are set on existing elements without affecting their appearance)
   // ** environment
-  printIgnore: '[html2pdf-print-ignore]',
-  printHide: '[html2pdf-print-hide]',
+  printIgnore: '[html2pdf4doc-print-ignore]',
+  printHide: '[html2pdf4doc-print-hide]',
 
   // * Service elements (are created in the process):
-  neutral: 'html2pdf-neutral',
-  word: 'html2pdf-word',
-  textNode: 'html2pdf-text-node',
-  textLine: 'html2pdf-text-line',
-  textGroup: 'html2pdf-text-group',
-  complexTextBlock: 'html2pdf-complex-text-block',
-  printForcedPageBreak: 'html2pdf-print-forced-page-break',
+  neutral: 'html2pdf4doc-neutral',
+  word: 'html2pdf4doc-word',
+  textNode: 'html2pdf4doc-text-node',
+  textLine: 'html2pdf4doc-text-line',
+  textGroup: 'html2pdf4doc-text-group',
+  complexTextBlock: 'html2pdf4doc-complex-text-block',
+  printForcedPageBreak: 'html2pdf4doc-print-forced-page-break',
   // * Service flags (are created in the process):
-  split: '[html2pdf-split]',
-  processed: '[html2pdf-processed]',
+  split: '[html2pdf4doc-split]',
+  processed: '[html2pdf4doc-processed]',
 
   // * FLAGS (have no styles):
-  flagNoBreak: '[html2pdf-flag-no-break]',
-  flagNoHanging: '[html2pdf-flag-no-hanging]',
-  flagSlice: '[html2pdf-flag-slice]',
+  flagNoBreak: '[html2pdf4doc-flag-no-break]',
+  flagNoHanging: '[html2pdf4doc-flag-no-hanging]',
+  flagSlice: '[html2pdf4doc-flag-slice]',
 
   // *** SPECIAL
-  topCutPart: '.html2pdf-top-cut',
-  bottomCutPart: '.html2pdf-bottom-cut',
-  cleanTopCut: '.html2pdf-clean-top-cut',
-  cleanBottomCut: '.html2pdf-clean-bottom-cut',
+  topCutPart: '.html2pdf4doc-top-cut',
+  bottomCutPart: '.html2pdf4doc-bottom-cut',
+  cleanTopCut: '.html2pdf4doc-clean-top-cut',
+  cleanBottomCut: '.html2pdf4doc-clean-bottom-cut',
 
   // * TOC
-  tocPageNumber: 'html2pdf-toc-page-number'
+  tocPageNumber: 'html2pdf4doc-toc-page-number'
 
 };
 

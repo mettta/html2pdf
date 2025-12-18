@@ -35,7 +35,7 @@ case9_html_file_url = (
 
 
 # pre1 = '//*[@data-testid="p10"]'
-pre1 = "//*[contains(@class, 'html2pdf-bottom-cut')]"
+pre1 = "//*[contains(@class, 'html2pdf4doc-bottom-cut')]"
 pre = "//pre"
 admonition = "//*[contains(@class, 'admonition')]"
 

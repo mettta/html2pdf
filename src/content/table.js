@@ -15,9 +15,9 @@ table {
 </style>
 
 <h3>Test for printing</h3>
-  <div html2pdf>
+  <div html2pdf4doc>
 
-  <template html2pdf-header>
+  <template html2pdf4doc-header>
     <div data-page-number-root>
       <span data-page-number-current></span>
       of
@@ -26,7 +26,7 @@ table {
     <p>header</p>
   </template>
 
-  <template html2pdf-footer>
+  <template html2pdf4doc-footer>
     <p>footer</p>
   </template>
 

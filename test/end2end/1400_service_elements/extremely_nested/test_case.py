@@ -30,7 +30,7 @@ p1 = '//*[@data-testid="p1"]'
 p2 = '//*[@data-testid="p2"]'
 p9last = '//*[@data-testid="p9_last"]'
 p10 = '//*[@data-testid="p10"]'
-neutral = '//html2pdf-neutral' # [@html2pdf-page-start="5"]
+neutral = '//html2pdf4doc-neutral' # [@html2pdf4doc-page-start="5"]
 
 
 # findBetterPageStart
@@ -85,7 +85,7 @@ class Test(BaseCase):
         self.helper.assert_element_starts_page(p1, 3)
         self.helper.assert_element_on_the_page(p2, 3, report=True)
         # 1-st break by neutral service element (in tail at the end):
-        self.helper.assert_element_starts_page('//html2pdf-neutral', 5, 1)
+        self.helper.assert_element_starts_page('//html2pdf4doc-neutral', 5, 1)
         self.helper.assert_element_on_the_page(p9last, 6, report=True)
         self.helper.assert_element_on_the_page(p10, 6, report=True)
 
@@ -101,8 +101,8 @@ class Test(BaseCase):
         self.helper.assert_element_on_the_page(p1, 3, report=True)
         self.helper.assert_element_on_the_page(p2, 3, report=True)
         # 1-st break by neutral service element (in tail at the end):
-        self.helper.assert_element_starts_page('//html2pdf-neutral', 5, 1)
+        self.helper.assert_element_starts_page('//html2pdf4doc-neutral', 5, 1)
         # 2-st break by neutral service element (in tail at the end):
-        self.helper.assert_element_starts_page('//html2pdf-neutral', 6, 2)
+        self.helper.assert_element_starts_page('//html2pdf4doc-neutral', 6, 2)
         self.helper.assert_element_on_the_page(p9last, 6, report=True)
         self.helper.assert_element_on_the_page(p10, 6, report=True)

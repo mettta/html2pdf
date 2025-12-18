@@ -98,10 +98,10 @@ sdoc-autogen pre.code {
 
 /*  We have to override this for the print version because the printer
     interprets scroll-bars differently in different environments,
-    which breaks HTML2PDF.
+    which breaks HTML2PDF4DOC.
     Also, we need to show the whole code in its entirety.
  */
-[html2pdf] sdoc-autogen pre.code {
+[html2pdf4doc] sdoc-autogen pre.code {
   overflow: unset;
   white-space: pre-wrap;
   overflow-wrap: break-word;

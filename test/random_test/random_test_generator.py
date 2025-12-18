@@ -67,7 +67,7 @@ def create_html() -> str:
 
     with doc.head:
         # link(rel='stylesheet', href='style.css')
-        script(type='text/javascript', src='html2pdf.js')
+        script(type='text/javascript', src='html2pdf4doc.js')
 
     nodes_so_far = [doc]
 
@@ -85,13 +85,13 @@ def create_html() -> str:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='HTML2PDF random test generator')
-    parser.add_argument('path_to_html2pdf')
+    parser = argparse.ArgumentParser(description='HTML2PDF4DOC random test generator')
+    parser.add_argument('path_to_html2pdf4doc')
     args = vars(parser.parse_args())
     print(args)
 
-    path_to_html2pdf = args["path_to_html2pdf"]
-    assert os.path.isfile(path_to_html2pdf)
+    path_to_html2pdf4doc = args["path_to_html2pdf4doc"]
+    assert os.path.isfile(path_to_html2pdf4doc)
 
     path_to_output_folder = os.path.join(PATH_TO_THIS_FOLDER, "output")
     shutil.rmtree(path_to_output_folder, ignore_errors=True)
@@ -107,12 +107,12 @@ def main():
             path_to_test_dir
         )
 
-        path_to_output_html2pdf = os.path.join(path_to_test_dir,
-                                               "html2pdf.js")
+        path_to_output_html2pdf4doc = os.path.join(path_to_test_dir,
+                                               "html2pdf4doc.js")
 
         shutil.copy(
-            path_to_html2pdf,
-            path_to_output_html2pdf
+            path_to_html2pdf4doc,
+            path_to_output_html2pdf4doc
         )
 
         path_to_output_html = os.path.join(path_to_test_dir, f"sample.html")

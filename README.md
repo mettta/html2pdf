@@ -1,12 +1,12 @@
-# HTML2PDF
+# HTML2PDF4DOC
 
-`html2pdf` is a JavaScript tool that allows you to print HTML pages or specific
+`html2pdf4doc` is a JavaScript tool that allows you to print HTML pages or specific
 sections of them with precision. It ensures accurate printing by dividing the
 selected HTML content into printable pages and providing a preview in a browser.
 Additionally, you have the option to customize the printed pages by adding a
 front page and running titles according to your preferences.
 
-Key features of HTML2PDF include:
+Key features of HTML2PDF4DOC include:
 
 - Precise printing of HTML pages or fragments, supporting various formats
   (default A4).
@@ -19,7 +19,7 @@ Key features of HTML2PDF include:
 - It also offers a Python API, allowing you to programmatically print HTML to
   PDF.
 
-With HTML2PDF, you can achieve high-quality printed outputs of your HTML content
+With HTML2PDF4DOC, you can achieve high-quality printed outputs of your HTML content
 while maintaining control over the formatting and layout.
 
 ## Building and running on localhost
@@ -84,17 +84,17 @@ npm run test_server
 
 Open server at http://192.168.0.10:8080/test/unit/test.html.
 
-## HTML2PDF API
+## HTML2PDF4DOC API
 
 ...
 
 ## How it works
 
-Here is a general overview of what HTML2PDF does:
+Here is a general overview of what HTML2PDF4DOC does:
 
 1. Using the CSS, it is possible to isolate a part of the page and allow the
    printer to print only that content.
-2. Right in the browser, HTML2PDF shows how the printer will print content
+2. Right in the browser, HTML2PDF4DOC shows how the printer will print content
    pages.
 3. Since the printer inserts page breaks based solely on geometry, including in
    unexpected places, reading the printed document can be inconvenient. For
@@ -105,19 +105,19 @@ Here is a general overview of what HTML2PDF does:
 4. The resulting PDF can be enhanced by adding running titles, page numbers, and
    a cover page. This customization can be done using HTML templates.
 
-### How HTML2PDF works with DOM
+### How HTML2PDF4DOC works with DOM
 
-HTML2PDF attaches to an existing page and modifies its DOM to transform it into
+HTML2PDF4DOC attaches to an existing page and modifies its DOM to transform it into
 a printable page.
 
-HTML2PDF activates when the window.onload event happens. Users can choose
+HTML2PDF4DOC activates when the window.onload event happens. Users can choose
 specific content for printing, and if nothing is selected, the whole page will
 be prepared for printing. To mark a particular HTML block as printable, add the
-html2pdf attribute to its tag.
+html2pdf4doc attribute to its tag.
 
 ### Two layers
 
-When HTML2PDF processes an HTML page, it creates two layers:
+When HTML2PDF4DOC processes an HTML page, it creates two layers:
 
 1. **Paper flow** which is a layer with pages that visualizes the preview of the
    page for printing. The pages in this layer are blank white pages showing the
@@ -127,9 +127,9 @@ When HTML2PDF processes an HTML page, it creates two layers:
 
 The algorithm does the following:
 
-- If only a specific HTML block/tag is selected for printing with `[html2pdf]`,
+- If only a specific HTML block/tag is selected for printing with `[html2pdf4doc]`,
   it marks all other HTML tags as "don't print".
-- It takes the inner content of the tag marked with `[html2pdf]` out of the DOM.
+- It takes the inner content of the tag marked with `[html2pdf4doc]` out of the DOM.
   Let's call this content **printable content**.
 - It processes the printable content and brings the updated content back to the
   DOM, in the form of the Content flow layer.

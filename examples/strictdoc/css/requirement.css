@@ -115,7 +115,7 @@ sdoc-requirement-field {
   overflow-wrap: break-word;
 }
 
-[data-viewtype="html2pdf"] sdoc-requirement-field-label {
+[data-viewtype="html2pdf4doc"] sdoc-requirement-field-label {
   word-break: normal;
 }
 

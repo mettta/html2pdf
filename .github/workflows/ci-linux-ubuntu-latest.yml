@@ -1,4 +1,4 @@
-name: "HTML2PDF on Linux"
+name: "HTML2PDF4DOC on Linux"
 
 on:
   pull_request:

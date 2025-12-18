@@ -35,7 +35,7 @@ class Test(BaseCase):
         # 1 pages
         # self.helper.do_open(html_file_url_001)
         self.helper.open_case(path_to_this_test_file_folder, '001')
-        self.helper.assert_html2pdf_success()
+        self.helper.assert_html2pdf4doc_success()
         self.helper.assert_document_has_pages(1)
         # 1 ----------------------------------
         self.helper.assert_element_on_the_page('//*[@data-testid="pusher"]', 1)
@@ -47,7 +47,7 @@ class Test(BaseCase):
         # TC-GRID-002 — Page Break On Row Boundary / Clean Cut
         # 3 pages
         self.helper.open_case(path_to_this_test_file_folder, '002')
-        self.helper.assert_html2pdf_success()
+        self.helper.assert_html2pdf4doc_success()
         self.helper.assert_document_has_pages(3)
         # 1 ----------------------------------
         self.helper.assert_element_on_the_page('//*[@data-testid="pusher"]', 1)
@@ -65,7 +65,7 @@ class Test(BaseCase):
     @staticmethod
     def check_series_003(helper):
         # TC-GRID-003 — Alignment Variants
-        helper.assert_html2pdf_success()
+        helper.assert_html2pdf4doc_success()
         helper.assert_document_has_pages(3)
         chunk_1 = '//*[@data-testid="root-element"][1]'
         chunk_2 = '//*[@data-testid="root-element"][2]'
@@ -229,7 +229,7 @@ class Test(BaseCase):
             '//*[@data-testid="L1-3"]',
         ]
         self.helper.open_case(path_to_this_test_file_folder, '003_10')
-        self.helper.assert_html2pdf_success()
+        self.helper.assert_html2pdf4doc_success()
         self.helper.assert_document_has_pages(2)
         # 1 ----------------------------------
         self.helper.assert_element_on_the_page('//*[@data-testid="pusher"]', 1)

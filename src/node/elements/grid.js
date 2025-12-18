@@ -199,7 +199,7 @@ export default class Grid {
     this._currentGridSplitLog = [];
     this._currentGridEntries = PartsRecorder.createEntries({ owner: gridNode, currentRows });
     this._currentGridRecordedParts = this._currentGridEntries;
-    this._currentGridNode.__html2pdfRecordedParts = this._currentGridRecordedParts; // Expose for DevTools and external diagnostics
+    this._currentGridNode.__html2pdf4docRecordedParts = this._currentGridRecordedParts; // Expose for DevTools and external diagnostics
     this._currentGridShellCache = new WeakMap();
 
     // ** If there are enough rows for the split to be readable,

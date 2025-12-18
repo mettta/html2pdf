@@ -19,8 +19,8 @@ class Test(BaseCase):
 
     def test_001(self):
         self.helper.do_open_and_assert(fixture, "Hello world!", verify_logs=True)
-        self.helper.assert_html2pdf_elements()
-        self.helper.assert_html2pdf_success()
+        self.helper.assert_html2pdf4doc_elements()
+        self.helper.assert_html2pdf4doc_success()
 
         Path("output").mkdir(parents=True, exist_ok=True)
         self.helper.do_print_page_to_pdf("output/index.pdf")

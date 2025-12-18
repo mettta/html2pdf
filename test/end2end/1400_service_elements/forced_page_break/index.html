@@ -3,8 +3,8 @@
 
 <head>
   <meta charset="utf-8" />
-  <meta name="keywords" content="HTML2PDF, end2end" />
-  <meta name="description" content="HTML2PDF end2end test" />
+  <meta name="keywords" content="HTML2PDF4DOC, end2end" />
+  <meta name="description" content="HTML2PDF4DOC end2end test" />
   <title>Test page</title>
 
   <link rel="stylesheet" href="../../../shared/css/main.css">
@@ -19,17 +19,17 @@
 <body>
   <!-- Expected blank 1st page -->
 
-  <html2pdf-print-forced-page-break>
+  <html2pdf4doc-print-forced-page-break>
     <!-- At the very start of the document -->
-  </html2pdf-print-forced-page-break>
+  </html2pdf4doc-print-forced-page-break>
   <!-- Expected start of the 2nd page -->
   <span data-testid="testPoint2">
     I want to be on the 2nd page
   </span>
 
-  <html2pdf-print-forced-page-break>
+  <html2pdf4doc-print-forced-page-break>
     <!-- In the middle between the content elements -->
-  </html2pdf-print-forced-page-break>
+  </html2pdf4doc-print-forced-page-break>
   <!-- Expected start of the 3st -->
   <div>
     <div>
@@ -40,10 +40,10 @@
     </div>
     <div>
       <div>
-        <html2pdf-print-forced-page-break>
+        <html2pdf4doc-print-forced-page-break>
           <!-- In the middle inside the content element that fits:
           markers are deeper in the element tree -->
-        </html2pdf-print-forced-page-break>
+        </html2pdf4doc-print-forced-page-break>
       </div>
     </div>
     <div>
@@ -55,9 +55,9 @@
   </div>
 
 
-  <html2pdf-print-forced-page-break>
+  <html2pdf4doc-print-forced-page-break>
     <!-- At the very end of the document -->
-  </html2pdf-print-forced-page-break>
+  </html2pdf4doc-print-forced-page-break>
   <!-- Expected start of the 4st -->
 
   <span data-testid="testPoint5">
