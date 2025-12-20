@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF4DOC, end2end" />
+  <meta name="description" content="HTML2PDF4DOC end2end test" />
+  <title>Test page</title>
+
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+  <script defer
+    data-console-assert="true"
+    data-forced-debug-mode="true"
+    data-print-height='300px'
+    data-print-width='600px'
+    data-forced-page-break-selectors=""
+    data-page-break-after-selectors=""
+    data-page-break-before-selectors=".html2pdf4doc-break-before"
+    data-no-break-selectors=".html2pdf4doc-no-break"
+    data-no-hanging-selectors=".html2pdf4doc-no-hanging"
+    src="../../../../dist/bundle.js"></script>
+</head>
+
+<!--
+  The sequence of classes creates an unbroken chain.
+  BUG to test:  extra page before this chain;
+                does not depend on:
+                - the presence or absence of frontpage or headers,
+                - the presence or absence of of elements before the chain.
+-->
+
+<body>
+  <!-- <div class="">Text 0 (simple)</div> -->
+
+  <div class="html2pdf4doc-no-hanging">Text 0 (html2pdf4doc-no-hanging) - makes 2nd extra page</div>
+  <div data-testid="h1" class="html2pdf4doc-break-before html2pdf4doc-no-hanging">Header1 (break-before)</div>
+  <div class="html2pdf4doc-no-hanging">Text 1 (html2pdf4doc-no-hanging)</div>
+  <div data-testid="h2" class="html2pdf4doc-break-before html2pdf4doc-no-hanging">Header2 (break-before)</div>
+  <div class="html2pdf4doc-no-hanging">Text 2 (html2pdf4doc-no-hanging)</div>
+  <div data-testid="h3" class="html2pdf4doc-break-before html2pdf4doc-no-hanging">Header3 (break-before) - makes 3rd extra page</div>
+  <div class="">Text 3 (simple)</div>
+
+  <!-- <template html2pdf4doc-frontpage>FRONTPAGE</template>
+  <template html2pdf4doc-header>
+    <div style="font-size: 9px;">HEADER</div>
+    <div html2pdf4doc-page-number><span html2pdf4doc-page-number-current></span>/<span
+        html2pdf4doc-page-number-total></span></div>
+  </template>
+  <template html2pdf4doc-footer>
+    <div style="font-size: 9px;">FOOTER</div>
+    <div html2pdf4doc-page-number><span html2pdf4doc-page-number-current></span>/<span
+        html2pdf4doc-page-number-total></span></div>
+  </template> -->
+
+</body>
+
+</html>
