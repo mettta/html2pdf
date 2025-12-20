@@ -103,19 +103,6 @@ export default class Pages {
     return this.pages;
   }
 
-  _resolvePageEnds() {
-
-    for (let i = 1; i < this.pages.length; i += 1) {
-      const prev = this.pages[i - 1];
-      const curr = this.pages[i];
-      prev.pageEnd = curr.prevPageEnd;
-      // * For the last page, there is no previously marked pageEnd.
-    }
-    // * For the last page:
-    this.pages[this.pages.length - 1].toResetBottom = this._contentFlowLastChild;
-    this.pages[this.pages.length - 1].pageEnd = this._contentFlowEnd;
-  }
-
   _removeGarbageElements() {
     if (this._garbageSelectors.length) {
       const elements = this._DOM.getAll(this._garbageSelectors, this._contentFlow);
@@ -286,6 +273,18 @@ export default class Pages {
     this._parseNodes({
       array: content
     });
+  }
+
+  _resolvePageEnds() {
+    for (let i = 1; i < this.pages.length; i += 1) {
+      const prev = this.pages[i - 1];
+      const curr = this.pages[i];
+      prev.pageEnd = curr.prevPageEnd;
+      // * For the last page, there is no previously marked pageEnd.
+    }
+    // * For the last page:
+    this.pages[this.pages.length - 1].toResetBottom = this._contentFlowLastChild;
+    this.pages[this.pages.length - 1].pageEnd = this._contentFlowEnd;
   }
 
   _registerPageStart({
