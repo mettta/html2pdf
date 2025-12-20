@@ -134,7 +134,7 @@ export default class Pages {
 
   _prepareForcedPageBreakElements() {
     // ** Must be called after _prepareNoHangingElements()
-    this._debug && console.group('🗂️ prepare forced page breaks');
+    this._debug._ && console.group('🗂️ prepare forced page breaks');
 
     const pageStarters = this._pageBreakBeforeSelectors.length
                        ? this._DOM.getAll(this._pageBreakBeforeSelectors, this._contentFlow)
@@ -176,7 +176,7 @@ export default class Pages {
       const candidate = this._node.findBetterForcedPageStarter(element, this._contentFlow);
       this.strictAssert(candidate, 'findBetterForcedPageStarter should return an element. Returns:', candidate);
       this._DOM.insertBefore(candidate, this._node.createForcedPageBreak());
-      this._debug && console.log('📄⤵️ pageStarters • inserted before', {candidate, element});
+      this._debug._ && console.log('📄⤵️ pageStarters • inserted before', {candidate, element});
     });
 
     // * find all relevant elements and insert forced page break markers before them.
@@ -186,7 +186,7 @@ export default class Pages {
         const candidate = this._node.findBetterForcedPageStarter(element, this._contentFlow);
         this.strictAssert(candidate, 'findBetterForcedPageStarter should return an element. Returns:', candidate);
         this._DOM.insertBefore(candidate, this._node.createForcedPageBreak());
-        this._debug && console.log('📄⤵️⤵️ forcedPageStarters • inserted before', {candidate, element});
+        this._debug._ && console.log('📄⤵️⤵️ forcedPageStarters • inserted before', {candidate, element});
       }
       // ** In other case we leave it as it is.
     });
@@ -200,11 +200,11 @@ export default class Pages {
       // If there are AFTER and BEFORE breaks - insert only one.
       if (!this._node.isForcedPageBreak(this._DOM.getRightNeighbor(element))) {
         this._DOM.insertAfter(element, this._node.createForcedPageBreak());
-        this._debug && console.log('📄⤴️ pageEnders • inserted after', {element});
+        this._debug._ && console.log('📄⤴️ pageEnders • inserted after', {element});
       } // else pass
     });
 
-    this._debug && console.groupEnd('🗂️ prepare forced page breaks');
+    this._debug._ && console.groupEnd('🗂️ prepare forced page breaks');
   }
 
   _registerFirstPage() {
