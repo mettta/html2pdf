@@ -101,6 +101,10 @@ export default class Pre {
     //   : this._DOM.getComputedStyle(node);
 
     this._debug._ && console.group('%c 🔲 PRE [split]', 'background:orange', {node});
+    const endSplitGroup = () => {
+      this._debug._ && console.log('%c END 🔲 PRE [split]', CONSOLE_CSS_END_LABEL);
+      this._debug._ && console.groupEnd()
+    }
 
     const _children = this._DOM.getChildNodes(node); // * elements, text nodes, comments, etc.
     this._debug._ && console.log('_children:', _children.length, _children);
@@ -108,6 +112,7 @@ export default class Pre {
     if (_children.length == 0) {
       // ??? empty tag => not breakable
       this._debug._ && console.log('%c END _splitPreNode (not breakable)', CONSOLE_CSS_END_LABEL);
+      endSplitGroup();
       return []
     }
 
@@ -151,6 +156,7 @@ export default class Pre {
 
     if (_lines.length < this._minPreBreakableLines) {
       this._debug._ && console.log('%c END _splitPreNode few lines', CONSOLE_CSS_END_LABEL);
+      endSplitGroup();
       return []
     }
 
@@ -165,6 +171,7 @@ export default class Pre {
     this._debug._ && console.log('linesFromNode', linesFromNode);
     this._DOM.replaceNodeContentsWith(node, ...linesFromNode);
 
+    endSplitGroup();
     return linesFromNode
   }
 
@@ -188,6 +195,10 @@ export default class Pre {
 
     const consoleMark = ['%c_SLICE PreNode\n', 'color:white',]
     this._debug._ && console.group('%c_✂️ slice PRE', 'background:cyan', {node, pageBottom, fullPageHeight});
+    const endSliceGroup = () => {
+      this._debug._ && console.log('%c END ✂️ slice PRE', CONSOLE_CSS_END_LABEL);
+      this._debug._ && console.groupEnd()
+    };
 
     // Prepare node parameters
 
@@ -214,12 +225,14 @@ export default class Pre {
     const minNodeHeight = preWrapperHeight + nodeLineHeight * this._minPreBreakableLines;
     if (nodeHeight < minNodeHeight) {
       this._debug._ && console.log('%c END ✂️ slice (small node)', CONSOLE_CSS_END_LABEL);
+      endSliceGroup();
       return []
     }
 
     const _children = this._DOM.getChildNodes(node);
     if (_children.length == 0) {
       this._debug._ && console.log('%c END ✂️ slice (not breakable)', CONSOLE_CSS_END_LABEL);
+      endSliceGroup();
       return []
     } else if (_children.length > 1) {
       // ! if _children.length > 1
@@ -238,6 +251,7 @@ export default class Pre {
       // ! TODO
       // ! TODO
       this._debug._ && console.log('%c END ✂️ slice TODO!', CONSOLE_CSS_END_LABEL);
+      endSliceGroup();
       return []
     } else { // * if _children.length == 1
       // * then it is a TEXT node and has only `\n` as a line breaker
@@ -248,6 +262,7 @@ export default class Pre {
         this._debug._ && console.warn("is Element Node", currentElementNode)
         // FIXME other cases i.e. node and we need recursion
         this._debug._ && console.log('%c END ✂️ slice ???????', CONSOLE_CSS_END_LABEL);
+        endSliceGroup();
         return []
       }
       if (this._node.isWrappedTextNode(_children[0])) {
@@ -265,6 +280,7 @@ export default class Pre {
 
       if (stringsFromNodeText.length < this._minPreBreakableLines) {
         this._debug._ && console.log('%c END ✂️ slice few lines', CONSOLE_CSS_END_LABEL);
+        endSliceGroup();
         return []
       }
 
@@ -373,6 +389,7 @@ export default class Pre {
         // ** if there is no partitioning, we return an empty array
         // ** and the original node will be taken in its entirety.
         this._debug._ && console.log('%c END ✂️ slice - NO SPLIITERS', CONSOLE_CSS_END_LABEL);
+        endSliceGroup();
         return []
       }
 
@@ -422,7 +439,7 @@ export default class Pre {
       this._DOM.insertAfter(node, ...newPreElementsArray);
 
       this._debug._ && console.log('%c END ✂️ slice PRE', CONSOLE_CSS_END_LABEL);
-      this._debug._ && console.groupEnd();
+      endSliceGroup();
 
       return [node, ...newPreElementsArray];
 
