@@ -12,7 +12,8 @@ const _isDebug = debugFor('pageBreaks');
 
 /**
  * Try to improve a forcibly requested page start by walking to a better anchor.
- * Moves up via first-child parents and then left via no-hanging siblings
+ * Moves up via first-child parents
+ * // (and we do not consider isNoHanging to be a weaker rule)
  * until no further safe movement is possible.
  *
  * @this {Node}
@@ -30,12 +31,12 @@ export function findBetterForcedPageStarter(element, root) {
       continue;
     }
 
-    const left = getFlowLeftNeighbor.call(this, current, 'findBetterForcedPageStarter:left');
-
-    if (left && this.isNoHanging(left)) {
-      current = left;
-      continue;
-    }
+    // * do not consider isNoHanging to be a weaker rule
+    // const left = getFlowLeftNeighbor.call(this, current, 'findBetterForcedPageStarter:left');
+    // if (left && this.isNoHanging(left)) {
+    //   current = left;
+    //   continue;
+    // }
 
     break;
   }
