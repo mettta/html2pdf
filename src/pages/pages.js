@@ -396,7 +396,7 @@ export default class Pages {
   }) {
     const consoleMark = ['%c[_parseNode]\n', 'color:white;',]
 
-    this._debug._parseNode && console.group(
+    this._debug._parseNode && console.groupCollapsed(
       `%c_parseNode`, CONSOLE_CSS_PRIMARY_PAGES,
       `${isFirstChild && isLastChild ? '★ [first+last]' : isFirstChild ? '★ [first]' : isLastChild ? '★ [last]' : '<- regular ->'}`,
       '📄', this.pages.length,
