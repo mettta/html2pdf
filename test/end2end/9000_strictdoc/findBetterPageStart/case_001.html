@@ -313,7 +313,7 @@
 <div html2pdf4doc="" class="content">
 
 
-<div style="height:766px"></div>
+<div style="height:800px"></div>
 
 
 <sdoc-node-content has-no-title node-view="narrative" data-level="" show-node-type-name="TEXT" data-testid="requirement-style-narrative">
@@ -331,7 +331,7 @@
 
   </sdoc-scope>
 
-  <sdoc-scope class="node_fields_group-primary" data-testid="page2starter">
+  <sdoc-scope class="node_fields_group-primary" data-testid="primary">
 
   <sdoc-node-field-label>STATEMENT:</sdoc-node-field-label>
   <sdoc-node-field data-field-label="statement">
@@ -342,7 +342,7 @@
 <div class="admonition warning">
 <p class="first admonition-title" data-testid="admonitionTitle">Warning</p>
 <p><strong>TL;DR</strong>: StrictDoc's web server is not yet hardened against unsafe use. Making StrictDoc safe for deployment in public networks is an ongoing effort.</p>
-<p class="last">Using StrictDoc's command-line and web interfaces should be more secure if the web server is not deployed on a public network.</p>
+<p class="last" data-testid="p_last">Using StrictDoc's command-line and web interfaces should be more secure if the web server is not deployed on a public network.</p>
 </div>
 <p>Due to current constraints (refer to <a href="#SDOC_UG_LIMIT_WEB">🔗&nbsp;Limitations of web user interface</a>), StrictDoc requires running a server through a command line interface in one window or OS process, and separately committing changes to documents using Git in another window or OS process. Deploying StrictDoc as a shared web server is impractical, as it still requires manual commits to SDoc files via the server's command line using Git. The future development plan for StrictDoc aims to enable its use as a standalone server application, which includes resolving the following security-related issues.</p>
 <p>What makes StrictDoc's web server unsafe:</p>
