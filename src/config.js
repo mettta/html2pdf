@@ -175,12 +175,12 @@ export function normalizeLegacyConfigParams(rawParams = {}) {
   const normalized = { ...rawParams };
 
   [
-    ['printWidth', 'paperWidth'],
-    ['printHeight', 'paperHeight'],
-  ].forEach(([deprecatedKey, nextKey]) => {
+    ['printWidth', 'paperWidth', 'data-print-width', 'data-paper-width'],
+    ['printHeight', 'paperHeight', 'data-print-height', 'data-paper-height'],
+  ].forEach(([deprecatedKey, nextKey, deprecatedAttr, nextAttr]) => {
     if (Object.prototype.hasOwnProperty.call(normalized, deprecatedKey)) {
       console.warn(
-        `[HTML2PDF4DOC] Config option "${deprecatedKey}" is deprecated. Use "${nextKey}" instead.`
+        `[HTML2PDF4DOC] Config option "${deprecatedAttr}" is deprecated. Use "${nextAttr}" instead.`
       );
 
       if (!Object.prototype.hasOwnProperty.call(normalized, nextKey)) {
