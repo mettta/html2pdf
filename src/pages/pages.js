@@ -88,7 +88,7 @@ export default class Pages {
 
   calculate() {
     this._removeGarbageElements();
-    this._prepareSelectorBasedConstraints();
+    this._prepareConfigSelectorConstraints();
     this._calculatePageStarts();
     this._resolvePageEnds();
 
@@ -100,14 +100,15 @@ export default class Pages {
   _removeGarbageElements() {
     const _garbageSelectors = arrayFromString(this._configSelectors.garbage);
     if (_garbageSelectors.length) {
-      const elements = this._DOM.getAll(_garbageSelectors, this._contentFlow);
+      const elements = this._node.resolveConfigSelectorConstraints(_garbageSelectors, this._contentFlow);
       elements.forEach(element => {
         this._DOM.removeNode(element)
       });
     }
   }
 
-  _prepareSelectorBasedConstraints() {
+  _prepareConfigSelectorConstraints() {
+    this._debug._ && console.groupCollapsed('🗂️ prepare config selector constraints');
     const _noHangingSelectors = arrayFromString(this._configSelectors.noHanging);
     const _pageBreakBeforeSelectors = arrayFromString(this._configSelectors.pageBreakBefore);
     const _pageBreakAfterSelectors = arrayFromString(this._configSelectors.pageBreakAfter);
@@ -121,13 +122,12 @@ export default class Pages {
       forcedSelectors: _forcedPageBreakSelectors
     });
     const _noBreakElements = this._prepareNoBreakElements(_noBreakSelectors);
-
-
+    this._debug._ && console.groupEnd('🗂️ prepare config selector constraints');
   }
 
   _prepareNoHangingElements(selectors) {
     if (selectors.length) {
-      const elements = this._DOM.getAll(selectors, this._contentFlow);
+      const elements = this._node.resolveConfigSelectorConstraints(selectors, this._contentFlow, 'noHangings');
       elements.forEach(element => {
         this._node.setFlagNoHanging(element);
         const lastChildParent = this._node.findLastChildParent(element, this._contentFlow)
@@ -135,28 +135,29 @@ export default class Pages {
           this._node.setFlagNoHanging(lastChildParent, 'parent');
         }
       });
+      this._debug._ && elements.length && console.log('✓ noHangings got the flag');
     }
   }
 
   _prepareNoBreakElements(selectors) {
     if (selectors.length) {
-      const elements = this._DOM.getAll(selectors, this._contentFlow);
+      const elements = this._node.resolveConfigSelectorConstraints(selectors, this._contentFlow, 'noBreaks');
       elements.forEach(element => this._node.setFlagNoBreak(element));
+      this._debug._ && elements.length && console.log('✓ noBreaks got the flag');
     }
   }
 
   _prepareForcedPageBreakElements({ beforeSelectors, afterSelectors, forcedSelectors }) {
     // ** Must be called after _prepareNoHangingElements()
-    this._debug._ && console.group('🗂️ prepare forced page breaks');
 
     const pageStarters = beforeSelectors.length
-                       ? this._DOM.getAll(beforeSelectors, this._contentFlow)
+                       ? this._node.resolveConfigSelectorConstraints(beforeSelectors, this._contentFlow, 'pageStarters')
                        : [];
     const pageEnders = afterSelectors.length
-                     ? this._DOM.getAll(afterSelectors, this._contentFlow)
+                     ? this._node.resolveConfigSelectorConstraints(afterSelectors, this._contentFlow, 'pageEnders')
                      : [];
     // there's at least one element:
-    const forcedPageStarters = this._DOM.getAll(forcedSelectors, this._contentFlow);
+    const forcedPageStarters = this._node.resolveConfigSelectorConstraints(forcedSelectors, this._contentFlow, 'forcedPageStarters');
 
     // ** If the element is the FIRST child of nested FIRST children of a content flow,
     // ** we do not process it further for page breaks.
@@ -216,8 +217,6 @@ export default class Pages {
         this._debug._ && console.log('📄⤴️ pageEnders • inserted after', {element});
       } // else pass
     });
-
-    this._debug._ && console.groupEnd('🗂️ prepare forced page breaks');
   }
 
   _registerFirstPage() {

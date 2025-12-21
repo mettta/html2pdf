@@ -1,5 +1,6 @@
 import * as Logging from '../utils/logging.js';
 import * as Selectors from './modules/selectors.js';
+import * as SelectorHeuristics from './modules/selectorHeuristics.js';
 import * as Stylers from './modules/stylers.js';
 import * as Positioning from './modules/positioning.js';
 import * as Getters from './modules/getters.js';
@@ -46,6 +47,7 @@ export default class Node {
     Object.assign(this, Logging);
 
     Object.assign(this, Selectors);
+    Object.assign(this, SelectorHeuristics);
     Object.assign(this, Stylers);
     Object.assign(this, Positioning);
     Object.assign(this, Getters);

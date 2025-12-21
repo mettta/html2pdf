@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="keywords" content="HTML2PDF4DOC, end2end" />
+  <meta name="description" content="HTML2PDF4DOC end2end test" />
+  <title>Test page</title>
+
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+  <script defer
+    data-console-assert="true"
+    data-forced-debug-mode="true"
+    data-print-height='300px'
+    data-print-width='600px'
+    data-forced-page-break-selectors=""
+    data-page-break-after-selectors=".html2pdf4doc-break-after"
+    data-page-break-before-selectors=".html2pdf4doc-break-before b:only-child b:first-child b:last-child"
+    data-no-break-selectors=".html2pdf4doc-no-break"
+    data-no-hanging-selectors=".html2pdf4doc-no-hanging"
+    src="../../../../dist/bundle.js"></script>
+</head>
+
+<body>
+
+  <p>Just a line of text to start the document in a neutral setting.</p>
+  <p data-testid="not-only-child">Text that is recognized as a text node, <b class="NOTchild">NOT b:only-child</b> and is not recognized by CSS as an element</p>
+  <p data-testid="only-child"><b class="child">b:only-child</b></p>
+  <p>Just a line of text.</p>
+  <p data-testid="not-first-child">text that is recognized as a text node, <b class="NOTfirst">NOT b:first-child</b> and is not recognized by CSS as an element</p>
+  <p data-testid="first-child"><b class="first">b:first-child</b> Text that is recognized as a text node, and is not recognized by CSS as an element</p>
+  <p>Just a line of text.</p>
+  <p data-testid="not-last-child">text that is recognized as a text node, <b class="NOTlast">NOT b:last-child</b> and is not recognized by CSS as an element</p>
+  <p data-testid="last-child">text that is recognized as a text node, and is not recognized by CSS as an element <b class="last">b:last-child</b></p>
+  <p>Just a line of text.</p>
+
+</body>
+
+</html>

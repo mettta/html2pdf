@@ -34,6 +34,7 @@ const debugConfig = {
     pageBreaks: false,
     positioning: false,
     selectors: false,
+    selectorHeuristics: false,
     slicers: false,
     splitters: false,
     wrappers: false,
