@@ -65,6 +65,8 @@ export default class Validator {
       const paperGapTop = paperGapTops[index];
       const pageGapTop = pageGapTops[index];
       if (paperGapTop !== pageGapTop) {
+        // * Here is an array of elements collected in sequence, with indices from zero without skips.
+        // * Therefore, the page number is the 'index + 1'.
         const problemPageNumber = index + 1;
         (pagesWithOverflow[problemPageNumber] ??= {}).pageNumber = problemPageNumber;
         (pagesWithOverflow[problemPageNumber] ??= {}).paperGap = paperGapElements[index];
@@ -98,7 +100,8 @@ export default class Validator {
       const bodyBottom = bodyBottoms[index];
       const pageEndBottom = pageEndBottoms[index];
       if (bodyBottom < pageEndBottom) {
-        const problemPageNumber = index + 1;
+        // * Here is an array of elements (_bodySpacersByPageNum), whose indexes are page numbers.
+        const problemPageNumber = index;
         (pagesWithOverflow[problemPageNumber] ??= {}).pageNumber = problemPageNumber;
         (pagesWithOverflow[problemPageNumber] ??= {}).overflowingPageEnd = _pageEndByPage[index];
         (pagesWithOverflow[problemPageNumber] ??= {}).overflowingPage = _bodySpacersByPageNum[index];
