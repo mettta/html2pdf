@@ -776,6 +776,7 @@ export default class Pages {
           : mediaElement;
 
         const currentImageTop = this._node.getTop(currentImage, this._root);
+        const currentImageBottom = this._node.getBottom(currentImage, this._root);
         const parentTopForImage = (isFirstChild && arrayTopParent)
           ? this._node.getTop(arrayTopParent, this._root)
           : undefined;
@@ -800,17 +801,21 @@ export default class Pages {
         // which take away the available space for image-node placement:
         availableImageNodeSpace -= (
            arrayParentBottomEdge
-            ? (arrayParentBottomEdge - this._node.getBottom(currentImage, this._root))
+            ? (arrayParentBottomEdge - currentImageBottom)
             : 0
         );
+
+
+        // ? This variable is used in the “full page” case below, not here.
         // if parent: the node is first,
-        // so let's include the parent's top margins:
-        let fullPageImageNodeSpace = this._referenceHeight - imgGapBelow - (
-           parentTopForImage !== undefined
-            ? (currentImageTop - parentTopForImage)
-            : 0
-        );
+        // // so let's include the parent's top margins:
+        // let fullPageImageNodeSpace = this._referenceHeight - imgGapBelow - (
+        //    parentTopForImage !== undefined
+        //     ? (currentImageTop - parentTopForImage)
+        //     : 0
+        // );
         // TODO: replace this._referenceWidth  with an padding/margin-dependent value
+
 
         const currentImageHeight = this._DOM.getElementOffsetHeight(currentImage);
         const currentImageWidth = this._DOM.getElementOffsetWidth(currentImage);
@@ -891,6 +896,21 @@ export default class Pages {
           context: 'move IMG it to next page'
         });
         this._debug._parseNode && console.log('🖼️ register Page Start', currentElement);
+
+        // ** Recompute available space after improving page start:
+        // ** the page anchor might sit above the image,
+        // ** so the image must fit within the remaining page height.
+        // * `this.pages.at(-1).pageBottom - currentImageTop` is not equal to this._referenceHeight
+        // * because it is likely that a semantic improvement was made when the new page was registered,
+        // * and the page starts somewhere above the image itself.
+        let fullPageImageNodeSpace = this.pages.at(-1).pageBottom - currentImageTop - imgGapBelow;
+        // * if arrayParentBottomEdge: the node is last,
+        // * so let's subtract the probable margins at the bottom of the node,
+        // * which take away the available space for image-node placement:
+        if (arrayParentBottomEdge) {
+          fullPageImageNodeSpace -= (arrayParentBottomEdge - currentImageBottom);
+        }
+
         // and avoid page overflow if the picture is too big to fit on the page as a whole
         if (currentImageHeight > fullPageImageNodeSpace) {
           this._node.fitElementWithinBoundaries({
