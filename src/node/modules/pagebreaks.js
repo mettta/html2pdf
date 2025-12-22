@@ -1,6 +1,7 @@
 // 🚧 pageBreaks
 
 import { debugFor } from '../utils/debugFor.js';
+import { withLegacySelector } from '../../selector.js';
 const _isDebug = debugFor('pageBreaks');
 
 // * CONTRACTS:  helper functions may return tri-state values
@@ -521,7 +522,7 @@ export function findLastChildParent(element, rootElement) {
  * @returns {Element[]} - Array of matched elements (may be empty).
  */
 export function findAllForcedPageBreakInside(element) {
-  return this._DOM.getAll(this._selector.printForcedPageBreak, element);
+  return this._DOM.getAll(withLegacySelector(this._selector.printForcedPageBreak), element);
 }
 
 function getFlowParent(element, context) {
