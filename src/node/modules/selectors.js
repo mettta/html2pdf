@@ -14,28 +14,38 @@ export function isSelectorMatching(element, selector) {
     return;
   }
 
-  const first = selector.charAt(0);
-
-  if (first === '.') {
-    const cl = selector.substring(1);
-    return this._DOM.hasClass(element, cl);
-
-  } else if (first === '#') {
-    const id = selector.substring(1);
-    return this._DOM.hasID(element, id);
-
-  } else if (first === '[') {
-    this.strictAssert(
-      selector.at(-1) === ']', `the ${selector} selector is not OK.`
-    );
-    const attr = selector.substring(1, selector.length - 1);
-    return this._DOM.hasAttribute(element, attr);
-
-  } else {
-    // Strictly speaking, the tag name is not a selector,
-    // but to be on the safe side, let's check that too:
-    return this._DOM.getElementTagName(element) === selector.toUpperCase();
+  const selectors = [selector];
+  if (typeof selector === 'string' && selector.includes('html2pdf4doc')) {
+    const legacySelector = selector.replaceAll('html2pdf4doc', 'html2pdf');
+    if (legacySelector !== selector) {
+      selectors.push(legacySelector);
+    }
   }
+
+  return selectors.some((item) => {
+    const first = item.charAt(0);
+
+    if (first === '.') {
+      const cl = item.substring(1);
+      return this._DOM.hasClass(element, cl);
+
+    } else if (first === '#') {
+      const id = item.substring(1);
+      return this._DOM.hasID(element, id);
+
+    } else if (first === '[') {
+      this.strictAssert(
+        item.at(-1) === ']', `the ${item} selector is not OK.`
+      );
+      const attr = item.substring(1, item.length - 1);
+      return this._DOM.hasAttribute(element, attr);
+
+    } else {
+      // Strictly speaking, the tag name is not a selector,
+      // but to be on the safe side, let's check that too:
+      return this._DOM.getElementTagName(element) === item.toUpperCase();
+    }
+  });
 }
 
 // CHECK NODE TYPE

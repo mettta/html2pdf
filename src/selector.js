@@ -1,3 +1,23 @@
+const CURRENT_PREFIX = 'html2pdf4doc';
+const LEGACY_PREFIX = 'html2pdf';
+
+/**
+ * Builds a backward‑compatible selector for DOM queries.
+ * If the input selector contains the current prefix `html2pdf4doc`,
+ * it generates a legacy variant by replacing it with `html2pdf` and
+ * returns a comma‑separated selector list: "current,legacy".
+ * This lets querySelector/All match both new and old markup without
+ * altering the rest of the selector; if no `html2pdf4doc` is present,
+ * it returns the selector unchanged.
+ */
+export function withLegacySelector(selector) {
+  if (typeof selector !== 'string') return selector;
+  if (!selector.includes(CURRENT_PREFIX)) return selector;
+  const legacySelector = selector.replaceAll(CURRENT_PREFIX, LEGACY_PREFIX);
+  if (legacySelector === selector) return selector;
+  return `${selector},${legacySelector}`;
+}
+
 const SELECTOR = {
   // * root, is taken from DOM
   init: '[html2pdf4doc]',

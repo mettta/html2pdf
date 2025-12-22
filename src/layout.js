@@ -1,4 +1,5 @@
 import Style from './style.js';
+import { withLegacySelector } from './selector.js';
 import * as Logging from './utils/logging.js';
 
 export default class Layout {
@@ -74,9 +75,9 @@ export default class Layout {
     this.strictAssert(this._selector.frontpageTemplate, 'frontpageTemplate selector is missing');
     this.strictAssert(this._selector.headerTemplate, 'headerTemplate selector is missing');
     this.strictAssert(this._selector.footerTemplate, 'footerTemplate selector is missing');
-    this.frontpageTemplate = this._DOM.getInnerHTML(this._selector.frontpageTemplate);
-    this.headerTemplate = this._DOM.getInnerHTML(this._selector.headerTemplate);
-    this.footerTemplate = this._DOM.getInnerHTML(this._selector.footerTemplate);
+    this.frontpageTemplate = this._DOM.getInnerHTML(withLegacySelector(this._selector.frontpageTemplate));
+    this.headerTemplate = this._DOM.getInnerHTML(withLegacySelector(this._selector.headerTemplate));
+    this.footerTemplate = this._DOM.getInnerHTML(withLegacySelector(this._selector.footerTemplate));
   }
 
   _insertStyle() {

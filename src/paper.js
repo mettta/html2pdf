@@ -1,3 +1,5 @@
+import { withLegacySelector } from './selector.js';
+
 export default class Paper {
 
   constructor({
@@ -34,9 +36,15 @@ export default class Paper {
     this._virtualPaperTopMarginSelector = selector?.virtualPaperTopMargin || '.virtualPaperTopMargin';
     this._virtualPaperBottomMarginSelector = selector?.virtualPaperBottomMargin || '.virtualPaperBottomMargin';
 
-    this._pageNumberRootSelector = selector?.pageNumberRoot || undefined;
-    this._pageNumberCurrentSelector = selector?.pageNumberCurrent || undefined;
-    this._pageNumberTotalSelector = selector?.pageNumberTotal || undefined;
+    this._pageNumberRootSelector = selector?.pageNumberRoot
+      ? withLegacySelector(selector.pageNumberRoot)
+      : undefined;
+    this._pageNumberCurrentSelector = selector?.pageNumberCurrent
+      ? withLegacySelector(selector.pageNumberCurrent)
+      : undefined;
+    this._pageNumberTotalSelector = selector?.pageNumberTotal
+      ? withLegacySelector(selector.pageNumberTotal)
+      : undefined;
 
     // * private page params
     this._paperHeight;

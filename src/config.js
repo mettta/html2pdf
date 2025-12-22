@@ -1,4 +1,4 @@
-import SELECTOR from './selector.js';
+import SELECTOR, { withLegacySelector } from './selector.js';
 
 export default function createConfig(params) {
 
@@ -57,7 +57,7 @@ export default function createConfig(params) {
     printTopMargin: '12mm',
     printBottomMargin: '12mm',
     printFontSize: '12pt', // todo 16+ // 1:18px 2:36px 3:54px
-    // misk
+    // misc
     paperColor: 'white',
     // print A4 default
     paperWidth: '210mm', // todo <170
@@ -112,8 +112,8 @@ export default function createConfig(params) {
 
     // definition of the selector for the default printable area
     // as specified in the SELECTOR,
-    initialRoot: SELECTOR.init,
-    tocPageNumberSelector:SELECTOR.tocPageNumber,
+    initialRoot: withLegacySelector(SELECTOR.init),
+    tocPageNumberSelector: withLegacySelector(SELECTOR.tocPageNumber),
 
     // and then also redefine the base config.
     ...params
@@ -159,7 +159,7 @@ export default function createConfig(params) {
   // * Add default page-breaking selectors selectors
   // * for to nicely divide the elements of a document:
   config.noHangingSelectors = config.noHangingSelectors + ' H1 H2 H3 H4 H5 H6';
-  config.forcedPageBreakSelectors = config.forcedPageBreakSelectors + ' ' + SELECTOR.printForcedPageBreak;
+  config.forcedPageBreakSelectors = config.forcedPageBreakSelectors + ' ' + withLegacySelector(SELECTOR.printForcedPageBreak);
   // config.pageBreakBeforeSelectors = '';
   // config.pageBreakAfterSelectors = '';
   // config.noBreakSelectors = '';

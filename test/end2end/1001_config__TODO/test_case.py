@@ -1,5 +1,6 @@
 import os
 
+from selenium.webdriver.common.by import By
 from seleniumbase import BaseCase
 
 from test.end2end.helpers.helper import Helper
@@ -23,3 +24,9 @@ class Test(BaseCase):
         # TODO check config option names and warnings from fallback:
         # [HTML2PDF4DOC] Config option "printWidth" is deprecated. Use "paperWidth" instead.
         # [HTML2PDF4DOC] Config option "printHeight" is deprecated. Use "paperHeight" instead.
+
+    def test_02(self):
+        self.helper.open_case(path_to_this_test_file_folder, 'legacy_selector_prefix')
+        self.helper.assert_document_has_pages(3)
+        self.helper.assert_element_has_attribute('//*[@data-testid="ignored"]', 'html2pdf4doc-print-hide');
+        self.helper.assert_element_has_text('//span[@html2pdf-page-number-total]', '3');
