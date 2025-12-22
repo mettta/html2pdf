@@ -241,6 +241,13 @@ class Helper:
 
     # Element
 
+    def assert_element_has_text(self, element_xpath, text: str) -> None:
+        self.test_case.assert_element(
+            f"{element_xpath}"
+            f"[contains(., '{text}')]",
+            by=By.XPATH,
+        )
+
     def assert_element_contains(self, element_xpath, text: str) -> None:
         self.test_case.assert_element(
             f"{element_xpath}"
@@ -250,11 +257,11 @@ class Helper:
 
     def assert_element_has_attribute(self, element_xpath, attribute: str) -> None:
         target = self.test_case.find_element(
-            f'{_content_flow_}{element_xpath}',
+            f'{element_xpath}',
             by=By.XPATH,
         )
         attr_value = self.test_case.get_attribute(
-            f'{_content_flow_}{element_xpath}',
+            f'{element_xpath}',
             attribute,
             by=By.XPATH
         )
