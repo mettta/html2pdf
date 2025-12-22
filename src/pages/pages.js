@@ -904,11 +904,16 @@ export default class Pages {
         // * because it is likely that a semantic improvement was made when the new page was registered,
         // * and the page starts somewhere above the image itself.
         let fullPageImageNodeSpace = this.pages.at(-1).pageBottom - currentImageTop - imgGapBelow;
-        // * if arrayParentBottomEdge: the node is last,
-        // * so let's subtract the probable margins at the bottom of the node,
-        // * which take away the available space for image-node placement:
-        if (arrayParentBottomEdge) {
-          fullPageImageNodeSpace -= (arrayParentBottomEdge - currentImageBottom);
+        // * Rebuild the lower boundary for wrappers where the image stays the last child.
+        // * arrayParentBottomEdge only exists when the current element is the last child in the loop.
+        const tailParent = arrayParentBottomEdge
+          ? null
+          : this._node.findLastChildParent(currentElement, this._contentFlow);
+        const tailBottomEdge = arrayParentBottomEdge
+          ? arrayParentBottomEdge
+          : this._node.getBottom((tailParent || currentElement), this._root);
+        if (tailBottomEdge > currentImageBottom) {
+          fullPageImageNodeSpace -= (tailBottomEdge - currentImageBottom);
         }
 
         // and avoid page overflow if the picture is too big to fit on the page as a whole
