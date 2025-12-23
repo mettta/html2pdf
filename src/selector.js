@@ -9,10 +9,23 @@ const LEGACY_PREFIX = 'html2pdf';
  * This lets querySelector/All match both new and old markup without
  * altering the rest of the selector; if no `html2pdf4doc` is present,
  * it returns the selector unchanged.
+ *
+ * If `legacyTarget` is provided, only that exact substring is replaced
+ * (useful for compound selectors where only a specific part may be legacy).
  */
-export function withLegacySelector(selector) {
+export function withLegacySelector(selector, legacyTarget) {
   if (typeof selector !== 'string') return selector;
   if (!selector.includes(CURRENT_PREFIX)) return selector;
+
+  if (legacyTarget) {
+    if (!selector.includes(legacyTarget)) return selector;
+    const legacyPart = legacyTarget.replaceAll(CURRENT_PREFIX, LEGACY_PREFIX);
+    if (legacyPart === legacyTarget) return selector;
+    const legacySelector = selector.replaceAll(legacyTarget, legacyPart);
+    if (legacySelector === selector) return selector;
+    return `${selector},${legacySelector}`;
+  }
+
   const legacySelector = selector.replaceAll(CURRENT_PREFIX, LEGACY_PREFIX);
   if (legacySelector === selector) return selector;
   return `${selector},${legacySelector}`;

@@ -1,4 +1,4 @@
-import SELECTOR from './selector.js';
+import SELECTOR, { withLegacySelector } from './selector.js';
 
 export default class Style {
 
@@ -254,7 +254,7 @@ ${SELECTOR.tocPageNumber} {
   align-items: baseline;
 }
 
-${SELECTOR.pageNumberRoot} {
+${withLegacySelector(SELECTOR.pageNumberRoot)} {
   display: flex;
   column-gap: 2px;
   position: absolute;
@@ -263,11 +263,11 @@ ${SELECTOR.pageNumberRoot} {
   line-height: 1;
 }
 
-${SELECTOR.headerContent} ${SELECTOR.pageNumberRoot} {
+${withLegacySelector(`${SELECTOR.headerContent} ${SELECTOR.pageNumberRoot}`, SELECTOR.pageNumberRoot)} {
   top: 0;
 }
 
-${SELECTOR.footerContent} ${SELECTOR.pageNumberRoot} {
+${withLegacySelector(`${SELECTOR.footerContent} ${SELECTOR.pageNumberRoot}`, SELECTOR.pageNumberRoot)} {
   bottom: 0;
 }
     `;
