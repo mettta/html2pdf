@@ -18,7 +18,7 @@ class Test(BaseCase):
     def test_001(self):
         self.helper.do_open(index_html_file_url)
 
-        self.helper.assert_document_has_pages(2, report=True)
+        self.helper.assert_document_has_pages(2)
         self.helper.assert_element_on_the_page('//*[@data-testid="TR1"]', 1)
         self.helper.assert_element_on_the_page('//*[@data-testid="TR2"]', 1)
         self.helper.assert_element_on_the_page('//*[@data-testid="TR3"]', 1)

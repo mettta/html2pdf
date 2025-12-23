@@ -34,8 +34,8 @@ class Test(BaseCase):
     def test_01(self):
         self.helper.do_open(index_html_file_url)
         self.helper.assert_document_has_pages(2)
-        self.helper.assert_element_on_the_page(test_element1, 1, report=True)
-        self.helper.assert_element_on_the_page(test_element2, 2, report=True)
+        self.helper.assert_element_on_the_page(test_element1, 1)
+        self.helper.assert_element_on_the_page(test_element2, 2)
 
     def test_02_inline(self):
         self.helper.do_open(inline_html_file_url)
@@ -48,8 +48,8 @@ class Test(BaseCase):
         # todo: Implement a case 'fit_width' and write a test
         # self.helper.assert_element_fit_width(test_image_horizontal)
         self.helper.assert_document_has_pages(3)
-        self.helper.assert_element_on_the_page(test_element1, 1, report=True)
-        self.helper.assert_element_on_the_page(test_element2, 3, report=True)
+        self.helper.assert_element_on_the_page(test_element1, 1)
+        self.helper.assert_element_on_the_page(test_element2, 3)
 
     # def test_04_inline_resize(self):
     #     self.helper.do_open(inline_res_html_file_url)
