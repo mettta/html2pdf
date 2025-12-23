@@ -9,6 +9,11 @@ export default class NodeState {
   constructor(flagOptions = {}) {
     this.flags = new FlagStore(flagOptions);
     this.measure = new MeasureCache();
+    this.registry = {
+      pageStart: new Map(),
+      pageEnd: new Map(),
+      pageNumber: new Map(),
+    };
   }
 
   resetMeasureCache() {

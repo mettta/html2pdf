@@ -58,6 +58,56 @@ export function resetMeasureCache() {
 /**
  * @this {Node}
  */
+export function registerPageStart(element, pageNum) {
+  if (!element) return;
+  this._state.registry.pageStart.set(Number(pageNum), element);
+}
+
+/**
+ * @this {Node}
+ */
+export function unregisterPageStart(element) {
+  if (!element) return;
+  for (const [page, el] of this._state.registry.pageStart.entries()) {
+    if (el === element) {
+      this._state.registry.pageStart.delete(page);
+      return;
+    }
+  }
+}
+
+/**
+ * @this {Node}
+ */
+export function registerPageEnd(element, pageNum) {
+  if (!element) return;
+  this._state.registry.pageEnd.set(Number(pageNum), element);
+}
+
+/**
+ * @this {Node}
+ */
+export function registerPageNumber(element, pageNum) {
+  if (!element) return;
+  this._state.registry.pageNumber.set(Number(pageNum), element);
+}
+
+/**
+ * @this {Node}
+ */
+export function getRegisteredPageNumbers() {
+  return this._state.registry.pageNumber;
+}
+
+/**
+ * @this {Node}
+ */
+export function getRegisteredPageEnds() {
+  return this._state.registry.pageEnd;
+}
+/**
+ * @this {Node}
+ */
 export function _getFlagAttributeConfig(key) {
   switch (key) {
     case 'processed':
