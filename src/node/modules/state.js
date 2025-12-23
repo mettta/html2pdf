@@ -60,7 +60,8 @@ export function resetMeasureCache() {
 /**
  * @this {Node}
  */
-export function registerPageStart(element, pageNum) {
+// Internal registry helpers (used only via setFlag/clearFlag).
+function registerPageStart(element, pageNum) {
   if (!element) return;
   this._state.registry.pageStart.set(Number(pageNum), element);
 }
@@ -68,7 +69,7 @@ export function registerPageStart(element, pageNum) {
 /**
  * @this {Node}
  */
-export function unregisterPageStart(element) {
+function unregisterPageStart(element) {
   if (!element) return;
   for (const [page, el] of this._state.registry.pageStart.entries()) {
     if (el === element) {
@@ -81,7 +82,7 @@ export function unregisterPageStart(element) {
 /**
  * @this {Node}
  */
-export function registerPageEnd(element, pageNum) {
+function registerPageEnd(element, pageNum) {
   if (!element) return;
   this._state.registry.pageEnd.set(Number(pageNum), element);
 }
@@ -89,7 +90,7 @@ export function registerPageEnd(element, pageNum) {
 /**
  * @this {Node}
  */
-export function registerPageNumber(element, pageNum) {
+function registerPageNumber(element, pageNum) {
   if (!element) return;
   const page = Number(pageNum);
   let bucket = this._state.registry.pageNumberByPage.get(page);
@@ -123,13 +124,13 @@ export function _registerFlag(element, key, value) {
   if (!element) return;
   switch (key) {
     case 'pageStart':
-      this.registerPageStart(element, value);
+      registerPageStart.call(this, element, value);
       break;
     case 'pageEnd':
-      this.registerPageEnd(element, value);
+      registerPageEnd.call(this, element, value);
       break;
     case 'pageNumber':
-      this.registerPageNumber(element, value);
+      registerPageNumber.call(this, element, value);
       break;
     default:
       break;
@@ -143,7 +144,7 @@ export function _unregisterFlag(element, key) {
   if (!element) return;
   switch (key) {
     case 'pageStart':
-      this.unregisterPageStart(element);
+      unregisterPageStart.call(this, element);
       break;
     case 'pageEnd':
       // Use explicit removal by identity.
