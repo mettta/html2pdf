@@ -93,14 +93,6 @@ export default class Validator {
       for (const [page, el] of pageEndRegistry.entries()) {
         _pageEndByPage[page] = el;
       }
-    } else {
-      const pageEndMarkerSelector = `${this._selector.contentFlow} ${this._selector.pageEndMarker}`;
-      const rawPageEndElements = this._DOM.getAllElements(pageEndMarkerSelector);
-      for (const el of rawPageEndElements) {
-        const page = parseInt(this._DOM.getAttribute(el, this._selector.pageEndMarker), 10);
-        this.strictAssert(!Number.isNaN(page), 'pageEnd has no valid page end marker', el);
-        _pageEndByPage[page] = el;
-      }
     }
 
     const bodyBottoms = _bodySpacersByPageNum.map(body => body ? this._node.getBottom(body, this._root) : undefined);
