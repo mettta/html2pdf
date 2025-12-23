@@ -40,3 +40,21 @@ class Test(BaseCase):
         # Testing includes scoped legacy selector replacement:
         self.helper.assert_element_has_text(full_path_header_page_num_total, '3');
         self.helper.assert_element_has_text(full_path_footer_page_num_total, '3');
+        # Checking for styles:
+        style_xpath = "//style[@html2pdf4doc-style]"
+        self.assert_element_present(
+            f"{style_xpath}",
+            by=By.XPATH
+        )
+        self.assert_element_present(
+            f"{style_xpath}[contains(., '[html2pdf4doc-page-number],[html2pdf-page-number]')]",
+            by=By.XPATH
+        )
+        self.assert_element_present(
+            f"{style_xpath}[contains(., 'html2pdf4doc-header [html2pdf4doc-page-number],html2pdf4doc-header [html2pdf-page-number]')]",
+            by=By.XPATH
+        )
+        self.assert_element_present(
+            f"{style_xpath}[contains(., 'html2pdf4doc-footer [html2pdf4doc-page-number],html2pdf4doc-footer [html2pdf-page-number]')]",
+            by=By.XPATH
+        )
