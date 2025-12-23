@@ -18,220 +18,7 @@
   <link rel="stylesheet" href="../css/autogen.css">
   <link rel="stylesheet" href="../css/tree.css">
 
-  <style js-resizable_bar-initial-style="">
-    [js-resizable_bar]{width:20vw}[js-resizable_bar="tree"]{width:12px}[js-resizable_bar="toc"]{width:12px}
-  </style>
-  <style js-resizable_bar-initial-preloader-style="">
-    aside {
-      /* for a pseudo preloader [js-resizable_bar]::after, affects: layout_tree,layout_toc */
-      position: relative;
-    }
-    [js-resizable_bar]::after {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        content: '';
-        position: absolute;
-        left: 0; right: 0; top: 0; bottom: 0;
-        z-index: 2;
-        background-color: var(--color-bg-main, White);
-    }
-  </style>
-  <style js-resizable_bar-style="">
-  [js-resizable_bar] {
-    position: relative;
-    height: 100%;
-    max-width: 20vw;
-  }
 
-  [js-resizable_bar]:hover {
-    z-index: 22;
-  }
-
-  [js-resizable_bar][data-state="open"] {
-    min-width: 77px;
-    pointer-events: auto;
-  }
-  [js-resizable_bar][data-state="closed"] {
-    max-width: 12px;
-    min-width: 12px;
-    pointer-events: none;
-    transition: .5s;
-  }
-
-  [js-resizable_bar][data-position="left"] {
-    border-left: none;
-  }
-  [js-resizable_bar][data-position="right"] {
-    border-right: none;
-  }
-
-  [js-resizable_bar-handler] {
-    pointer-events: auto;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 10;
-    width: 8px;
-    color: var(--color-fg-accent, currentColor);
-  }
-
-  [js-resizable_bar-border] {
-    pointer-events: auto;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 8px;
-    background: transparent;
-    transition: .3s;
-    cursor: col-resize;
-  }
-
-  [js-resizable_bar][data-state="closed"] [js-resizable_bar-border] {
-    cursor: e-resize;
-  }
-
-  [js-resizable_bar-border]::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 1px;
-    background: var(--color-border, rgba(0,0,0,0.1));
-    transition: .3s;
-  }
-
-  [js-resizable_bar-border]::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 4px;
-    background: transparent;
-    transition: .3s;
-  }
-
-  [js-resizable_bar][data-position="left"] [js-resizable_bar-border]::before {
-    right: 0;
-    left: unset;
-  }
-  [js-resizable_bar][data-position="left"] [js-resizable_bar-border]::after {
-    right: -2px;
-    left: unset;
-  }
-
-  [js-resizable_bar][data-position="right"] [js-resizable_bar-border]::before {
-    right: unset;
-    left: 0;
-  }
-  [js-resizable_bar][data-position="right"] [js-resizable_bar-border]::after {
-    right: unset;
-    left: -2px;
-  }
-
-  [js-resizable_bar-border]:hover::after {
-    background: var(--color-fg-accent, currentColor);
-  }
-
-  [js-resizable_bar-button] {
-    cursor: pointer;
-    position: absolute;
-    z-index: 2;
-    left: 0;
-    right: 0;
-    top: -8px;
-    box-sizing: border-box;
-    width: 16px;
-    height: 16px;
-    font-size: 12px;
-    font-weight: bold;
-    border-radius: 50%;
-    border-width: 1px;
-    border-style: solid;
-    border-color: var(--color-bg-main, White);
-    background: var(--color-bg-main, White);
-    color: var(--color-fg-accent, currentColor);
-    transition: .3s;
-  }
-
-  [data-position="right"] [js-resizable_bar-button] {
-    right: 0;
-    left: unset;
-  }
-  [data-position="left"] [js-resizable_bar-button] {
-    left: 0;
-    right: unset;
-  }
-
-  [js-resizable_bar-button]:hover {
-    color: var(--color-fg-main, Black);
-    border-color: var(--color-fg-main, Black);
-  }
-
-  /* ❮❯ */
-  [js-resizable_bar-button]::after {
-    content: '❮';
-    position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    left: 0;
-    right: 0;
-    top: -8px;
-    bottom: -8px;
-  }
-  [js-resizable_bar][data-state="open"] [js-resizable_bar-button]::after,
-  [js-resizable_bar][data-state="open"][data-position="left"] [js-resizable_bar-button]::after,
-  [js-resizable_bar][data-state="closed"][data-position="right"] [js-resizable_bar-button]::after {
-    content: '❮';
-  }
-  [js-resizable_bar][data-state="closed"] [js-resizable_bar-button]::after,
-  [js-resizable_bar][data-state="closed"][data-position="left"] [js-resizable_bar-button]::after,
-  [js-resizable_bar][data-state="open"][data-position="right"] [js-resizable_bar-button]::after {
-    content: '❯';
-  }
-
-  [js-resizable_bar-scroll] {
-    height: 100%;
-    overflow-x: hidden;
-    overflow-y: scroll;
-    /*padding: calc(var(--base-rhythm, 8px)*2);
-    padding-bottom: calc(var(--base-rhythm, 8px)*8);*/
-    scrollbar-color: var(--scrollbarBG, transparent) var(--scrollbarBG, transparent);
-  }
-  [js-resizable_bar-scroll='y'] {
-    overflow-x: hidden;
-    overflow-y: scroll;
-  }
-  [js-resizable_bar-scroll]:hover {
-    scrollbar-color: var(--thumbBG, rgba(0,0,0,.05)) var(--scrollbarBG, transparent);
-  }
-  [js-resizable_bar-scroll]::-webkit-scrollbar-thumb {
-    background-color: var(--scrollbarBG, transparent);
-  }
-  [js-resizable_bar-scroll]:hover::-webkit-scrollbar-thumb {
-    background-color: var(--thumbBG, rgba(0,0,0,.05))
-  }
-
-  [data-state="closed"] [js-resizable_bar-scroll] {
-    display: none;
-  }
-  </style>
-  <style js-resizable_bar-preloader-style="">
-      [js-resizable_bar]::after {
-        opacity: 0;
-        transition: .3s;
-        pointer-events: none;
-      }
-  </style>
 
   <!-- HTML2PDF4DOC -->
   <!-- data-debug-mode='true' -->
@@ -239,6 +26,7 @@
     defer
     data-console-assert="true"
     data-debug-mode='true'
+    data-markup-debug-mode="true"
     data-preloader='true'
     data-preloader-target='[html2pdf4doc-preloader]'
     data-preloader-background='#F2F5F9'
@@ -277,14 +65,8 @@
   </a>
   </div>
   </nav>
-  <aside class="layout_tree">
-  <div js-resizable_bar="tree" data-state="closed" data-position="left" data-testid="tree-bar" style="width: 20vw;"><div js-resizable_bar-scroll="y" data-content="tree"></div>
-  <div js-resizable_bar-handler="" data-content="tree" style="left: unset;"><div js-resizable_bar-border="" data-content="tree" title="Resize tree" data-testid="tree-handler-border"></div><div js-resizable_bar-button="" data-content="tree" title="Toggle tree" data-testid="tree-handler-button"></div></div></div>
-  </aside>
-  <aside data-position="right" class="layout_toc">
-  <div js-resizable_bar="toc" data-state="closed" data-position="right" data-testid="toc-bar" style="width: 20vw;"><div js-resizable_bar-scroll="y" data-content="toc"></div>
-  <div js-resizable_bar-handler="" data-content="toc" style="right: unset;"><div js-resizable_bar-border="" data-content="toc" title="Resize toc" data-testid="toc-handler-border"></div><div js-resizable_bar-button="" data-content="toc" title="Toggle toc" data-testid="toc-handler-button"></div></div></div>
-  </aside>
+  <aside class="layout_tree"></aside>
+  <aside data-position="right" class="layout_toc"></aside>
   <header class="layout_header">
   <div class="header">
   <svg class="svg_icon" width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">

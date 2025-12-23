@@ -129,7 +129,7 @@ export function isWrappedTextGroup(element) {
  * @this {Node}
  */
 export function isPageStartElement(element) {
-  return this.isSelectorMatching(element, this._selector.pageStartMarker)
+  return this.hasFlag(element, 'pageStart');
 }
 
 /**
@@ -175,7 +175,7 @@ export function isSyntheticTextWrapper(element) {
  * @this {Node}
  */
 export function isNoBreak(element, _style) {
-  return this.isSelectorMatching(element, this._selector.flagNoBreak)
+  return this.hasFlag(element, 'noBreak')
     || this.isWrappedTextLine(element)
     || this.isWrappedTextGroup(element)
     || this.isInlineBlock(element, _style)
@@ -187,14 +187,14 @@ export function isNoBreak(element, _style) {
  * @this {Node}
  */
 export function isNoHanging(element) {
-  return this.isSelectorMatching(element, this._selector.flagNoHanging)
+  return this.hasFlag(element, 'noHanging');
 }
 
 /**
  * @this {Node}
  */
 export function isSlice(element) {
-  return this.isSelectorMatching(element, this._selector.flagSlice)
+  return this.hasFlag(element, 'slice');
 }
 
 /**

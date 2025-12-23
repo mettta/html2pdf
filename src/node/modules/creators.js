@@ -76,7 +76,8 @@ export function createTextGroup() {
  * @this {Node}
  */
 export function createWithFlagNoBreak(style) {
-  const element = this.create(this._selector.flagNoBreak);
+  const element = this.create();
+  this.setFlagNoBreak(element);
   style && this._DOM.setStyles(element, style);
   return element;
 }
