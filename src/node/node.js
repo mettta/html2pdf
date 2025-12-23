@@ -23,6 +23,8 @@ import * as PaginationOverflow from './modules/pagination/overflow.js';
 import * as PaginationShortTail from './modules/pagination/shortTail.js';
 import * as PaginationEvaluation from './modules/pagination/evaluation.js';
 import * as PaginationResolution from './modules/pagination/resolution.js';
+import * as State from './modules/state.js';
+import NodeState from './state/index.js';
 import Paragraph from './elements/paragraph.js';
 import Table from './elements/table.js';
 import TableLike from './elements/tableLike.js';
@@ -43,6 +45,13 @@ export default class Node {
     this._debug = config.debugMode ? { ...config.debugConfig.node } : {};
     this._assert = config.consoleAssert ? true : false;
     this._markupDebugMode = this._config.markupDebugMode;
+    this._state = new NodeState({
+      debugMode: this._config.debugMode,
+      markupDebugMode: this._config.markupDebugMode,
+      setAttribute: this._DOM.setAttribute.bind(this._DOM),
+      removeAttribute: this._DOM.removeAttribute.bind(this._DOM),
+    });
+    this._flags = this._state.flags;
 
     Object.assign(this, Logging);
 
@@ -70,6 +79,7 @@ export default class Node {
     Object.assign(this, PaginationShortTail);
     Object.assign(this, PaginationEvaluation);
     Object.assign(this, PaginationResolution);
+    Object.assign(this, State);
 
     this._paragraph = new Paragraph({
       config: this._config,
