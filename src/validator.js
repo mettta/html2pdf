@@ -79,7 +79,10 @@ export default class Validator {
     const _bodySpacersByPageNum = [];
     const bodySpacerElements = [...this._DOM.getAllElements(bodySpacerSelector)];
     for (const el of bodySpacerElements) {
-      const page = parseInt(this._DOM.getAttribute(el, this._selector.pageMarker), 10);
+      const registeredPage = this._node.getRegisteredPageNumberForElement?.(el);
+      const page = Number.isFinite(registeredPage)
+        ? registeredPage
+        : parseInt(this._DOM.getAttribute(el, this._selector.pageMarker), 10);
       this.strictAssert(!Number.isNaN(page), 'bodySpacer has no valid page marker', el);
       _bodySpacersByPageNum[page] = el;
     }

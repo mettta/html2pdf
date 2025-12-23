@@ -12,7 +12,10 @@ export default class NodeState {
     this.registry = {
       pageStart: new Map(),
       pageEnd: new Map(),
-      pageNumber: new Map(),
+      // Page -> Set of elements that carry that page number.
+      pageNumberByPage: new Map(),
+      // Element -> page number (fast reverse lookup).
+      pageNumberByElement: new WeakMap(),
     };
   }
 

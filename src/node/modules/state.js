@@ -89,14 +89,29 @@ export function registerPageEnd(element, pageNum) {
  */
 export function registerPageNumber(element, pageNum) {
   if (!element) return;
-  this._state.registry.pageNumber.set(Number(pageNum), element);
+  const page = Number(pageNum);
+  let bucket = this._state.registry.pageNumberByPage.get(page);
+  if (!bucket) {
+    bucket = new Set();
+    this._state.registry.pageNumberByPage.set(page, bucket);
+  }
+  bucket.add(element);
+  this._state.registry.pageNumberByElement.set(element, page);
 }
 
 /**
  * @this {Node}
  */
 export function getRegisteredPageNumbers() {
-  return this._state.registry.pageNumber;
+  return this._state.registry.pageNumberByPage;
+}
+
+/**
+ * @this {Node}
+ */
+export function getRegisteredPageNumberForElement(element) {
+  if (!element) return undefined;
+  return this._state.registry.pageNumberByElement.get(element);
 }
 
 /**

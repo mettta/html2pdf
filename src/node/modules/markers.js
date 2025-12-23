@@ -36,7 +36,8 @@ export function setFlagSlice(element) {
  * @this {Node}
  */
 export function markPageStartElement(element, pageNum) {
-  this.setFlag(element, 'pageStart', pageNum, { forceAttribute: true });
+  this.setFlag(element, 'pageStart', pageNum);
+  // this.setFlag(element, 'pageStart', pageNum, { forceAttribute: true });
   this.registerPageStart(element, pageNum);
 }
 
@@ -44,7 +45,8 @@ export function markPageStartElement(element, pageNum) {
  * @this {Node}
  */
 export function unmarkPageStartElement(element) {
-  this.clearFlag(element, 'pageStart', { forceAttribute: true });
+  this.clearFlag(element, 'pageStart');
+  // this.clearFlag(element, 'pageStart', { forceAttribute: true });
   this.unregisterPageStart(element);
 }
 
@@ -52,7 +54,8 @@ export function unmarkPageStartElement(element) {
  * @this {Node}
  */
 export function markPageEndElement(element, pageNum) {
-  this.setFlag(element, 'pageEnd', pageNum, { forceAttribute: true });
+  this.setFlag(element, 'pageEnd', pageNum);
+  // this.setFlag(element, 'pageEnd', pageNum, { forceAttribute: true });
   this.registerPageEnd(element, pageNum);
 }
 
@@ -60,7 +63,8 @@ export function markPageEndElement(element, pageNum) {
  * @this {Node}
  */
 export function markPageNumber(element, pageNum) {
-  this.setFlag(element, 'pageNumber', pageNum, { forceAttribute: true });
+  this.setFlag(element, 'pageNumber', pageNum);
+  // this.setFlag(element, 'pageNumber', pageNum, { forceAttribute: true });
   this.registerPageNumber(element, pageNum);
 }
 
