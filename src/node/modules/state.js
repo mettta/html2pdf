@@ -10,6 +10,7 @@ export function setFlag(element, key, value, options = {}) {
     ...options,
   };
   this._flags.set(element, key, value, mergedOptions);
+  this._registerFlag?.(element, key, value);
 }
 
 /**
@@ -31,6 +32,7 @@ export function hasFlag(element, key) {
  */
 export function clearFlag(element, key, options) {
   this._flags.clear(element, key, options);
+  this._unregisterFlag?.(element, key);
 }
 
 /**
@@ -112,6 +114,62 @@ export function getRegisteredPageNumbers() {
 export function getRegisteredPageNumberForElement(element) {
   if (!element) return undefined;
   return this._state.registry.pageNumberByElement.get(element);
+}
+
+/**
+ * @this {Node}
+ */
+export function _registerFlag(element, key, value) {
+  if (!element) return;
+  switch (key) {
+    case 'pageStart':
+      this.registerPageStart(element, value);
+      break;
+    case 'pageEnd':
+      this.registerPageEnd(element, value);
+      break;
+    case 'pageNumber':
+      this.registerPageNumber(element, value);
+      break;
+    default:
+      break;
+  }
+}
+
+/**
+ * @this {Node}
+ */
+export function _unregisterFlag(element, key) {
+  if (!element) return;
+  switch (key) {
+    case 'pageStart':
+      this.unregisterPageStart(element);
+      break;
+    case 'pageEnd':
+      // Use explicit removal by identity.
+      for (const [page, el] of this._state.registry.pageEnd.entries()) {
+        if (el === element) {
+          this._state.registry.pageEnd.delete(page);
+          break;
+        }
+      }
+      break;
+    case 'pageNumber':
+      {
+        const page = this._state.registry.pageNumberByElement.get(element);
+        if (page !== undefined) {
+          const bucket = this._state.registry.pageNumberByPage.get(page);
+          if (bucket) {
+            bucket.delete(element);
+            if (bucket.size === 0) this._state.registry.pageNumberByPage.delete(page);
+          }
+          this._state.registry.pageNumberByElement.delete(element);
+        }
+      }
+      break;
+    default:
+      break;
+  }
 }
 
 /**

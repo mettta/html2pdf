@@ -7,9 +7,9 @@ const _isDebug = debugFor('markers');
  * @this {Node}
  */
 export function markProcessed(element, value) {
-  if (!this._markupDebugMode) return;
-  this.setFlag(element, 'processed', value, { forceAttribute: true });
+  this.setFlag(element, 'processed', value);
 }
+
 
 /**
  * @this {Node}
@@ -37,8 +37,6 @@ export function setFlagSlice(element) {
  */
 export function markPageStartElement(element, pageNum) {
   this.setFlag(element, 'pageStart', pageNum);
-  // this.setFlag(element, 'pageStart', pageNum, { forceAttribute: true });
-  this.registerPageStart(element, pageNum);
 }
 
 /**
@@ -46,8 +44,6 @@ export function markPageStartElement(element, pageNum) {
  */
 export function unmarkPageStartElement(element) {
   this.clearFlag(element, 'pageStart');
-  // this.clearFlag(element, 'pageStart', { forceAttribute: true });
-  this.unregisterPageStart(element);
 }
 
 /**
@@ -55,8 +51,6 @@ export function unmarkPageStartElement(element) {
  */
 export function markPageEndElement(element, pageNum) {
   this.setFlag(element, 'pageEnd', pageNum);
-  // this.setFlag(element, 'pageEnd', pageNum, { forceAttribute: true });
-  this.registerPageEnd(element, pageNum);
 }
 
 /**
@@ -64,8 +58,6 @@ export function markPageEndElement(element, pageNum) {
  */
 export function markPageNumber(element, pageNum) {
   this.setFlag(element, 'pageNumber', pageNum);
-  // this.setFlag(element, 'pageNumber', pageNum, { forceAttribute: true });
-  this.registerPageNumber(element, pageNum);
 }
 
 /**

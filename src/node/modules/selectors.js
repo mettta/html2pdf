@@ -201,6 +201,7 @@ export function isSlice(element) {
  * @this {Node}
  */
 export function isForcedPageBreak(element) {
+  // todo: use attribute instead of custom html element inserted in DOM.
   return this.isSelectorMatching(element, this._selector.printForcedPageBreak)
 }
 
