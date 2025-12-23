@@ -10,6 +10,13 @@ case01_html_file_url = (
     "file:///" + os.path.join(path_to_this_test_file_folder, "case-01.html")
 )
 
+# legacy selector replacement:
+root = '//*[@html2pdf]';
+test_aside = '//*[@data-testid="ignored"]';
+page_num_total = '//span[@html2pdf-page-number-total]';
+# scoped legacy selector replacement (the 2nd one has legacy prefix):
+full_path_header_page_num_total = '//html2pdf4doc-header//span[@html2pdf-page-number-total]';
+full_path_footer_page_num_total = '//html2pdf4doc-footer//span[@html2pdf-page-number-total]';
 
 class Test(BaseCase):
     def __init__(self, *args, **kwargs):
@@ -28,5 +35,26 @@ class Test(BaseCase):
     def test_02(self):
         self.helper.open_case(path_to_this_test_file_folder, 'legacy_selector_prefix')
         self.helper.assert_document_has_pages(3)
-        self.helper.assert_element_has_attribute('//*[@data-testid="ignored"]', 'html2pdf4doc-print-hide');
-        self.helper.assert_element_has_text('//span[@html2pdf-page-number-total]', '3');
+        self.helper.assert_element_has_attribute(root, 'html2pdf4doc-print-ignore');
+        self.helper.assert_element_has_attribute(test_aside, 'html2pdf4doc-print-hide');
+        # Testing includes scoped legacy selector replacement:
+        self.helper.assert_element_has_text(full_path_header_page_num_total, '3');
+        self.helper.assert_element_has_text(full_path_footer_page_num_total, '3');
+        # Checking for styles:
+        style_xpath = "//style[@html2pdf4doc-style]"
+        self.assert_element_present(
+            f"{style_xpath}",
+            by=By.XPATH
+        )
+        self.assert_element_present(
+            f"{style_xpath}[contains(., '[html2pdf4doc-page-number],[html2pdf-page-number]')]",
+            by=By.XPATH
+        )
+        self.assert_element_present(
+            f"{style_xpath}[contains(., 'html2pdf4doc-header [html2pdf4doc-page-number],html2pdf4doc-header [html2pdf-page-number]')]",
+            by=By.XPATH
+        )
+        self.assert_element_present(
+            f"{style_xpath}[contains(., 'html2pdf4doc-footer [html2pdf4doc-page-number],html2pdf4doc-footer [html2pdf-page-number]')]",
+            by=By.XPATH
+        )
