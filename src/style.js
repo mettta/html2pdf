@@ -154,6 +154,8 @@ ${SELECTOR.pageHeader}::before {
   content: '';
   position: absolute;
   inset: 0;
+  left: -10px;
+  right: -10px;
   z-index: -1;
   background: var(--paper-color, white);
 }
