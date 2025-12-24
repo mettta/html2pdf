@@ -1,4 +1,4 @@
-// 📦 state helpers
+// 📦 markers helpers
 
 /**
  * @this {Node}
@@ -38,32 +38,10 @@ export function clearFlag(element, key, options) {
 /**
  * @this {Node}
  */
-export function getBCRCached(element, key, getter) {
-  return this._state.measure.getBCR(element, key, getter);
-}
-
-/**
- * @this {Node}
- */
-export function getComputedStyleCached(element, key, getter) {
-  const fallback = getter || (() => this._DOM.getComputedStyle(element));
-  return this._state.measure.getStyle(element, key, fallback);
-}
-
-/**
- * @this {Node}
- */
-export function resetMeasureCache() {
-  this._state.resetMeasureCache();
-}
-
-/**
- * @this {Node}
- */
 // Internal registry helpers (used only via setFlag/clearFlag).
 function registerPageStart(element, pageNum) {
   if (!element) return;
-  this._state.registry.pageStart.set(Number(pageNum), element);
+  this._markers.registry.pageStart.set(Number(pageNum), element);
 }
 
 /**
@@ -71,9 +49,9 @@ function registerPageStart(element, pageNum) {
  */
 function unregisterPageStart(element) {
   if (!element) return;
-  for (const [page, el] of this._state.registry.pageStart.entries()) {
+  for (const [page, el] of this._markers.registry.pageStart.entries()) {
     if (el === element) {
-      this._state.registry.pageStart.delete(page);
+      this._markers.registry.pageStart.delete(page);
       return;
     }
   }
@@ -84,7 +62,7 @@ function unregisterPageStart(element) {
  */
 function registerPageEnd(element, pageNum) {
   if (!element) return;
-  this._state.registry.pageEnd.set(Number(pageNum), element);
+  this._markers.registry.pageEnd.set(Number(pageNum), element);
 }
 
 /**
@@ -93,20 +71,20 @@ function registerPageEnd(element, pageNum) {
 function registerPageNumber(element, pageNum) {
   if (!element) return;
   const page = Number(pageNum);
-  let bucket = this._state.registry.pageNumberByPage.get(page);
+  let bucket = this._markers.registry.pageNumberByPage.get(page);
   if (!bucket) {
     bucket = new Set();
-    this._state.registry.pageNumberByPage.set(page, bucket);
+    this._markers.registry.pageNumberByPage.set(page, bucket);
   }
   bucket.add(element);
-  this._state.registry.pageNumberByElement.set(element, page);
+  this._markers.registry.pageNumberByElement.set(element, page);
 }
 
 /**
  * @this {Node}
  */
 export function getRegisteredPageNumbers() {
-  return this._state.registry.pageNumberByPage;
+  return this._markers.registry.pageNumberByPage;
 }
 
 /**
@@ -114,7 +92,7 @@ export function getRegisteredPageNumbers() {
  */
 export function getRegisteredPageNumberForElement(element) {
   if (!element) return undefined;
-  return this._state.registry.pageNumberByElement.get(element);
+  return this._markers.registry.pageNumberByElement.get(element);
 }
 
 /**
@@ -148,23 +126,23 @@ export function _unregisterFlag(element, key) {
       break;
     case 'pageEnd':
       // Use explicit removal by identity.
-      for (const [page, el] of this._state.registry.pageEnd.entries()) {
+      for (const [page, el] of this._markers.registry.pageEnd.entries()) {
         if (el === element) {
-          this._state.registry.pageEnd.delete(page);
+          this._markers.registry.pageEnd.delete(page);
           break;
         }
       }
       break;
     case 'pageNumber':
       {
-        const page = this._state.registry.pageNumberByElement.get(element);
+        const page = this._markers.registry.pageNumberByElement.get(element);
         if (page !== undefined) {
-          const bucket = this._state.registry.pageNumberByPage.get(page);
+          const bucket = this._markers.registry.pageNumberByPage.get(page);
           if (bucket) {
             bucket.delete(element);
-            if (bucket.size === 0) this._state.registry.pageNumberByPage.delete(page);
+            if (bucket.size === 0) this._markers.registry.pageNumberByPage.delete(page);
           }
-          this._state.registry.pageNumberByElement.delete(element);
+          this._markers.registry.pageNumberByElement.delete(element);
         }
       }
       break;
@@ -177,7 +155,7 @@ export function _unregisterFlag(element, key) {
  * @this {Node}
  */
 export function getRegisteredPageEnds() {
-  return this._state.registry.pageEnd;
+  return this._markers.registry.pageEnd;
 }
 /**
  * @this {Node}

@@ -25,7 +25,7 @@ It separates internal logic from debug/test DOM attributes.
 ## How to Write Markers
 Use marker helpers (preferred) or `setFlag` directly:
 - Marker helpers live in `src/node/markers/`.
-- `setFlag`/`clearFlag` live in `src/node/modules/state.js`.
+- `setFlag`/`clearFlag` live in `src/node/markers/api.js`.
 
 Example:
 ```js
