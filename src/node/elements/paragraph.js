@@ -95,7 +95,7 @@ export default class Paragraph {
     // * Process the children of the block:
     const partiallyLinedChildren = extendedChildrenArray.flatMap((item) => {
       // * Break it down as needed:
-      if ((item.lines > 1) && !this._node.isNoBreak(item.element)) {
+      if ((item.lines > 1) && !this._node.isNotBreakable(item.element)) {
         return this._breakItIntoLines(item.element); // array
       }
       // * otherwise keep the original element:

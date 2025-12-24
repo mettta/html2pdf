@@ -8,13 +8,8 @@ export function isPageStartElement(element) {
 /**
  * @this {Node}
  */
-export function isNoBreak(element, _style) {
-  return this.hasFlag(element, 'noBreak')
-    || this.isWrappedTextLine(element)
-    || this.isWrappedTextGroup(element)
-    || this.isInlineBlock(element, _style)
-    || this.notSolved(element);
-  // TODO
+export function isNoBreak(element) {
+  return this.hasFlag(element, 'noBreak');
 }
 
 /**

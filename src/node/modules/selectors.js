@@ -361,6 +361,22 @@ export function isFlexRow(element, style) {
 /**
  * @this {Node}
  */
+export function isNotBreakable(element, _style) {
+  // TODO
+  const _isInlineBlock = _style ? this.isInlineBlock(element, _style) : false;
+
+  return this.isNoBreak(element)
+    || this.isWrappedTextLine(element)
+    || this.isWrappedTextGroup(element)
+    || _isInlineBlock
+    || this.notSolved(element);
+}
+
+// marks
+
+/**
+ * @this {Node}
+ */
 export function isSliced(element, style) {
   const computedStyle = style || this._DOM.getComputedStyle(element);
   return (

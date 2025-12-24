@@ -570,7 +570,7 @@ export default class Pages {
       &&
       // * fits in the next page:
       (
-        this._node.isNoBreak(currentElement)
+        this._node.isNotBreakable(currentElement)
         || currentBlockBottom <= this.pages.at(-1).pageBottom
       )
     ) {
