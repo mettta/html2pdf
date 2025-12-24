@@ -70,6 +70,21 @@ function registerPageEnd(element, pageNum) {
 /**
  * @this {Node}
  */
+export function registerPageDivider(element, pageNum) {
+  if (!element) return;
+  this._markers.registry.pageDividerByPage.set(Number(pageNum), element);
+}
+
+/**
+ * @this {Node}
+ */
+export function getRegisteredPageDividers() {
+  return this._markers.registry.pageDividerByPage;
+}
+
+/**
+ * @this {Node}
+ */
 function registerPageNumber(element, pageNum) {
   if (!element) return;
   const page = Number(pageNum);

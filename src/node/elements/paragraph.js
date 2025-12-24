@@ -52,7 +52,7 @@ export default class Paragraph {
       return []
     }
 
-    if (this._node.isSelectorMatching(node, this._selector.split)) {
+    if (this._node.hasFlag(node, 'split')) {
       // * This node has already been processed and has lines and groups of lines inside it,
 
       this.logGroupEnd(this._selector.split);
@@ -214,7 +214,7 @@ export default class Paragraph {
 
     this.logGroupEnd('OK _splitComplexTextBlockIntoLines');
 
-    this._DOM.setAttribute(node, this._selector.split);
+    this._node.setFlag(node, 'split');
 
     return linedChildren
   }

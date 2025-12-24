@@ -14,4 +14,5 @@ export const FLAG_DEFS = {
   cleanBottomCut: { kind: 'runtime', selectorKey: 'cleanBottomCut' },
   topCut: { kind: 'runtime', selectorKey: 'topCutPart' },
   bottomCut: { kind: 'runtime', selectorKey: 'bottomCutPart' },
+  split: { kind: 'runtime', selectorKey: 'split' },
 };

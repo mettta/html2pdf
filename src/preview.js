@@ -270,6 +270,7 @@ export default class Preview {
     // TODO move to DOM:
     const pageDivider = this._node.create(this._pageDivider);
     this._DOM.setAttribute(pageDivider, '[page]', `${pageIndex + 1}`);
+    this._node.registerPageDivider(pageDivider, pageIndex + 1);
 
     // Non-virtual margins need to be added to the outer wrapper pageDivider,
     // because if the code of the document being printed puts
