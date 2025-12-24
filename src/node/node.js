@@ -6,7 +6,7 @@ import * as Positioning from './modules/positioning.js';
 import * as Getters from './modules/getters.js';
 import * as Creators from './modules/creators.js';
 import * as Splitters from './modules/splitters.js';
-import * as Markers from './modules/markers.js';
+import * as Markers from './markers/index.js';
 import * as Wrappers from './modules/wrappers.js';
 import * as Fitters from './modules/fitters.js';
 import * as PageBreaks from './modules/pagebreaks.js';
