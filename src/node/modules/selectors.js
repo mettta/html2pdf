@@ -372,12 +372,14 @@ export function isNotBreakable(element, _style) {
     || this.notSolved(element);
 }
 
-// marks
+// marks for isSlicedParent
+// FIXME should be removed when we migrate to split (not slice)
 
 /**
  * @this {Node}
  */
 export function isSliced(element, style) {
+  // used in Pages for isSlicedParent
   const computedStyle = style || this._DOM.getComputedStyle(element);
   return (
     this.isTableNode(element, computedStyle) ||
@@ -390,5 +392,7 @@ export function isSliced(element, style) {
  * @this {Node}
  */
 export function isSlough(element) {
+  // todo
+  // used in likeTable and Pages (for isSlicedParent)
   return this._DOM.hasAttribute(element, 'slough-node');
 }

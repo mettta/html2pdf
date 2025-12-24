@@ -24,4 +24,4 @@ export function isNoHanging(element) {
  */
 export function isSlice(element) {
   return this.hasFlag(element, 'slice');
-}
+} // todo: check after migrate to all-split strategy
