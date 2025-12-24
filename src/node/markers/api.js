@@ -7,8 +7,10 @@ import { FLAG_DEFS } from './defs.js';
  */
 export function setFlag(element, key, value, options = {}) {
   const flagConfig = this._getFlagAttributeConfig?.(key);
+  const forceAttribute = this._isStyleFlag?.(key);
   const mergedOptions = {
     ...flagConfig,
+    ...(forceAttribute ? { forceAttribute: true } : {}),
     ...options,
   };
   this._flags.set(element, key, value, mergedOptions);
@@ -33,7 +35,9 @@ export function hasFlag(element, key) {
  * @this {Node}
  */
 export function clearFlag(element, key, options) {
-  this._flags.clear(element, key, options);
+  const forceAttribute = this._isStyleFlag?.(key);
+  const mergedOptions = forceAttribute ? { ...options, forceAttribute: true } : options;
+  this._flags.clear(element, key, mergedOptions);
   this._unregisterFlag?.(element, key);
 }
 
@@ -190,4 +194,11 @@ export function _getFlagAttributeConfig(key) {
     attributeSelector,
     attributeValue: def.attributeValue,
   };
+}
+
+/**
+ * @this {Node}
+ */
+export function _isStyleFlag(key) {
+  return FLAG_DEFS[key]?.kind === 'style';
 }
