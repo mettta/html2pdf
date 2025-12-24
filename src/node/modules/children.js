@@ -168,9 +168,9 @@ export function getSplitChildren(node, firstPageBottom, fullPageHeight, root) {
   //   return children = [];
   // }
 
-  if (this.isNoBreak(node)) {
+  if (this.isNotBreakable(node)) {
     // don't break apart, thus keep an empty children array
-    _isDebug(this) && console.info('🧡 isNoBreak', node);
+    _isDebug(this) && console.info('🧡 isNotBreakable', node);
     return children = [];
 
   } else if (this.isComplexTextBlock(node)) {

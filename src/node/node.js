@@ -6,7 +6,8 @@ import * as Positioning from './modules/positioning.js';
 import * as Getters from './modules/getters.js';
 import * as Creators from './modules/creators.js';
 import * as Splitters from './modules/splitters.js';
-import * as Markers from './modules/markers.js';
+import * as Markers from './markers/index.js';
+import * as MarkersApi from './markers/api.js';
 import * as Wrappers from './modules/wrappers.js';
 import * as Fitters from './modules/fitters.js';
 import * as PageBreaks from './modules/pagebreaks.js';
@@ -14,6 +15,7 @@ import * as Children from './modules/children.js';
 import * as Media from './modules/media.js';
 import * as Slicers from './modules/slicers.js';
 import * as FlowFilters from './modules/flowfilters.js';
+import * as Cache from './modules/cache.js';
 import * as PaginationRows from './modules/pagination/rows.js';
 import * as PaginationFitters from './modules/pagination/fitters.js';
 import * as PaginationState from './modules/pagination/state.js';
@@ -23,6 +25,8 @@ import * as PaginationOverflow from './modules/pagination/overflow.js';
 import * as PaginationShortTail from './modules/pagination/shortTail.js';
 import * as PaginationEvaluation from './modules/pagination/evaluation.js';
 import * as PaginationResolution from './modules/pagination/resolution.js';
+import CacheState from './cache/index.js';
+import { MarkersState } from './markers/index.js';
 import Paragraph from './elements/paragraph.js';
 import Table from './elements/table.js';
 import TableLike from './elements/tableLike.js';
@@ -43,6 +47,14 @@ export default class Node {
     this._debug = config.debugMode ? { ...config.debugConfig.node } : {};
     this._assert = config.consoleAssert ? true : false;
     this._markupDebugMode = this._config.markupDebugMode;
+    this._markers = new MarkersState({
+      debugMode: this._config.debugMode,
+      markupDebugMode: this._config.markupDebugMode,
+      setAttribute: this._DOM.setAttribute.bind(this._DOM),
+      removeAttribute: this._DOM.removeAttribute.bind(this._DOM),
+    });
+    this._flags = this._markers.flags;
+    this._cache = new CacheState();
 
     Object.assign(this, Logging);
 
@@ -53,6 +65,7 @@ export default class Node {
     Object.assign(this, Getters);
     Object.assign(this, Creators);
     Object.assign(this, Splitters);
+    Object.assign(this, MarkersApi);
     Object.assign(this, Markers);
     Object.assign(this, Wrappers);
     Object.assign(this, Fitters);
@@ -61,6 +74,7 @@ export default class Node {
     Object.assign(this, Media);
     Object.assign(this, Slicers);
     Object.assign(this, FlowFilters);
+    Object.assign(this, Cache);
     Object.assign(this, PaginationRows);
     Object.assign(this, PaginationFitters);
     Object.assign(this, PaginationState);

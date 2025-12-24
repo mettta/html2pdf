@@ -25,6 +25,7 @@ export default function createConfig(params) {
     // * are enabled in user settings using the parameter
     // * data-markup-debug-mode=“true”.
     // * Disabled by default.
+    // * Note: internal logic uses flag storage/registries; DOM attributes are for debug only.
     markupDebugMode: false,
 
     // Register option to print for informational purposes:

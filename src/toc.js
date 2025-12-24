@@ -47,8 +47,14 @@ tocPageNumberSelector:
     //    which have their 'targetTop' positions as keys
     // 3) merge the dictionaries.
 
-    const dataFromPagesMarkers = this._DOM.getAll(this._pageDividerSelector, this._contentFlow)
-    .reduce((acc, marker, index) => {
+    // Use registry as the source of truth; DOM [page] is for visibility/tests only.
+    const pageDividerRegistry = this._node.getRegisteredPageDividers?.();
+    const pageDividerEntries = pageDividerRegistry && pageDividerRegistry.size
+      ? [...pageDividerRegistry.entries()]
+      : this._DOM.getAll(this._pageDividerSelector, this._contentFlow).map((marker, index) => ([index + 1, marker]));
+
+    const dataFromPagesMarkers = pageDividerEntries
+    .reduce((acc, [pageNum, marker]) => {
       // * The conditions for the following code snippet are as follows:
       // - It should be executed after the preview is rendered.
       // - The presence of a Table of Contents (TOC) on the first pages ensures
@@ -67,8 +73,8 @@ tocPageNumberSelector:
       // * We ignore it, as described above.
       const pageTop = this._node.getTop(marker, this._root) - 1;
 
-      const pageNum = this._DOM.getAttribute(marker, '[page]');
-      acc[pageTop] = pageNum;
+      const pageNumStr = String(pageNum);
+      acc[pageTop] = pageNumStr;
       return acc;
     }, {});
     this._debug._ && console.log('📑 dataFromPagesMarkers', dataFromPagesMarkers);

@@ -305,7 +305,7 @@ export default class Pages {
     }
 
     // ✴️ skip for already registered page
-    if (this._node.isPageStartElement(element)) {
+    if (this._node.isPageStart(element)) {
       this._debug._registerPageStart && console.warn(
         '🚨 [_registerPageStart] pageStart candidate is already PageStartElement, return',
         element);
@@ -570,7 +570,7 @@ export default class Pages {
       &&
       // * fits in the next page:
       (
-        this._node.isNoBreak(currentElement)
+        this._node.isNotBreakable(currentElement)
         || currentBlockBottom <= this.pages.at(-1).pageBottom
       )
     ) {

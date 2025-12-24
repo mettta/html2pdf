@@ -128,10 +128,6 @@ export function isWrappedTextGroup(element) {
 /**
  * @this {Node}
  */
-export function isPageStartElement(element) {
-  return this.isSelectorMatching(element, this._selector.pageStartMarker)
-}
-
 /**
  * @this {Node}
  */
@@ -174,33 +170,17 @@ export function isSyntheticTextWrapper(element) {
 /**
  * @this {Node}
  */
-export function isNoBreak(element, _style) {
-  return this.isSelectorMatching(element, this._selector.flagNoBreak)
-    || this.isWrappedTextLine(element)
-    || this.isWrappedTextGroup(element)
-    || this.isInlineBlock(element, _style)
-    || this.notSolved(element);
-  // TODO
-}
-
 /**
  * @this {Node}
  */
-export function isNoHanging(element) {
-  return this.isSelectorMatching(element, this._selector.flagNoHanging)
-}
-
 /**
  * @this {Node}
  */
-export function isSlice(element) {
-  return this.isSelectorMatching(element, this._selector.flagSlice)
-}
-
 /**
  * @this {Node}
  */
 export function isForcedPageBreak(element) {
+  // todo: use attribute instead of custom html element inserted in DOM.
   return this.isSelectorMatching(element, this._selector.printForcedPageBreak)
 }
 
@@ -381,7 +361,25 @@ export function isFlexRow(element, style) {
 /**
  * @this {Node}
  */
+export function isNotBreakable(element, _style) {
+  // TODO
+  const _isInlineBlock = _style ? this.isInlineBlock(element, _style) : false;
+
+  return this.isNoBreak(element)
+    || this.isWrappedTextLine(element)
+    || this.isWrappedTextGroup(element)
+    || _isInlineBlock
+    || this.notSolved(element);
+}
+
+// marks for isSlicedParent
+// FIXME should be removed when we migrate to split (not slice)
+
+/**
+ * @this {Node}
+ */
 export function isSliced(element, style) {
+  // used in Pages for isSlicedParent
   const computedStyle = style || this._DOM.getComputedStyle(element);
   return (
     this.isTableNode(element, computedStyle) ||
@@ -394,5 +392,7 @@ export function isSliced(element, style) {
  * @this {Node}
  */
 export function isSlough(element) {
+  // todo
+  // used in likeTable and Pages (for isSlicedParent)
   return this._DOM.hasAttribute(element, 'slough-node');
 }
