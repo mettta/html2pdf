@@ -25,7 +25,7 @@ import * as PaginationOverflow from './modules/pagination/overflow.js';
 import * as PaginationShortTail from './modules/pagination/shortTail.js';
 import * as PaginationEvaluation from './modules/pagination/evaluation.js';
 import * as PaginationResolution from './modules/pagination/resolution.js';
-import CacheState from './state/index.js';
+import CacheState from './cache/index.js';
 import { MarkersState } from './markers/index.js';
 import Paragraph from './elements/paragraph.js';
 import Table from './elements/table.js';

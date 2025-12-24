@@ -1,5 +1,7 @@
 // 📦 markers helpers
 
+import { FLAG_DEFS } from './defs.js';
+
 /**
  * @this {Node}
  */
@@ -100,7 +102,9 @@ export function getRegisteredPageNumberForElement(element) {
  */
 export function _registerFlag(element, key, value) {
   if (!element) return;
-  switch (key) {
+  const def = FLAG_DEFS[key];
+  if (!def || !def.registry) return;
+  switch (def.registry) {
     case 'pageStart':
       registerPageStart.call(this, element, value);
       break;
@@ -120,7 +124,9 @@ export function _registerFlag(element, key, value) {
  */
 export function _unregisterFlag(element, key) {
   if (!element) return;
-  switch (key) {
+  const def = FLAG_DEFS[key];
+  if (!def || !def.registry) return;
+  switch (def.registry) {
     case 'pageStart':
       unregisterPageStart.call(this, element);
       break;
@@ -161,33 +167,12 @@ export function getRegisteredPageEnds() {
  * @this {Node}
  */
 export function _getFlagAttributeConfig(key) {
-  switch (key) {
-    case 'processed':
-      return {
-        attributeSelector: this._selector.processed,
-        attributeValue: (value) => '🏷️ ' + value,
-      };
-    case 'noBreak':
-      return { attributeSelector: this._selector.flagNoBreak };
-    case 'noHanging':
-      return { attributeSelector: this._selector.flagNoHanging };
-    case 'slice':
-      return { attributeSelector: this._selector.flagSlice };
-    case 'pageStart':
-      return { attributeSelector: this._selector.pageStartMarker };
-    case 'pageEnd':
-      return { attributeSelector: this._selector.pageEndMarker };
-    case 'pageNumber':
-      return { attributeSelector: this._selector.pageMarker };
-    case 'cleanTopCut':
-      return { attributeSelector: this._selector.cleanTopCut };
-    case 'cleanBottomCut':
-      return { attributeSelector: this._selector.cleanBottomCut };
-    case 'topCut':
-      return { attributeSelector: this._selector.topCutPart };
-    case 'bottomCut':
-      return { attributeSelector: this._selector.bottomCutPart };
-    default:
-      return undefined;
-  }
+  const def = FLAG_DEFS[key];
+  if (!def || !def.selectorKey) return undefined;
+  const attributeSelector = this._selector[def.selectorKey];
+  if (!attributeSelector) return undefined;
+  return {
+    attributeSelector,
+    attributeValue: def.attributeValue,
+  };
 }

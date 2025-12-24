@@ -22,6 +22,8 @@ It separates internal logic from debug/test DOM attributes.
 - **structural**: pageStart/pageEnd/pageNumber; also registered in the registry.
 - **debug-only**: visual hints (e.g. processed), only meaningful in DOM.
 
+Flag definitions live in `src/node/markers/defs.js`.
+
 ## How to Write Markers
 Use marker helpers (preferred) or `setFlag` directly:
 - Marker helpers live in `src/node/markers/`.
