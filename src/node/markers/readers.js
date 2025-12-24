@@ -1,7 +1,7 @@
 /**
  * @this {Node}
  */
-export function isPageStartElement(element) {
+export function isPageStart(element) {
   return this.hasFlag(element, 'pageStart');
 }
 

@@ -308,7 +308,7 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
       continue;
     }
 
-    const parentIsPageStart = this.isPageStartElement(wrapperParent) || this.isPageStartElement(flowParent);
+    const parentIsPageStart = this.isPageStart(wrapperParent) || this.isPageStart(flowParent);
     const parentTop = this.getTop(flowParent, root);
 
     if (parentIsPageStart || parentTop < topLimit) {
@@ -389,7 +389,7 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
       continue;
     }
 
-    const prevIsPageStart = this.isPageStartElement(semanticPrev) || this.isPageStartElement(flowPrev);
+    const prevIsPageStart = this.isPageStart(semanticPrev) || this.isPageStart(flowPrev);
     const prevTop = this.getTop(flowPrev, root);
 
     if (prevIsPageStart || prevTop < topLimit) {
