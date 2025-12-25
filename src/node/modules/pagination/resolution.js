@@ -220,9 +220,9 @@ function createDefaultRowAdapter({ row, rowIndex, decorateRowSlice }) {
     ),
     markOriginalRow: ({ cells }) => {
       if (isArrayRow) {
-        // cells.forEach(cell => self.setFlagSlice(cell));
+        // cells.forEach(cell => self.markSlice(cell));
       } else {
-        self.setFlagSlice(row);
+        self.markSlice(row);
       }
     },
     // * beginRow is the starter template for each future slice.
@@ -239,7 +239,7 @@ function createDefaultRowAdapter({ row, rowIndex, decorateRowSlice }) {
     cloneCellFallback: (origCell) => self._DOM.cloneNodeWrapper(origCell),
     handleCell: ({ context, cellClone }) => {
       if (isArrayRow) {
-        self.setFlagSlice(cellClone);
+        self.markSlice(cellClone);
         context.cells.push(cellClone);
       } else {
         self._DOM.insertAtEnd(context.rowWrapper, cellClone);

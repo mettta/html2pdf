@@ -255,7 +255,7 @@ export default class Preview {
     }
 
     if (previousPageLastElement) {
-      // this._node.markPageEndElement(previousPageLastElement, pageIndex + 'test');
+      // this._node.markPageEnd(previousPageLastElement, pageIndex + 'test');
       this._DOM.setStyles(previousPageLastElement, {'margin-bottom': ['0', 'important']});
     } else {
       (pageIndex > 0) && this._debug._ && console.warn(`[preview] There is no page end element before ${pageIndex}. Perhaps it's a 'beginningTail'.`, )
@@ -289,8 +289,8 @@ export default class Preview {
     // * The frontpage will move the previously set `pageStart` markers forward by 1.
     // * If there is no frontpage, `pageStart` markers do not need to be updated.
     // * `pageEnd` markers are set for the first time.
-    this._hasFrontPage && this._node.markPageStartElement(this._pages[pageIndex].pageStart, `${pageIndex + 1}`);
-    this._node.markPageEndElement(this._pages[pageIndex].pageEnd, `${pageIndex + 1}`);
+    this._hasFrontPage && this._node.markPageStart(this._pages[pageIndex].pageStart, `${pageIndex + 1}`);
+    this._node.markPageEnd(this._pages[pageIndex].pageEnd, `${pageIndex + 1}`);
   }
 
   _insertPaper(paperFlow, paper, separator) {

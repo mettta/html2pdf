@@ -549,12 +549,12 @@ export default class Grid {
       getOriginalCells: () => [...row],
       getShellHeights: () => self._getGridShellHeights(row, cellStyles),
       markOriginalRow: ({ cells }) => {
-        cells.forEach(cell => self._node.setFlagSlice(cell));
+        cells.forEach(cell => self._node.markSlice(cell));
       },
       beginRow: () => ({ fragment: self._DOM.createDocumentFragment(), cells: [] }),
       cloneCellFallback: (originalCell) => self._DOM.cloneNodeWrapper(originalCell),
       handleCell: ({ context, cellClone }) => {
-        self._node.setFlagSlice(cellClone);
+        self._node.markSlice(cellClone);
         context.fragment.append(cellClone);
         context.cells.push(cellClone);
       },
@@ -711,7 +711,7 @@ export default class Grid {
     // We do not wrap with createWithFlagNoBreak to avoid CSS breakage; clone wrapper instead.
     const part = this._DOM.cloneNodeWrapper(node);
     this._node.copyNodeWidth(part, node);
-    this._node.setFlagNoBreak(part);
+    this._node.markNoBreak(part);
 
     if (startId) {
       // * normalize top cut for table slices
@@ -773,7 +773,7 @@ export default class Grid {
     // ? may affect the table design
     // todo: include in user config
     this._node.markTopCut(finalPart);
-    this._node.setFlagNoBreak(finalPart);
+    this._node.markNoBreak(finalPart);
 
     const currentRows = entries?.currentRows || this._currentGridRows || [];
     const telemetryRows = this._collectGridTelemetryRows(currentRows, startId);

@@ -100,7 +100,7 @@ const SELECTOR = {
   textGroup: 'html2pdf4doc-text-group',
   complexTextBlock: 'html2pdf4doc-complex-text-block',
   printForcedPageBreak: 'html2pdf4doc-print-forced-page-break',
-  // * Service flags (are created in the process):
+  // * Service marks (are created in the process):
   split: '[html2pdf4doc-split]',
   processed: '[html2pdf4doc-processed]',
 

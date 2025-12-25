@@ -53,7 +53,7 @@ export default class Node {
       setAttribute: this._DOM.setAttribute.bind(this._DOM),
       removeAttribute: this._DOM.removeAttribute.bind(this._DOM),
     });
-    this._flags = this._markers.flags;
+    this._marks = this._markers.marks;
     this._cache = new CacheState();
 
     Object.assign(this, Logging);

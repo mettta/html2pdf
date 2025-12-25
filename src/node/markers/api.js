@@ -1,50 +1,50 @@
 // 📦 markers helpers
 
-import { FLAG_DEFS } from './defs.js';
+import { MARK_DEFS } from './defs.js';
 
 /**
  * @this {Node}
  */
-export function setFlag(element, key, value, options = {}) {
-  const flagConfig = this._getFlagAttributeConfig?.(key);
-  const forceAttribute = this._isStyleFlag?.(key);
+export function setMark(element, key, value, options = {}) {
+  const markConfig = this._getMarkAttributeConfig?.(key);
+  const forceAttribute = this._isStyleMark?.(key);
   const mergedOptions = {
-    ...flagConfig,
+    ...markConfig,
     ...(forceAttribute ? { forceAttribute: true } : {}),
     ...options,
   };
-  this._flags.set(element, key, value, mergedOptions);
-  this._registerFlag?.(element, key, value);
+  this._marks.set(element, key, value, mergedOptions);
+  this._registerMark?.(element, key, value);
 }
 
 /**
  * @this {Node}
  */
-export function getFlag(element, key) {
-  return this._flags.get(element, key);
+export function getMark(element, key) {
+  return this._marks.get(element, key);
 }
 
 /**
  * @this {Node}
  */
-export function hasFlag(element, key) {
-  return this._flags.has(element, key);
+export function hasMark(element, key) {
+  return this._marks.has(element, key);
 }
 
 /**
  * @this {Node}
  */
-export function clearFlag(element, key, options) {
-  const forceAttribute = this._isStyleFlag?.(key);
+export function clearMark(element, key, options) {
+  const forceAttribute = this._isStyleMark?.(key);
   const mergedOptions = forceAttribute ? { ...options, forceAttribute: true } : options;
-  this._flags.clear(element, key, mergedOptions);
-  this._unregisterFlag?.(element, key);
+  this._marks.clear(element, key, mergedOptions);
+  this._unregisterMark?.(element, key);
 }
 
 /**
  * @this {Node}
  */
-// Internal registry helpers (used only via setFlag/clearFlag).
+// Internal registry helpers (used only via setMark/clearMark).
 function registerPageStart(element, pageNum) {
   if (!element) return;
   this._markers.registry.pageStart.set(Number(pageNum), element);
@@ -119,9 +119,9 @@ export function getRegisteredPageNumberForElement(element) {
 /**
  * @this {Node}
  */
-export function _registerFlag(element, key, value) {
+export function _registerMark(element, key, value) {
   if (!element) return;
-  const def = FLAG_DEFS[key];
+  const def = MARK_DEFS[key];
   if (!def || !def.registry) return;
   switch (def.registry) {
     case 'pageStart':
@@ -141,9 +141,9 @@ export function _registerFlag(element, key, value) {
 /**
  * @this {Node}
  */
-export function _unregisterFlag(element, key) {
+export function _unregisterMark(element, key) {
   if (!element) return;
-  const def = FLAG_DEFS[key];
+  const def = MARK_DEFS[key];
   if (!def || !def.registry) return;
   switch (def.registry) {
     case 'pageStart':
@@ -185,8 +185,8 @@ export function getRegisteredPageEnds() {
 /**
  * @this {Node}
  */
-export function _getFlagAttributeConfig(key) {
-  const def = FLAG_DEFS[key];
+export function _getMarkAttributeConfig(key) {
+  const def = MARK_DEFS[key];
   if (!def || !def.selectorKey) return undefined;
   const attributeSelector = this._selector[def.selectorKey];
   if (!attributeSelector) return undefined;
@@ -199,6 +199,6 @@ export function _getFlagAttributeConfig(key) {
 /**
  * @this {Node}
  */
-export function _isStyleFlag(key) {
-  return FLAG_DEFS[key]?.kind === 'style';
+export function _isStyleMark(key) {
+  return MARK_DEFS[key]?.kind === 'style';
 }

@@ -9,34 +9,34 @@ It separates internal logic from debug/test DOM attributes.
 - Provide optional, explicit DOM markers for debug and tests.
 
 ## Core Concepts
-- **Flags**: logical markers stored in an internal WeakMap (not in the DOM).
+- **Marks**: logical markers stored in an internal WeakMap (not in the DOM).
 - **Registry**: indexed collections for structural markers (pageStart/pageEnd/pageNumber).
 - **DOM attributes**: written only in debug/test mode.
 
 ## Modes
-- **Normal**: flags + registry only (no DOM attributes).
+- **Normal**: marks + registry only (no DOM attributes).
 - **Debug/Test**: DOM attributes are written when `data-markup-debug-mode="true"`.
 
-## Flag Categories
+## Mark Categories
 - **runtime-only**: used by logic only; never required in DOM.
 - **structural**: pageStart/pageEnd/pageNumber; also registered in the registry.
 - **debug-only**: visual hints (e.g. processed), only meaningful in DOM.
 
-Flag definitions live in `src/node/markers/defs.js`.
+Mark definitions live in `src/node/markers/defs.js`.
 
 ## How to Write Markers
-Use marker helpers (preferred) or `setFlag` directly:
+Use marker helpers (preferred) or `setMark` directly:
 - Marker helpers live in `src/node/markers/`.
-- `setFlag`/`clearFlag` live in `src/node/markers/api.js`.
+- `setMark`/`clearMark` live in `src/node/markers/api.js`.
 
 Example:
 ```js
-this.setFlag(element, 'noHanging');
-this.markPageStartElement(element, pageNum);
+this.setMark(element, 'noHanging');
+this.markPageStart(element, pageNum);
 ```
 
 ## How to Read Markers
-- Use selectors helpers (e.g. `isNoBreak`, `isSlice`) which read from flags.
+- Use selectors helpers (e.g. `isNoBreak`, `isSlice`) which read from marks.
 - For structural markers, use the registry:
   - `getRegisteredPageEnds()`
   - `getRegisteredPageNumberForElement(element)`
@@ -51,5 +51,5 @@ Enable them via HTML:
 ```
 
 ## Contract Summary
-- Logic reads flags/registry, not DOM attributes.
+- Logic reads marks/registry, not DOM attributes.
 - DOM attributes are optional and must not be required by the algorithm.

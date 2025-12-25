@@ -449,22 +449,22 @@ export function getTableEntries(node) {
     }
 
     if (tag === 'CAPTION') {
-      this.setFlagNoBreak(curr);
+      this.markNoBreak(curr);
       return { ...acc, caption: curr };
     }
 
     if (tag === 'COLGROUP') {
-      this.setFlagNoBreak(curr);
+      this.markNoBreak(curr);
       return { ...acc, colgroup: curr };
     }
 
     if (tag === 'THEAD') {
-      this.setFlagNoBreak(curr);
+      this.markNoBreak(curr);
       return { ...acc, thead: curr };
     }
 
     if (tag === 'TFOOT') {
-      this.setFlagNoBreak(curr);
+      this.markNoBreak(curr);
       return { ...acc, tfoot: curr };
     }
 
