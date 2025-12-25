@@ -77,7 +77,7 @@ export function createTextGroup() {
  */
 export function createWithFlagNoBreak(style) {
   const element = this.create();
-  this.setFlagNoBreak(element);
+  this.markNoBreak(element);
   style && this._DOM.setStyles(element, style);
   return element;
 }
@@ -150,7 +150,7 @@ export function createSignpost(text, height) {
     height: height + 'px',
   });
   text && this._DOM.setInnerHTML(prefix, text);
-  this.setFlagNoBreak(prefix);
+  this.markNoBreak(prefix);
   return prefix
 }
 
@@ -183,7 +183,7 @@ export function createSliceWrapper(node) {
   const wrapper = this._DOM.cloneNodeWrapper(node);
   // * The clone should be always cleared;
   // * the possible page start mark remains on the first chunk.
-  this.unmarkPageStartElement(wrapper);
-  this.setFlagNoBreak(wrapper);
+  this.unmarkPageStart(wrapper);
+  this.markNoBreak(wrapper);
   return wrapper
 }

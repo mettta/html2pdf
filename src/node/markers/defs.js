@@ -1,4 +1,4 @@
-export const FLAG_DEFS = {
+export const MARK_DEFS = {
   // ✴️ structural
   // * needs fast lookup by key (e.g., page number), so it is indexed in registry.
   // * DOM attributes are written only in debug/test.
@@ -6,7 +6,7 @@ export const FLAG_DEFS = {
   pageEnd: { kind: 'structural', selectorKey: 'pageEndMarker', registry: 'pageEnd' },
   pageNumber: { kind: 'structural', selectorKey: 'pageMarker', registry: 'pageNumber' },
   // ✴️ runtime-only
-  // * local logic flags; read via hasFlag(element, key). No registry or global lookup is needed.
+  // * local logic marks; read via hasMark(element, key). No registry or global lookup is needed.
   // * DOM attributes are written only in debug/test.
   noBreak: { kind: 'runtime', selectorKey: 'flagNoBreak' },
   noHanging: { kind: 'runtime', selectorKey: 'flagNoHanging' },

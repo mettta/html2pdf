@@ -7,57 +7,57 @@ const _isDebug = debugFor('markers');
  * @this {Node}
  */
 export function markProcessed(element, value) {
-  this.setFlag(element, 'processed', value);
+  this.setMark(element, 'processed', value);
 }
 
 
 /**
  * @this {Node}
  */
-export function setFlagNoBreak(element) {
-  this.setFlag(element, 'noBreak');
+export function markNoBreak(element) {
+  this.setMark(element, 'noBreak');
 }
 
 /**
  * @this {Node}
  */
-export function setFlagNoHanging(element, value) {
-  this.setFlag(element, 'noHanging', value);
+export function markNoHanging(element, value) {
+  this.setMark(element, 'noHanging', value);
 }
 
 /**
  * @this {Node}
  */
-export function setFlagSlice(element) {
-  this.setFlag(element, 'slice');
+export function markSlice(element) {
+  this.setMark(element, 'slice');
 }
 
 /**
  * @this {Node}
  */
-export function markPageStartElement(element, pageNum) {
-  this.setFlag(element, 'pageStart', pageNum);
+export function markPageStart(element, pageNum) {
+  this.setMark(element, 'pageStart', pageNum);
 }
 
 /**
  * @this {Node}
  */
-export function unmarkPageStartElement(element) {
-  this.clearFlag(element, 'pageStart');
+export function unmarkPageStart(element) {
+  this.clearMark(element, 'pageStart');
 }
 
 /**
  * @this {Node}
  */
-export function markPageEndElement(element, pageNum) {
-  this.setFlag(element, 'pageEnd', pageNum);
+export function markPageEnd(element, pageNum) {
+  this.setMark(element, 'pageEnd', pageNum);
 }
 
 /**
  * @this {Node}
  */
 export function markPageNumber(element, pageNum) {
-  this.setFlag(element, 'pageNumber', pageNum);
+  this.setMark(element, 'pageNumber', pageNum);
 }
 
 /**
@@ -65,7 +65,7 @@ export function markPageNumber(element, pageNum) {
  */
 export function markCleanTopCut(element) {
   _isDebug(this) && console.log('[mark ⊤ cut]', element);
-  element && this.setFlag(element, 'cleanTopCut');
+  element && this.setMark(element, 'cleanTopCut');
 }
 
 /**
@@ -73,7 +73,7 @@ export function markCleanTopCut(element) {
  */
 export function markCleanBottomCut(element) {
   _isDebug(this) && console.log('[mark ⊥ cut]', element);
-  element && this.setFlag(element, 'cleanBottomCut');
+  element && this.setMark(element, 'cleanBottomCut');
 }
 
 /**
@@ -81,7 +81,7 @@ export function markCleanBottomCut(element) {
  */
 export function markTopCut(element) {
   _isDebug(this) && console.log('[mark ⊤ cut]', element);
-  element && this.setFlag(element, 'topCut');
+  element && this.setMark(element, 'topCut');
 }
 
 /**
@@ -89,7 +89,7 @@ export function markTopCut(element) {
  */
 export function markBottomCut(element) {
   _isDebug(this) && console.log('[mark ⊥ cut]', element);
-  element && this.setFlag(element, 'bottomCut');
+  element && this.setMark(element, 'bottomCut');
 }
 
 /**

@@ -49,7 +49,7 @@ Goal: map out grid-specific risks before we extend the splitter beyond simple mo
 ## 8. Nested grids / absolute positioning
 - **Nested grids**: treat inner grids as normal children; monitor heights.
 - **Absolute positioned items**: height = 0 → may disappear from layout.
-- **Strategy**: if child has `position:absolute`, consider moving it along but warn. For nested grids, ensure they carry `flagNoBreak` to avoid splitting inside inadvertently.
+- **Strategy**: if child has `position:absolute`, consider moving it along but warn. For nested grids, ensure they carry `markNoBreak` to avoid splitting inside inadvertently.
 
 ## 9. Content that cannot be broken
 - **Examples**: large images/SVG, charts.

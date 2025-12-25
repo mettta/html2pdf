@@ -1,9 +1,9 @@
-// Flag storage with WeakMap base and optional Symbol/attribute mirrors.
+// Mark storage with WeakMap base and optional Symbol/attribute mirrors.
 // Attributes are written only when markupDebugMode is enabled or forceAttribute is true.
 
 const DEFAULT_VALUE = true;
 
-export default class FlagStore {
+export default class MarkStore {
   constructor({
     debugMode = false,
     markupDebugMode = false,
@@ -14,7 +14,7 @@ export default class FlagStore {
     this._markupDebugMode = Boolean(markupDebugMode);
     this._setAttribute = setAttribute;
     this._removeAttribute = removeAttribute;
-    this._flags = new WeakMap();
+    this._marks = new WeakMap();
     this._symbols = new Map();
   }
 
@@ -31,21 +31,21 @@ export default class FlagStore {
   }
 
   get(element, key) {
-    const entry = this._flags.get(element);
+    const entry = this._marks.get(element);
     return entry ? entry.get(key) : undefined;
   }
 
   has(element, key) {
-    const entry = this._flags.get(element);
+    const entry = this._marks.get(element);
     return Boolean(entry && entry.has(key));
   }
 
   clear(element, key, options = {}) {
     if (!element || !key) return;
-    const entry = this._flags.get(element);
+    const entry = this._marks.get(element);
     if (entry) {
       entry.delete(key);
-      if (entry.size === 0) this._flags.delete(element);
+      if (entry.size === 0) this._marks.delete(element);
     }
 
     if (this._debugMode) {
@@ -57,10 +57,10 @@ export default class FlagStore {
   }
 
   _getEntry(element) {
-    let entry = this._flags.get(element);
+    let entry = this._marks.get(element);
     if (!entry) {
       entry = new Map();
-      this._flags.set(element, entry);
+      this._marks.set(element, entry);
     }
     return entry;
   }

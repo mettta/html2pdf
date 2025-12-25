@@ -129,10 +129,10 @@ export default class Pages {
     if (selectors.length) {
       const elements = this._node.resolveConfigSelectorConstraints(selectors, this._contentFlow, 'noHangings');
       elements.forEach(element => {
-        this._node.setFlagNoHanging(element);
+        this._node.markNoHanging(element);
         const lastChildParent = this._node.findLastChildParent(element, this._contentFlow)
         if (lastChildParent) {
-          this._node.setFlagNoHanging(lastChildParent, 'parent');
+          this._node.markNoHanging(lastChildParent, 'parent');
         }
       });
       this._debug._ && elements.length && console.log('✓ noHangings got the flag');
@@ -142,7 +142,7 @@ export default class Pages {
   _prepareNoBreakElements(selectors) {
     if (selectors.length) {
       const elements = this._node.resolveConfigSelectorConstraints(selectors, this._contentFlow, 'noBreaks');
-      elements.forEach(element => this._node.setFlagNoBreak(element));
+      elements.forEach(element => this._node.markNoBreak(element));
       this._debug._ && elements.length && console.log('✓ noBreaks got the flag');
     }
   }
@@ -339,7 +339,7 @@ export default class Pages {
       pageTop: pageTop,
       prevPageEnd: prevPageEnd,
     });
-    this._node.markPageStartElement(pageStart, this.pages.length);
+    this._node.markPageStart(pageStart, this.pages.length);
     this._debug._registerPageStart && console.log(
       `%c📍register page ${this.pages.length}`, "background:yellow;font-weight:bold",
       '\n  improved result:', improveResult,
@@ -770,7 +770,7 @@ export default class Pages {
         // svg has not offset props
         const isSvgMedia = this._node.isSVG(mediaElement);
         const currentImage = isSvgMedia
-        // TODO replace with setFlag... and remove wrapper function
+        // TODO replace with setMark... and remove wrapper function
         // TODO process at the beginning, find all SVG and set Flag
           ? this._node.createSignpost(mediaElement)
           : mediaElement;
