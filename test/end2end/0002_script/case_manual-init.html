@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title>Test page</title>
+  <link rel="stylesheet" href="../../shared/css/main.css">
+  <script data-init="manual" src="../../../dist/bundle.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      // Step 1: mutate DOM
+      const before = document.createElement('div');
+      before.id = 'before-init';
+      before.textContent = 'Dynamically added before init';
+      document.body.appendChild(before);
+
+      // Step 2: wait, then init
+      setTimeout(() => {
+        HTML2PDF4DOC.init();
+
+        // Step 3: mutate DOM after init
+        setTimeout(() => {
+          const after = document.createElement('div');
+          after.id = 'after-init';
+          after.textContent = 'Dynamically added after init';
+          document.body.appendChild(after);
+        }, 50);
+      }, 50);
+    });
+  </script>
+
+</head>
+
+<body>
+  <p>Hello world!</p>
+</body>
+
+</html>

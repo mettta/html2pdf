@@ -30,20 +30,25 @@ export default class App {
     console.time("[HTML2PDF4DOC] Total time");
 
     this.debugMode && console.log('🏁 document.readyState', document.readyState)
+    this.debugMode && console.log('🏁 document.readyState:', document.readyState)
 
     document.addEventListener("readystatechange", (event) => {
-      this.debugMode && console.log('🏁 readystatechange', document.readyState)
+      this.debugMode && console.log('🏁 readystatechange:', document.readyState)
     });
 
     // * ⏰ window.addEventListener("DOMContentLoaded")
 
     this.debugMode && console.time("⏱️ await DOMContentLoaded time");
-    await new Promise(resolve => {
-      window.addEventListener("DOMContentLoaded", (event) => {
-        this.debugMode && console.log("⏰ EVENT: DOMContentLoaded");
-        resolve();
+    if (document.readyState === "loading") {
+      await new Promise(resolve => {
+        window.addEventListener("DOMContentLoaded", (event) => {
+          this.debugMode && console.log("⏰ EVENT: DOMContentLoaded");
+          resolve();
+        });
       });
-    });
+    } else {
+      this.debugMode && console.log("🕰️ EVENT: DOMContentLoaded (event fired before init)");
+    }
     this.debugMode && console.timeEnd("⏱️ await DOMContentLoaded time");
 
     this.debugMode && console.time("⏱️ create Preloader time");
@@ -90,12 +95,16 @@ export default class App {
     // * ⏰ window.addEventListener("load")
 
     this.debugMode && console.time("⏱️ await window load time");
-    await new Promise(resolve => {
-      window.addEventListener("load", (event) => {
-        this.debugMode && console.log("⏰ EVENT: window load");
-        resolve();
+    if (document.readyState !== "complete") {
+      await new Promise(resolve => {
+        window.addEventListener("load", (event) => {
+          this.debugMode && console.log("⏰ EVENT: window load");
+          resolve();
+        });
       });
-    });
+    } else {
+      this.debugMode && console.log("🕰️ EVENT: window load (event fired before init)");
+    }
     this.debugMode && console.timeEnd("⏱️ await window load time");
 
     // * prepare layout (DOM manipulation)

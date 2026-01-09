@@ -65,6 +65,7 @@ class Helper:
 
     def do_open(self, file: str, verify_logs: bool = False) -> None:
         self.test_case.open(file)
+        self.test_case.wait_for_ready_state_complete()
         self.test_case.assert_no_404_errors()
 
         #
@@ -144,6 +145,10 @@ class Helper:
         self.do_open(case_url(base_folder, n, prefix, ext))
 
     # html2pdf4doc elements
+
+    def assert_no_html2pdf4doc_elements(self) -> None:
+        self.test_case.assert_no_404_errors()
+        self.test_case.assert_element_not_present(_root_, by=By.XPATH)
 
     def assert_html2pdf4doc_elements(self) -> None:
         self.test_case.assert_element_present(_root_, by=By.XPATH)
@@ -455,3 +460,11 @@ class Helper:
 
         # /*[@data-content-flow-end]
         # /html2pdf4doc-content-flow-end
+
+    # SIMPLE
+
+    def assert_text(self, text: str) -> None:
+        self.test_case.assert_text(text)
+
+    def wait_for(self, element_xpath: str) -> None:
+        self.test_case.wait_for_element(element_xpath, by=By.XPATH)
