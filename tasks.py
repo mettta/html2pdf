@@ -1,5 +1,3 @@
-# Invoke is broken on Python 3.11
-# https://github.com/pyinvoke/invoke/issues/833#issuecomment-1293148106
 import inspect
 import os
 import re
@@ -7,11 +5,8 @@ import sys
 from enum import Enum
 from typing import Optional
 
-if not hasattr(inspect, "getargspec"):
-    inspect.getargspec = inspect.getfullargspec
-
-import invoke  # pylint: disable=wrong-import-position
-from invoke import task  # pylint: disable=wrong-import-position
+import invoke
+from invoke import task
 
 # Specifying encoding because Windows crashes otherwise when running Invoke
 # tasks below:
