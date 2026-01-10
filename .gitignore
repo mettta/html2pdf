@@ -1,15 +1,18 @@
+/downloaded_files/
+
 # IDEA and PyCharm
-.idea
+/.idea
 
 # Python
+/.venv/
 *.pyc
 
 #
 .cache/
 coverage/
-dist/*
+/dist/*
 # !dist/index.html
-node_modules/
+/node_modules/
 *.log
 
 # Visual Studio Code

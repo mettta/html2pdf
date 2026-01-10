@@ -40,6 +40,11 @@ def run_invoke(
     )
 
 
+@task(default=True)
+def list_tasks(context):
+    run_invoke(context, "invoke --list")
+
+
 @task
 def bootstrap(context):
     run_invoke(context, "pip install -r requirements.txt")
@@ -82,6 +87,7 @@ def test_end2end_generate(
 @task(build, aliases=["te"])
 def test_end2end(
     context,
+    browser="chrome",
     focus=None,
     exit_first=False,
     parallelize=False,
@@ -92,6 +98,12 @@ def test_end2end(
     headless2=False,
     headed=False,
 ):
+    if browser not in ("chrome", "firefox"):
+        raise invoke.Exit(
+            "error: the browser must be either 'chrome' or 'firefox'.",
+            code=1,
+        )
+
     long_timeouts_argument = (
         "--strictdoc-long-timeouts" if long_timeouts else ""
     )
@@ -133,6 +145,7 @@ def test_end2end(
             --capture=no
             --reuse-session
             --log-cdp
+            --browser {browser}
             {parallelize_argument}
             {focus_argument}
             {exit_first_argument}

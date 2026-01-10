@@ -63,6 +63,9 @@ class Helper:
         assert isinstance(test_case, BaseCase)
         self.test_case: BaseCase = test_case
 
+    def is_chrome(self) -> bool:
+        return self.test_case.browser == "chrome"
+
     def do_open(self, file: str, verify_logs: bool = False) -> None:
         self.test_case.open(file)
         self.test_case.assert_no_404_errors()
@@ -70,6 +73,10 @@ class Helper:
         #
         # Verify that the logs only contain the expected messages and nothing else.
         #
+        if not self.is_chrome():
+            # Getting browser logs is not yet supported on non-Chrome browsers.
+            return
+
         if verify_logs:
             logs = self.get_all_console_logs()
             info_logs = []
