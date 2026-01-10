@@ -170,4 +170,4 @@ to no less than 80% of the image's original size).
 
 # Copyright
 
-Copyright (c) 2021-2025 Maryna Balioura mettta@gmail.com.
+Copyright (c) 2021-2026 Maryna Balioura mettta@gmail.com.
