@@ -31,6 +31,7 @@ const debugConfig = {
     fitters: false,
     getters: false,
     markers: false,
+    media: false,
     pageBreaks: false,
     positioning: false,
     selectors: false,
