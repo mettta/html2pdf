@@ -212,7 +212,7 @@ export function findBetterPageStart(pageStart, lastPageStart, root) {
 
   if (!this._DOM.getElementOffsetParent(result)) {
     // Final guard: if the anchor still has no box, descend to a flow-visible child
-    const flowResult = this.resolveFlowElement(result, { prefer: 'first' });
+    const flowResult = this.resolveFlowBoxElement(result, { prefer: 'first' });
     if (flowResult) {
       result = flowResult;
     }
@@ -292,7 +292,7 @@ export function findFirstChildParentFromPage(element, topLimit, root) {
       break;
     }
 
-    const flowParent = this.resolveFlowElement(wrapperParent, { prefer: 'first' });
+    const flowParent = this.resolveFlowBoxElement(wrapperParent, { prefer: 'first' });
     // wrapperParent is the structural shell we climb through; flowParent owns the layout box we may return.
     if (!flowParent) {
       current = wrapperParent;
@@ -375,14 +375,14 @@ export function findPreviousNonHangingsFromPage(element, topLimit, root) {
     if (!this.isNoHanging(prev)) break;
 
     const semanticPrev = prev;
-    let flowPrev = this.resolveFlowElement(prev, { prefer: 'last' });
+    let flowPrev = this.resolveFlowBoxElement(prev, { prefer: 'last' });
     if (!flowPrev) {
       current = semanticPrev;
       continue;
     }
     while (flowPrev && this.shouldSkipFlowElement(flowPrev, { context: 'findPreviousNonHangingsFromPage:flow' })) {
       // ⚗️ keep resolving flow element until it is part of the layout
-      flowPrev = this.resolveFlowElement(this._DOM.getLeftNeighbor(flowPrev), { prefer: 'last' });
+      flowPrev = this.resolveFlowBoxElement(this._DOM.getLeftNeighbor(flowPrev), { prefer: 'last' });
     }
     if (!flowPrev) {
       current = semanticPrev;

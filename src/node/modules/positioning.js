@@ -185,7 +185,7 @@ export function setInitStyle(on, rootNode, rootComputedStyle) {
  *        needed (e.g. display:contents), chooses which child should be inspected.
  * @returns {Element|null} element that owns a layout box, or null if no such box exists.
  */
-export function resolveFlowElement(element, { prefer = 'self' } = {}) {
+export function resolveFlowBoxElement(element, { prefer = 'self' } = {}) {
   if (!element) return null;
 
   const pickChild = (node) => {

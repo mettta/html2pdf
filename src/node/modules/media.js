@@ -65,16 +65,14 @@ export function resolveReplacedElement(element, { prefer = 'self' } = {}) {
       return current;
     }
 
-    // Try to rely on resolveFlowElement if available to unwrap display:contents.
-    if (typeof this.resolveFlowElement === 'function') {
-      const flowCandidate = this.resolveFlowElement(current, { prefer });
-      if (flowCandidate && flowCandidate !== current) {
-        if (this.isReplacedElement(flowCandidate)) {
-          return flowCandidate;
-        }
-        current = flowCandidate;
-        continue;
+    // Try to rely on resolveFlowBoxElement if available to unwrap display:contents.
+    const flowCandidate = this.resolveFlowBoxElement(current, { prefer });
+    if (flowCandidate && flowCandidate !== current) {
+      if (this.isReplacedElement(flowCandidate)) {
+        return flowCandidate;
       }
+      current = flowCandidate;
+      continue;
     }
 
     const elementChildren = [...this._DOM.getChildren(current)];
