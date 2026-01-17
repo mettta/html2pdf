@@ -26,6 +26,10 @@ export default class Validator {
 
   init() {
     this._config.debugMode && console.log('🐙 i am Validator!');
+    this._validateLayout();
+  }
+
+  _validateLayout() {
     const pagesWithOverflow = this._collectPageOverflowAssertions();
 
     for (const [page, data] of Object.entries(pagesWithOverflow)) {

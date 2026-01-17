@@ -13,6 +13,7 @@ import Preprocess from './preprocess/index.js';
 import isTruthy from './utils/isTruthy.js';
 import buildAppConfig from './appConfig.js';
 import { normalizeLegacyConfigParams } from './config.js';
+import { forceLayoutParticipation } from './utils/forceLayoutParticipation.js';
 
 const CONSOLE_CSS_LABEL = `color:Gray;border:1px solid;`
 
@@ -29,21 +30,27 @@ export default class App {
   async render() {
     console.time("[HTML2PDF4DOC] Total time");
 
-    this.debugMode && console.log('🏁 document.readyState', document.readyState)
+    forceLayoutParticipation();
+
+    this.debugMode && console.log('🏁 document.readyState:', document.readyState)
 
     document.addEventListener("readystatechange", (event) => {
-      this.debugMode && console.log('🏁 readystatechange', document.readyState)
+      this.debugMode && console.log('🏁 readystatechange:', document.readyState)
     });
 
     // * ⏰ window.addEventListener("DOMContentLoaded")
 
     this.debugMode && console.time("⏱️ await DOMContentLoaded time");
-    await new Promise(resolve => {
-      window.addEventListener("DOMContentLoaded", (event) => {
-        this.debugMode && console.log("⏰ EVENT: DOMContentLoaded");
-        resolve();
+    if (document.readyState === "loading") {
+      await new Promise(resolve => {
+        window.addEventListener("DOMContentLoaded", (event) => {
+          this.debugMode && console.log("⏰ EVENT: DOMContentLoaded");
+          resolve();
+        });
       });
-    });
+    } else {
+      this.debugMode && console.log("🕰️ EVENT: DOMContentLoaded (event fired before init)");
+    }
     this.debugMode && console.timeEnd("⏱️ await DOMContentLoaded time");
 
     this.debugMode && console.time("⏱️ create Preloader time");
@@ -90,12 +97,16 @@ export default class App {
     // * ⏰ window.addEventListener("load")
 
     this.debugMode && console.time("⏱️ await window load time");
-    await new Promise(resolve => {
-      window.addEventListener("load", (event) => {
-        this.debugMode && console.log("⏰ EVENT: window load");
-        resolve();
+    if (document.readyState !== "complete") {
+      await new Promise(resolve => {
+        window.addEventListener("load", (event) => {
+          this.debugMode && console.log("⏰ EVENT: window load");
+          resolve();
+        });
       });
-    });
+    } else {
+      this.debugMode && console.log("🕰️ EVENT: window load (event fired before init)");
+    }
     this.debugMode && console.timeEnd("⏱️ await window load time");
 
     // * prepare layout (DOM manipulation)
@@ -189,6 +200,18 @@ export default class App {
     // * perform validations
 
     this.debugMode && console.time("⏱️ Validator time");
+    // * Force a layout pass before validation by scrolling and waiting 2 frames
+    // * so deferred rendering effects show up in measurements (if not neutralized).
+    // *** Adds ~5-25 milliseconds to total processing time.
+    window.scrollTo(0, document.body.scrollHeight);
+    await new Promise(resolve => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.scrollTo(0, 0);
+          resolve();
+        });
+      });
+    });
     new Validator({
       config: this.config,
       DOM: DOM,
@@ -201,7 +224,6 @@ export default class App {
     this.debugMode && console.timeEnd("⏱️ Validator time");
 
     // * set the attribute that means that rendering is completed successfully
-    // FIXME
     DOM.setAttribute(layout.root, '[success]');
     DOM.setAttribute(layout.root, '[pages]', pages.length);
 

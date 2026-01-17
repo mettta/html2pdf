@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title>Test page</title>
+  <link rel="stylesheet" href="../../shared/css/main.css">
+
+  <!-- <script src="../../../dist/bundle.js"></script> -->
+  <!--
+      Dynamic script injection creates a real <script> element,
+      so document.currentScript is available and auto‑init works.
+      Dynamic module import (import()) loads the file as an ES module without a <script> tag,
+      so document.currentScript is null and auto‑init is skipped (warning is expected).
+  -->
+  <script>
+    const s = document.createElement('script');
+    s.dataset.debugMode = "true";
+    s.src = "../../../dist/bundle.js";
+    document.head.appendChild(s);
+  </script>
+
+</head>
+
+<body>
+  <p>Hello world!</p>
+</body>
+
+</html>

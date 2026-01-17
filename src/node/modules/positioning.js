@@ -185,7 +185,7 @@ export function setInitStyle(on, rootNode, rootComputedStyle) {
  *        needed (e.g. display:contents), chooses which child should be inspected.
  * @returns {Element|null} element that owns a layout box, or null if no such box exists.
  */
-export function resolveFlowElement(element, { prefer = 'self' } = {}) {
+export function resolveFlowBoxElement(element, { prefer = 'self' } = {}) {
   if (!element) return null;
 
   const pickChild = (node) => {
@@ -214,15 +214,11 @@ export function resolveFlowElement(element, { prefer = 'self' } = {}) {
       return null;
     }
 
-    const display = style.display;
-    const visibility = style.visibility;
-    const position = style.position;
-
-    if (display === 'none' || visibility === 'collapse' || position === 'fixed') {
+    if (this.shouldSkipFlowElement(current, { context: 'resolveFlowElement', computedStyle: style })) {
       return null;
     }
 
-    if (display === 'contents') {
+    if (style.display === 'contents') {
       const next = pickChild.call(this, current);
       if (!next) {
         return null;
