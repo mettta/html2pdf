@@ -55,6 +55,11 @@ export function shouldSkipFlowElement(element, { context = '', computedStyle } =
     return true;
   }
 
+  if (this._DOM.getElementTagName(element) === 'SOURCE') {
+    logSkip(this, context, "ignore <SOURCE>", element);
+    return true;
+  }
+
   const style = computedStyle ?? this._DOM.getComputedStyle(element);
   if (!style) {
     return false;
