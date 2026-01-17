@@ -16,10 +16,10 @@ const REPLACED_TAGS = new Set([
 
 function _pickChild(node, prefer = 'self') {
   if (prefer === 'last') {
-    return this._DOM.getLastElementChild(node);
+    return this.getFlowLastChild?.(node) || this._DOM.getLastElementChild(node);
   }
   // treat 'first' and default as the same fallback
-  return this._DOM.getFirstElementChild(node);
+  return this.getFlowFirstChild?.(node) || this._DOM.getFirstElementChild(node);
 }
 
 /**
@@ -75,14 +75,15 @@ export function resolveReplacedElement(element, { prefer = 'self' } = {}) {
       continue;
     }
 
-    const elementChildren = [...this._DOM.getChildren(current)];
+    const elementChildren = this.getFlowChildren(current);
+
     const flowChildren = elementChildren.filter(child => {
       const display = this._DOM.getComputedStyle(child)?.display;
       return display !== 'none';
     });
 
     if (flowChildren.length !== 1) {
-      _isDebug(this) && console.info('🧭 resolveReplacedElement: branching or empty wrapper', current, flowChildren);
+      _isDebug(this) && console.info('🖼️ resolveReplacedElement: branching or empty wrapper', current, flowChildren);
       return null;
     }
 

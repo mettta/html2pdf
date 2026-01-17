@@ -140,6 +140,46 @@ export function getPreparedChildren(element) {
   return children;
 }
 
+/**
+ * Returns a read-only, flow-filtered list of element children.
+ * Skips nodes excluded by shouldSkipFlowElement and ignores text nodes.
+ *
+ * @this {Node}
+ */
+export function getFlowChildren(element) {
+  if (!element) {
+    return [];
+  }
+
+  const children = [];
+  for (const item of this._DOM.getChildNodes(element)) {
+    if (!this._DOM.isElementNode(item)) {
+      continue;
+    }
+    if (this.shouldSkipFlowElement(item, { context: 'getFilteredChildren' })) {
+      continue;
+    }
+    children.push(item);
+  }
+
+  return children;
+}
+
+/**
+ * @this {Node}
+ */
+export function getFlowFirstChild(element) {
+  const preparedChildren = this.getFlowChildren(element);
+  return preparedChildren[0];
+}
+
+/**
+ * @this {Node}
+ */
+export function getFlowLastChild(element) {
+  const preparedChildren = this.getFlowChildren(element);
+  return preparedChildren[preparedChildren.length - 1];
+}
 
 /**
  * Returns pagination-ready fragments for a given DOM element.
