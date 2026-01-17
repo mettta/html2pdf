@@ -214,15 +214,11 @@ export function resolveFlowBoxElement(element, { prefer = 'self' } = {}) {
       return null;
     }
 
-    const display = style.display;
-    const visibility = style.visibility;
-    const position = style.position;
-
-    if (display === 'none' || visibility === 'collapse' || position === 'fixed') {
+    if (this.shouldSkipFlowElement(current, { context: 'resolveFlowElement', computedStyle: style })) {
       return null;
     }
 
-    if (display === 'contents') {
+    if (style.display === 'contents') {
       const next = pickChild.call(this, current);
       if (!next) {
         return null;
