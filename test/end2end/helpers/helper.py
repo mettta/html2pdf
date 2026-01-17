@@ -246,6 +246,9 @@ class Helper:
 
     # Element
 
+    def assert_element(self, element_xpath) -> None:
+        self.test_case.assert_element_present(element_xpath, by=By.XPATH)
+
     def assert_element_has_text(self, element_xpath, text: str) -> None:
         self.test_case.assert_element(
             f"{element_xpath}"
@@ -272,6 +275,42 @@ class Helper:
         )
         assert attr_value is not None, \
             f"Expected element to have [{attribute}]"
+
+    def assert_element_attribute_equals(self, element_xpath, attribute: str, expected: str) -> None:
+        attr_value = self.test_case.get_attribute(
+            f'{element_xpath}',
+            attribute,
+            by=By.XPATH
+        )
+        assert attr_value is not None, \
+            f"Expected element to have [{attribute}]"
+        assert attr_value == expected, \
+            f"Expected [{attribute}]='{expected}', got '{attr_value}'"
+
+    # We use get_attribute('textContent') on the <style> tag to read the CSS text inside it
+    # (Selenium returns DOM properties as “attributes”).
+    # the same: in assert_element_attribute_contains
+    def assert_style_contains_text(self, element_xpath, attribute: str, expected_substring: str) -> None:
+        attr_value = self.test_case.get_attribute(
+            f'{element_xpath}',
+            attribute,
+            by=By.XPATH
+        )
+        assert attr_value is not None, \
+            f"Expected element to have [{attribute}]"
+        assert expected_substring in attr_value, \
+            f"Expected [{attribute}] to contain '{expected_substring}', got '{attr_value}'"
+
+    def assert_element_attribute_contains(self, element_xpath, attribute: str, expected_substring: str) -> None:
+        attr_value = self.test_case.get_attribute(
+            f'{element_xpath}',
+            attribute,
+            by=By.XPATH
+        )
+        assert attr_value is not None, \
+            f"Expected element to have [{attribute}]"
+        assert expected_substring in attr_value, \
+            f"Expected [{attribute}] to contain '{expected_substring}', got '{attr_value}'"
 
     def assert_element_starts_page(self, element_xpath: str, page_number: int, element_order: int = 1) -> None:
         attr_value = self.test_case.get_attribute(

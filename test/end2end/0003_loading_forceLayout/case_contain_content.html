@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title>Test page</title>
+  <link rel="stylesheet" href="../../shared/css/main.css">
+
+  <style>
+    .contain-content {
+      contain: content;
+    }
+  </style>
+  <!-- contain:content should be overridden inside content flow -->
+  <script defer data-debug-mode="true" data-markup-debug-mode="true" data-console-assert="true" src="../../../dist/bundle.js"></script>
+</head>
+
+<body>
+  <p>1 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  <div class="contain-content">
+    <p>Block with contain:content. Layout should still include this content.</p>
+    <p>More content to ensure measurable height.</p>
+  </div>
+</body>
+
+</html>

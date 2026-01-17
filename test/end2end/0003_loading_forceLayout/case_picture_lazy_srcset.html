@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title>Test page</title>
+  <link rel="stylesheet" href="../../shared/css/main.css">
+
+  <style>
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+  <script defer data-debug-mode="true" data-markup-debug-mode="true" data-console-assert="true" src="../../../dist/bundle.js"></script>
+</head>
+
+<body>
+  <p>Hello world!</p>
+
+  <p>1 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  <p>2 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  <p>3 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  <p>4 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  <p>5 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  <p>6 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  <p>7 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  <p>8 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  <p>9 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+
+  <!-- data-lazy-srcset on <source> should be promoted to srcset -->
+  <picture>
+    <source data-testid="picture_lazy_source" data-lazy-srcset="test-img-sm.png" type="image/png">
+    <img class="embedded-image external-resource" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="1px transparent gif">
+  </picture>
+
+  <p data-testid="page_start">1 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+
+</body>
+
+</html>

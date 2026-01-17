@@ -1,7 +1,5 @@
 import os
-from pathlib import Path
 
-from pypdf import PdfReader
 from seleniumbase import BaseCase
 
 from test.end2end.helpers.helper import Helper
