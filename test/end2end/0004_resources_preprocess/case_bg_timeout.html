@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="">
+<head>
+  <meta charset="utf-8">
+  <title>Resource preprocess: background timeout</title>
+  <!-- Case: missing background-image should be marked as timeout -->
+  <script defer data-resource-timeout="200" src="../../../dist/bundle.js"></script>
+  <style>
+    .bg-box {
+      width: 200px;
+      height: 120px;
+      background-image: url("missing-background-timeout.jpg");
+      background-size: cover;
+    }
+  </style>
+</head>
+<body>
+  <div html2pdf4doc>
+    <p>Background timeout case.</p>
+    <div data-testid="bg_timeout" class="bg-box"></div>
+  </div>
+</body>
+</html>

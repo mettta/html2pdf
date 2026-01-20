@@ -151,6 +151,10 @@ class Helper:
     def open_case(self, base_folder: str, n: str, prefix: str = "case", ext: str = "html") -> None:
         self.do_open(case_url(base_folder, n, prefix, ext))
 
+    def open_case_allow_resource_404(self, base_folder: str, n: str, prefix: str = "case", ext: str = "html") -> None:
+        self.test_case.open(case_url(base_folder, n, prefix, ext))
+        self.test_case.wait_for_ready_state_complete()
+
     # html2pdf4doc elements
 
     def assert_no_html2pdf4doc_elements(self) -> None:
@@ -318,6 +322,37 @@ class Helper:
             f"Expected element to have [{attribute}]"
         assert expected_substring in attr_value, \
             f"Expected [{attribute}] to contain '{expected_substring}', got '{attr_value}'"
+
+    def assert_element_attribute_equals_direct(self, element_xpath, attribute: str, expected: str) -> None:
+        target = self.test_case.find_element(
+            f'{element_xpath}',
+            by=By.XPATH,
+        )
+        attr_value = target.get_attribute(attribute)
+        assert attr_value is not None, \
+            f"Expected element to have [{attribute}]"
+        assert attr_value == expected, \
+            f"Expected [{attribute}]='{expected}', got '{attr_value}'"
+
+    def assert_element_attribute_in_direct(self, element_xpath, attribute: str, expected_values) -> None:
+        target = self.test_case.find_element(
+            f'{element_xpath}',
+            by=By.XPATH,
+        )
+        attr_value = target.get_attribute(attribute)
+        assert attr_value is not None, \
+            f"Expected element to have [{attribute}]"
+        assert attr_value in expected_values, \
+            f"Expected [{attribute}] in {expected_values}, got '{attr_value}'"
+
+    def assert_element_attribute_absent_direct(self, element_xpath, attribute: str) -> None:
+        target = self.test_case.find_element(
+            f'{element_xpath}',
+            by=By.XPATH,
+        )
+        attr_value = target.get_attribute(attribute)
+        assert attr_value is None, \
+            f"Expected element to not have [{attribute}], got '{attr_value}'"
 
     def assert_element_starts_page(self, element_xpath: str, page_number: int, element_order: int = 1) -> None:
         attr_value = self.test_case.get_attribute(

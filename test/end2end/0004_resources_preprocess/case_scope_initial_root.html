@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="">
+<head>
+  <meta charset="utf-8">
+  <title>Resource preprocess: initialRoot scope</title>
+  <!-- Case: only resources inside html2pdf4doc root are tracked -->
+  <script defer data-resource-timeout="200" src="../../../dist/bundle.js"></script>
+</head>
+<body>
+  <img data-testid="outside_img" src="missing-outside-timeout.jpg" alt="Outside root">
+
+  <div html2pdf4doc>
+    <p>Scope case.</p>
+    <img data-testid="inside_img" src="missing-inside-timeout.jpg" alt="Inside root">
+  </div>
+</body>
+</html>

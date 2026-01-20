@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="">
+<head>
+  <meta charset="utf-8">
+  <title>Resource preprocess: img error</title>
+  <!-- Case: broken data URI should mark IMG as error via naturalWidth=0 -->
+  <script defer data-resource-timeout="200" src="../../../dist/bundle.js"></script>
+</head>
+<body>
+  <div html2pdf4doc>
+    <p>Image error case.</p>
+    <img data-testid="img_error" src="data:image/png;base64,broken" alt="Broken image">
+  </div>
+</body>
+</html>

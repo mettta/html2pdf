@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="">
+<head>
+  <meta charset="utf-8">
+  <title>Resource preprocess: event</title>
+  <!-- Case: resource issue event increments counter -->
+  <script>
+    window.__resourceIssueCount = 0;
+    document.addEventListener('html2pdf4doc:resource-issue', () => {
+      window.__resourceIssueCount += 1;
+      const el = document.getElementById('resource-issue-count');
+      if (el) {
+        el.textContent = String(window.__resourceIssueCount);
+      }
+    });
+  </script>
+  <script defer data-resource-timeout="200" src="../../../dist/bundle.js"></script>
+</head>
+<body>
+  <div html2pdf4doc>
+    <p>Resource event case.</p>
+    <div id="resource-issue-count" data-testid="resource_issue_count">0</div>
+    <img data-testid="event_img" src="missing-event-timeout.jpg" alt="Missing image">
+    <img data-testid="event_img" src="missing-event-timeout.jpg" alt="Missing image">
+  </div>
+</body>
+</html>

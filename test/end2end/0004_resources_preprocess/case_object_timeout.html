@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="">
+<head>
+  <meta charset="utf-8">
+  <title>Resource preprocess: object timeout</title>
+  <!-- Case: missing object data should be marked as timeout -->
+  <script defer data-resource-timeout="200" src="../../../dist/bundle.js"></script>
+</head>
+<body>
+  <div html2pdf4doc>
+    <p>Object timeout case.</p>
+    <object data-testid="object_timeout" type="image/svg+xml" data="missing-object-timeout.svg" width="200" height="120">
+      Object fallback.
+    </object>
+  </div>
+</body>
+</html>

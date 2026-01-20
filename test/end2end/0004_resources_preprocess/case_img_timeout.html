@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="">
+<head>
+  <meta charset="utf-8">
+  <title>Resource preprocess: img timeout</title>
+  <!-- Case: missing IMG should be marked as timeout -->
+  <script defer data-resource-timeout="200" src="../../../dist/bundle.js"></script>
+</head>
+<body>
+  <div html2pdf4doc>
+    <p>Image timeout case.</p>
+    <img data-testid="img_timeout" src="missing-image-timeout.jpg" alt="Missing image">
+  </div>
+</body>
+</html>

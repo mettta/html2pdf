@@ -21,12 +21,50 @@
     .span {
       background:orange
     }
+    .resource-block {
+      border: 1px dashed #999;
+      padding: 12px;
+      margin-top: 16px;
+    }
+
+    /* resource block */
+    @font-face {
+      font-family: 'Monsieur La Doulaise';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url(assets/_mld.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    .resource-font {
+      font-family: 'Monsieur La Doulaise', serif;
+      font-size: 48px;
+    }
+    .resource-box {
+      min-height: 120px;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    [html2pdf4doc-resource-status] {
+      border: 2px dashed red;
+    }
+    .resource-image {
+      border: 1px solid black;
+      padding: 10px;
+      line-height: 0;
+      text-align: center;
+    }
+    .resource-image img {
+      max-width: 100%;
+    }
   </style>
   <script
   defer
   data-debug-mode='true'
   data-print-height='200mm'
   data-print-font-size='12pt'
+  data-page-break-before-selectors='H2 .break-before'
   src="bundle.js"></script>
 </head>
 <body style="padding-top:20px">
@@ -97,7 +135,91 @@
           </span>
           <span class="pdf-toc-cell"><html2pdf4doc-toc-page-number></html2pdf4doc-toc-page-number></span>
       </div>
-  </div>
+    </div>
+
+
+    <h2>Resource loading cases</h2>
+    <p data-testid="resource-status-note">
+      Elements that time out or error should receive the attribute html2pdf4doc-resource-status.
+      <br> This elements has red border.
+    </p>
+    <!-- RESOURCE CASES: fonts, images, svg, background, object/embed -->
+
+    <h3>Font</h3>
+    <!-- Font loading: waits for web font so text metrics are stable before layout. -->
+    <p class="resource-font">Sample text with a custom font.</p>
+    <!-- Resource status markers: failed or timed-out loads get html2pdf4doc-resource-status. -->
+
+    <h3>Images</h3>
+    <h5>Regular IMG</h5>
+    <div class="resource-image">
+      <!-- Regular IMG: baseline image load that should resolve before layout. -->
+      <img data-testid="resource-img" src="assets/img-large.jpg" alt="Resource image">
+    </div>
+    <h5>IMG with srcset</h5>
+    <div class="resource-image">
+      <!-- IMG with srcset: waits for chosen candidate based on DPR. -->
+      <img data-testid="resource-img-srcset" src="assets/img-small.jpg"
+            srcset="assets/img-small.jpg 1x, assets/img-large.jpg 2x" alt="Resource image srcset">
+    </div>
+    <h5>Picture with source</h5>
+    <div class="resource-image">
+      <!-- Picture with source: verifies <source> selection + fallback handling. -->
+      <picture data-testid="resource-picture">
+        <source srcset="assets/img-small.jpg 1x, assets/img-large.jpg 2x" type="image/jpeg">
+        <img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Fallback 1px">
+      </picture>
+    </div>
+    <h5>SVG image element</h5>
+    <div class="resource-image">
+      <!-- SVG image element: external href should be preloaded. -->
+      <svg data-testid="resource-svg" width="200" height="120" viewBox="0 0 200 120" role="img" aria-label="SVG image">
+        <image href="assets/img-small.jpg" width="200" height="120"></image>
+      </svg>
+    </div>
+    <h5>SVG image timeout (missing href)</h5>
+    <div class="resource-image">
+      <!-- SVG image timeout example: missing href should mark status. -->
+      <svg data-testid="resource-svg-timeout" width="200" height="120" viewBox="0 0 200 120" role="img" aria-label="SVG timeout">
+        <image href="assets/timeout-svg-image.jpg" width="200" height="120"></image>
+      </svg>
+    </div>
+    <h5>Background image</h5>
+    <!-- Background image: verifies CSS backgrounds are preloaded. -->
+     <div class="resource-image">
+       <div data-testid="resource-bg" class="resource-box"
+             style="background-image: url('assets/bg-large.jpg');">
+        </div>
+     </div>
+    <h5>Background image timeout (missing URL)</h5>
+    <!-- Background image timeout example: missing URL should mark status. -->
+     <div class="resource-image">
+       <div data-testid="resource-bg-timeout" class="resource-box"
+             style="background-image: url('assets/timeout-background.jpg');">
+        </div>
+     </div>
+    <h5>Object</h5>
+    <div class="resource-image">
+      <!-- Object resource: waits for object load or error. -->
+      <object data-testid="resource-object" type="image/svg+xml" data="assets/inline.svg" width="200" height="120">
+        Object fallback content.
+      </object>
+    </div>
+    <h5>Embed</h5>
+    <div class="resource-image">
+      <!-- Embed resource: waits for embed load or error. -->
+      <embed data-testid="resource-embed" src="assets/inline.svg" type="image/svg+xml" width="200" height="120">
+    </div>
+    <h5>IMG timeout (missing src)</h5>
+    <div class="resource-image">
+      <!-- IMG timeout example: missing src should mark status. -->
+      <img data-testid="resource-img-timeout" src="assets/timeout-image.jpg" alt="Expected timeout image">
+    </div>
+
+
+
+
+    <h2>Strictdoc example</h2>
 
     <!-- CASE: P -->
     <p class="point" style="background:rgba(0, 242, 255, 0.12)">
@@ -375,4 +497,3 @@
   </div>
 </body>
 </html>
-
