@@ -330,13 +330,15 @@ export default class Pages {
       );
     }
 
-    const pageTop = this._node.getTopForPageStartCandidate(pageStart, this._root);
+    const pageStartTopInfo = this._node.getPageStartTopInfo(pageStart, this._root);
+    const pageTop = pageStartTopInfo?.top;
     const pageBottom = pageTop + this._referenceHeight;
     const prevPageEnd = this._DOM.getLeftNeighbor(pageStart);
     this.pages.push({
       pageStart: pageStart,
       pageBottom: pageBottom,
       pageTop: pageTop,
+      pageTopAnchor: pageStartTopInfo?.anchor || null,
       prevPageEnd: prevPageEnd,
     });
     this._node.markPageStart(pageStart, this.pages.length);
@@ -346,6 +348,7 @@ export default class Pages {
       '\n  pageTop:', pageTop,
       '\n  pageBottom:', pageBottom,
       '\n  pageStart:', pageStart,
+      '\n  pageTopAnchor:', pageStartTopInfo?.anchor || null,
     );
   }
 
