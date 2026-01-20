@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title>Test page</title>
+  <link rel="stylesheet" href="../../../shared/css/main.css">
+
+  <style>
+    .contain-content {
+      contain: content;
+    }
+  </style>
+  <!-- contain:content should be overridden inside content flow -->
+  <script defer
+  data-forced-debug-mode="true"
+  data-markup-debug-mode="true"
+  data-console-assert="true"
+  data-print-height='600px'
+  data-print-width='600px'
+  data-forced-page-break-selectors=""
+  data-page-break-after-selectors=""
+  data-page-break-before-selectors=".html2pdf4doc-break-before"
+  data-no-break-selectors=".html2pdf4doc-no-break"
+  data-no-hanging-selectors=".html2pdf4doc-no-hanging"
+  src="../../../../dist/bundle.js"></script>
+</head>
+
+<body>
+  <div filler style="height:210px"></div>
+  <!-- ? 5px  -->
+  <img data-testid="im1" src="../assets/star300.png">
+  <div filler style="height:210px"></div>
+  <span data-testid="wr2"><img data-testid="im2" src="../assets/star300.png"></span>
+  <span data-testid="wr3"><img data-testid="im3" src="../assets/star300.png"></span>
+  <p>
+    Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda, laboriosam tempore, commodi possimus, esse officiis hic quis deleniti praesentium nisi blanditiis excepturi deserunt sed sit ullam nemo iure sunt voluptas?
+  </p>
+  <p>
+    Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda, laboriosam tempore, commodi possimus, esse officiis hic quis deleniti praesentium nisi blanditiis excepturi deserunt sed sit ullam nemo iure sunt voluptas?
+  </p>
+
+  <p data-testid="last-p">
+    Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda, laboriosam tempore, commodi possimus, esse officiis hic quis deleniti praesentium nisi blanditiis excepturi deserunt sed sit ullam nemo iure sunt voluptas?
+  </p>
+</body>
+
+</html>
