@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="">
+<head>
+  <meta charset="utf-8">
+  <title>Resource preprocess: svg image timeout</title>
+  <!-- Case: missing SVG <image> href should be marked as timeout -->
+  <script defer data-resource-timeout="200" src="../../../dist/bundle.js"></script>
+</head>
+<body>
+  <div html2pdf4doc>
+    <p>SVG image timeout case.</p>
+    <svg width="200" height="120" viewBox="0 0 200 120" role="img" aria-label="SVG timeout">
+      <image data-testid="svg_timeout" href="missing-svg-image-timeout.jpg" width="200" height="120"></image>
+    </svg>
+  </div>
+</body>
+</html>
