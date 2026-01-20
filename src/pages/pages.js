@@ -330,13 +330,15 @@ export default class Pages {
       );
     }
 
-    const pageTop = this._node.getTopForPageStartCandidate(pageStart, this._root);
+    const pageStartTopInfo = this._node.getPageStartTopInfo(pageStart, this._root);
+    const pageTop = pageStartTopInfo?.top;
     const pageBottom = pageTop + this._referenceHeight;
     const prevPageEnd = this._DOM.getLeftNeighbor(pageStart);
     this.pages.push({
       pageStart: pageStart,
       pageBottom: pageBottom,
       pageTop: pageTop,
+      pageTopAnchor: pageStartTopInfo?.anchor || null,
       prevPageEnd: prevPageEnd,
     });
     this._node.markPageStart(pageStart, this.pages.length);
@@ -346,6 +348,7 @@ export default class Pages {
       '\n  pageTop:', pageTop,
       '\n  pageBottom:', pageBottom,
       '\n  pageStart:', pageStart,
+      '\n  pageTopAnchor:', pageStartTopInfo?.anchor || null,
     );
   }
 
@@ -959,6 +962,29 @@ export default class Pages {
 
         this.strictAssert(availableSpaceFactor < 1);
 
+        const applyScaleWithWrapper = (scale) => {
+          this._DOM.setStyles(currentElement, {
+            'transform': `scale(${scale})`,
+            'transform-origin': `top center`,
+          });
+          // transform affects only visuals; wrap to make layout height reflect the scaled size.
+          // Mirrors fitElementWithinHeight in fitters.js so we can reuse/commonize later. TODO: extract.
+          const scaledHeight = Math.max(0, Math.trunc(currentElementContextualHeight * scale));
+          const parent = this._DOM.getParentNode(currentElement);
+          if (parent && this._node.isNeutral(parent)) {
+            this._DOM.setStyles(parent, { height: `${scaledHeight}px` });
+            return;
+          }
+          const scaler = this._node.createNeutral();
+          this._DOM.setStyles(scaler, {
+            display: 'inline-block',
+            verticalAlign: 'top',
+            width: '100%',
+            height: `${scaledHeight}px`,
+          });
+          this._DOM.wrap(currentElement, scaler);
+        };
+
         // Try to fit currentElement into the remaining space
         // on the current(last) page (availableSpace).
         if(availableSpaceFactor > 0.8) {
@@ -967,10 +993,7 @@ export default class Pages {
           );
           // If, in order for it to fit, it needs to be scaled by no more than 20%,
           // we can afford to scale:
-          this._DOM.setStyles(currentElement, {
-            'transform': `scale(${availableSpaceFactor})`,
-            'transform-origin': `top center`,
-          });
+          applyScaleWithWrapper(availableSpaceFactor);
           // and start a new page with the next element:
           this._registerPageStart({
             element: nextElement,
@@ -992,10 +1015,7 @@ export default class Pages {
             '🥁 fullPageFactor < 1: ', fullPageFactor
           );
           this._node.markProcessed(currentElement, `processed as a image, has been scaled down, and starts new page`);
-          this._DOM.setStyles(currentElement, {
-            'transform': `scale(${fullPageFactor})`,
-            'transform-origin': `top center`,
-          });
+          applyScaleWithWrapper(fullPageFactor);
         }
 
         this._debug._parseNode && console.log(

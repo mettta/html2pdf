@@ -13,8 +13,52 @@ const _isDebug = debugFor('getters');
  * @this {Node}
  */
 export function getTopForPageStartCandidate(element, root) {
+  const info = this.getPageStartTopInfo(element, root);
+  return info?.top;
+}
+
+/**
+ * Returns the top position for a page-start candidate and, when applicable,
+ * the anchor element used for that measurement.
+ *
+ * @this {Node}
+ */
+export function getPageStartTopInfo(element, root) {
+  if (!element) {
+    return;
+  }
+
+  const style = this._DOM.getComputedStyle(element);
+  const isContentsWrapper = style?.display === 'contents';
+  const isInlineWrapper = !isContentsWrapper && this.isInline(element, style);
+
+  if (isContentsWrapper || isInlineWrapper) {
+    // Inline/contents wrappers can be baseline-aligned, so their top may be below
+    // the actual visual start of a media/child box. Anchor pageTop to the first
+    // real child box (or replaced element) to avoid page starts drifting downward.
+    let anchor = this.resolveReplacedElement?.(element, { prefer: 'first' });
+    if (!anchor) {
+      const flowChildren = this.getFlowChildren?.(element) || [];
+      if (flowChildren.length === 1) {
+        anchor = flowChildren[0];
+      }
+    }
+    if (anchor && anchor !== element) {
+      const anchorTop = this.getTop(anchor, root);
+      const wrapperTop = this.getTop(element, root);
+      if (anchorTop !== undefined && wrapperTop !== undefined) {
+        // Pick the earliest visual edge so wrapper padding/margins don't shift
+        // the page start below the actual top of the group.
+        return { top: Math.min(anchorTop, wrapperTop), anchor };
+      }
+      if (anchorTop !== undefined) {
+        return { top: anchorTop, anchor };
+      }
+    }
+  }
+
   const top = this.getTop(element, root);
-  return top
+  return { top, anchor: null };
 }
 
 /**
