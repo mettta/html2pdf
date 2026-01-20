@@ -257,6 +257,11 @@ export default class Preview {
     if (previousPageLastElement) {
       // this._node.markPageEnd(previousPageLastElement, pageIndex + 'test');
       this._DOM.setStyles(previousPageLastElement, {'margin-bottom': ['0', 'important']});
+      if (this._node.isIMG(previousPageLastElement)) {
+        // Inline images sit on the text baseline, leaving a descender gap;
+        // `vertical-align: top` removes that extra bottom space.
+        this._DOM.setStyles(previousPageLastElement, {'vertical-align': ['top', 'important']});
+      }
     } else {
       (pageIndex > 0) && this._debug._ && console.warn(`[preview] There is no page end element before ${pageIndex}. Perhaps it's a 'beginningTail'.`, )
     }
