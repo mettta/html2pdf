@@ -28,6 +28,9 @@ export default function createConfig(params) {
     // * Note: internal logic uses flag storage/registries; DOM attributes are for debug only.
     markupDebugMode: false,
 
+    // * Resource waiting timeout in milliseconds.
+    resourceTimeoutMs: 2000,
+
     // Register option to print for informational purposes:
     preloader: false,
     preloaderTarget: '',

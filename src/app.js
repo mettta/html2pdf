@@ -129,6 +129,13 @@ export default class App {
       // this.debugMode && console.log('🚩 layout.success:', layout.success);
     }
 
+    // * ensure fonts and external resources are ready for stable layout
+    this.debugMode && console.time("⏱️ Preprocess time");
+    this.debugMode && console.groupCollapsed('%c Preprocess ', CONSOLE_CSS_LABEL);
+    await new Preprocess(this.config, DOM).run();
+    this.debugMode && console.groupEnd();
+    this.debugMode && console.timeEnd("⏱️ Preprocess time");
+
     // * calculate and prepare 'paper'
     this.debugMode && console.info('%c calculate Paper params ', CONSOLE_CSS_LABEL);
     this.debugMode && console.time("⏱️ Paper time");
@@ -146,12 +153,6 @@ export default class App {
     } else {
       // this.debugMode && console.log('🚩 paper.bodyHeight:', paper.bodyHeight);
     }
-
-    this.debugMode && console.time("⏱️ Preprocess time");
-    this.debugMode && console.groupCollapsed('%c Preprocess ', CONSOLE_CSS_LABEL);
-    await new Preprocess(this.config).run();
-    this.debugMode && console.groupEnd();
-    this.debugMode && console.timeEnd("⏱️ Preprocess time");
 
     // * calculate pages (DOM manipulation)
 
