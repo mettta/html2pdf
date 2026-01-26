@@ -139,7 +139,10 @@ export function isContentFlowStart(element) {
  * @this {Node}
  */
 export function isAfterContentFlowStart(element) {
-  const elementBeforeInspected = this._DOM.getLeftNeighbor(element);
+  let elementBeforeInspected = this._DOM.getLeftNeighbor(element);
+  while (elementBeforeInspected && this.shouldSkipFlowElement(elementBeforeInspected, { context: 'isAfterContentFlowStart' })) {
+    elementBeforeInspected = this._DOM.getLeftNeighbor(elementBeforeInspected);
+  }
   return this.isSelectorMatching(elementBeforeInspected, this._selector.contentFlowStart)
 }
 

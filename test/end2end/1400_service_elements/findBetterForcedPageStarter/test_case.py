@@ -1,6 +1,5 @@
 import os
 
-from selenium.webdriver.common.by import By
 from seleniumbase import BaseCase
 
 from test.end2end.helpers.helper import Helper
@@ -47,3 +46,17 @@ class Test(BaseCase):
         self.helper.assert_document_has_pages(3)
         self.helper.assert_element_on_the_page(h1, 2)
         self.helper.assert_element_on_the_page(h2, 3)
+
+    def test_010(self):
+        # Templates at the beginning of the BODY should not be counted,
+        # and H1 should be considered the first
+        # (and should not receive an additional break before it).
+        self.helper.open_case(path_to_this_test_file_folder, '010_templates_first')
+        self.helper.assert_document_has_pages(3)
+        self.helper.assert_element_on_the_page(h1, 2)
+
+    def test_011(self):
+        # display:none at the beginning of the BODY should not be counted.
+        self.helper.open_case(path_to_this_test_file_folder, '011_display_none')
+        self.helper.assert_document_has_pages(2)
+        self.helper.assert_element_on_the_page(h1, 1)
